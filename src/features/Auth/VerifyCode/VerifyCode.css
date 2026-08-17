@@ -1,0 +1,722 @@
+/* =========================================
+   VERIFY CODE - PROMO
+========================================= */
+
+.verify-promo {
+  position: relative;
+
+  width: 636px;
+  height: 403px;
+
+  flex: 0 0 636px;
+
+  align-self: center;
+
+  overflow: hidden;
+
+  border-radius: var(--radius-xl);
+
+  color: #ffffff;
+
+  background:
+    radial-gradient(
+      circle at 50% 50%,
+      rgba(255, 255, 255, 0.025),
+      transparent 36%
+    ),
+    linear-gradient(
+      145deg,
+      #2b67f0 0%,
+      var(--color-primary) 50%,
+      #2454d7 100%
+    );
+
+  isolation: isolate;
+}
+
+
+/* =========================================
+   RINGS
+========================================= */
+
+.verify-promo__rings {
+  position: absolute;
+
+  inset: 0;
+
+  z-index: -1;
+
+  pointer-events: none;
+}
+
+.verify-promo__rings span {
+  position: absolute;
+
+  top: 50%;
+  left: 50%;
+
+  translate: -50% -50%;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.12);
+
+  border-radius: 50%;
+}
+
+.verify-promo__rings span:nth-child(1) {
+  width: 560px;
+  height: 560px;
+}
+
+.verify-promo__rings span:nth-child(2) {
+  width: 400px;
+  height: 400px;
+}
+
+.verify-promo__rings span:nth-child(3) {
+  width: 240px;
+  height: 240px;
+}
+
+
+/* =========================================
+   PROMO CONTENT
+========================================= */
+
+.verify-promo__content {
+  position: relative;
+
+  z-index: 1;
+
+  width: 100%;
+  height: 100%;
+
+  padding: 58px 40px 40px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  box-sizing: border-box;
+
+  text-align: center;
+}
+
+
+/* =========================================
+   LOGO
+========================================= */
+
+.verify-promo__logo {
+  width: 96px;
+  height: 96px;
+
+  flex: 0 0 96px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 31px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 10px 25px
+    rgba(30, 64, 175, 0.08);
+}
+
+.verify-promo__logo img {
+  width: 58px;
+  height: 66px;
+
+  object-fit: contain;
+}
+
+
+/* =========================================
+   PROMO TEXT
+========================================= */
+
+.verify-promo h2 {
+  max-width: 500px;
+
+  margin: 27px 0 14px;
+
+  color: #ffffff;
+
+  font-size: 28px;
+  font-weight: 750;
+
+  line-height: 1.3;
+
+  letter-spacing: -0.45px;
+}
+
+.verify-promo__subtitle {
+  max-width: 500px;
+
+  margin: 0;
+
+  color:
+    rgba(255, 255, 255, 0.75);
+
+  font-size: 14px;
+
+  line-height: 1.65;
+}
+
+
+/* =========================================
+   USERS BOX
+========================================= */
+
+.verify-users {
+  min-width: 234px;
+  height: 56px;
+
+  margin-top: 29px;
+
+  padding: 0 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 11px;
+
+  box-sizing: border-box;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.18);
+
+  border-radius: 20px;
+
+  background:
+    rgba(255, 255, 255, 0.10);
+
+  backdrop-filter: blur(3px);
+
+  -webkit-backdrop-filter:
+    blur(3px);
+}
+
+.verify-users__avatars {
+  display: flex;
+
+  direction: ltr;
+}
+
+.verify-users__avatars span {
+  width: 27px;
+  height: 27px;
+
+  margin-left: -7px;
+
+  display: grid;
+  place-items: center;
+
+  box-sizing: border-box;
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.30);
+
+  border-radius: 50%;
+
+  color: #ffffff;
+
+  background:
+    rgba(255, 255, 255, 0.16);
+
+  font-size: 10px;
+}
+
+.verify-users__avatars span:first-child {
+  margin-left: 0;
+}
+
+.verify-users__text {
+  color:
+    rgba(255, 255, 255, 0.9);
+
+  font-size: 11px;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================
+   FORM PANEL
+========================================= */
+
+.verify-form-panel {
+  width: 384px;
+
+  flex: 0 0 384px;
+
+  align-self: center;
+
+  margin-inline-end: 86px;
+
+  color:
+    var(--color-text-primary);
+
+  text-align: center;
+}
+
+
+/* =========================================
+   PROGRESS
+========================================= */
+
+.verify-progress {
+  margin-bottom: 23px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  direction: ltr;
+}
+
+.verify-progress__item {
+  width: 32px;
+  height: 6px;
+
+  display: block;
+
+  border-radius: 999px;
+
+  background:
+    var(--color-border);
+}
+
+.verify-progress__item--active {
+  background:
+    var(--color-primary);
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.verify-header {
+  text-align: center;
+}
+
+.verify-header h1 {
+  margin: 0;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 28px;
+  font-weight: 750;
+
+  line-height: 1.25;
+
+  letter-spacing: -0.4px;
+}
+
+.verify-header p {
+  max-width: 370px;
+
+  margin: 14px auto 0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 14px;
+
+  line-height: 1.55;
+}
+
+
+/* =========================================
+   FORM
+========================================= */
+
+.verify-form {
+  margin-top: 25px;
+}
+
+
+/* =========================================
+   OTP INPUTS
+========================================= */
+
+.verify-code-inputs {
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  gap: 12px;
+}
+
+.verify-code-inputs input {
+  width: 56px;
+  height: 56px;
+
+  padding: 0;
+
+  box-sizing: border-box;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 22px;
+
+  outline: none;
+
+  color:
+    var(--color-text-primary);
+
+  background: #f5f6f8;
+
+  font: inherit;
+
+  font-size: 22px;
+  font-weight: 600;
+
+  text-align: center;
+
+  caret-color:
+    var(--color-primary);
+
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.verify-code-inputs input:focus {
+  border-color:
+    var(--color-primary);
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    0 0 0 3px
+    rgba(37, 99, 235, 0.10);
+}
+
+
+/* =========================================
+   PHONE TEXT
+========================================= */
+
+.verify-phone {
+  margin: 16px 0 0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 12px;
+
+  line-height: 1.4;
+}
+
+.verify-phone strong {
+  color:
+    var(--color-text-primary);
+
+  font-weight: 650;
+
+  direction: ltr;
+
+  unicode-bidi: isolate;
+}
+
+
+/* =========================================
+   RESEND
+========================================= */
+
+.verify-resend {
+  margin: 15px 0 0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 12px;
+
+  line-height: 1.4;
+}
+
+.verify-resend button {
+  padding: 0;
+
+  border: 0;
+
+  color:
+    var(--color-primary);
+
+  background: transparent;
+
+  font: inherit;
+
+  cursor: pointer;
+}
+
+.verify-resend button:hover {
+  text-decoration: underline;
+}
+
+
+/* =========================================
+   CONFIRM BUTTON
+========================================= */
+
+.verify-submit {
+  width: 100%;
+  height: 37px;
+
+  margin-top: 17px;
+
+  border: 0;
+
+  border-radius:
+    var(--radius-md);
+
+  color: #ffffff;
+
+  background:
+    var(--color-primary);
+
+  font: inherit;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 2px 5px
+    rgba(37, 99, 235, 0.18);
+
+  transition:
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.verify-submit:hover {
+  background:
+    var(--color-primary-hover);
+}
+
+.verify-submit:active {
+  transform:
+    translateY(1px);
+}
+
+
+/* =========================================
+   EDIT PHONE
+========================================= */
+
+.verify-edit-phone {
+  width: max-content;
+
+  margin: 28px auto 0;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 13px;
+
+  line-height: 1;
+
+  text-decoration: none;
+}
+
+.verify-edit-phone:hover {
+  color:
+    var(--color-primary);
+}
+
+.verify-edit-phone svg {
+  width: 17px;
+  height: 17px;
+
+  fill: none;
+
+  stroke: currentColor;
+
+  stroke-width: 1.6;
+
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+/* Arabic arrow */
+
+[dir="rtl"] .verify-edit-phone svg {
+  transform: rotate(180deg);
+}
+
+
+/* =========================================
+   RTL
+========================================= */
+
+[dir="rtl"] .verify-promo h2,
+[dir="rtl"] .verify-header h1 {
+  letter-spacing: 0;
+}
+
+
+/* =========================================
+   DARK MODE
+========================================= */
+
+:root[data-theme="dark"]
+.verify-code-inputs input {
+  background: #172033;
+}
+
+:root[data-theme="dark"]
+.verify-progress__item:not(
+  .verify-progress__item--active
+) {
+  background: #334155;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1240px) {
+  .verify-promo {
+    width: min(54vw, 600px);
+
+    flex-basis:
+      min(54vw, 600px);
+  }
+
+  .verify-form-panel {
+    margin-inline-end: 24px;
+  }
+}
+
+
+@media (max-width: 1040px) {
+  .verify-promo {
+    width: 50%;
+
+    flex-basis: 50%;
+  }
+
+  .verify-form-panel {
+    width:
+      min(40vw, 384px);
+
+    flex-basis:
+      min(40vw, 384px);
+
+    margin-inline-end: 0;
+  }
+}
+
+
+@media (max-width: 860px) {
+  .verify-form-panel {
+    order: 1;
+
+    width:
+      min(100%, 480px);
+
+    flex-basis: auto;
+
+    margin: 0 auto;
+  }
+
+  .verify-promo {
+    order: 2;
+
+    width: 100%;
+    height: 403px;
+
+    flex-basis: auto;
+
+    margin-top: 32px;
+  }
+}
+
+
+@media (max-width: 560px) {
+  .verify-promo {
+    height: 385px;
+
+    border-radius:
+      var(--radius-lg);
+  }
+
+  .verify-promo__content {
+    padding:
+      45px
+      20px
+      28px;
+  }
+
+  .verify-promo__logo {
+    width: 82px;
+    height: 82px;
+
+    flex-basis: 82px;
+
+    border-radius: 25px;
+  }
+
+  .verify-promo__logo img {
+    width: 49px;
+    height: 56px;
+  }
+
+  .verify-promo h2 {
+    margin-top: 22px;
+
+    font-size: 23px;
+  }
+
+  .verify-promo__subtitle {
+    font-size: 13px;
+  }
+
+  .verify-users {
+    margin-top: 22px;
+  }
+
+  .verify-header h1 {
+    font-size: 25px;
+  }
+
+  .verify-header p {
+    font-size: 13px;
+  }
+
+  .verify-code-inputs {
+    gap: 8px;
+  }
+
+  .verify-code-inputs input {
+    width: 52px;
+    height: 52px;
+
+    border-radius: 19px;
+  }
+}

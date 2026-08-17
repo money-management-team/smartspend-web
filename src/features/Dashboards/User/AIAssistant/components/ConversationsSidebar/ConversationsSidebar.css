@@ -1,0 +1,251 @@
+.ai-conversations {
+  width: 280px;
+
+  min-width: 280px;
+
+  min-height: 620px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-lg);
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    var(--shadow-card);
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.ai-conversations__header {
+  min-height: 64px;
+
+  padding:
+    0
+    20px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  box-sizing: border-box;
+
+  border-bottom:
+    1px solid
+    var(--color-border);
+}
+
+
+.ai-conversations__header h2 {
+  margin: 0;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  line-height: 1.2;
+}
+
+
+/* =========================================
+   NEW CHAT
+========================================= */
+
+.ai-conversations__new {
+  padding: 0;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  border: 0;
+
+  color:
+    var(--color-text-primary);
+
+  background:
+    transparent;
+
+  font: inherit;
+
+  font-size: 11px;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+
+.ai-conversations__new:hover {
+  color:
+    var(--color-primary);
+}
+
+
+.ai-conversations__new svg {
+  width: 16px;
+
+  height: 16px;
+}
+
+
+/* =========================================
+   LIST
+========================================= */
+
+.ai-conversations__list {
+  padding:
+    20px
+    20px;
+
+  display: grid;
+
+  gap: 7px;
+}
+
+
+/* =========================================
+   CONVERSATION
+========================================= */
+
+.ai-conversations__item {
+  width: 100%;
+
+  min-height: 38px;
+
+  padding:
+    0
+    12px;
+
+  border: 0;
+
+  border-radius: 9px;
+
+  color:
+    var(--color-text-secondary);
+
+  background:
+    transparent;
+
+  font: inherit;
+
+  font-size: 12px;
+
+  line-height: 1.4;
+
+  text-align: start;
+
+  cursor: pointer;
+
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+
+.ai-conversations__item:hover {
+  color:
+    var(--color-text-primary);
+
+  background:
+    rgba(
+      37,
+      99,
+      235,
+      0.05
+    );
+}
+
+
+/*
+ * التصميم المرفق لا يظهر
+ * خلفية قوية للمحادثة الحالية،
+ * لذلك نجعلها بسيطة.
+ */
+
+.ai-conversations__item--active {
+  color:
+    var(--color-text-primary);
+
+  font-weight: 500;
+}
+
+
+/* =========================================
+   RTL
+========================================= */
+
+[dir="rtl"]
+.ai-conversations {
+  direction: rtl;
+}
+
+
+[dir="rtl"]
+.ai-conversations__item {
+  text-align: right;
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1000px) {
+  .ai-conversations {
+    width: 100%;
+
+    min-width: 0;
+
+    min-height: auto;
+  }
+
+
+  .ai-conversations__list {
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 620px) {
+  .ai-conversations__header {
+    padding-inline:
+      15px;
+  }
+
+
+  .ai-conversations__list {
+    padding:
+      14px
+      15px;
+
+    grid-template-columns:
+      1fr;
+  }
+}

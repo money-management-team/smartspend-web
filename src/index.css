@@ -1,0 +1,104 @@
+:root {
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+
+  --color-background: #f8fafc;
+  --color-surface: #ffffff;
+
+  --color-border: #e5e7eb;
+
+  --color-success: #16a34a;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 28px;
+
+  --container-width: 1240px;
+
+  --shadow-card:
+    0 4px 14px rgba(0, 0, 0, 0.05);
+
+  color: var(--color-text-primary);
+  background: var(--color-background);
+  font-family:
+    Inter, "Segoe UI", Tahoma, Arial, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:root[data-theme="dark"] {
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-background: #0f172a;
+  --color-surface: #111827;
+  --color-border: #283548;
+  --shadow-card:
+    0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: var(--color-background);
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background: var(--color-background);
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+button,
+a,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a,
+button {
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    border-color 160ms ease,
+    opacity 160ms ease;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+[dir="rtl"] {
+  font-family:
+    "Segoe UI", Tahoma, Arial, sans-serif;
+}
+
+:root[data-theme="dark"] .register-social button:hover {
+  background: #172033;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

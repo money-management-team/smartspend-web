@@ -1,0 +1,785 @@
+{
+  "auth": {
+    "register": {
+      "title": "Create a new account",
+      "subtitle": "Create your account and start a smarter financial journey.",
+      "fields": {
+        "fullName": {
+          "label": "Full name",
+          "placeholder": "Enter your full name"
+        },
+        "contact": {
+          "label": "Email or phone number",
+          "placeholder": "user@example.com"
+        },
+        "password": {
+          "label": "Password",
+          "placeholder": "Create a strong password"
+        },
+        "confirmPassword": {
+          "label": "Confirm password",
+          "placeholder": "Re-enter your password"
+        }
+      },
+      "terms": {
+        "prefix": "I agree to the",
+        "link": "Terms & Privacy Policy"
+      },
+      "submit": "Create account",
+      "social": {
+        "divider": "Or continue with",
+        "google": "Google",
+        "apple": "Apple"
+      },
+      "login": {
+        "prefix": "Already have an account?",
+        "link": "Sign in"
+      },
+      "promo": {
+        "title": "One step away from managing your money smartly",
+        "subtitle": "Create your account and start a clearer, more controlled financial journey.",
+        "features": [
+          {
+            "title": "High security",
+            "description": "Constant protection for your data and transactions."
+          },
+          {
+            "title": "AI-powered analytics",
+            "description": "Personalised tips for your spending habits."
+          },
+          {
+            "title": "Complete money management",
+            "description": "All your accounts and cards in one simple place."
+          }
+        ]
+      }
+    },
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Welcome back. Sign in to access your account.",
+      "fields": {
+        "contact": {
+          "label": "Email or phone number",
+          "placeholder": "name@example.com"
+        },
+        "password": {
+          "label": "Password",
+          "placeholder": "••••••••"
+        }
+      },
+      "forgotPassword": "Forgot password?",
+      "remember": "Remember me on this device",
+      "submit": "Sign in",
+      "social": {
+        "divider": "Or continue with",
+        "google": "Google",
+        "apple": "Apple"
+      },
+      "register": {
+        "prefix": "Don't have an account?",
+        "link": "Create account"
+      },
+      "promo": {
+        "title": "Manage your money smartly",
+        "subtitle": "A smart financial platform that tracks income and spending and helps you build budgets and savings goals with AI.",
+        "chips": [
+          "Accounts",
+          "Smart analytics",
+          "Savings goals"
+        ]
+      }
+    },
+    "forgotPassword": {
+      "title": "Forgot password?",
+      "subtitle": "Enter your registered email or phone to receive a verification code.",
+      "field": {
+        "label": "Email or phone number",
+        "placeholder": "example@gmail.com"
+      },
+      "submit": "Send verification code",
+      "back": "Back to sign in",
+      "promo": {
+        "title": "Regain access safely",
+        "subtitle": "We'll send a verification code to reset your password quickly and securely."
+      }
+    },
+    "verifyCode": {
+      "title": "Verify the code",
+      "subtitle": "A 4-digit code was sent to your registered phone. Enter it to continue.",
+      "codeSent": "Code sent to",
+      "resend": {
+        "prefix": "Didn't get the code?",
+        "link": "Resend"
+      },
+      "submit": "Confirm",
+      "editPhone": "Edit phone number",
+      "promo": {
+        "title": "Unmatched financial safety",
+        "subtitle": "We use the latest encryption to fully protect your data and transactions.",
+        "users": "Join 500K+ active users"
+      }
+    },
+    "resetPassword": {
+      "title": "Reset password",
+      "subtitle": "Create a new password for your account.",
+      "fields": {
+        "password": {
+          "label": "New password",
+          "placeholder": "••••••••"
+        },
+        "confirmPassword": {
+          "label": "Confirm password",
+          "placeholder": "••••••••"
+        }
+      },
+      "strength": {
+        "label": "Password strength",
+        "weak": "Weak",
+        "medium": "Medium",
+        "strong": "Strong"
+      },
+      "requirements": {
+        "length": "At least 8 characters",
+        "letters": "Upper and lower case letters",
+        "number": "At least one number"
+      },
+      "submit": "Save password",
+      "back": "Back to sign in",
+      "promo": {
+        "title": "Securing your account is our priority",
+        "subtitle": "Use a strong, unique password to keep your Smart Spend data safe.",
+        "dataProtection": "Data protection",
+        "encryption": "Advanced encryption"
+      }
+    },
+    "passwordChanged": {
+      "title": "Password changed successfully",
+      "subtitle": "Your password has been updated. You can sign in now with the new password.",
+      "back": "Back to sign in",
+      "promo": {
+        "title": "Your account is safer now",
+        "subtitle": "Thanks for using Smart Spend. We protect your financial data and keep the experience trusted."
+      }
+    }
+  },
+  "dashboard": {
+    "header": {
+      "searchPlaceholder": "Search transactions, accounts..."
+    },
+    "sidebar": {
+      "tagline": "AI money management",
+      "sections": {
+        "overview": "OVERVIEW",
+        "manage": "MANAGE",
+        "more": "MORE"
+      },
+      "dashboard": "Dashboard",
+      "accounts": "Accounts",
+      "financialOperations": "Financial operations",
+      "recurring": "Recurring",
+      "import": "Import",
+      "budgets": "Budgets",
+      "savingsGoals": "Savings Goals",
+      "reports": "Reports",
+      "aiAssistant": "AI Assistant",
+      "notifications": "Notifications",
+      "settings": "Settings",
+      "logout": "Log out"
+    },
+    "user": {
+      "common": {
+        "viewAll": "View all"
+      },
+      "hero": {
+        "month": "August 2026",
+        "title": "Welcome back, Layla",
+        "subtitle": "Your money is on track this month. Net cash flow is up 12.4%.",
+        "balance": "$50,890",
+        "balanceLabel": "Total balance",
+        "actions": {
+          "income": "Add income",
+          "expense": "Add expense",
+          "transfer": "Transfer",
+          "goal": "New goal"
+        }
+      },
+      "summary": {
+        "cash": {
+          "label": "Total cash",
+          "amount": "$860",
+          "change": "3.4%"
+        },
+        "bank": {
+          "label": "Total bank",
+          "amount": "$51,170",
+          "change": "8.2%"
+        },
+        "wallets": {
+          "label": "Total wallets",
+          "amount": "$1,240",
+          "change": "1.9%"
+        }
+      },
+      "money": {
+        "title": "Where your money is",
+        "subtitle": "Total cash and total bank balance, broken down per account.",
+        "hideAccounts": "Hide accounts",
+        "totalCash": "Total cash",
+        "totalBank": "Total bank",
+        "totalWallets": "Total wallets",
+        "cashAmount": "$860",
+        "bankAmount": "$51,170",
+        "walletAmount": "$1,240",
+        "cashOnHand": "Cash on hand",
+        "checking": "Main Checking",
+        "checkingAmount": "$18,420",
+        "businessSavings": "Business Savings",
+        "businessSavingsAmount": "$32,750",
+        "mercuryBank": "Mercury Bank",
+        "appleWallet": "Apple Wallet",
+        "applePay": "Apple Pay"
+      },
+      "stats": {
+        "title": "General statistics",
+        "subtitle": "A quick pulse on this month's activity.",
+        "savingsRate": {
+          "label": "Savings rate",
+          "value": "79%"
+        },
+        "avgDailySpend": {
+          "label": "Avg. daily spend",
+          "value": "$52"
+        },
+        "transactions": {
+          "label": "Transactions",
+          "value": "14"
+        },
+        "topCategory": {
+          "label": "Top category",
+          "value": "Travel"
+        }
+      },
+      "cashFlow": {
+        "title": "Cash flow",
+        "subtitle": "Last 8 months",
+        "income": "Income",
+        "expense": "Expense"
+      },
+      "expenseCategories": {
+        "title": "Expense categories",
+        "amount": "Amount",
+        "values": {
+          "travel": "$640",
+          "dining": "$314",
+          "groceries": "$184",
+          "software": "$144",
+          "utilities": "$132"
+        }
+      },
+      "categories": {
+        "travel": "Travel",
+        "dining": "Dining",
+        "groceries": "Groceries",
+        "software": "Software",
+        "utilities": "Utilities",
+        "transport": "Transport"
+      },
+      "budgetProgress": {
+        "title": "Budget progress",
+        "values": {
+          "dining": "$522 / $600",
+          "groceries": "$612 / $900",
+          "transport": "$188 / $350",
+          "software": "$431 / $400"
+        }
+      },
+      "savingsGoals": {
+        "title": "Savings goals",
+        "items": {
+          "emergency": "Emergency Fund",
+          "studio": "Studio Office",
+          "macbook": "New MacBook"
+        }
+      },
+      "upcomingBills": {
+        "title": "Upcoming bills",
+        "due": "Due",
+        "items": {
+          "rent": {
+            "name": "Rent",
+            "date": "Aug 28",
+            "amount": "$1,850"
+          },
+          "cloud": {
+            "name": "Cloud subscriptions",
+            "date": "Aug 30",
+            "amount": "$214"
+          },
+          "insurance": {
+            "name": "Car insurance",
+            "date": "Sep 02",
+            "amount": "$320"
+          }
+        }
+      },
+      "recentTransactions": {
+        "title": "Recent transactions",
+        "items": {
+          "retainer": {
+            "name": "Client retainer — Nexa",
+            "meta": "Salary · 2026-08-03",
+            "amount": "+$4,200"
+          },
+          "wholefoods": {
+            "name": "Whole Foods",
+            "meta": "Groceries · 2026-08-02",
+            "amount": "−$184"
+          },
+          "transfer": {
+            "name": "To Business Savings",
+            "meta": "Transfer · 2026-08-02",
+            "amount": "$1,500"
+          },
+          "figma": {
+            "name": "Figma annual",
+            "meta": "Software · 2026-08-01",
+            "amount": "−$144"
+          },
+          "uber": {
+            "name": "Uber rides",
+            "meta": "Transport · 2026-07-31",
+            "amount": "−$62"
+          },
+          "dividend": {
+            "name": "Dividend payout",
+            "meta": "Investments · 2026-07-30",
+            "amount": "+$810"
+          }
+        }
+      },
+      "aiInsights": {
+        "title": "AI insights",
+        "assistant": "AI Assistant",
+        "items": {
+          "dining": {
+            "title": "Dining is trending up",
+            "text": "You spent 24% more on restaurants than your 3-month average. Capping it at $520 keeps August on target."
+          },
+          "idle": {
+            "title": "Move idle cash",
+            "text": "$4,200 has been idle in your wallet for 41 days. Moving it to savings adds ~$186 a year."
+          },
+          "goal": {
+            "title": "Goal ahead of schedule",
+            "text": "Emergency Fund will complete 2 months early if you keep the balanced plan."
+          }
+        }
+      },
+      "months": {
+        "jan": "Jan",
+        "feb": "Feb",
+        "mar": "Mar",
+        "apr": "Apr",
+        "may": "May",
+        "jun": "Jun",
+        "jul": "Jul",
+        "aug": "Aug"
+      }
+    },
+    "accounts": {
+  "title": "Accounts",
+  "subtitle": "Cash, bank accounts, wallets and cards in one place.",
+  "add": "Add account",
+
+  "filters": {
+    "all": "All",
+    "bank": "Bank account",
+    "credit": "Credit card",
+    "wallet": "Digital wallet",
+    "cash": "Cash"
+  },
+
+  "types": {
+    "bank": "Bank account",
+    "credit": "Credit card",
+    "wallet": "Digital wallet",
+    "cash": "Cash"
+  },
+
+  "items": {
+    "checking": {
+      "name": "Main Checking"
+    },
+    "savings": {
+      "name": "Business Savings"
+    },
+    "appleWallet": {
+      "name": "Apple Wallet"
+    },
+    "platinum": {
+      "name": "Platinum Card"
+    },
+    "cash": {
+      "name": "Cash on hand"
+    }
+  },
+
+  "updatedToday": "Updated today",
+  "creditLimit": "Credit limit",
+  "edit": "Edit",
+  "delete": "Delete account"
+},"financialOperations": {
+  "title": "Financial operations",
+  "subtitle": "Record income, expenses and transfers, and review your ledger.",
+
+  "smartCapture": {
+    "title": "Smart capture",
+    "description": "Say your operation out loud, or snap the invoice and we'll fill the fields automatically.",
+    "scan": "Scan receipt",
+    "upload": "Upload transfer screenshot"
+  },
+
+  "newOperation": {
+    "title": "New operation"
+  },
+
+  "types": {
+    "expense": "Expense",
+    "income": "Income",
+    "transfer": "Transfer"
+  },
+
+  "form": {
+    "amount": "Amount",
+    "category": "Category",
+    "account": "Account",
+    "note": "Note",
+    "notePlaceholder": "Short description",
+    "date": "Date",
+    "submit": "Save operation"
+  },
+
+  "ledger": {
+    "title": "Ledger",
+    "delete": "Delete operation"
+  },
+
+  "filters": {
+    "all": "All",
+    "expense": "Expenses",
+    "income": "Income",
+    "transfer": "Transfers"
+  },
+
+  "categories": {
+    "salary": "Salary",
+    "transfer": "Transfer",
+    "groceries": "Groceries",
+    "software": "Software",
+    "transport": "Transport",
+    "investments": "Investments",
+    "food": "Food & drink",
+    "utilities": "Utilities",
+    "freelance": "Freelance",
+    "health": "Health",
+    "travel": "Travel"
+  },
+
+  "accounts": {
+    "checking": "Main Checking",
+    "savings": "Business Savings",
+    "wallet": "Apple Wallet",
+    "platinum": "Platinum Card",
+    "cash": "Cash on hand"
+  },
+
+  "transactions": {
+    "retainer": "Client retainer — Nexa",
+    "businessSavings": "To Business Savings",
+    "wholeFoods": "Whole Foods",
+    "figma": "Figma annual",
+    "uber": "Uber rides",
+    "dividend": "Dividend payout",
+    "nobu": "Nobu dinner",
+    "electricity": "Electricity bill",
+    "workshop": "Consulting workshop",
+    "gym": "Gym membership",
+    "dubai": "Flight to Dubai",
+    "cash": "To Cash on hand",
+    "coffee": "Coffee roasters",
+    "appStore": "App Store payout"
+  }
+},
+"recurring": {
+  "title": "Recurring operations",
+  "subtitle": "Salaries, rent, bills and subscriptions — reviewed before every deduction.",
+
+  "actions": {
+    "addIncome": "Add recurring income",
+    "addExpense": "Add recurring expense",
+    "schedule": "Schedule",
+    "edit": "Edit",
+    "delete": "Delete"
+  },
+
+  "sections": {
+    "dueNow": "Due now",
+    "dueSubtitle": "Review these before they are deducted.",
+    "income": "Recurring income",
+    "expenses": "Recurring expenses"
+  },
+
+  "items": {
+    "internet": "Internet",
+    "rent": "Rent",
+    "salary": "Monthly salary",
+    "subscriptions": "Subscriptions"
+  },
+
+  "categories": {
+    "utilities": "Utilities",
+    "housing": "Housing",
+    "salary": "Salary",
+    "software": "Software"
+  },
+
+  "accounts": {
+    "checking": "Main Checking",
+    "platinum": "Platinum Card"
+  },
+
+  "frequency": {
+    "monthly": "Monthly"
+  },
+
+  "next": "Next",
+  "overdue": "Overdue",
+  "inDays_one": "in {{count}} day",
+  "inDays_other": "in {{count}} days",
+  "previousAmount": "Previous amount",
+
+  "confirmDeduction": "Confirm deduction",
+  "confirmDeposit": "Confirm deposit"
+},
+"importPage": {
+  "title": "Import bank statement",
+  "subtitle": "PDF, Excel or CSV — extracted, reviewed and matched before import.",
+
+  "steps": {
+    "label": "Import progress",
+    "upload": "Upload file",
+    "extract": "Extract data",
+    "review": "Review data",
+    "match": "Match operations",
+    "confirm": "Confirm import"
+  },
+
+  "upload": {
+    "title": "Upload file",
+    "supported": "Supported: PDF, XLSX, CSV",
+    "dropTitle": "Drag & drop your file here",
+    "browse": "Browse files",
+    "remove": "Remove file"
+  },
+
+  "account": {
+    "label": "Detected account",
+    "checking": "Main Checking",
+    "savings": "Business Savings",
+    "wallet": "Apple Wallet",
+    "cash": "Cash on hand"
+  }
+},"budgets": {
+  "title": "Budgets",
+  "subtitle": "Monthly limits per category, tracked live.",
+  "create": "Create budget",
+
+  "summary": {
+    "monthly": "Monthly budget",
+    "spent": "Spent",
+    "remaining": "Remaining"
+  },
+
+  "list": {
+    "title": "Budgets",
+    "subtitle": "Monthly limits per category, tracked live."
+  },
+
+  "categories": {
+    "dining": "Dining",
+    "groceries": "Groceries",
+    "transport": "Transport",
+    "software": "Software",
+    "travel": "Travel",
+    "health": "Health"
+  },
+
+  "remaining": "Remaining",
+  "overBudget": "Over budget",
+  "delete": "Delete budget"
+},"savingsGoals": {
+  "title": "Savings goals",
+  "subtitle": "Track targets and let AI pick your pace.",
+  "newGoal": "New goal",
+
+  "saved": "Saved",
+  "target": "Target",
+
+  "addFunds": "Add funds",
+  "delete": "Delete goal",
+
+  "goals": {
+    "emergency": "Emergency Fund",
+    "studio": "Studio Office",
+    "macbook": "New MacBook"
+  },
+
+  "plans": {
+    "title": "AI saving plans",
+    "fast": "Fast",
+    "balanced": "Balanced",
+    "comfortable": "Comfortable",
+    "month": "month"
+  }
+}
+,"reports": {
+  "title": "Reports",
+  "subtitle": "Income, expenses and monthly analytics.",
+
+  "exportPdf": "Export PDF",
+  "exportExcel": "Export Excel",
+
+  "summary": {
+    "savingsRate": "Savings rate",
+    "topCategory": "Top category",
+    "averageSpend": "Avg. daily spend"
+  },
+
+  "tabs": {
+    "monthly": "Monthly report",
+    "income": "Income report",
+    "expense": "Expense report"
+  },
+
+  "chart": {
+    "monthlyReport": "Monthly report",
+    "incomeReport": "Income report",
+    "expenseReport": "Expense report",
+    "lastEightMonths": "Last 8 months",
+    "income": "Income",
+    "expenses": "Expenses"
+  },
+
+  "expenseCategories": "Expense categories",
+
+  "categories": {
+    "travel": "Travel",
+    "dining": "Dining",
+    "groceries": "Groceries",
+    "software": "Software",
+    "utilities": "Utilities",
+    "health": "Health",
+    "transport": "Transport"
+  },
+
+  "months": {
+    "jan": "Jan",
+    "feb": "Feb",
+    "mar": "Mar",
+    "apr": "Apr",
+    "may": "May",
+    "jun": "Jun",
+    "jul": "Jul",
+    "aug": "Aug"
+  }
+},"aiAssistant": {
+  "title": "AI Financial Assistant",
+  "subtitle": "Ask anything about your money.",
+
+  "initialMessage": "Your July net cash flow was +$4,450. Dining is your fastest-growing category at +24%. Want a plan to bring it back in line?",
+
+  "conversations": {
+    "title": "Conversations",
+    "newChat": "New chat",
+    "monthlyAnalysis": "Monthly analysis",
+    "savingsTips": "Savings tips",
+    "budgetSuggestions": "Budget suggestions"
+  },
+
+  "suggestions": {
+    "safeSavings": "How much can I safely save this month?",
+    "julySpending": "Where did my money go in July?",
+    "diningBudget": "Suggest a budget for dining",
+    "emergencyFund": "Am I on track for my emergency fund?"
+  },
+
+  "input": {
+    "placeholder": "Ask Smart Spend...",
+    "send": "Send",
+    "sending": "Sending..."
+  }
+},
+"notifications": {
+  "title": "Notifications",
+  "subtitle": "Alerts, bills and AI nudges.",
+
+  "markAllAsRead": "Mark all as read",
+  "unread": "Unread",
+
+  "items": {
+    "rent": {
+      "title": "Rent due in 4 days",
+      "description": "$1,850 will be charged from Main Checking on Aug 28."
+    },
+
+    "softwareBudget": {
+      "title": "Software budget exceeded",
+      "description": "You are $31 over the monthly software limit."
+    },
+
+    "monthlyAnalysis": {
+      "title": "AI monthly analysis ready",
+      "description": "Your July breakdown and 3 recommendations are available."
+    },
+
+    "newDevice": {
+      "title": "New device signed in",
+      "description": "MacBook Pro · Amman, Jordan."
+    }
+  }
+},
+"settings": {
+  "title": "Settings",
+  "subtitle": "Profile, security and preferences.",
+
+  "tabs": {
+    "label": "Settings sections",
+    "profile": "Profile",
+    "security": "Security",
+    "preferences": "Preferences"
+  },
+
+  "profile": {
+    "title": "Profile",
+
+    "fields": {
+      "fullName": "Full name",
+      "email": "Email",
+      "phone": "Phone",
+      "currency": "Currency"
+    },
+
+    "save": "Save",
+    "saving": "Saving..."
+  },
+
+  "security": {
+    "title": "Security"
+  },
+
+  "preferences": {
+    "title": "Preferences"
+  }
+}
+  }
+}

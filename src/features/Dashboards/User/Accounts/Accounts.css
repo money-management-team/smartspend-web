@@ -1,0 +1,79 @@
+.accounts-page {
+  width: 100%;
+
+  max-width: 1240px;
+
+  margin:
+    0
+    auto;
+
+  padding:
+    28px
+    32px
+    50px;
+
+  box-sizing:
+    border-box;
+
+  color:
+    var(--color-text-primary);
+}
+
+
+/* =========================================
+   GRID
+========================================= */
+
+.accounts-page__grid {
+  margin-top: 20px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  align-items: start;
+
+  gap:
+    18px
+    16px;
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1100px) {
+  .accounts-page__grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 720px) {
+  .accounts-page {
+    padding:
+      22px
+      16px
+      40px;
+  }
+
+  .accounts-page__grid {
+    grid-template-columns:
+      1fr;
+
+    gap: 14px;
+  }
+}

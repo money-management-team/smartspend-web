@@ -1,0 +1,34 @@
+.cash-flow-card {
+  min-height: 430px;
+}
+
+.cash-flow-card__chart {
+  height: 350px;
+  padding: 16px 14px 8px 10px;
+}
+
+.cash-flow-tooltip {
+  padding: 10px 12px;
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  font-size: 10px;
+}
+
+.cash-flow-tooltip span {
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 560px) {
+  .cash-flow-card {
+    min-height: 390px;
+  }
+
+  .cash-flow-card__chart {
+    height: 310px;
+  }
+}

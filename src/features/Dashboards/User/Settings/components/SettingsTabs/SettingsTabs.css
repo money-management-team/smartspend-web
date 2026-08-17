@@ -1,0 +1,129 @@
+.settings-tabs {
+  /*
+   * مهم:
+   * التصميم العربي والإنجليزي
+   * يضع التبويبات في نفس المكان.
+   */
+
+  width: max-content;
+
+  max-width: 100%;
+
+  margin-top: 25px;
+
+  padding: 3px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 2px;
+
+  /*
+   * نبقي ترتيب الأزرار الفيزيائي ثابتاً
+   * حتى في RTL مثل التصميم.
+   */
+  direction: ltr;
+
+  border-radius: 12px;
+
+  background:
+    #f1f2f5;
+}
+
+
+/* =========================================
+   TAB
+========================================= */
+
+.settings-tab {
+  min-height: 31px;
+
+  padding:
+    0
+    15px;
+
+  border: 0;
+
+  border-radius: 9px;
+
+  color:
+    var(--color-text-secondary);
+
+  background:
+    transparent;
+
+  font: inherit;
+
+  font-size: 11px;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+
+.settings-tab:hover {
+  color:
+    var(--color-text-primary);
+}
+
+
+/* =========================================
+   ACTIVE
+========================================= */
+
+.settings-tab--active {
+  color:
+    var(--color-text-primary);
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    0 1px 4px
+    rgba(15, 23, 42, 0.11);
+}
+
+
+/* =========================================
+   RTL TEXT
+========================================= */
+
+[dir="rtl"]
+.settings-tab bdi {
+  direction: rtl;
+}
+
+
+/* =========================================
+   DARK
+========================================= */
+
+:root[data-theme="dark"]
+.settings-tabs {
+  background: #172033;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 480px) {
+  .settings-tabs {
+    width: 100%;
+  }
+
+
+  .settings-tab {
+    flex: 1;
+
+    padding-inline: 9px;
+  }
+}
