@@ -78,7 +78,7 @@
 
   border-radius: 999px;
 
-  color: #ffffff;
+  color: var(--navigation-active-text);
 
   background:
     var(--color-primary);
@@ -90,8 +90,7 @@
   cursor: pointer;
 
   box-shadow:
-    0 3px 10px
-    rgba(37, 99, 235, 0.18);
+    var(--shadow-sm);
 
   transition:
     background-color 160ms ease,

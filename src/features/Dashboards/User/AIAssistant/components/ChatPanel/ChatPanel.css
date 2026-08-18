@@ -90,7 +90,7 @@
 
   border-radius: 50%;
 
-  color: #ffffff;
+  color: var(--navigation-active-text);
 
   background:
     var(--color-primary);
@@ -127,7 +127,7 @@
     var(--color-text-primary);
 
   background:
-    #f3f4f6;
+    var(--surface-soft);
 
   font-size: 12px;
 
@@ -149,7 +149,7 @@
 
 .ai-chat-message--user
 .ai-chat-message__bubble {
-  color: #ffffff;
+  color: var(--navigation-active-text);
 
   background:
     var(--color-primary);
@@ -234,12 +234,7 @@
     var(--color-primary);
 
   background:
-    rgba(
-      37,
-      99,
-      235,
-      0.03
-    );
+    var(--primary-soft);
 }
 
 
@@ -292,14 +287,7 @@
 
   text-align: start;
 
-  box-shadow:
-    0 1px 3px
-    rgba(
-      15,
-      23,
-      42,
-      0.05
-    );
+  box-shadow: var(--shadow-xs);
 
   transition:
     border-color 160ms ease,
@@ -318,16 +306,7 @@
     var(--color-primary);
 
   box-shadow:
-    0
-    0
-    0
-    3px
-    rgba(
-      37,
-      99,
-      235,
-      0.07
-    );
+    0 0 0 3px var(--input-focus-ring);
 }
 
 
@@ -359,7 +338,7 @@
   border-radius:
     999px;
 
-  color: #ffffff;
+  color: var(--navigation-active-text);
 
   background:
     var(--color-primary);
@@ -433,25 +412,6 @@
     22px
     22px
     6px;
-}
-
-
-/* =========================================
-   DARK MODE
-========================================= */
-
-:root[data-theme="dark"]
-.ai-chat-message__bubble {
-  background:
-    #172033;
-}
-
-
-:root[data-theme="dark"]
-.ai-chat-message--user
-.ai-chat-message__bubble {
-  background:
-    var(--color-primary);
 }
 
 

@@ -11,11 +11,11 @@ import SectionCard from "../shared/SectionCard";
 import "./ExpenseCategories.css";
 
 const categories = [
-  { key: "travel", value: 640, color: "#2563eb" },
-  { key: "dining", value: 314, color: "#16a34a" },
-  { key: "groceries", value: 184, color: "#f97316" },
-  { key: "software", value: 144, color: "#9333ea" },
-  { key: "utilities", value: 132, color: "#dc2626" },
+  { key: "travel", value: 640, color: "var(--chart-blue)" },
+  { key: "dining", value: 314, color: "var(--chart-green)" },
+  { key: "groceries", value: 184, color: "var(--chart-orange)" },
+  { key: "software", value: 144, color: "var(--chart-purple)" },
+  { key: "utilities", value: 132, color: "var(--chart-red)" },
 ];
 
 export default function ExpenseCategories() {

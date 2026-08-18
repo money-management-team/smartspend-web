@@ -170,7 +170,7 @@
 
   border-radius: 50%;
 
-  color: #ef4444;
+  color: var(--danger);
 
   background: transparent;
 
@@ -183,7 +183,7 @@
 
 .budget-item__delete:hover {
   background:
-    rgba(239, 68, 68, 0.07);
+    var(--danger-soft);
 }
 
 
@@ -234,7 +234,7 @@
 
 
 .budget-item__status--danger {
-  color: #ef4444;
+  color: var(--danger);
 }
 
 
@@ -254,7 +254,7 @@
   border-radius: 999px;
 
   background:
-    #f0f1f3;
+    var(--surface-soft);
 }
 
 
@@ -268,8 +268,8 @@
   background:
     linear-gradient(
       90deg,
-      #2563eb 0%,
-      #9333ea 100%
+      var(--primary) 0%,
+      var(--insights) 100%
     );
 
   transition:
@@ -278,7 +278,7 @@
 
 
 .budget-item__progress--danger span {
-  background: #dc2626;
+  background: var(--danger);
 }
 
 
@@ -301,16 +301,6 @@
 [dir="rtl"]
 .budget-item {
   text-align: right;
-}
-
-
-/* ================================
-   DARK
-================================ */
-
-:root[data-theme="dark"]
-.budget-item__progress {
-  background: #273449;
 }
 
 

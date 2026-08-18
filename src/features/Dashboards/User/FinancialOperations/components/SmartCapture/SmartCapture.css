@@ -116,7 +116,7 @@
     1px solid
     var(--color-primary);
 
-  color: #ffffff;
+  color: var(--navigation-active-text);
 
   background:
     var(--color-primary);

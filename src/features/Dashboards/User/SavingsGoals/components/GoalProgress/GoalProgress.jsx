@@ -11,7 +11,7 @@ export default function GoalProgress({
   const data = [
     {
       value,
-      fill: "#2563eb",
+      fill: "var(--chart-blue)",
     },
   ];
 
@@ -36,7 +36,7 @@ export default function GoalProgress({
           dataKey="value"
           cornerRadius={20}
           background={{
-            fill: "#e9edf4",
+            fill: "var(--surface-soft)",
           }}
         />
       </RadialBarChart>

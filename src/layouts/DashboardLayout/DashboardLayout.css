@@ -65,7 +65,7 @@
     border: 0;
 
     background:
-      rgba(15, 23, 42, 0.4);
+      color-mix(in srgb, black 40%, transparent);
 
     backdrop-filter: blur(2px);
 

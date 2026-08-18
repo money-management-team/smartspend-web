@@ -118,7 +118,7 @@
 
   border-radius: 999px;
 
-  color: #ffffff;
+  color: var(--navigation-active-text);
 
   background:
     var(--color-primary);
@@ -131,7 +131,7 @@
 
   box-shadow:
     0 2px 6px
-    rgba(37, 99, 235, 0.16);
+    color-mix(in srgb, var(--primary) 16%, transparent);
 
   transition:
     background-color 160ms ease;
@@ -168,7 +168,7 @@
 
   border-radius: 999px;
 
-  color: #ef4444;
+  color: var(--danger);
 
   background:
     var(--color-surface);
@@ -176,8 +176,7 @@
   cursor: pointer;
 
   box-shadow:
-    0 1px 3px
-    rgba(15, 23, 42, 0.05);
+    var(--shadow-xs);
 
   transition:
     border-color 160ms ease,
@@ -187,10 +186,10 @@
 
 .saving-goal-card__delete:hover {
   border-color:
-    rgba(239, 68, 68, 0.35);
+    color-mix(in srgb, var(--danger) 35%, transparent);
 
   background:
-    rgba(239, 68, 68, 0.05);
+    var(--danger-soft);
 }
 
 

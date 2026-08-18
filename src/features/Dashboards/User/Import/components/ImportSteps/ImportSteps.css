@@ -74,14 +74,14 @@
   border-color:
     var(--color-primary);
 
-  color: #ffffff;
+  color: var(--navigation-active-text);
 
   background:
     var(--color-primary);
 
   box-shadow:
     0 2px 6px
-    rgba(37, 99, 235, 0.14);
+    color-mix(in srgb, var(--primary) 14%, transparent);
 }
 
 

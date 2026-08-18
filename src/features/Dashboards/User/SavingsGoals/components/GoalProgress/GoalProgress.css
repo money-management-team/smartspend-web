@@ -43,10 +43,8 @@
    DARK
 ========================================= */
 
-:root[data-theme="dark"]
-.goal-progress
-.recharts-radial-bar-background-sector {
-  fill: #273449;
+.goal-progress .recharts-radial-bar-background-sector {
+  fill: var(--surface-soft);
 }
 
 

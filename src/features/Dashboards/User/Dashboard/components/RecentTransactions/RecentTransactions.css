@@ -33,18 +33,18 @@
 }
 
 .recent-transaction__icon--income {
-  color: #16a34a;
-  background: #ecfdf3;
+  color: var(--success);
+  background: var(--success-soft);
 }
 
 .recent-transaction__icon--expense {
-  color: #dc2626;
-  background: #fff1f2;
+  color: var(--danger);
+  background: var(--danger-soft);
 }
 
 .recent-transaction__icon--transfer {
-  color: #2563eb;
-  background: #eff6ff;
+  color: var(--primary);
+  background: var(--primary-soft);
 }
 
 .recent-transaction__copy {
@@ -70,17 +70,17 @@
 }
 
 .recent-transaction__amount--income {
-  color: #16a34a;
+  color: var(--success);
 }
 
-:root[data-theme="dark"] .recent-transaction__icon--income {
-  background: rgba(22, 163, 74, 0.14);
+.recent-transaction__icon--income {
+  background: var(--success-soft);
 }
 
-:root[data-theme="dark"] .recent-transaction__icon--expense {
-  background: rgba(220, 38, 38, 0.14);
+.recent-transaction__icon--expense {
+  background: var(--danger-soft);
 }
 
-:root[data-theme="dark"] .recent-transaction__icon--transfer {
-  background: rgba(37, 99, 235, 0.14);
+.recent-transaction__icon--transfer {
+  background: var(--primary-soft);
 }

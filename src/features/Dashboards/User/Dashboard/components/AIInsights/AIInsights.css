@@ -34,18 +34,18 @@
 }
 
 .ai-insight__icon--orange {
-  color: #ea580c;
-  background: #fff7ed;
+  color: var(--warning);
+  background: var(--warning-soft);
 }
 
 .ai-insight__icon--blue {
-  color: #2563eb;
-  background: #eff6ff;
+  color: var(--primary);
+  background: var(--primary-soft);
 }
 
 .ai-insight__icon--green {
-  color: #16a34a;
-  background: #ecfdf3;
+  color: var(--success);
+  background: var(--success-soft);
 }
 
 .ai-insight strong {
@@ -59,14 +59,14 @@
   line-height: 1.55;
 }
 
-:root[data-theme="dark"] .ai-insight__icon--orange {
-  background: rgba(234, 88, 12, 0.14);
+.ai-insight__icon--orange {
+  background: var(--warning-soft);
 }
 
-:root[data-theme="dark"] .ai-insight__icon--blue {
-  background: rgba(37, 99, 235, 0.14);
+.ai-insight__icon--blue {
+  background: var(--primary-soft);
 }
 
-:root[data-theme="dark"] .ai-insight__icon--green {
-  background: rgba(22, 163, 74, 0.14);
+.ai-insight__icon--green {
+  background: var(--success-soft);
 }

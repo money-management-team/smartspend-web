@@ -1,0 +1,32 @@
+.budget-progress-card {
+  min-height: 300px;
+}
+
+.budget-progress-card__list {
+  padding: 16px 18px 20px;
+  display: grid;
+  gap: 18px;
+}
+
+.budget-progress-card__meta {
+  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.budget-progress-card__meta strong {
+  font-size: 11px;
+}
+
+.budget-progress-card__meta span {
+  direction: ltr;
+  unicode-bidi: isolate;
+  color: var(--color-text-secondary);
+  font-size: 9px;
+}
+
+.budget-progress-card__danger {
+  color: #dc2626 !important;
+}

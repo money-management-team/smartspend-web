@@ -9,7 +9,8 @@ import {
 } from "react-icons/lu";
 
 import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
+
+import { useThemeContext } from "../../../../contexts/theme/useThemeContext";
 
 import "./DashboardHeader.css";
 
@@ -17,13 +18,7 @@ export default function DashboardHeader({
   onToggleSidebar,
 }) {
   const { t, i18n } = useTranslation();
-
-  const [theme, setTheme] = useState(
-    () =>
-      localStorage.getItem(
-        "smart-spend-theme",
-      ) || "light",
-  );
+  const { isDark, toggleTheme } = useThemeContext();
 
   const isArabic =
     (
@@ -32,24 +27,6 @@ export default function DashboardHeader({
     )
       ?.toLowerCase()
       .startsWith("ar");
-
-  useEffect(() => {
-    document.documentElement.dataset.theme =
-      theme;
-
-    localStorage.setItem(
-      "smart-spend-theme",
-      theme,
-    );
-  }, [theme]);
-
-  const toggleTheme = () => {
-    setTheme((current) =>
-      current === "light"
-        ? "dark"
-        : "light",
-    );
-  };
 
   const toggleLanguage = () => {
     i18n.changeLanguage(
@@ -85,12 +62,9 @@ export default function DashboardHeader({
           type="button"
           className="dashboard-header__icon-button"
           onClick={toggleTheme}
+          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
         >
-          {theme === "light" ? (
-            <LuMoon />
-          ) : (
-            <LuSun />
-          )}
+          {isDark ? <LuSun /> : <LuMoon />}
         </button>
 
         <button

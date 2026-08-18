@@ -25,8 +25,7 @@
   border-bottom:
     1px solid var(--color-border);
 
-  background:
-    var(--color-background);
+  background: var(--header-background);
 }
 
 
@@ -98,9 +97,7 @@
   background:
     var(--color-surface);
 
-  box-shadow:
-    0 1px 3px
-    rgba(15, 23, 42, 0.06);
+  box-shadow: var(--shadow-sm);
 
   transition:
     border-color 160ms ease,
@@ -112,8 +109,7 @@
     var(--color-primary);
 
   box-shadow:
-    0 0 0 3px
-    rgba(37, 99, 235, 0.08);
+    0 0 0 3px var(--input-focus-ring);
 }
 
 .dashboard-header__search svg {
@@ -210,8 +206,7 @@ input::-webkit-search-cancel-button {
 
 .dashboard-header__icon-button:hover,
 .dashboard-header__notification:hover {
-  background:
-    rgba(107, 114, 128, 0.08);
+  background: var(--surface-hover);
 }
 
 .dashboard-header__icon-button svg,
@@ -294,9 +289,9 @@ input::-webkit-search-cancel-button {
 
   border-radius: 999px;
 
-  color: #ffffff;
+  color: var(--navigation-active-text);
 
-  background: #dc2626;
+  background: var(--danger);
 
   font-size: 8px;
 
@@ -324,7 +319,7 @@ input::-webkit-search-cancel-button {
 
   border-radius: 50%;
 
-  color: #ffffff;
+  color: var(--navigation-active-text);
 
   background:
     var(--color-primary);
@@ -338,8 +333,7 @@ input::-webkit-search-cancel-button {
   cursor: pointer;
 
   box-shadow:
-    0 2px 7px
-    rgba(37, 99, 235, 0.18);
+    var(--shadow-sm);
 }
 
 
@@ -351,17 +345,6 @@ input::-webkit-search-cancel-button {
 .dashboard-header__notification-badge {
   right: auto;
   left: 0;
-}
-
-
-/* ================================
-   DARK MODE
-================================ */
-
-:root[data-theme="dark"]
-.dashboard-header {
-  background:
-    var(--color-background);
 }
 
 

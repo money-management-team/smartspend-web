@@ -65,10 +65,10 @@
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(90deg, #2563eb 0%, #9333ea 100%);
+  background: linear-gradient(90deg, var(--primary) 0%, var(--insights) 100%);
   transition: width 220ms ease;
 }
 
 .dashboard-progress-bar--danger span {
-  background: #dc2626;
+  background: var(--danger);
 }

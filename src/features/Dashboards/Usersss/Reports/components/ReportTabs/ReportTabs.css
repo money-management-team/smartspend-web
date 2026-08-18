@@ -1,0 +1,94 @@
+.report-tabs {
+  width: max-content;
+
+  max-width: 100%;
+
+  margin-top: 24px;
+
+  padding: 3px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 2px;
+
+  border-radius: 12px;
+
+  background: #f1f2f5;
+}
+
+
+.report-tab {
+  height: 30px;
+
+  padding:
+    0
+    14px;
+
+  border: 0;
+
+  border-radius: 9px;
+
+  color:
+    var(--color-text-secondary);
+
+  background:
+    transparent;
+
+  font: inherit;
+
+  font-size: 10px;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+
+.report-tab:hover {
+  color:
+    var(--color-text-primary);
+}
+
+
+.report-tab--active {
+  color:
+    var(--color-text-primary);
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    0 1px 4px
+    rgba(15, 23, 42, 0.10);
+}
+
+
+/* DARK */
+
+:root[data-theme="dark"]
+.report-tabs {
+  background: #172033;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 480px) {
+  .report-tabs {
+    width: 100%;
+  }
+
+
+  .report-tab {
+    flex: 1;
+
+    padding-inline: 8px;
+  }
+}

@@ -70,7 +70,7 @@
     var(--color-primary);
 
   background:
-    rgba(37, 99, 235, 0.07);
+    var(--primary-soft);
 }
 
 
@@ -143,7 +143,7 @@
     var(--color-text-secondary);
 
   background:
-    #f4f5f7;
+    var(--surface-soft);
 
   font-size: 10px;
 
@@ -187,7 +187,7 @@
 
 
 .account-card__amount--negative {
-  color: #dc2626;
+  color: var(--danger);
 }
 
 
@@ -245,7 +245,7 @@
   border-radius: 999px;
 
   background:
-    #eef0f3;
+    var(--surface-soft);
 }
 
 
@@ -259,8 +259,8 @@
   background:
     linear-gradient(
       90deg,
-      #2563eb,
-      #9333ea
+      var(--primary),
+      var(--insights)
     );
 }
 
@@ -316,8 +316,7 @@
   cursor: pointer;
 
   box-shadow:
-    0 1px 3px
-    rgba(15, 23, 42, 0.05);
+    var(--shadow-xs);
 
   transition:
     color 160ms ease,
@@ -365,7 +364,7 @@
 
   border-radius: 999px;
 
-  color: #ef4444;
+  color: var(--danger);
 
   background:
     var(--color-surface);
@@ -373,8 +372,7 @@
   cursor: pointer;
 
   box-shadow:
-    0 1px 3px
-    rgba(15, 23, 42, 0.05);
+    var(--shadow-xs);
 
   transition:
     border-color 160ms ease,
@@ -384,10 +382,10 @@
 
 .account-card__delete:hover {
   border-color:
-    rgba(239, 68, 68, 0.35);
+    color-mix(in srgb, var(--danger) 35%, transparent);
 
   background:
-    rgba(239, 68, 68, 0.05);
+    var(--danger-soft);
 }
 
 
@@ -422,22 +420,6 @@
 [dir="rtl"]
 .account-card__balance {
   text-align: right;
-}
-
-
-/* =========================================
-   DARK
-========================================= */
-
-:root[data-theme="dark"]
-.account-card__type {
-  background: #172033;
-}
-
-
-:root[data-theme="dark"]
-.account-card__progress {
-  background: #273449;
 }
 
 

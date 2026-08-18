@@ -15,24 +15,24 @@
 
   border-radius: 20px;
 
-  color: #ffffff;
+  color: var(--navigation-active-text);
 
   background:
     radial-gradient(
       circle at 78% 18%,
-      rgba(255, 255, 255, 0.07),
+      color-mix(in srgb, var(--navigation-active-text) 7%, transparent),
       transparent 38%
     ),
     linear-gradient(
       135deg,
-      #2c66ed 0%,
+      var(--primary) 0%,
       var(--color-primary) 58%,
-      #2053d7 100%
+      var(--primary-hover) 100%
     );
 
   box-shadow:
     0 6px 18px
-    rgba(37, 99, 235, 0.12);
+    color-mix(in srgb, var(--primary) 12%, transparent);
 }
 
 
@@ -69,10 +69,10 @@
   border-radius: 999px;
 
   color:
-    rgba(255, 255, 255, 0.88);
+    color-mix(in srgb, var(--navigation-active-text) 88%, transparent);
 
   background:
-    rgba(255, 255, 255, 0.14);
+    color-mix(in srgb, var(--navigation-active-text) 14%, transparent);
 
   font-size: 11px;
 
@@ -87,7 +87,7 @@
 .dashboard-hero-card h1 {
   margin: 0;
 
-  color: #ffffff;
+  color: var(--navigation-active-text);
 
   font-size: 28px;
 
@@ -110,7 +110,7 @@
     15px;
 
   color:
-    rgba(255, 255, 255, 0.82);
+    color-mix(in srgb, var(--navigation-active-text) 82%, transparent);
 
   font-size: 13px;
 
@@ -131,7 +131,7 @@
 
   unicode-bidi: isolate;
 
-  color: #ffffff;
+  color: var(--navigation-active-text);
 
   font-size: 38px;
 
@@ -151,7 +151,7 @@
   margin-top: 7px;
 
   color:
-    rgba(255, 255, 255, 0.68);
+    color-mix(in srgb, var(--navigation-active-text) 68%, transparent);
 
   font-size: 11px;
 }
@@ -205,14 +205,14 @@
 
   border:
     1px solid
-    rgba(255, 255, 255, 0.18);
+    color-mix(in srgb, var(--navigation-active-text) 18%, transparent);
 
   border-radius: 15px;
 
-  color: #ffffff;
+  color: var(--navigation-active-text);
 
   background:
-    rgba(255, 255, 255, 0.09);
+    color-mix(in srgb, var(--navigation-active-text) 9%, transparent);
 
   font: inherit;
 
@@ -230,7 +230,7 @@
 
 .dashboard-hero-card__actions button:hover {
   background:
-    rgba(255, 255, 255, 0.15);
+    color-mix(in srgb, var(--navigation-active-text) 15%, transparent);
 
   transform:
     translateY(-1px);

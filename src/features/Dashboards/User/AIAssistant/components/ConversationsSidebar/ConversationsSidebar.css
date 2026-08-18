@@ -166,12 +166,7 @@
     var(--color-text-primary);
 
   background:
-    rgba(
-      37,
-      99,
-      235,
-      0.05
-    );
+    var(--primary-soft);
 }
 
 

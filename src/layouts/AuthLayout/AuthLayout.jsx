@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
 import { useLanguageContext } from "../../contexts/language/useLanguageContext";
 import logo from "../../assets/smart-spend-logo.png";
 import "./AuthLayout.css";
 import { Outlet } from "react-router-dom";
+import { useThemeContext } from "../../contexts/theme/useThemeContext";
 
 function GlobeIcon() {
   return (
@@ -32,9 +32,7 @@ function SunIcon() {
 
 export default function AuthLayout({ variant = "register" }) {
   const { language, changeLanguage } = useLanguageContext();
-  const [theme, setTheme] = useState(
-    () => localStorage.getItem("smart-spend-theme") || "light",
-  );
+  const { isDark, toggleTheme } = useThemeContext();
 
   const isArabic = language === "ar";
   const direction = isArabic ? "rtl" : "ltr";
@@ -42,11 +40,6 @@ export default function AuthLayout({ variant = "register" }) {
   const handleChangeLanguage = async () => {
     await changeLanguage();
   };
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    localStorage.setItem("smart-spend-theme", theme);
-  }, [theme]);
-
   return (
     <div className="auth-shell" dir={direction}>
       <header className="auth-header">
@@ -60,13 +53,11 @@ export default function AuthLayout({ variant = "register" }) {
             className="auth-action auth-action--theme"
             type="button"
             aria-label={
-              theme === "light" ? "Enable dark mode" : "Enable light mode"
+              isDark ? "Enable light mode" : "Enable dark mode"
             }
-            onClick={() =>
-              setTheme((value) => (value === "light" ? "dark" : "light"))
-            }
+            onClick={toggleTheme}
           >
-            {theme === "light" ? <MoonIcon /> : <SunIcon />}
+            {isDark ? <SunIcon /> : <MoonIcon />}
           </button>
 
           <button

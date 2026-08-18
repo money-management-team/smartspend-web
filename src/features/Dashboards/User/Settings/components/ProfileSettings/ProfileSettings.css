@@ -189,8 +189,7 @@
   text-align: left;
 
   box-shadow:
-    0 1px 3px
-    rgba(15, 23, 42, 0.05);
+    var(--shadow-xs);
 
   transition:
     border-color 160ms ease,
@@ -204,11 +203,7 @@
     var(--color-primary);
 
   box-shadow:
-    0
-    0
-    0
-    3px
-    rgba(37, 99, 235, 0.07);
+    0 0 0 3px var(--input-focus-ring);
 }
 
 
@@ -237,7 +232,7 @@
 
   border-radius: 999px;
 
-  color: #ffffff;
+  color: var(--navigation-active-text);
 
   background:
     var(--color-primary);
@@ -250,7 +245,7 @@
 
   box-shadow:
     0 3px 8px
-    rgba(37, 99, 235, 0.16);
+    color-mix(in srgb, var(--primary) 16%, transparent);
 
   transition:
     background-color 160ms ease,
@@ -276,17 +271,6 @@
  * زر الحفظ يبقى على اليسار
  * في اللغتين كما في الصور.
  */
-
-
-/* =========================================
-   DARK
-========================================= */
-
-:root[data-theme="dark"]
-.profile-settings {
-  background:
-    var(--color-surface);
-}
 
 
 /* =========================================

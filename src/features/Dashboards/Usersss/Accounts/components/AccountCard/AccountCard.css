@@ -1,0 +1,474 @@
+.account-card {
+  position: relative;
+
+  min-width: 0;
+
+  min-height: 205px;
+
+  padding:
+    20px
+    20px
+    18px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  box-sizing: border-box;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    17px;
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    var(--shadow-card);
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.account-card__header {
+  display: grid;
+
+  grid-template-columns:
+    auto
+    minmax(0, 1fr)
+    auto;
+
+  align-items: start;
+
+  gap: 12px;
+}
+
+
+/* =========================================
+   ICON
+========================================= */
+
+.account-card__icon {
+  width: 44px;
+
+  height: 44px;
+
+  display: grid;
+
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  color:
+    var(--color-primary);
+
+  background:
+    rgba(37, 99, 235, 0.07);
+}
+
+
+.account-card__icon svg {
+  width: 19px;
+
+  height: 19px;
+
+  stroke-width: 1.8;
+}
+
+
+/* =========================================
+   IDENTITY
+========================================= */
+
+.account-card__identity {
+  min-width: 0;
+
+  padding-top: 3px;
+
+  display: grid;
+
+  gap: 5px;
+
+  text-align: start;
+}
+
+
+.account-card__identity strong {
+  overflow: hidden;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+
+.account-card__identity small {
+  color:
+    var(--color-text-secondary);
+
+  font-size: 10px;
+}
+
+
+/* =========================================
+   TYPE
+========================================= */
+
+.account-card__type {
+  max-width: 105px;
+
+  padding:
+    5px
+    10px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  color:
+    var(--color-text-secondary);
+
+  background:
+    #f4f5f7;
+
+  font-size: 10px;
+
+  line-height: 1;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+
+/* =========================================
+   BALANCE
+========================================= */
+
+.account-card__balance {
+  margin-top: 21px;
+
+  display: grid;
+
+  gap: 8px;
+
+  text-align: start;
+}
+
+
+.account-card__amount {
+  width: max-content;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 22px;
+
+  font-weight: 750;
+
+  line-height: 1;
+
+  white-space: nowrap;
+}
+
+
+.account-card__amount--negative {
+  color: #dc2626;
+}
+
+
+.account-card__updated {
+  color:
+    var(--color-text-secondary);
+
+  font-size: 10px;
+}
+
+
+/* =========================================
+   CREDIT
+========================================= */
+
+.account-card__credit {
+  margin-top: 18px;
+}
+
+
+.account-card__credit-meta {
+  margin-bottom: 8px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 12px;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 10px;
+}
+
+
+.account-card__credit-meta strong {
+  font-weight: 500;
+
+  direction: ltr;
+
+  unicode-bidi: isolate;
+}
+
+
+.account-card__progress {
+  width: 100%;
+
+  height: 7px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background:
+    #eef0f3;
+}
+
+
+.account-card__progress span {
+  display: block;
+
+  height: 100%;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      90deg,
+      #2563eb,
+      #9333ea
+    );
+}
+
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.account-card__actions {
+  margin-top: auto;
+
+  padding-top: 20px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+}
+
+
+/* Edit */
+
+.account-card__edit {
+  height: 34px;
+
+  flex: 1;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 999px;
+
+  color:
+    var(--color-text-secondary);
+
+  background:
+    var(--color-surface);
+
+  font: inherit;
+
+  font-size: 11px;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 1px 3px
+    rgba(15, 23, 42, 0.05);
+
+  transition:
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+
+.account-card__edit:hover {
+  color:
+    var(--color-primary);
+
+  border-color:
+    var(--color-primary);
+}
+
+
+.account-card__edit svg {
+  width: 15px;
+
+  height: 15px;
+}
+
+
+/* Delete */
+
+.account-card__delete {
+  width: 38px;
+
+  height: 34px;
+
+  flex:
+    0
+    0
+    38px;
+
+  display: grid;
+
+  place-items: center;
+
+  padding: 0;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 999px;
+
+  color: #ef4444;
+
+  background:
+    var(--color-surface);
+
+  cursor: pointer;
+
+  box-shadow:
+    0 1px 3px
+    rgba(15, 23, 42, 0.05);
+
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+
+.account-card__delete:hover {
+  border-color:
+    rgba(239, 68, 68, 0.35);
+
+  background:
+    rgba(239, 68, 68, 0.05);
+}
+
+
+.account-card__delete svg {
+  width: 15px;
+
+  height: 15px;
+}
+
+
+/* =========================================
+   CREDIT CARD
+========================================= */
+
+.account-card--credit {
+  min-height: 250px;
+}
+
+
+/* =========================================
+   RTL
+========================================= */
+
+[dir="rtl"]
+.account-card {
+  direction: rtl;
+}
+
+
+[dir="rtl"]
+.account-card__identity,
+[dir="rtl"]
+.account-card__balance {
+  text-align: right;
+}
+
+
+/* =========================================
+   DARK
+========================================= */
+
+:root[data-theme="dark"]
+.account-card__type {
+  background: #172033;
+}
+
+
+:root[data-theme="dark"]
+.account-card__progress {
+  background: #273449;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 480px) {
+  .account-card {
+    min-height: 195px;
+
+    padding:
+      18px
+      17px
+      16px;
+  }
+
+
+  .account-card--credit {
+    min-height: 240px;
+  }
+
+
+  .account-card__icon {
+    width: 40px;
+
+    height: 40px;
+  }
+
+
+  .account-card__amount {
+    font-size: 21px;
+  }
+}

@@ -28,7 +28,7 @@
   border-radius: 12px;
 
   background:
-    #f1f2f5;
+    var(--surface-soft);
 }
 
 
@@ -86,8 +86,7 @@
     var(--color-surface);
 
   box-shadow:
-    0 1px 4px
-    rgba(15, 23, 42, 0.11);
+    var(--shadow-sm);
 }
 
 
@@ -98,16 +97,6 @@
 [dir="rtl"]
 .settings-tab bdi {
   direction: rtl;
-}
-
-
-/* =========================================
-   DARK
-========================================= */
-
-:root[data-theme="dark"]
-.settings-tabs {
-  background: #172033;
 }
 
 

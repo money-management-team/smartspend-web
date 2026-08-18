@@ -64,13 +64,13 @@ export default function CashFlowChart() {
           >
             <defs>
               <linearGradient id="cashFlowIncomeFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#16a34a" stopOpacity={0.2} />
-                <stop offset="100%" stopColor="#16a34a" stopOpacity={0.02} />
+                <stop offset="0%" stopColor="var(--chart-green)" stopOpacity={0.2} />
+                <stop offset="100%" stopColor="var(--chart-green)" stopOpacity={0.02} />
               </linearGradient>
 
               <linearGradient id="cashFlowExpenseFill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#f97316" stopOpacity={0.18} />
-                <stop offset="100%" stopColor="#f97316" stopOpacity={0.02} />
+                <stop offset="0%" stopColor="var(--chart-orange)" stopOpacity={0.18} />
+                <stop offset="100%" stopColor="var(--chart-orange)" stopOpacity={0.02} />
               </linearGradient>
             </defs>
 
@@ -100,7 +100,7 @@ export default function CashFlowChart() {
             <Area
               type="monotone"
               dataKey="income"
-              stroke="#16a34a"
+              stroke="var(--chart-green)"
               strokeWidth={2.5}
               fill="url(#cashFlowIncomeFill)"
               activeDot={{ r: 4 }}
@@ -109,7 +109,7 @@ export default function CashFlowChart() {
             <Area
               type="monotone"
               dataKey="expense"
-              stroke="#f97316"
+              stroke="var(--chart-orange)"
               strokeWidth={2.5}
               fill="url(#cashFlowExpenseFill)"
               activeDot={{ r: 4 }}

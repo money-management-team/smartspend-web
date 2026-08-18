@@ -125,12 +125,7 @@
     var(--color-text-primary);
 
   background:
-    rgba(
-      248,
-      250,
-      252,
-      0.5
-    );
+    color-mix(in srgb, var(--surface-soft) 50%, transparent);
 
   text-align: center;
 
@@ -146,12 +141,7 @@
     var(--color-primary);
 
   background:
-    rgba(
-      37,
-      99,
-      235,
-      0.035
-    );
+    var(--primary-soft);
 
   box-shadow:
     inset
@@ -159,12 +149,7 @@
     0
     0
     1px
-    rgba(
-      37,
-      99,
-      235,
-      0.08
-    );
+    var(--primary-soft);
 }
 
 
@@ -239,7 +224,7 @@
 
   border-radius: 999px;
 
-  color: #ffffff;
+  color: var(--navigation-active-text);
 
   background:
     var(--color-primary);
@@ -252,12 +237,7 @@
 
   box-shadow:
     0 3px 8px
-    rgba(
-      37,
-      99,
-      235,
-      0.18
-    );
+    color-mix(in srgb, var(--primary) 18%, transparent);
 
   transition:
     background-color 160ms ease,
@@ -324,14 +304,7 @@
   background:
     var(--color-surface);
 
-  box-shadow:
-    0 2px 8px
-    rgba(
-      15,
-      23,
-      42,
-      0.05
-    );
+  box-shadow: var(--shadow-sm);
 
   text-align: start;
 }
@@ -352,12 +325,7 @@
     var(--color-primary);
 
   background:
-    rgba(
-      37,
-      99,
-      235,
-      0.08
-    );
+    var(--primary-soft);
 }
 
 
@@ -420,7 +388,7 @@
 
   border-radius: 50%;
 
-  color: #ef4444;
+  color: var(--danger);
 
   background: transparent;
 
@@ -430,12 +398,7 @@
 
 .upload-selected-file__remove:hover {
   background:
-    rgba(
-      239,
-      68,
-      68,
-      0.06
-    );
+    var(--danger-soft);
 }
 
 
@@ -504,14 +467,7 @@
 
   font-size: 11px;
 
-  box-shadow:
-    0 1px 3px
-    rgba(
-      15,
-      23,
-      42,
-      0.05
-    );
+  box-shadow: var(--shadow-xs);
 }
 
 
@@ -520,16 +476,7 @@
     var(--color-primary);
 
   box-shadow:
-    0
-    0
-    0
-    3px
-    rgba(
-      37,
-      99,
-      235,
-      0.08
-    );
+    0 0 0 3px var(--input-focus-ring);
 }
 
 
@@ -560,22 +507,6 @@
 [dir="rtl"]
 .upload-selected-file {
   text-align: right;
-}
-
-
-/* =========================================
-   DARK MODE
-========================================= */
-
-:root[data-theme="dark"]
-.upload-drop-zone {
-  background:
-    rgba(
-      15,
-      23,
-      42,
-      0.18
-    );
 }
 
 

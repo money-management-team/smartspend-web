@@ -154,7 +154,7 @@ export default function MonthlyReportChart({
           >
             <CartesianGrid
               vertical={false}
-              stroke="#e5e7eb"
+              stroke="var(--chart-grid)"
             />
 
             <XAxis
@@ -162,7 +162,7 @@ export default function MonthlyReportChart({
               axisLine={false}
               tickLine={false}
               tick={{
-                fill: "#7c8493",
+                fill: "var(--chart-axis)",
                 fontSize: 10,
               }}
             />
@@ -184,7 +184,7 @@ export default function MonthlyReportChart({
                   : `${value / 1000}k`
               }
               tick={{
-                fill: "#7c8493",
+                fill: "var(--chart-axis)",
                 fontSize: 10,
               }}
             />
@@ -192,7 +192,7 @@ export default function MonthlyReportChart({
             <Tooltip
               cursor={{
                 fill:
-                  "rgba(37, 99, 235, 0.025)",
+                  "color-mix(in srgb, var(--primary) 2.5%, transparent)",
               }}
               content={
                 <CustomTooltip />
@@ -203,7 +203,7 @@ export default function MonthlyReportChart({
               "expense" && (
               <Bar
                 dataKey="income"
-                fill="#2563eb"
+                fill="var(--chart-blue)"
                 radius={[
                   7,
                   7,
@@ -218,7 +218,7 @@ export default function MonthlyReportChart({
               "income" && (
               <Bar
                 dataKey="expense"
-                fill="#ea580c"
+                fill="var(--chart-orange)"
                 radius={[
                   7,
                   7,

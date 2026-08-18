@@ -57,18 +57,18 @@
   border-color:
     var(--color-primary);
 
-  color: #ffffff;
+  color: var(--navigation-active-text);
 
   background:
     linear-gradient(
       135deg,
-      #3068eb 0%,
+      var(--primary) 0%,
       var(--color-primary) 100%
     );
 
   box-shadow:
     0 5px 14px
-    rgba(37, 99, 235, 0.14);
+    color-mix(in srgb, var(--primary) 14%, transparent);
 }
 
 
@@ -102,7 +102,7 @@
 .reports-summary-card--primary
 .reports-summary-card__label {
   color:
-    rgba(255, 255, 255, 0.78);
+    color-mix(in srgb, var(--navigation-active-text) 78%, transparent);
 }
 
 
@@ -130,16 +130,16 @@
     var(--color-primary);
 
   background:
-    #f5f6f8;
+    var(--surface-soft);
 }
 
 
 .reports-summary-card--primary
 .reports-summary-card__icon {
-  color: #ffffff;
+  color: var(--navigation-active-text);
 
   background:
-    rgba(255, 255, 255, 0.14);
+    color-mix(in srgb, var(--navigation-active-text) 14%, transparent);
 }
 
 
@@ -172,7 +172,7 @@
 
 .reports-summary-card--primary
 .reports-summary-card__value {
-  color: #ffffff;
+  color: var(--navigation-active-text);
 }
 
 

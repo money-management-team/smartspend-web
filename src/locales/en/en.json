@@ -782,4 +782,207 @@
   }
 }
   }
+  ,
+  "home": {
+  "nav": {
+    "features": "Features",
+    "howItWorks": "How it works",
+    "security": "Security",
+    "faq": "FAQ",
+    "signIn": "Sign in",
+    "startNow": "Start now"
+  },
+
+  "hero": {
+    "badge": "AI-powered personal finance",
+    "titleStart": "Manage your money smarter,",
+    "titleHighlight": "all in one place",
+    "description": "Smart Spend connects your accounts, organizes every transaction, tracks your budgets and savings goals, and explains your spending in plain language.",
+    "primaryButton": "Start managing my money",
+    "watchDemo": "Watch the demo",
+    "users": "50,000+ users trust Smart Spend"
+  },
+
+  "stats": {
+    "users": {
+      "title": "50k+ Users",
+      "text": "Growing community"
+    },
+    "security": {
+      "title": "Secure Financial Data",
+      "text": "Encrypted end to end"
+    },
+    "ai": {
+      "title": "AI-Powered Insights",
+      "text": "Clear, useful advice"
+    },
+    "monitoring": {
+      "title": "24/7 Monitoring",
+      "text": "Always watching your accounts"
+    }
+  },
+
+  "features": {
+    "title": "Smart features for every need",
+    "subtitle": "Everything you need to understand, plan and grow your money.",
+
+    "items": {
+      "sync": {
+        "title": "Automatic Sync",
+        "description": "Connect your accounts and automatically organize transactions."
+      },
+      "analytics": {
+        "title": "Smart Analytics",
+        "description": "Understand where your money goes."
+      },
+      "goals": {
+        "title": "Savings Goals",
+        "description": "Set financial goals and track your progress."
+      },
+      "security": {
+        "title": "Trusted Security",
+        "description": "Keep your financial information protected."
+      },
+      "alerts": {
+        "title": "Custom Alerts",
+        "description": "Get alerts about budgets and upcoming bills."
+      },
+      "budgets": {
+        "title": "Shared Budgets",
+        "description": "Manage shared spending with family or partners."
+      }
+    }
+  },
+
+  "ai": {
+    "badge": "AI Assistant",
+    "title": "Your money, explained by AI",
+    "description": "Smart Spend reads your patterns and turns them into clear next steps.",
+    "primary": "View insights",
+    "secondary": "See recommendations",
+    "cardTitle": "Your dining expenses increased 18% this month.",
+    "recommendation": "Recommendation",
+    "recommendationText": "Reducing dining expenses by 10% could help you save approximately $45 this month."
+  },
+
+  "steps": {
+    "title": "Start your journey in 3 simple steps",
+    "subtitle": "Setup takes a few minutes. The clarity lasts.",
+
+    "items": {
+      "account": {
+        "title": "Create your account",
+        "description": "Sign up in under a minute, no card required."
+      },
+      "connect": {
+        "title": "Link your accounts",
+        "description": "Securely connect banks and cards in a few taps."
+      },
+      "control": {
+        "title": "Control your money",
+        "description": "Track budgets, bills and savings in one place."
+      }
+    }
+  },
+
+  "security": {
+    "badge": "Security",
+    "title": "Your financial data stays protected",
+    "subtitle": "Security is a default, not a feature you have to turn on.",
+
+    "items": {
+      "connections": {
+        "title": "Secure account connections",
+        "description": "Read-only connections through trusted providers."
+      },
+      "storage": {
+        "title": "Strong data protection",
+        "description": "Data is encrypted in transit and at rest."
+      },
+      "privacy": {
+        "title": "Privacy-focused design",
+        "description": "We never sell your personal financial data."
+      },
+      "monitoring": {
+        "title": "Real-time monitoring",
+        "description": "Unusual activity is flagged when it happens."
+      }
+    }
+  },
+
+  "dashboardPreview": {
+    "title": "Everything you need, in one dashboard",
+    "subtitle": "Balance, income, expenses, savings, budgets, transactions and AI insights — one clear view."
+  },
+
+  "preview": {
+    "totalBalance": "Total balance",
+    "income": "Income",
+    "expenses": "Expenses",
+    "savings": "Savings",
+    "monthlyBudget": "Monthly budget",
+    "recentTransactions": "Recent transactions"
+  },
+
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Answers to the questions we hear most.",
+
+    "items": {
+      "security": {
+        "question": "Is my financial data safe?",
+        "answer": "Your data is encrypted in transit and at rest, and account connections are read-only by default."
+      },
+      "categories": {
+        "question": "How are expenses categorized?",
+        "answer": "Smart Spend automatically categorizes transactions and lets you edit categories at any time."
+      },
+      "multipleAccounts": {
+        "question": "Can I connect multiple accounts?",
+        "answer": "Yes. You can manage multiple bank accounts, wallets and cards."
+      },
+      "freePlan": {
+        "question": "Is there a free plan?",
+        "answer": "Smart Spend can support different subscription plans depending on your account."
+      },
+      "aiAnalysis": {
+        "question": "How does AI analyze my spending?",
+        "answer": "AI looks at patterns in your financial activity and provides understandable insights and recommendations."
+      },
+      "arabic": {
+        "question": "Can I use Smart Spend in Arabic?",
+        "answer": "Yes. Smart Spend supports both Arabic and English."
+      }
+    }
+  },
+
+  "cta": {
+    "title": "Ready to take control of your future?",
+    "subtitle": "Join thousands of smart users and start your financial journey today.",
+    "signup": "Sign up free",
+    "sales": "Talk to sales"
+  },
+
+  "footer": {
+    "description": "Smart Spend helps you understand your money, plan ahead and reach your goals with AI-powered clarity.",
+
+    "product": "Product",
+    "company": "Company",
+    "legal": "Legal",
+
+    "links": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "security": "Security",
+      "dashboard": "Dashboard",
+      "about": "About us",
+      "contact": "Contact",
+      "support": "Support",
+      "terms": "Terms & Conditions",
+      "privacy": "Privacy Policy"
+    },
+
+    "rights": "All rights reserved."
+  }
+}
 }

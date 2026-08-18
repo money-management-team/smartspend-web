@@ -1,0 +1,351 @@
+.recurring-row {
+  min-height: 88px;
+
+  display: grid;
+
+  grid-template-columns:
+    auto
+    minmax(0, 1fr)
+    auto
+    auto
+    auto;
+
+  align-items: center;
+
+  gap: 12px;
+
+  border-bottom:
+    1px solid
+    var(--color-border);
+}
+
+
+.recurring-row:last-child {
+  border-bottom: 0;
+}
+
+
+/* =========================================
+   TREND ICON
+========================================= */
+
+.recurring-row__trend {
+  width: 42px;
+
+  height: 42px;
+
+  display: grid;
+
+  place-items: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+}
+
+
+.recurring-row__trend svg {
+  width: 18px;
+
+  height: 18px;
+
+  stroke-width: 2;
+}
+
+
+.recurring-row__trend--income {
+  color:
+    var(--color-success);
+
+  background:
+    rgba(22, 163, 74, 0.1);
+}
+
+
+.recurring-row__trend--expense {
+  color: #ef4444;
+
+  background:
+    rgba(239, 68, 68, 0.1);
+}
+
+
+/* =========================================
+   COPY
+========================================= */
+
+.recurring-row__copy {
+  min-width: 0;
+
+  display: grid;
+
+  gap: 4px;
+
+  text-align: start;
+}
+
+
+.recurring-row__name {
+  color:
+    var(--color-text-primary);
+
+  font-size: 13px;
+
+  font-weight: 500;
+
+  line-height: 1.25;
+}
+
+
+.recurring-row__meta,
+.recurring-row__next,
+.recurring-row__previous {
+  color:
+    var(--color-text-secondary);
+
+  font-size: 9px;
+
+  line-height: 1.35;
+}
+
+
+.recurring-row__next--overdue {
+  color: #ef4444;
+}
+
+
+/* =========================================
+   AMOUNT
+========================================= */
+
+.recurring-row__amount {
+  min-width: 70px;
+
+  font-size: 12px;
+
+  font-weight: 500;
+
+  white-space: nowrap;
+
+  text-align: end;
+}
+
+
+.recurring-row__amount--income {
+  color:
+    var(--color-success);
+}
+
+
+.recurring-row__amount--expense {
+  color:
+    var(--color-text-primary);
+}
+
+
+/* =========================================
+   CONFIRM
+========================================= */
+
+.recurring-row__confirm {
+  min-width: 118px;
+
+  height: 34px;
+
+  padding:
+    0
+    14px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 999px;
+
+  color:
+    var(--color-text-primary);
+
+  background:
+    var(--color-surface);
+
+  font: inherit;
+
+  font-size: 10px;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 1px 3px
+    rgba(15, 23, 42, 0.05);
+}
+
+
+.recurring-row__confirm:hover {
+  border-color:
+    var(--color-primary);
+
+  color:
+    var(--color-primary);
+}
+
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.recurring-row__actions {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+
+.recurring-row__actions button {
+  width: 30px;
+
+  height: 30px;
+
+  padding: 0;
+
+  display: grid;
+
+  place-items: center;
+
+  border: 0;
+
+  border-radius: 50%;
+
+  color:
+    var(--color-text-primary);
+
+  background: transparent;
+
+  cursor: pointer;
+
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+
+.recurring-row__actions button:hover {
+  color:
+    var(--color-primary);
+
+  background:
+    rgba(37, 99, 235, 0.06);
+}
+
+
+.recurring-row__actions
+.recurring-row__delete {
+  color:
+    var(--color-text-secondary);
+}
+
+
+.recurring-row__actions
+.recurring-row__delete:hover {
+  color: #ef4444;
+
+  background:
+    rgba(239, 68, 68, 0.06);
+}
+
+
+.recurring-row__actions svg {
+  width: 15px;
+
+  height: 15px;
+}
+
+
+/* =========================================
+   RTL
+========================================= */
+
+[dir="rtl"]
+.recurring-row {
+  direction: rtl;
+}
+
+
+[dir="rtl"]
+.recurring-row__copy {
+  text-align: right;
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1100px) {
+  .recurring-row {
+    grid-template-columns:
+      auto
+      minmax(0, 1fr)
+      auto;
+  }
+
+
+  .recurring-row__confirm {
+    grid-column:
+      2 / 3;
+
+    justify-self: start;
+  }
+
+
+  .recurring-row__actions {
+    grid-column:
+      3 / 4;
+  }
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+  .recurring-row {
+    padding:
+      15px
+      0;
+
+    grid-template-columns:
+      auto
+      minmax(0, 1fr)
+      auto;
+
+    align-items: start;
+
+    row-gap: 12px;
+  }
+
+
+  .recurring-row__amount {
+    grid-column: 3;
+  }
+
+
+  .recurring-row__confirm {
+    grid-column:
+      2 / 4;
+
+    justify-self: start;
+  }
+
+
+  .recurring-row__actions {
+    grid-column:
+      2 / 4;
+
+    justify-self: start;
+  }
+}

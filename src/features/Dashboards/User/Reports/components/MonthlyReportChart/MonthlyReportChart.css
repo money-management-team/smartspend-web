@@ -123,12 +123,12 @@
 
 
 .monthly-report-tooltip__income {
-  color: #2563eb;
+  color: var(--primary);
 }
 
 
 .monthly-report-tooltip__expense {
-  color: #ea580c;
+  color: var(--warning);
 }
 
 

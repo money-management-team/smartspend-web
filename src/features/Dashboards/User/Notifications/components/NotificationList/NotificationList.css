@@ -65,12 +65,7 @@
 
 .notification-item:hover {
   background:
-    rgba(
-      37,
-      99,
-      235,
-      0.025
-    );
+    var(--primary-soft);
 }
 
 
@@ -79,24 +74,12 @@
 ========================================= */
 
 .notification-item--unread {
-  background:
-    rgba(
-      37,
-      99,
-      235,
-      0.045
-    );
+  background: var(--primary-soft);
 }
 
 
 .notification-item--unread:hover {
-  background:
-    rgba(
-      37,
-      99,
-      235,
-      0.065
-    );
+  background: var(--primary-soft-hover);
 }
 
 
@@ -124,7 +107,7 @@
     var(--color-primary);
 
   background:
-    #f5f6f8;
+    var(--surface-soft);
 }
 
 
@@ -196,12 +179,7 @@
     var(--color-primary);
 
   background:
-    rgba(
-      37,
-      99,
-      235,
-      0.09
-    );
+    var(--primary-soft);
 
   font-size: 10px;
 
@@ -280,41 +258,6 @@
  * والوقت يصبح في الجهة اليسرى،
  * مثل التصميم المرفق.
  */
-
-
-/* =========================================
-   DARK MODE
-========================================= */
-
-:root[data-theme="dark"]
-.notification-item__icon {
-  background:
-    #172033;
-}
-
-
-:root[data-theme="dark"]
-.notification-item--unread {
-  background:
-    rgba(
-      37,
-      99,
-      235,
-      0.08
-    );
-}
-
-
-:root[data-theme="dark"]
-.notification-item__badge {
-  background:
-    rgba(
-      37,
-      99,
-      235,
-      0.16
-    );
-}
 
 
 /* =========================================

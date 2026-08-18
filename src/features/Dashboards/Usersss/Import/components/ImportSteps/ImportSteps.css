@@ -1,0 +1,115 @@
+.import-steps {
+  margin-top: 25px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  flex-wrap: wrap;
+}
+
+
+/* =========================================
+   STEP
+========================================= */
+
+.import-step {
+  min-height: 32px;
+
+  padding:
+    0
+    15px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  box-sizing: border-box;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 999px;
+
+  color:
+    var(--color-text-secondary);
+
+  background:
+    var(--color-surface);
+
+  font-size: 11px;
+
+  white-space: nowrap;
+
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+
+/* =========================================
+   NUMBER
+========================================= */
+
+.import-step__number {
+  font-size: 10px;
+
+  font-weight: 500;
+}
+
+
+/* =========================================
+   ACTIVE
+========================================= */
+
+.import-step--active {
+  border-color:
+    var(--color-primary);
+
+  color: #ffffff;
+
+  background:
+    var(--color-primary);
+
+  box-shadow:
+    0 2px 6px
+    rgba(37, 99, 235, 0.14);
+}
+
+
+/* =========================================
+   RTL
+========================================= */
+
+[dir="rtl"]
+.import-steps {
+  direction: rtl;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+  .import-steps {
+    gap: 7px;
+
+    margin-top: 20px;
+  }
+
+
+  .import-step {
+    min-height: 31px;
+
+    padding-inline: 12px;
+  }
+}

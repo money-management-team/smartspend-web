@@ -1,0 +1,162 @@
+.monthly-report {
+  margin-top: 24px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-lg);
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    var(--shadow-card);
+}
+
+
+/* ================================
+   HEADER
+================================ */
+
+.monthly-report__header {
+  min-height: 66px;
+
+  padding:
+    16px
+    20px;
+
+  box-sizing: border-box;
+
+  border-bottom:
+    1px solid
+    var(--color-border);
+
+  text-align: start;
+}
+
+
+.monthly-report__header h2 {
+  margin: 0;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 14px;
+
+  font-weight: 700;
+}
+
+
+.monthly-report__header p {
+  margin:
+    7px
+    0
+    0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 10px;
+}
+
+
+/* ================================
+   CHART
+================================ */
+
+.monthly-report__chart {
+  width: 100%;
+
+  height: 315px;
+
+  padding:
+    20px
+    18px
+    12px
+    12px;
+
+  box-sizing: border-box;
+}
+
+
+/* ================================
+   TOOLTIP
+================================ */
+
+.monthly-report-tooltip {
+  min-width: 120px;
+
+  padding:
+    10px
+    12px;
+
+  display: grid;
+
+  gap: 6px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 10px;
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    var(--shadow-card);
+
+  font-size: 10px;
+}
+
+
+.monthly-report-tooltip strong {
+  margin-bottom: 2px;
+
+  color:
+    var(--color-text-primary);
+}
+
+
+.monthly-report-tooltip__income {
+  color: #2563eb;
+}
+
+
+.monthly-report-tooltip__expense {
+  color: #ea580c;
+}
+
+
+/* ================================
+   RTL
+================================ */
+
+[dir="rtl"]
+.monthly-report__header {
+  text-align: right;
+}
+
+
+/* ================================
+   MOBILE
+================================ */
+
+@media (max-width: 600px) {
+  .monthly-report__header {
+    padding-inline: 15px;
+  }
+
+
+  .monthly-report__chart {
+    height: 285px;
+
+    padding-inline:
+      5px
+      10px;
+  }
+}
