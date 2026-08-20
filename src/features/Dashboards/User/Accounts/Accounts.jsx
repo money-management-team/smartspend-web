@@ -4,7 +4,8 @@ import AccountsHeader from "./components/AccountsHeader/AccountsHeader";
 import AccountFilters from "./components/AccountFilters/AccountFilters";
 import AccountCard from "./components/AccountCard/AccountCard";
 
-import "./Accounts.css";
+import "./Accounts.css"; 
+const x = 10;
 
 const accounts = [
   {
