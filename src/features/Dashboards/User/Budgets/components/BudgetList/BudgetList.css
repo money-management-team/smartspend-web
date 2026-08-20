@@ -1,0 +1,348 @@
+.budget-list {
+  margin-top: 25px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-lg);
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    var(--shadow-card);
+}
+
+
+/* ================================
+   HEADER
+================================ */
+
+.budget-list__header {
+  min-height: 75px;
+
+  padding:
+    17px
+    20px;
+
+  box-sizing: border-box;
+
+  border-bottom:
+    1px solid
+    var(--color-border);
+
+  text-align: start;
+}
+
+
+.budget-list__header h2 {
+  margin: 0;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 14px;
+
+  font-weight: 700;
+}
+
+
+.budget-list__header p {
+  margin:
+    8px
+    0
+    0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 10px;
+}
+
+
+/* ================================
+   GRID
+================================ */
+
+.budget-list__grid {
+  padding:
+    20px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap: 18px;
+}
+
+
+/* ================================
+   BUDGET ITEM
+================================ */
+
+.budget-item {
+  min-width: 0;
+
+  min-height: 114px;
+
+  padding:
+    18px
+    17px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  box-sizing: border-box;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    18px;
+
+  background:
+    var(--color-surface);
+}
+
+
+/* ================================
+   TITLE
+================================ */
+
+.budget-item__title-row {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 16px;
+}
+
+
+.budget-item__title-row h3 {
+  margin: 0;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 13px;
+
+  font-weight: 500;
+
+  line-height: 1.3;
+}
+
+
+/* ================================
+   DELETE
+================================ */
+
+.budget-item__delete {
+  width: 28px;
+
+  height: 28px;
+
+  flex:
+    0
+    0
+    28px;
+
+  display: grid;
+
+  place-items: center;
+
+  padding: 0;
+
+  border: 0;
+
+  border-radius: 50%;
+
+  color: var(--danger);
+
+  background: transparent;
+
+  cursor: pointer;
+
+  transition:
+    background-color 160ms ease;
+}
+
+
+.budget-item__delete:hover {
+  background:
+    var(--danger-soft);
+}
+
+
+.budget-item__delete svg {
+  width: 15px;
+
+  height: 15px;
+}
+
+
+/* ================================
+   DETAILS
+================================ */
+
+.budget-item__details {
+  margin-top: 20px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 14px;
+}
+
+
+.budget-item__spent {
+  color:
+    var(--color-text-secondary);
+
+  font-size: 10px;
+
+  white-space: nowrap;
+
+  unicode-bidi: isolate;
+}
+
+
+.budget-item__status {
+  color:
+    var(--color-success);
+
+  font-size: 10px;
+
+  white-space: nowrap;
+}
+
+
+.budget-item__status--danger {
+  color: var(--danger);
+}
+
+
+/* ================================
+   PROGRESS
+================================ */
+
+.budget-item__progress {
+  width: 100%;
+
+  height: 7px;
+
+  margin-top: 8px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background:
+    var(--surface-soft);
+}
+
+
+.budget-item__progress span {
+  display: block;
+
+  height: 100%;
+
+  border-radius: inherit;
+
+  background:
+    linear-gradient(
+      90deg,
+      var(--primary) 0%,
+      var(--insights) 100%
+    );
+
+  transition:
+    width 250ms ease;
+}
+
+
+.budget-item__progress--danger span {
+  background: var(--danger);
+}
+
+
+/* ================================
+   RTL
+================================ */
+
+[dir="rtl"]
+.budget-list__header {
+  text-align: right;
+}
+
+
+[dir="rtl"]
+.budget-list__grid {
+  direction: rtl;
+}
+
+
+[dir="rtl"]
+.budget-item {
+  text-align: right;
+}
+
+
+/* ================================
+   TABLET
+================================ */
+
+@media (max-width: 850px) {
+  .budget-list__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ================================
+   MOBILE
+================================ */
+
+@media (max-width: 520px) {
+  .budget-list__grid {
+    padding: 14px;
+
+    gap: 13px;
+  }
+
+
+  .budget-item {
+    min-height: 108px;
+
+    padding:
+      16px
+      14px;
+  }
+
+
+  .budget-item__details {
+    margin-top: 17px;
+
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 5px;
+  }
+}

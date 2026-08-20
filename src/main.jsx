@@ -1,10 +1,22 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.jsx'
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 
-createRoot(document.getElementById('root')).render(
+import "./i18n";
+import "./index.css";
+
+import App from "./App.jsx";
+import LanguageProvider from "./contexts/language/languageProvider.jsx";
+import { BrowserRouter } from "react-router-dom";
+import ThemeProvider from "./contexts/theme/themeProvider.jsx";
+
+createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <App />
+    <BrowserRouter>
+      <ThemeProvider>
+        <LanguageProvider>
+          <App />
+        </LanguageProvider>
+      </ThemeProvider>
+    </BrowserRouter>
   </StrictMode>,
-)
+);

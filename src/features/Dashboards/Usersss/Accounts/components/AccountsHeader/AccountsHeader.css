@@ -1,0 +1,145 @@
+.accounts-header {
+  width: 100%;
+
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 24px;
+}
+
+
+/* =========================================
+   COPY
+========================================= */
+
+.accounts-header__copy {
+  min-width: 0;
+
+  text-align: start;
+}
+
+
+.accounts-header__copy h1 {
+  margin: 0;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 28px;
+
+  font-weight: 750;
+
+  line-height: 1.2;
+}
+
+
+.accounts-header__copy p {
+  margin:
+    12px
+    0
+    0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 14px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================
+   ADD BUTTON
+========================================= */
+
+.accounts-header__add {
+  min-width: 130px;
+
+  height: 38px;
+
+  padding:
+    0
+    18px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  flex-shrink: 0;
+
+  border: 0;
+
+  border-radius: 999px;
+
+  color: #ffffff;
+
+  background:
+    var(--color-primary);
+
+  font: inherit;
+
+  font-size: 13px;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 3px 10px
+    rgba(37, 99, 235, 0.18);
+
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+
+.accounts-header__add:hover {
+  background:
+    var(--color-primary-hover);
+}
+
+
+.accounts-header__add:active {
+  transform:
+    translateY(1px);
+}
+
+
+.accounts-header__add svg {
+  width: 17px;
+
+  height: 17px;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+  .accounts-header {
+    align-items: stretch;
+
+    flex-direction: column;
+
+    gap: 18px;
+  }
+
+
+  .accounts-header__copy h1 {
+    font-size: 25px;
+  }
+
+
+  .accounts-header__add {
+    width: max-content;
+  }
+}

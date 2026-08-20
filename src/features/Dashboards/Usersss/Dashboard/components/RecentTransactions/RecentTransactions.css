@@ -1,0 +1,86 @@
+.recent-transactions-card {
+  min-height: 430px;
+}
+
+.recent-transactions-card__list {
+  padding: 0 18px 10px;
+}
+
+.recent-transaction {
+  min-height: 57px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.recent-transaction:last-child {
+  border-bottom: 0;
+}
+
+.recent-transaction__icon {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.recent-transaction__icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.recent-transaction__icon--income {
+  color: #16a34a;
+  background: #ecfdf3;
+}
+
+.recent-transaction__icon--expense {
+  color: #dc2626;
+  background: #fff1f2;
+}
+
+.recent-transaction__icon--transfer {
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.recent-transaction__copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.recent-transaction__copy strong {
+  font-size: 11px;
+}
+
+.recent-transaction__copy small {
+  color: var(--color-text-secondary);
+  font-size: 9px;
+}
+
+.recent-transaction__amount {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.recent-transaction__amount--income {
+  color: #16a34a;
+}
+
+:root[data-theme="dark"] .recent-transaction__icon--income {
+  background: rgba(22, 163, 74, 0.14);
+}
+
+:root[data-theme="dark"] .recent-transaction__icon--expense {
+  background: rgba(220, 38, 38, 0.14);
+}
+
+:root[data-theme="dark"] .recent-transaction__icon--transfer {
+  background: rgba(37, 99, 235, 0.14);
+}

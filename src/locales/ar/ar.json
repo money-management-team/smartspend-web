@@ -1,0 +1,982 @@
+{
+  "auth": {
+    "register": {
+      "title": "إنشاء حساب جديد",
+      "subtitle": "أنشئ حسابك وابدأ رحلتك نحو إدارة مالية أكثر ذكاءً.",
+      "fields": {
+        "fullName": {
+          "label": "الاسم الكامل",
+          "placeholder": "أدخل اسمك الكامل"
+        },
+        "contact": {
+          "label": "البريد الإلكتروني أو رقم الهاتف",
+          "placeholder": "user@example.com"
+        },
+        "password": {
+          "label": "كلمة المرور",
+          "placeholder": "أنشئ كلمة مرور قوية"
+        },
+        "confirmPassword": {
+          "label": "تأكيد كلمة المرور",
+          "placeholder": "أعد كتابة كلمة المرور"
+        }
+      },
+      "terms": {
+        "prefix": "أوافق على",
+        "link": "الشروط والأحكام وسياسة الخصوصية"
+      },
+      "submit": "إنشاء حساب",
+      "social": {
+        "divider": "أو تابع باستخدام",
+        "google": "Google",
+        "apple": "Apple"
+      },
+      "login": {
+        "prefix": "لديك حساب بالفعل؟",
+        "link": "تسجيل الدخول"
+      },
+      "promo": {
+        "title": "خطوة واحدة تفصلك عن إدارة أموالك بذكاء",
+        "subtitle": "أنشئ حسابك وابدأ رحلتك نحو إدارة مالية أكثر وضوحاً وتحكماً.",
+        "features": [
+          {
+            "title": "أمان عالي",
+            "description": "حماية دائمة لبياناتك ومعاملاتك المالية."
+          },
+          {
+            "title": "تحليلات مدعومة بالذكاء الاصطناعي",
+            "description": "نصائح مخصصة لنمط إنفاقك تساعدك على التوفير."
+          },
+          {
+            "title": "إدارة مالية متكاملة",
+            "description": "جميع حساباتك وبطاقاتك في مكان واحد بكل بساطة."
+          }
+        ]
+      }
+    },
+    "login": {
+      "title": "تسجيل الدخول",
+      "subtitle": "مرحباً بعودتك، قم بتسجيل الدخول للوصول إلى حسابك.",
+      "fields": {
+        "contact": {
+          "label": "البريد الإلكتروني أو رقم الهاتف",
+          "placeholder": "name@example.com"
+        },
+        "password": {
+          "label": "كلمة المرور",
+          "placeholder": "••••••••"
+        }
+      },
+      "forgotPassword": "نسيت كلمة المرور؟",
+      "remember": "تذكرني على هذا الجهاز",
+      "submit": "تسجيل الدخول",
+      "social": {
+        "divider": "أو تابع باستخدام",
+        "google": "Google",
+        "apple": "Apple"
+      },
+      "register": {
+        "prefix": "ليس لديك حساب؟",
+        "link": "إنشاء حساب"
+      },
+      "promo": {
+        "title": "إدارة أموالك بذكاء",
+        "subtitle": "منصة مالية ذكية تتابع دخلك ومصروفاتك، وتساعدك على بناء ميزانيات وأهداف ادخار باستخدام الذكاء الاصطناعي.",
+        "chips": ["إدارة الحسابات", "تحليلات ذكية", "أهداف الادخار"]
+      }
+    },
+    "forgotPassword": {
+      "title": "نسيت كلمة المرور؟",
+      "subtitle": "أدخل بريدك الإلكتروني أو رقم هاتفك المسجل لإرسال رمز التحقق",
+      "field": {
+        "label": "البريد الإلكتروني أو رقم الهاتف",
+        "placeholder": "example@gmail.com"
+      },
+      "submit": "إرسال رمز التحقق",
+      "back": "العودة إلى تسجيل الدخول",
+      "promo": {
+        "title": "استعد الوصول إلى حسابك بأمان",
+        "subtitle": "سنرسل لك رمز تحقق لإعادة تعيين كلمة المرور بطريقة آمنة وسريعة."
+      }
+    },
+    "verifyCode": {
+      "title": "التحقق من الرمز",
+      "subtitle": "تم إرسال رمز مكون من 4 أرقام إلى هاتفك المسجل، الرجاء إدخاله للمتابعة",
+      "codeSent": "أدخل الرمز المرسل إلى",
+      "resend": {
+        "prefix": "لم يصلك الرمز؟",
+        "link": "إعادة الإرسال"
+      },
+      "submit": "تأكيد",
+      "editPhone": "تعديل رقم الهاتف",
+      "promo": {
+        "title": "أمان مالي لا يضاهى",
+        "subtitle": "نستخدم أحدث تقنيات التشفير لضمان الأمان الكامل لبياناتك ومعاملاتك المالية.",
+        "users": "انضم إلى أكثر من 500 ألف مستخدم نشط"
+      }
+    },
+    "resetPassword": {
+      "title": "إعادة تعيين كلمة المرور",
+      "subtitle": "أنشئ كلمة مرور جديدة لحسابك",
+      "fields": {
+        "password": {
+          "label": "كلمة المرور الجديدة",
+          "placeholder": "••••••••"
+        },
+        "confirmPassword": {
+          "label": "تأكيد كلمة المرور",
+          "placeholder": "••••••••"
+        }
+      },
+      "strength": {
+        "label": "قوة كلمة المرور",
+        "weak": "ضعيفة",
+        "medium": "متوسطة",
+        "strong": "قوية"
+      },
+      "requirements": {
+        "length": "8 أحرف على الأقل",
+        "letters": "حرف كبير وحرف صغير",
+        "number": "رقم واحد على الأقل"
+      },
+      "submit": "حفظ كلمة المرور",
+      "back": "العودة إلى تسجيل الدخول",
+      "promo": {
+        "title": "تأمين حسابك هو أولويتنا",
+        "subtitle": "استخدم كلمة مرور قوية وفريدة لضمان سلامة بياناتك المالية في Smart Spend.",
+        "dataProtection": "حماية البيانات",
+        "encryption": "تشفير متطور"
+      }
+    },
+    "passwordChanged": {
+      "title": "تم تغيير كلمة المرور بنجاح",
+      "subtitle": "تم تحديث كلمة المرور الخاصة بك بنجاح، يمكنك الآن تسجيل الدخول باستخدام كلمة المرور الجديدة",
+      "back": "العودة إلى تسجيل الدخول",
+      "promo": {
+        "title": "حسابك أصبح أكثر أماناً",
+        "subtitle": "شكراً لاستخدامك Smart Spend. نحرص على حماية بياناتك المالية وتوفير تجربة آمنة وموثوقة."
+      }
+    }
+  },
+  "dashboard": {
+    "header": {
+      "searchPlaceholder": "البحث في المعاملات والحسابات..."
+    },
+    "sidebar": {
+      "tagline": "إدارة مالية بالذكاء الاصطناعي",
+      "sections": {
+        "overview": "نظرة عامة",
+        "manage": "الإدارة",
+        "more": "المزيد"
+      },
+      "dashboard": "لوحة التحكم",
+      "accounts": "الحسابات",
+      "financialOperations": "العمليات المالية",
+      "recurring": "العمليات المتكررة",
+      "import": "الاستيراد",
+      "budgets": "الميزانيات",
+      "savingsGoals": "أهداف الادخار",
+      "reports": "التقارير",
+      "aiAssistant": "المساعد الذكي",
+      "notifications": "الإشعارات",
+      "settings": "الإعدادات",
+      "logout": "تسجيل الخروج"
+    },
+    "user": {
+      "common": {
+        "viewAll": "عرض الكل"
+      },
+      "hero": {
+        "month": "أغسطس ٢٠٢٦",
+        "title": "أهلاً بعودتك، ليلى",
+        "subtitle": "أموالك على المسار الصحيح هذا الشهر. صافي التدفق النقدي ارتفع 12.4٪.",
+        "balance": "$US ٥٠٬٨٩٠",
+        "balanceLabel": "الرصيد الإجمالي",
+        "actions": {
+          "income": "إضافة دخل",
+          "expense": "إضافة مصروف",
+          "transfer": "تحويل",
+          "goal": "هدف جديد"
+        }
+      },
+      "summary": {
+        "cash": {
+          "label": "إجمالي الكاش",
+          "amount": "$US ٨٦٠",
+          "change": "3.4٪"
+        },
+        "bank": {
+          "label": "إجمالي البنوك",
+          "amount": "$US ٥١٬١٧٠",
+          "change": "8.2٪"
+        },
+        "wallets": {
+          "label": "إجمالي المحافظ",
+          "amount": "$US ١٬٢٤٠",
+          "change": "1.9٪"
+        }
+      },
+      "money": {
+        "title": "أين تتوزع أموالك",
+        "subtitle": "إجمالي الكاش وإجمالي الرصيد البنكي، مع توزيعها على حساباتك.",
+        "hideAccounts": "إخفاء الحسابات",
+        "totalCash": "إجمالي الكاش",
+        "totalBank": "إجمالي البنوك",
+        "totalWallets": "إجمالي المحافظ",
+        "cashAmount": "$US ٨٦٠",
+        "bankAmount": "$US ٥١٬١٧٠",
+        "walletAmount": "$US ١٬٢٤٠",
+        "cashOnHand": "النقد المتوفر",
+        "checking": "الحساب الجاري",
+        "checkingAmount": "$US ١٨٬٤٢٠",
+        "businessSavings": "مدخرات الأعمال",
+        "businessSavingsAmount": "$US ٣٢٬٧٥٠",
+        "mercuryBank": "Mercury Bank",
+        "appleWallet": "محفظة أبل",
+        "applePay": "Apple Pay"
+      },
+      "stats": {
+        "title": "إحصائيات عامة",
+        "subtitle": "نظرة سريعة على نشاط هذا الشهر.",
+        "savingsRate": {
+          "label": "معدل الادخار",
+          "value": "79%"
+        },
+        "avgDailySpend": {
+          "label": "متوسط الإنفاق اليومي",
+          "value": "$US ٥٢"
+        },
+        "transactions": {
+          "label": "عدد المعاملات",
+          "value": "14"
+        },
+        "topCategory": {
+          "label": "أعلى فئة إنفاق",
+          "value": "سفر"
+        }
+      },
+      "cashFlow": {
+        "title": "التدفق النقدي",
+        "subtitle": "آخر 8 أشهر",
+        "income": "الدخل",
+        "expense": "المصروف"
+      },
+      "expenseCategories": {
+        "title": "فئات المصروفات",
+        "amount": "القيمة",
+        "values": {
+          "travel": "$US ٦٤٠",
+          "dining": "$US ٣١٤",
+          "groceries": "$US ١٨٤",
+          "software": "$US ١٤٤",
+          "utilities": "$US ١٣٢"
+        }
+      },
+      "categories": {
+        "travel": "سفر",
+        "dining": "مطاعم",
+        "groceries": "بقالة",
+        "software": "برمجيات",
+        "utilities": "خدمات",
+        "transport": "مواصلات"
+      },
+      "budgetProgress": {
+        "title": "تقدم الميزانية",
+        "values": {
+          "dining": "$US ٥٢٢ / $US ٦٠٠",
+          "groceries": "$US ٦١٢ / $US ٩٠٠",
+          "transport": "$US ١٨٨ / $US ٣٥٠",
+          "software": "$US ٤٣١ / $US ٤٠٠"
+        }
+      },
+      "savingsGoals": {
+        "title": "أهداف الادخار",
+        "items": {
+          "emergency": "صندوق الطوارئ",
+          "studio": "مكتب الاستوديو",
+          "macbook": "ماك بوك جديد"
+        }
+      },
+      "upcomingBills": {
+        "title": "الفواتير القادمة",
+        "due": "الاستحقاق",
+        "items": {
+          "rent": {
+            "name": "الإيجار",
+            "date": "28 أغسطس",
+            "amount": "$US ١٬٨٥٠"
+          },
+          "cloud": {
+            "name": "اشتراكات سحابية",
+            "date": "30 أغسطس",
+            "amount": "$US ٢١٤"
+          },
+          "insurance": {
+            "name": "تأمين السيارة",
+            "date": "2 سبتمبر",
+            "amount": "$US ٣٢٠"
+          }
+        }
+      },
+      "recentTransactions": {
+        "title": "أحدث المعاملات",
+        "items": {
+          "retainer": {
+            "name": "أتعاب عميل — نكسا",
+            "meta": "الراتب · 2026-08-03",
+            "amount": "+$US ٤٬٢٠٠"
+          },
+          "wholefoods": {
+            "name": "سوبرماركت",
+            "meta": "بقالة · 2026-08-02",
+            "amount": "−$US ١٨٤"
+          },
+          "transfer": {
+            "name": "إلى مدخرات الأعمال",
+            "meta": "تحويل · 2026-08-02",
+            "amount": "$US ١٬٥٠٠"
+          },
+          "figma": {
+            "name": "اشتراك فيجما السنوي",
+            "meta": "برمجيات · 2026-08-01",
+            "amount": "−$US ١٤٤"
+          },
+          "uber": {
+            "name": "رحلات أوبر",
+            "meta": "مواصلات · 2026-07-31",
+            "amount": "−$US ٦٢"
+          },
+          "dividend": {
+            "name": "توزيعات أرباح",
+            "meta": "استثمارات · 2026-07-30",
+            "amount": "+$US ٨١٠"
+          }
+        }
+      },
+      "aiInsights": {
+        "title": "رؤى الذكاء الاصطناعي",
+        "assistant": "المساعد الذكي",
+        "items": {
+          "dining": {
+            "title": "الإنفاق على المطاعم يرتفع",
+            "text": "أنفقت 24٪ أكثر على المطاعم مقارنة بمتوسط آخر 3 أشهر. تحديد سقف 520$ يساعدك على البقاء ضمن الخطة."
+          },
+          "idle": {
+            "title": "حرّك السيولة الخاملة",
+            "text": "هناك 4,200$ في محفظتك دون حركة منذ 41 يوماً. نقلها للمدخرات قد يضيف نحو 186$ سنوياً."
+          },
+          "goal": {
+            "title": "هدفك متقدم عن الجدول",
+            "text": "صندوق الطوارئ سيكتمل قبل موعده بشهرين إذا واصلت الخطة المتوازنة."
+          }
+        }
+      },
+      "months": {
+        "jan": "يناير",
+        "feb": "فبراير",
+        "mar": "مارس",
+        "apr": "أبريل",
+        "may": "مايو",
+        "jun": "يونيو",
+        "jul": "يوليو",
+        "aug": "أغسطس"
+      }
+    },
+    "accounts": {
+      "title": "الحسابات",
+      "subtitle": "النقد والحسابات البنكية والمحافظ والبطاقات في مكان واحد.",
+      "add": "إضافة حساب",
+
+      "filters": {
+        "all": "الكل",
+        "bank": "حساب بنكي",
+        "credit": "بطاقة ائتمان",
+        "wallet": "محفظة رقمية",
+        "cash": "نقد"
+      },
+
+      "types": {
+        "bank": "حساب بنكي",
+        "credit": "بطاقة ائتمان",
+        "wallet": "محفظة رقمية",
+        "cash": "نقد"
+      },
+
+      "items": {
+        "checking": {
+          "name": "الحساب الجاري"
+        },
+        "savings": {
+          "name": "مدخرات الأعمال"
+        },
+        "appleWallet": {
+          "name": "محفظة أبل"
+        },
+        "platinum": {
+          "name": "البطاقة البلاتينية"
+        },
+        "cash": {
+          "name": "النقد المتوفر"
+        }
+      },
+
+      "updatedToday": "تم التحديث اليوم",
+      "creditLimit": "حد الائتمان",
+      "edit": "تعديل",
+      "delete": "حذف الحساب"
+    },
+    "financialOperations": {
+  "title": "العمليات المالية",
+  "subtitle": "سجل الدخل والمصروفات والتحويلات وراجع سجلك المالي.",
+
+  "smartCapture": {
+    "title": "التسجيل الذكي",
+    "description": "سجّل عمليتك بصوتك، أو صوّر الفاتورة وسنملأ الحقول تلقائياً.",
+    "scan": "تصوير فاتورة",
+    "upload": "رفع لقطة تحويل"
+  },
+
+  "newOperation": {
+    "title": "تسجيل عملية جديدة"
+  },
+
+  "types": {
+    "expense": "مصروف",
+    "income": "دخل",
+    "transfer": "تحويل"
+  },
+
+  "form": {
+    "amount": "المبلغ",
+    "category": "الفئة",
+    "account": "الحساب",
+    "note": "ملاحظة",
+    "notePlaceholder": "وصف مختصر",
+    "date": "التاريخ",
+    "submit": "حفظ العملية"
+  },
+
+  "ledger": {
+    "title": "السجل",
+    "delete": "حذف العملية"
+  },
+
+  "filters": {
+    "all": "الكل",
+    "expense": "مصروفات",
+    "income": "دخل",
+    "transfer": "تحويلات"
+  },
+
+  "categories": {
+    "salary": "راتب",
+    "transfer": "تحويل",
+    "groceries": "بقالة",
+    "software": "برمجيات",
+    "transport": "مواصلات",
+    "investments": "استثمارات",
+    "food": "طعام وشراب",
+    "utilities": "فواتير",
+    "freelance": "عمل حر",
+    "health": "صحة",
+    "travel": "سفر"
+  },
+
+  "accounts": {
+    "checking": "الحساب الجاري",
+    "savings": "مدخرات الأعمال",
+    "wallet": "محفظة أبل",
+    "platinum": "البطاقة البلاتينية",
+    "cash": "النقد المتوفر"
+  },
+
+  "transactions": {
+    "retainer": "أتعاب عميل — نكسا",
+    "businessSavings": "إلى مدخرات الأعمال",
+    "wholeFoods": "سوبرماركت",
+    "figma": "اشتراك فيجما السنوي",
+    "uber": "رحلات أوبر",
+    "dividend": "توزيعات أرباح",
+    "nobu": "عشاء مطعم",
+    "electricity": "فاتورة الكهرباء",
+    "workshop": "ورشة استشارية",
+    "gym": "اشتراك النادي",
+    "dubai": "رحلة إلى دبي",
+    "cash": "إلى النقد المتوفر",
+    "coffee": "محمصة قهوة",
+    "appStore": "أرباح متجر التطبيقات"
+  }
+},
+"recurring": {
+  "title": "العمليات المتكررة",
+  "subtitle": "الرواتب والإيجار والفواتير والاشتراكات — تُراجع قبل كل خصم.",
+
+  "actions": {
+    "addIncome": "إضافة دخل متكرر",
+    "addExpense": "إضافة مصروف متكرر",
+    "schedule": "الجدولة",
+    "edit": "تعديل",
+    "delete": "حذف"
+  },
+
+  "sections": {
+    "dueNow": "مستحقة الآن",
+    "dueSubtitle": "راجع هذه العمليات قبل خصمها.",
+    "income": "الدخل المتكرر",
+    "expenses": "المصروفات المتكررة"
+  },
+
+  "items": {
+    "internet": "الإنترنت",
+    "rent": "الإيجار",
+    "salary": "الراتب الشهري",
+    "subscriptions": "الاشتراكات"
+  },
+
+  "categories": {
+    "utilities": "فواتير",
+    "housing": "سكن",
+    "salary": "راتب",
+    "software": "برمجيات"
+  },
+
+  "accounts": {
+    "checking": "الحساب الجاري",
+    "platinum": "البطاقة البلاتينية"
+  },
+
+  "frequency": {
+    "monthly": "شهري"
+  },
+
+  "next": "الاستحقاق القادم",
+  "overdue": "متأخرة",
+  "inDays_one": "خلال يوم",
+  "inDays_other": "خلال {{count}} أيام",
+  "previousAmount": "المبلغ السابق",
+
+  "confirmDeduction": "تأكيد الخصم",
+  "confirmDeposit": "تأكيد الإيداع"
+},
+"importPage": {
+  "title": "Import bank statement",
+  "subtitle": "PDF, Excel or CSV — extracted, reviewed and matched before import.",
+
+  "steps": {
+    "label": "Import progress",
+    "upload": "Upload file",
+    "extract": "Extract data",
+    "review": "Review data",
+    "match": "Match operations",
+    "confirm": "Confirm import"
+  },
+
+  "upload": {
+    "title": "Upload file",
+    "supported": "Supported: PDF, XLSX, CSV",
+    "dropTitle": "Drag & drop your file here",
+    "browse": "Browse files",
+    "remove": "Remove file"
+  },
+
+  "account": {
+    "label": "Detected account",
+    "checking": "Main Checking",
+    "savings": "Business Savings",
+    "wallet": "Apple Wallet",
+    "cash": "Cash on hand"
+  }
+},"budgets": {
+  "title": "الميزانيات",
+  "subtitle": "حدود شهرية لكل فئة، تُتابع لحظياً.",
+  "create": "إنشاء ميزانية",
+
+  "summary": {
+    "monthly": "الميزانية الشهرية",
+    "spent": "المصروف",
+    "remaining": "المتبقي"
+  },
+
+  "list": {
+    "title": "الميزانيات",
+    "subtitle": "حدود شهرية لكل فئة، تُتابع لحظياً."
+  },
+
+  "categories": {
+    "dining": "مطاعم",
+    "groceries": "بقالة",
+    "transport": "مواصلات",
+    "software": "برمجيات",
+    "travel": "سفر",
+    "health": "صحة"
+  },
+
+  "remaining": "المتبقي",
+  "overBudget": "تجاوز الميزانية",
+  "delete": "حذف الميزانية"
+},"savingsGoals": {
+  "title": "أهداف الادخار",
+  "subtitle": "تابع أهدافك ودع الذكاء الاصطناعي يختار وتيرتك.",
+  "newGoal": "هدف جديد",
+
+  "saved": "المدخر",
+  "target": "الهدف",
+
+  "addFunds": "إضافة مبلغ",
+  "delete": "حذف الهدف",
+
+  "goals": {
+    "emergency": "صندوق الطوارئ",
+    "studio": "مكتب الاستوديو",
+    "macbook": "ماك بوك جديد"
+  },
+
+  "plans": {
+    "title": "خطط الادخار الذكية",
+    "fast": "سريعة",
+    "balanced": "متوازنة",
+    "comfortable": "مريحة",
+    "month": "شهرياً"
+  }
+},"reports": {
+  "title": "التقارير",
+  "subtitle": "الدخل والمصروفات والتحليلات الشهرية.",
+
+  "exportPdf": "تصدير PDF",
+  "exportExcel": "تصدير Excel",
+
+  "summary": {
+    "savingsRate": "معدل الادخار",
+    "topCategory": "أعلى فئة",
+    "averageSpend": "متوسط الإنفاق اليومي"
+  },
+
+  "tabs": {
+    "monthly": "التقرير الشهري",
+    "income": "تقرير الدخل",
+    "expense": "تقرير المصروفات"
+  },
+
+  "chart": {
+    "monthlyReport": "التقرير الشهري",
+    "incomeReport": "تقرير الدخل",
+    "expenseReport": "تقرير المصروفات",
+    "lastEightMonths": "آخر 8 أشهر",
+    "income": "الدخل",
+    "expenses": "المصروفات"
+  },
+
+  "expenseCategories": "فئات المصروفات",
+
+  "categories": {
+    "travel": "سفر",
+    "dining": "مطاعم",
+    "groceries": "بقالة",
+    "software": "برمجيات",
+    "utilities": "خدمات",
+    "health": "صحة",
+    "transport": "مواصلات"
+  },
+
+  "months": {
+    "jan": "يناير",
+    "feb": "فبراير",
+    "mar": "مارس",
+    "apr": "أبريل",
+    "may": "مايو",
+    "jun": "يونيو",
+    "jul": "يوليو",
+    "aug": "أغسطس"
+  }
+},"aiAssistant": {
+  "title": "المساعد المالي الذكي",
+  "subtitle": "اسأل عن أي شيء يخص أموالك.",
+
+  "initialMessage": "بلغ صافي تدفقك النقدي في يوليو +4,450 دولاراً. وتُعد المطاعم أسرع فئات الإنفاق نمواً لديك بنسبة +24٪. هل تريد خطة لإعادتها إلى المستوى المناسب؟",
+
+  "conversations": {
+    "title": "المحادثات",
+    "newChat": "محادثة جديدة",
+    "monthlyAnalysis": "التحليل الشهري",
+    "savingsTips": "نصائح الادخار",
+    "budgetSuggestions": "اقتراحات الميزانية"
+  },
+
+  "suggestions": {
+    "safeSavings": "كم يمكنني الادخار بأمان هذا الشهر؟",
+    "julySpending": "أين ذهبت أموالي في يوليو؟",
+    "diningBudget": "اقترح ميزانية للمطاعم",
+    "emergencyFund": "هل أنا على المسار الصحيح لصندوق الطوارئ؟"
+  },
+
+  "input": {
+    "placeholder": "اسأل سمارت سبيند...",
+    "send": "إرسال",
+    "sending": "جارٍ الإرسال..."
+  }
+},"notifications": {
+  "title": "الإشعارات",
+  "subtitle": "التنبيهات والفواتير وتنبيهات الذكاء.",
+
+  "markAllAsRead": "تعليم الكل كمقروء",
+  "unread": "غير مقروء",
+
+  "items": {
+    "rent": {
+      "title": "الإيجار مستحق خلال 4 أيام",
+      "description": "سيتم خصم $1,850 من الحساب الجاري في 28 أغسطس."
+    },
+
+    "softwareBudget": {
+      "title": "تجاوز ميزانية البرمجيات",
+      "description": "تجاوزت حد البرمجيات الشهري بمقدار $31."
+    },
+
+    "monthlyAnalysis": {
+      "title": "التحليل الشهري الذكي جاهز",
+      "description": "تحليل يوليو و3 توصيات متاحة الآن."
+    },
+
+    "newDevice": {
+      "title": "تسجيل دخول من جهاز جديد",
+      "description": "MacBook Pro · عمّان، الأردن."
+    }
+  }
+},
+"settings": {
+  "title": "الإعدادات",
+  "subtitle": "الملف الشخصي والأمان والتفضيلات.",
+
+  "tabs": {
+    "label": "أقسام الإعدادات",
+    "profile": "الملف الشخصي",
+    "security": "الأمان",
+    "preferences": "التفضيلات"
+  },
+
+  "profile": {
+    "title": "الملف الشخصي",
+
+    "fields": {
+      "fullName": "الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف",
+      "currency": "العملة"
+    },
+
+    "save": "حفظ",
+    "saving": "جارٍ الحفظ..."
+  },
+
+  "security": {
+    "title": "الأمان"
+  },
+
+  "preferences": {
+    "title": "التفضيلات"
+  }
+}
+  },
+  "home": {
+  "nav": {
+    "features": "المميزات",
+    "howItWorks": "كيف يعمل",
+    "security": "الأمان",
+    "faq": "الأسئلة الشائعة",
+    "signIn": "تسجيل الدخول",
+    "startNow": "ابدأ الآن"
+  },
+
+  "hero": {
+    "badge": "إدارة مالية مدعومة بالذكاء الاصطناعي",
+    "titleStart": "إدارة أموالك بذكاء،",
+    "titleHighlight": "في مكان واحد",
+    "description": "يربط سمارت سبيند حساباتك وينظم معاملاتك ويتابع ميزانياتك وأهداف ادخارك، ويشرح لك إنفاقك بطريقة واضحة وبسيطة.",
+    "primaryButton": "ابدأ إدارة أموالك",
+    "watchDemo": "مشاهدة العرض",
+    "users": "أكثر من 50,000 مستخدم يثقون بسمارت سبيند"
+  },
+
+  "stats": {
+    "users": {
+      "title": "+50 ألف مستخدم",
+      "text": "مجتمع ينمو باستمرار"
+    },
+    "security": {
+      "title": "بيانات مالية آمنة",
+      "text": "تشفير وحماية موثوقة"
+    },
+    "ai": {
+      "title": "تحليلات بالذكاء الاصطناعي",
+      "text": "رؤى واضحة ومفيدة"
+    },
+    "monitoring": {
+      "title": "مراقبة على مدار الساعة",
+      "text": "متابعة مستمرة لحساباتك"
+    }
+  },
+
+  "features": {
+    "title": "ميزات ذكية لكل احتياجاتك",
+    "subtitle": "كل ما تحتاجه لفهم أموالك والتخطيط لها وتنميتها.",
+
+    "items": {
+      "sync": {
+        "title": "مزامنة تلقائية",
+        "description": "اربط حساباتك ليتم تنظيم معاملاتك تلقائياً."
+      },
+      "analytics": {
+        "title": "تحليلات ذكية",
+        "description": "افهم أين تذهب أموالك بسهولة."
+      },
+      "goals": {
+        "title": "أهداف الادخار",
+        "description": "حدد أهدافك المالية وتابع تقدمك."
+      },
+      "security": {
+        "title": "أمان موثوق",
+        "description": "حافظ على حماية معلوماتك المالية."
+      },
+      "alerts": {
+        "title": "تنبيهات مخصصة",
+        "description": "استلم تنبيهات الميزانيات والفواتير القادمة."
+      },
+      "budgets": {
+        "title": "ميزانيات مشتركة",
+        "description": "أدر الإنفاق المشترك مع العائلة أو الشركاء."
+      }
+    }
+  },
+
+  "ai": {
+    "badge": "المساعد الذكي",
+    "title": "ذكاؤك المالي، مدعوم بالذكاء الاصطناعي",
+    "description": "يقرأ سمارت سبيند أنماط إنفاقك ويحولها إلى خطوات عملية وواضحة.",
+    "primary": "عرض الرؤى",
+    "secondary": "عرض التوصيات",
+    "cardTitle": "ارتفعت مصاريف المطاعم لديك 18% هذا الشهر.",
+    "recommendation": "توصية",
+    "recommendationText": "تقليل مصاريف المطاعم بنسبة 10% قد يساعدك على توفير حوالي 45 دولاراً هذا الشهر."
+  },
+
+  "steps": {
+    "title": "ابدأ رحلتك في 3 خطوات بسيطة",
+    "subtitle": "الإعداد يستغرق دقائق، والوضوح يستمر.",
+
+    "items": {
+      "account": {
+        "title": "أنشئ حسابك",
+        "description": "التسجيل خلال أقل من دقيقة وبدون بطاقة."
+      },
+      "connect": {
+        "title": "اربط حساباتك",
+        "description": "اربط البنوك والبطاقات بأمان خلال خطوات قليلة."
+      },
+      "control": {
+        "title": "تحكم في أموالك",
+        "description": "تابع الميزانيات والفواتير والادخار في مكان واحد."
+      }
+    }
+  },
+
+  "security": {
+    "badge": "الأمان",
+    "title": "بياناتك المالية محمية دائماً",
+    "subtitle": "الأمان جزء أساسي من المنصة وليس خياراً إضافياً.",
+
+    "items": {
+      "connections": {
+        "title": "ربط حسابات آمن",
+        "description": "اتصالات للقراءة فقط عبر مزودين موثوقين."
+      },
+      "storage": {
+        "title": "حماية قوية للبيانات",
+        "description": "تشفير البيانات أثناء النقل والتخزين."
+      },
+      "privacy": {
+        "title": "تصميم يحترم الخصوصية",
+        "description": "لا نقوم ببيع بياناتك المالية الشخصية."
+      },
+      "monitoring": {
+        "title": "مراقبة فورية",
+        "description": "يتم رصد أي نشاط غير معتاد فور حدوثه."
+      }
+    }
+  },
+
+  "dashboardPreview": {
+    "title": "كل ما تحتاجه في لوحة واحدة",
+    "subtitle": "الرصيد والدخل والمصروفات والادخار والميزانيات والمعاملات ورؤى الذكاء الاصطناعي في مكان واحد."
+  },
+
+  "preview": {
+    "totalBalance": "إجمالي الرصيد",
+    "income": "الدخل",
+    "expenses": "المصروفات",
+    "savings": "الادخار",
+    "monthlyBudget": "الميزانية الشهرية",
+    "recentTransactions": "أحدث المعاملات"
+  },
+
+  "faq": {
+    "title": "الأسئلة الشائعة",
+    "subtitle": "إجابات عن أكثر الأسئلة التي تصلنا.",
+
+    "items": {
+      "security": {
+        "question": "هل بياناتي المالية آمنة؟",
+        "answer": "يتم تشفير بياناتك أثناء النقل والتخزين، وتكون اتصالات الحسابات للقراءة فقط بشكل افتراضي."
+      },
+      "categories": {
+        "question": "كيف يتم تصنيف المصروفات؟",
+        "answer": "يقوم سمارت سبيند بتصنيف المعاملات تلقائياً ويمكنك تعديل الفئات في أي وقت."
+      },
+      "multipleAccounts": {
+        "question": "هل يمكنني ربط أكثر من حساب؟",
+        "answer": "نعم، يمكنك إدارة عدة حسابات بنكية ومحافظ وبطاقات."
+      },
+      "freePlan": {
+        "question": "هل توجد خطة مجانية؟",
+        "answer": "يمكن للمنصة دعم عدة خطط اشتراك حسب نوع حسابك."
+      },
+      "aiAnalysis": {
+        "question": "كيف يحلل الذكاء الاصطناعي إنفاقي؟",
+        "answer": "يحلل أنماط نشاطك المالي ويقدم رؤى وتوصيات سهلة الفهم."
+      },
+      "arabic": {
+        "question": "هل يمكنني استخدام سمارت سبيند باللغة العربية؟",
+        "answer": "نعم، يدعم سمارت سبيند اللغتين العربية والإنجليزية."
+      }
+    }
+  },
+
+  "cta": {
+    "title": "هل أنت جاهز للتحكم في مستقبلك؟",
+    "subtitle": "انضم إلى آلاف المستخدمين وابدأ رحلتك المالية اليوم.",
+    "signup": "سجل مجاناً",
+    "sales": "تحدث مع المبيعات"
+  },
+
+  "footer": {
+    "description": "يساعدك Smart Spend على فهم أموالك والتخطيط للمستقبل وتحقيق أهدافك من خلال رؤى مدعومة بالذكاء الاصطناعي.",
+
+    "product": "المنتج",
+    "company": "الشركة",
+    "legal": "قانوني",
+
+    "links": {
+      "features": "المميزات",
+      "pricing": "الأسعار",
+      "security": "الأمان",
+      "dashboard": "لوحة التحكم",
+      "about": "من نحن",
+      "contact": "تواصل معنا",
+      "support": "الدعم",
+      "terms": "الشروط والأحكام",
+      "privacy": "سياسة الخصوصية"
+    },
+
+    "rights": "جميع الحقوق محفوظة."
+  }
+}
+}

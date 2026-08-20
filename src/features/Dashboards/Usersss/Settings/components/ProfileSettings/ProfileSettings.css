@@ -1,0 +1,321 @@
+.profile-settings {
+  width: 100%;
+
+  margin-top: 24px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-lg);
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    var(--shadow-card);
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.profile-settings__header {
+  min-height: 57px;
+
+  padding:
+    0
+    20px;
+
+  display: flex;
+
+  align-items: center;
+
+  box-sizing: border-box;
+
+  border-bottom:
+    1px solid
+    var(--color-border);
+
+  /*
+   * حسب التصميم:
+   * عنوان الكارد يبقى في اليسار
+   * في العربية والإنجليزية.
+   */
+  direction: ltr;
+
+  text-align: left;
+}
+
+
+.profile-settings__header h2 {
+  margin: 0;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  line-height: 1.3;
+}
+
+
+[dir="rtl"]
+.profile-settings__header h2 {
+  direction: rtl;
+}
+
+
+/* =========================================
+   FORM
+========================================= */
+
+.profile-settings__form {
+  padding:
+    28px
+    20px
+    22px;
+
+  /*
+   * نحافظ على أماكن الأعمدة:
+   *
+   * Full name | Email
+   * Phone     | Currency
+   *
+   * في العربية والإنجليزية
+   * مثل التصميم المرفق.
+   */
+  direction: ltr;
+}
+
+
+/* =========================================
+   GRID
+========================================= */
+
+.profile-settings__grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  column-gap: 18px;
+
+  row-gap: 20px;
+}
+
+
+/* =========================================
+   FIELD
+========================================= */
+
+.settings-field {
+  min-width: 0;
+
+  display: grid;
+
+  gap: 7px;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 11px;
+}
+
+
+.settings-field > span {
+  text-align: left;
+}
+
+
+/*
+ * في العربية فقط نحول Label إلى RTL
+ * مع بقاء مكان الحقل نفسه ثابتاً.
+ */
+
+[dir="rtl"]
+.settings-field > span {
+  direction: rtl;
+
+  text-align: right;
+}
+
+
+/* =========================================
+   INPUT / SELECT
+========================================= */
+
+.settings-field input,
+.settings-field select {
+  width: 100%;
+
+  height: 38px;
+
+  padding:
+    0
+    13px;
+
+  box-sizing: border-box;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 11px;
+
+  outline: none;
+
+  color:
+    var(--color-text-primary);
+
+  background:
+    var(--color-surface);
+
+  font: inherit;
+
+  font-size: 11px;
+
+  direction: ltr;
+
+  text-align: left;
+
+  box-shadow:
+    0 1px 3px
+    rgba(15, 23, 42, 0.05);
+
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+
+.settings-field input:focus,
+.settings-field select:focus {
+  border-color:
+    var(--color-primary);
+
+  box-shadow:
+    0
+    0
+    0
+    3px
+    rgba(37, 99, 235, 0.07);
+}
+
+
+/* =========================================
+   SAVE
+========================================= */
+
+.profile-settings__save {
+  min-width: 60px;
+
+  height: 37px;
+
+  margin-top: 20px;
+
+  padding:
+    0
+    17px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border: 0;
+
+  border-radius: 999px;
+
+  color: #ffffff;
+
+  background:
+    var(--color-primary);
+
+  font: inherit;
+
+  font-size: 11px;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 3px 8px
+    rgba(37, 99, 235, 0.16);
+
+  transition:
+    background-color 160ms ease,
+    opacity 160ms ease;
+}
+
+
+.profile-settings__save:hover:not(:disabled) {
+  background:
+    var(--color-primary-hover);
+}
+
+
+.profile-settings__save:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}
+
+
+/*
+ * مهم:
+ * زر الحفظ يبقى على اليسار
+ * في اللغتين كما في الصور.
+ */
+
+
+/* =========================================
+   DARK
+========================================= */
+
+:root[data-theme="dark"]
+.profile-settings {
+  background:
+    var(--color-surface);
+}
+
+
+/* =========================================
+   TABLET / MOBILE
+========================================= */
+
+@media (max-width: 760px) {
+  .profile-settings__grid {
+    grid-template-columns: 1fr;
+
+    gap: 16px;
+  }
+}
+
+
+@media (max-width: 520px) {
+  .profile-settings__header {
+    padding-inline: 16px;
+  }
+
+
+  .profile-settings__form {
+    padding:
+      20px
+      16px;
+  }
+
+
+  .profile-settings__save {
+    width: 100%;
+  }
+}

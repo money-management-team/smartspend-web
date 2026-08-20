@@ -1,0 +1,74 @@
+.recurring-page {
+  width: 100%;
+  max-width: 1240px;
+
+  margin: 0 auto;
+
+  padding:
+    28px
+    32px
+    50px;
+
+  box-sizing: border-box;
+
+  color: var(--color-text-primary);
+}
+
+
+/* =========================================
+   BOTTOM GRID
+========================================= */
+
+.recurring-page__bottom-grid {
+  margin-top: 24px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  align-items: start;
+
+  gap: 24px;
+}
+
+
+/* =========================================
+   RTL
+========================================= */
+
+[dir="rtl"]
+.recurring-page {
+  direction: rtl;
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1000px) {
+  .recurring-page__bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 720px) {
+  .recurring-page {
+    padding:
+      22px
+      16px
+      40px;
+  }
+
+  .recurring-page__bottom-grid {
+    margin-top: 16px;
+
+    gap: 16px;
+  }
+}

@@ -1,0 +1,126 @@
+.money-distribution__grid {
+  padding: 18px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.money-account {
+  min-height: 168px;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  background: var(--dashboard-soft-surface);
+}
+
+.money-account--wallet {
+  grid-column: 1 / 2;
+}
+
+.money-account__heading {
+  margin-bottom: 18px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.money-account__icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--color-primary);
+  background: var(--dashboard-primary-soft);
+}
+
+.money-account__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.money-account__heading-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.money-account__heading-copy small {
+  color: var(--color-text-secondary);
+  font-size: 10px;
+}
+
+.money-account__heading-copy strong {
+  direction: ltr;
+  unicode-bidi: isolate;
+  justify-self: start;
+  font-size: 17px;
+}
+
+[dir="rtl"] .money-account__heading-copy strong {
+  justify-self: end;
+}
+
+.money-account__hide {
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  color: var(--color-text-secondary);
+  background: transparent;
+  font: inherit;
+  font-size: 9px;
+  cursor: pointer;
+}
+
+.money-account__hide svg {
+  width: 13px;
+  height: 13px;
+}
+
+.money-account__line + .money-account__line {
+  margin-top: 17px;
+}
+
+.money-account__line-meta {
+  margin-bottom: 7px;
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.money-account__line-meta > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.money-account__line-meta span {
+  font-size: 11px;
+}
+
+.money-account__line-meta small {
+  color: var(--color-text-secondary);
+  font-size: 9px;
+}
+
+.money-account__line-meta strong {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .money-distribution__grid {
+    grid-template-columns: 1fr;
+    padding: 14px;
+  }
+
+  .money-account--wallet {
+    grid-column: auto;
+  }
+}

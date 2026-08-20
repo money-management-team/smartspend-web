@@ -1,0 +1,936 @@
+/* =========================================================
+   SMART SPEND - GLOBAL DESIGN SYSTEM
+   Light / Dark Theme
+   ========================================================= */
+
+
+/* =========================================================
+   FONTS
+   Visual Identity:
+   - Tajawal: headings + large financial values
+   - Cairo: UI + paragraphs + labels + buttons
+   ========================================================= */
+
+@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Tajawal:wght@500;700;800&display=swap");
+
+
+/* =========================================================
+   BASE TOKENS
+   These values DO NOT change between themes
+   ========================================================= */
+
+:root {
+  /* ===============================
+     BRAND COLORS
+     =============================== */
+
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+
+  --success: #16a34a;
+  --success-hover: #15803d;
+
+  --warning: #ea580c;
+  --warning-hover: #c2410c;
+
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+
+  --insights: #9333ea;
+  --insights-hover: #7e22ce;
+
+
+  /* ===============================
+     COMPATIBILITY WITH CURRENT CODE
+     =============================== */
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --color-ai: var(--insights);
+  --color-insights: var(--insights);
+
+
+  /* ===============================
+     GRADIENTS
+     =============================== */
+
+  --gradient-primary:
+    linear-gradient(
+      135deg,
+      #2563eb 0%,
+      #1d4ed8 100%
+    );
+
+  --gradient-success:
+    linear-gradient(
+      135deg,
+      #16a34a 0%,
+      #15803d 100%
+    );
+
+  --gradient-warning:
+    linear-gradient(
+      135deg,
+      #ea580c 0%,
+      #c2410c 100%
+    );
+
+  --gradient-danger:
+    linear-gradient(
+      135deg,
+      #dc2626 0%,
+      #b91c1c 100%
+    );
+
+  --gradient-insights:
+    linear-gradient(
+      135deg,
+      #9333ea 0%,
+      #7e22ce 100%
+    );
+
+
+  /* ===============================
+     TYPOGRAPHY
+     =============================== */
+
+  --font-heading:
+    "Tajawal",
+    sans-serif;
+
+  --font-body:
+    "Cairo",
+    sans-serif;
+
+
+  /* Page title */
+  --font-size-h1: 28px;
+
+  /* Section title */
+  --font-size-h2: 20px;
+
+  /* Card / small heading */
+  --font-size-h3: 16px;
+
+  /* Large financial values */
+  --font-size-value-lg: 30px;
+
+  --font-size-body: 14px;
+  --font-size-label: 13px;
+  --font-size-small: 12px;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+
+  /* ===============================
+     SPACING / LAYOUT
+     Project implementation tokens
+     =============================== */
+
+  --container-width: 1240px;
+
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+
+  /* ===============================
+     TRANSITIONS
+     =============================== */
+
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease;
+
+
+  /* =========================================================
+     LIGHT THEME - DEFAULT
+     ========================================================= */
+
+  color-scheme: light;
+
+  /* Main backgrounds */
+
+  --background: #f9fafb;
+  --surface: #ffffff;
+  --surface-soft: #f3f4f6;
+
+  --surface-control: #ffffff;
+  --surface-hover: #f3f4f6;
+  --surface-active: #eef4ff;
+
+
+  /* Borders */
+
+  --border: #e5e7eb;
+  --border-soft: #f3f4f6;
+  --border-strong: #d1d5db;
+
+
+  /* Text */
+
+  --text-strong: #111827;
+  --text-primary: #374151;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+
+  --text-inverse: #ffffff;
+
+
+  /* ===============================
+     EXISTING PROJECT ALIASES
+     =============================== */
+
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+
+  --color-surface-soft: var(--surface-soft);
+  --color-surface-hover: var(--surface-hover);
+
+  --color-border: var(--border);
+
+  --color-text-strong: var(--text-strong);
+  --color-text-primary: var(--text-strong);
+  --color-text-main: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+
+  /* ===============================
+     SEMANTIC SOFT BACKGROUNDS
+     =============================== */
+
+  --primary-soft:
+    rgba(37, 99, 235, 0.08);
+
+  --primary-soft-hover:
+    rgba(37, 99, 235, 0.12);
+
+  --success-soft:
+    rgba(22, 163, 74, 0.09);
+
+  --warning-soft:
+    rgba(234, 88, 12, 0.09);
+
+  --danger-soft:
+    rgba(220, 38, 38, 0.08);
+
+  --insights-soft:
+    rgba(147, 51, 234, 0.09);
+
+
+  /* ===============================
+     INPUTS
+     =============================== */
+
+  --input-background:
+    #ffffff;
+
+  --input-border:
+    #e5e7eb;
+
+  --input-text:
+    #111827;
+
+  --input-placeholder:
+    #6b7280;
+
+  --input-focus:
+    #2563eb;
+
+  --input-focus-ring:
+    rgba(37, 99, 235, 0.12);
+
+
+  /* ===============================
+     SHADOWS
+     =============================== */
+
+  --shadow-xs:
+    0 1px 2px
+    rgba(15, 23, 42, 0.04);
+
+  --shadow-sm:
+    0 1px 4px
+    rgba(15, 23, 42, 0.06);
+
+  --shadow-card:
+    0 4px 14px
+    rgba(15, 23, 42, 0.05);
+
+  --shadow-lg:
+    0 12px 30px
+    rgba(15, 23, 42, 0.08);
+
+
+  /* ===============================
+     SIDEBAR / HEADER
+     =============================== */
+
+  --sidebar-background:
+    #f3f4f6;
+
+  --header-background:
+    #f9fafb;
+
+  --navigation-hover:
+    #e9eef8;
+
+  --navigation-active:
+    #2563eb;
+
+  --navigation-active-text:
+    #ffffff;
+
+
+  /* ===============================
+     CHARTS
+     =============================== */
+
+  --chart-grid:
+    #e5e7eb;
+
+  --chart-axis:
+    #6b7280;
+
+  --chart-blue:
+    #2563eb;
+
+  --chart-green:
+    #16a34a;
+
+  --chart-orange:
+    #ea580c;
+
+  --chart-red:
+    #dc2626;
+
+  --chart-purple:
+    #9333ea;
+}
+
+
+/* =========================================================
+   DARK THEME
+   ThemeContext sets:
+   <html data-theme="dark">
+   ========================================================= */
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+
+  /* ===============================
+     MAIN BACKGROUNDS
+     =============================== */
+
+  --background: #111827;
+
+  --surface: #1f2937;
+
+  --surface-soft: #374151;
+
+  --surface-control: #374151;
+
+  --surface-hover: #4b5563;
+
+  --surface-active:
+    rgba(37, 99, 235, 0.16);
+
+
+  /* ===============================
+     BORDERS
+     =============================== */
+
+  --border: #374151;
+
+  --border-soft:
+    rgba(75, 85, 99, 0.55);
+
+  --border-strong:
+    #4b5563;
+
+
+  /* ===============================
+     TEXT
+     =============================== */
+
+  --text-strong: #ffffff;
+
+  --text-primary: #ffffff;
+
+  --text-secondary: #d1d5db;
+
+  --text-muted: #9ca3af;
+
+  --text-inverse:
+    #111827;
+
+
+  /* ===============================
+     PROJECT ALIASES
+     =============================== */
+
+  --color-background:
+    var(--background);
+
+  --color-surface:
+    var(--surface);
+
+  --color-surface-soft:
+    var(--surface-soft);
+
+  --color-surface-hover:
+    var(--surface-hover);
+
+  --color-border:
+    var(--border);
+
+  --color-text-strong:
+    var(--text-strong);
+
+  --color-text-primary:
+    var(--text-primary);
+
+  --color-text-main:
+    var(--text-secondary);
+
+  --color-text-secondary:
+    var(--text-secondary);
+
+  --color-text-muted:
+    var(--text-muted);
+
+
+  /* ===============================
+     SEMANTIC SOFT BACKGROUNDS
+     =============================== */
+
+  --primary-soft:
+    rgba(37, 99, 235, 0.16);
+
+  --primary-soft-hover:
+    rgba(37, 99, 235, 0.23);
+
+  --success-soft:
+    rgba(22, 163, 74, 0.16);
+
+  --warning-soft:
+    rgba(234, 88, 12, 0.17);
+
+  --danger-soft:
+    rgba(220, 38, 38, 0.16);
+
+  --insights-soft:
+    rgba(147, 51, 234, 0.18);
+
+
+  /* ===============================
+     INPUTS
+     =============================== */
+
+  --input-background:
+    #1f2937;
+
+  --input-border:
+    #374151;
+
+  --input-text:
+    #ffffff;
+
+  --input-placeholder:
+    #9ca3af;
+
+  --input-focus:
+    #2563eb;
+
+  --input-focus-ring:
+    rgba(37, 99, 235, 0.22);
+
+
+  /* ===============================
+     SHADOWS
+     =============================== */
+
+  --shadow-xs:
+    0 1px 2px
+    rgba(0, 0, 0, 0.15);
+
+  --shadow-sm:
+    0 2px 6px
+    rgba(0, 0, 0, 0.16);
+
+  --shadow-card:
+    0 6px 18px
+    rgba(0, 0, 0, 0.18);
+
+  --shadow-lg:
+    0 16px 36px
+    rgba(0, 0, 0, 0.24);
+
+
+  /* ===============================
+     SIDEBAR / HEADER
+     =============================== */
+
+  --sidebar-background:
+    #111827;
+
+  --header-background:
+    #111827;
+
+  --navigation-hover:
+    #374151;
+
+  --navigation-active:
+    #2563eb;
+
+  --navigation-active-text:
+    #ffffff;
+
+
+  /* ===============================
+     CHARTS
+     =============================== */
+
+  --chart-grid:
+    #374151;
+
+  --chart-axis:
+    #9ca3af;
+}
+
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+
+html {
+  min-height: 100%;
+
+  background:
+    var(--background);
+
+  scroll-behavior: smooth;
+}
+
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+
+  margin: 0;
+
+  color:
+    var(--text-primary);
+
+  background:
+    var(--background);
+
+  font-family:
+    var(--font-body);
+
+  font-size:
+    var(--font-size-body);
+
+  font-weight:
+    var(--font-weight-regular);
+
+  line-height: 1.5;
+
+  transition:
+    background-color
+      var(--transition-normal),
+    color
+      var(--transition-normal);
+}
+
+
+#root {
+  min-height: 100vh;
+}
+
+
+/* =========================================================
+   TYPOGRAPHY
+   ========================================================= */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin-top: 0;
+
+  color:
+    var(--text-strong);
+
+  font-family:
+    var(--font-heading);
+}
+
+
+h1 {
+  font-size:
+    var(--font-size-h1);
+
+  font-weight:
+    var(--font-weight-extrabold);
+}
+
+
+h2 {
+  font-size:
+    var(--font-size-h2);
+
+  font-weight:
+    var(--font-weight-bold);
+}
+
+
+h3 {
+  font-size:
+    var(--font-size-h3);
+
+  font-weight:
+    var(--font-weight-bold);
+}
+
+
+p {
+  color:
+    var(--text-primary);
+
+  font-family:
+    var(--font-body);
+}
+
+
+small,
+label {
+  color:
+    var(--text-secondary);
+}
+
+
+/*
+ * Large financial numbers
+ */
+
+.financial-value,
+.dashboard-value,
+.stat-value {
+  color:
+    var(--text-strong);
+
+  font-family:
+    var(--font-heading);
+
+  font-size:
+    var(--font-size-value-lg);
+
+  font-weight:
+    var(--font-weight-bold);
+
+  direction: ltr;
+
+  unicode-bidi: isolate;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+a {
+  color:
+    var(--primary);
+
+  text-decoration: none;
+
+  transition:
+    color
+      var(--transition-fast);
+}
+
+
+a:hover {
+  color:
+    var(--primary-hover);
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+
+button,
+input,
+select,
+textarea {
+  font-family:
+    var(--font-body);
+}
+
+
+button {
+  font-size: 14px;
+
+  font-weight:
+    var(--font-weight-semibold);
+}
+
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline:
+    2px solid
+    var(--primary);
+
+  outline-offset: 2px;
+}
+
+
+/* =========================================================
+   FORM CONTROLS
+   ========================================================= */
+
+input,
+select,
+textarea {
+  color:
+    var(--input-text);
+
+  border:
+    1px solid
+    var(--input-border);
+
+  background:
+    var(--input-background);
+
+  transition:
+    border-color
+      var(--transition-fast),
+    box-shadow
+      var(--transition-fast),
+    background-color
+      var(--transition-normal);
+}
+
+
+input::placeholder,
+textarea::placeholder {
+  color:
+    var(--input-placeholder);
+}
+
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color:
+    var(--input-focus);
+
+  box-shadow:
+    0 0 0 3px
+    var(--input-focus-ring);
+}
+
+
+/* =========================================================
+   CARDS / SURFACES
+   ========================================================= */
+
+.card,
+.surface {
+  color:
+    var(--text-primary);
+
+  border:
+    1px solid
+    var(--border);
+
+  background:
+    var(--surface);
+
+  box-shadow:
+    var(--shadow-card);
+}
+
+
+.surface-soft {
+  background:
+    var(--surface-soft);
+}
+
+
+/* =========================================================
+   SEMANTIC HELPERS
+   ========================================================= */
+
+.text-primary {
+  color:
+    var(--primary);
+}
+
+
+.text-success {
+  color:
+    var(--success);
+}
+
+
+.text-warning {
+  color:
+    var(--warning);
+}
+
+
+.text-danger {
+  color:
+    var(--danger);
+}
+
+
+.text-insights {
+  color:
+    var(--insights);
+}
+
+
+.bg-primary-soft {
+  background:
+    var(--primary-soft);
+}
+
+
+.bg-success-soft {
+  background:
+    var(--success-soft);
+}
+
+
+.bg-warning-soft {
+  background:
+    var(--warning-soft);
+}
+
+
+.bg-danger-soft {
+  background:
+    var(--danger-soft);
+}
+
+
+.bg-insights-soft {
+  background:
+    var(--insights-soft);
+}
+
+
+/* =========================================================
+   RTL / LTR
+   ========================================================= */
+
+html[dir="rtl"] body {
+  direction: rtl;
+
+  text-align: right;
+}
+
+
+html[dir="ltr"] body {
+  direction: ltr;
+
+  text-align: left;
+}
+
+
+/*
+ * Financial values remain LTR
+ * even when language is Arabic
+ */
+
+.money,
+.currency,
+.percentage,
+.phone-number {
+  direction: ltr;
+
+  unicode-bidi: isolate;
+}
+
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+* {
+  scrollbar-width: thin;
+
+  scrollbar-color:
+    var(--border-strong)
+    var(--background);
+}
+
+
+*::-webkit-scrollbar {
+  width: 8px;
+
+  height: 8px;
+}
+
+
+*::-webkit-scrollbar-track {
+  background:
+    var(--background);
+}
+
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+
+  background:
+    var(--border-strong);
+}
+
+
+*::-webkit-scrollbar-thumb:hover {
+  background:
+    var(--text-muted);
+}
+
+
+/* =========================================================
+   SELECTION
+   ========================================================= */
+
+::selection {
+  color: #ffffff;
+
+  background:
+    var(--primary);
+}

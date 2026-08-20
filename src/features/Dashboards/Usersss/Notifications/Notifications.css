@@ -1,0 +1,40 @@
+.notifications-page {
+  width: 100%;
+  max-width: 1240px;
+
+  margin: 0 auto;
+
+  padding:
+    28px
+    32px
+    50px;
+
+  box-sizing: border-box;
+
+  color:
+    var(--color-text-primary);
+}
+
+
+/* =========================================
+   RTL
+========================================= */
+
+[dir="rtl"]
+.notifications-page {
+  direction: rtl;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 720px) {
+  .notifications-page {
+    padding:
+      22px
+      16px
+      40px;
+  }
+}
