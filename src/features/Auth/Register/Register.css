@@ -223,6 +223,21 @@
   box-shadow: 0 0 0 3px var(--input-focus-ring);
 }
 
+.register-input-wrap input[aria-invalid="true"] {
+  border-color: var(--color-danger, #dc2626);
+}
+
+.register-field__error {
+  display: block;
+  color: var(--color-danger, #dc2626);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.register-terms-error {
+  margin: -12px 0 14px;
+}
+
 .register-input-icon {
   position: absolute;
   inset-block-start: 50%;
@@ -322,6 +337,20 @@
 
 .register-submit:active {
   translate: 0 1px;
+}
+
+.register-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+  translate: none;
+}
+
+.register-form__error {
+  margin: -4px 0 14px;
+  color: var(--color-danger, #dc2626);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
 }
 
 .register-divider {
