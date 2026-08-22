@@ -3,6 +3,7 @@ import logo from "../../assets/smart-spend-logo.png";
 import "./AuthLayout.css";
 import { Outlet } from "react-router-dom";
 import { useThemeContext } from "../../contexts/theme/useThemeContext";
+import AuthOrbitCanvas from "./AuthOrbitCanvas";
 
 function GlobeIcon() {
   return (
@@ -42,6 +43,8 @@ export default function AuthLayout({ variant = "register" }) {
   };
   return (
     <div className="auth-shell" dir={direction}>
+      <AuthOrbitCanvas />
+
       <header className="auth-header">
         <a className="auth-brand" href="/" aria-label="Smart Spend">
           <img src={logo} alt="" />

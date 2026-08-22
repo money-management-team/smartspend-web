@@ -49,6 +49,8 @@ export default function FAQSection() {
               >
                 <button
                   type="button"
+                  aria-expanded={openItem === index}
+                  aria-controls={`faq-answer-${key}`}
                   onClick={() =>
                     setOpenItem(
                       openItem ===
@@ -68,7 +70,10 @@ export default function FAQSection() {
                 </button>
 
                 {openItem === index && (
-                  <div className="faq-item__answer">
+                  <div
+                    className="faq-item__answer"
+                    id={`faq-answer-${key}`}
+                  >
                     {t(
                       `home.faq.items.${key}.answer`,
                     )}

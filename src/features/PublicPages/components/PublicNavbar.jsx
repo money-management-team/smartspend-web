@@ -1,17 +1,18 @@
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import {
   LuGlobe,
   LuMoon,
   LuSun,
-  //   LuGlobe2,
 } from "react-icons/lu";
 
-import logo from "../../../../assets/smart-spend-logo.png";
-import { useThemeContext } from "../../../../contexts/theme/useThemeContext";
+import logo from "../../../assets/smart-spend-logo.png";
+import { useThemeContext } from "../../../contexts/theme/useThemeContext";
 
-export default function HomeNavbar() {
+import "./PublicChrome.css";
+
+export default function PublicNavbar() {
   const { t, i18n } = useTranslation();
   const { isDark, toggleTheme } = useThemeContext();
 
@@ -26,13 +27,19 @@ export default function HomeNavbar() {
   return (
     <header className="home-navbar">
       <div className="home-container home-navbar__inner">
-        <a href="/" className="home-navbar__brand">
+        <Link to="/" className="home-navbar__brand">
           <img src={logo} alt="Smart Spend" />
 
-          <strong>Smart Spend</strong>
-        </a>
+          <span>
+            <strong>Smart Spend</strong>
+            <small>AI money management</small>
+          </span>
+        </Link>
 
-        <nav className="home-navbar__links">
+        <nav
+          className="home-navbar__links"
+          aria-label="Public navigation"
+        >
           <a href="#features">{t("home.nav.features")}</a>
 
           <a href="#how-it-works">{t("home.nav.howItWorks")}</a>
@@ -47,6 +54,7 @@ export default function HomeNavbar() {
             type="button"
             className="home-navbar__language"
             onClick={changeLanguage}
+            aria-label={isArabic ? "Switch to English" : "Switch to Arabic"}
           >
             <LuGlobe />
 

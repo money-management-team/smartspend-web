@@ -26,11 +26,17 @@ export default function AISection() {
           </p>
 
           <div className="ai-home-section__buttons">
-            <button className="ai-primary-button">
+            <button
+              type="button"
+              className="ai-primary-button"
+            >
               {t("home.ai.primary")}
             </button>
 
-            <button className="home-secondary-button">
+            <button
+              type="button"
+              className="home-secondary-button"
+            >
               {t("home.ai.secondary")}
             </button>
           </div>

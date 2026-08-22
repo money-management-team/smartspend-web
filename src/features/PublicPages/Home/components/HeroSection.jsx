@@ -1,8 +1,8 @@
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { FiPlayCircle } from "react-icons/fi";
 
 import {
-//   LuPlayCircle,
   LuSparkles,
   LuUsers,
   LuShieldCheck,
@@ -18,30 +18,30 @@ export default function HeroSection() {
       <div className="home-container">
         <div className="hero-section__grid">
           <div className="hero-section__content">
-            <span className="home-badge">
+            <span className="home-badge hero-entrance hero-entrance--badge">
               <LuSparkles />
 
               {t("home.hero.badge")}
             </span>
 
-            <h1>
+            <h1 className="hero-entrance hero-entrance--heading">
               {t("home.hero.titleStart")}{" "}
               <span>
                 {t("home.hero.titleHighlight")}
               </span>
             </h1>
 
-            <p>
+            <p className="hero-entrance hero-entrance--description">
               {t("home.hero.description")}
             </p>
 
-            <div className="hero-section__buttons">
-              <a
-                href="/register"
+            <div className="hero-section__buttons hero-entrance hero-entrance--actions">
+              <Link
+                to="/register"
                 className="home-primary-button"
               >
                 {t("home.hero.primaryButton")}
-              </a>
+              </Link>
 
               <button
                 type="button"
@@ -54,7 +54,10 @@ export default function HeroSection() {
               </button>
             </div>
 
-            <div className="hero-users">
+            <div
+              className="hero-users hero-entrance hero-entrance--users"
+              aria-label={t("home.hero.users")}
+            >
               <div className="hero-users__avatars">
                 <span />
                 <span />
@@ -67,7 +70,7 @@ export default function HeroSection() {
             </div>
           </div>
 
-          <div className="hero-dashboard">
+          <div className="hero-dashboard hero-entrance hero-entrance--visual">
             <DashboardMock />
           </div>
         </div>
@@ -108,7 +111,7 @@ function Stat({
   text,
 }) {
   return (
-    <article className="hero-stat">
+    <article className="hero-stat hero-entrance hero-entrance--stat">
       <span>
         {icon}
       </span>

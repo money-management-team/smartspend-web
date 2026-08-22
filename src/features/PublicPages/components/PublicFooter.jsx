@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-import logo from "../../../../assets/smart-spend-logo.png";
+import logo from "../../../assets/smart-spend-logo.png";
 
-export default function HomeFooter() {
+import "./PublicChrome.css";
+
+export default function PublicFooter() {
   const { t } = useTranslation();
 
   return (
