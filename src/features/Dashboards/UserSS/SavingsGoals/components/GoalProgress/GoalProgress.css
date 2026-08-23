@@ -1,0 +1,69 @@
+.goal-progress {
+  position: relative;
+
+  width: 108px;
+
+  height: 108px;
+
+  flex:
+    0
+    0
+    108px;
+
+  display: grid;
+
+  place-items: center;
+}
+
+
+.goal-progress > svg {
+  position: absolute;
+
+  inset: 0;
+}
+
+
+.goal-progress__value {
+  position: relative;
+
+  z-index: 2;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 14px;
+
+  font-weight: 750;
+
+  line-height: 1;
+}
+
+
+/* =========================================
+   DARK
+========================================= */
+
+.goal-progress .recharts-radial-bar-background-sector {
+  fill: var(--surface-soft);
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 480px) {
+  .goal-progress {
+    width: 92px;
+
+    height: 92px;
+
+    flex-basis: 92px;
+  }
+
+  .goal-progress svg {
+    width: 92px;
+
+    height: 92px;
+  }
+}

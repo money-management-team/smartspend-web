@@ -2,13 +2,29 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import api from "../../services/api";
 import { AuthContext } from "./authContext";
 
+const getStoredUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem("user") ?? "null");
+  } catch {
+    return null;
+  }
+};
+
 export default function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => getStoredUser());
   const [token, setTokenState] = useState(
-    () => localStorage.getItem("ACCESS_TOKEN"),
+    () => localStorage.getItem("ACCESS_TOKEN") || localStorage.getItem("token"),
   );
   const [role, setRoleState] = useState(
-    () => localStorage.getItem("ROLE") || "guest",
+    () => {
+      const storedUser = getStoredUser();
+
+      return (
+        localStorage.getItem("ROLE") ||
+        storedUser?.role ||
+        "guest"
+      );
+    },
   );
   const [initializing, setInitializing] = useState(true);
 
@@ -17,8 +33,10 @@ export default function AuthProvider({ children }) {
 
     if (nextToken) {
       localStorage.setItem("ACCESS_TOKEN", nextToken);
+      localStorage.setItem("token", nextToken);
     } else {
       localStorage.removeItem("ACCESS_TOKEN");
+      localStorage.removeItem("token");
     }
   }, []);
 
@@ -33,6 +51,8 @@ export default function AuthProvider({ children }) {
     setUser(null);
     setToken(null);
     setRole("guest");
+    localStorage.removeItem("user");
+    localStorage.removeItem("token_type");
   }, [setRole, setToken]);
 
   const applyAuthData = useCallback(
@@ -43,6 +63,7 @@ export default function AuthProvider({ children }) {
 
       setToken(authData.token);
       setUser(authData.user);
+      localStorage.setItem("user", JSON.stringify(authData.user));
       setRole(authData.user.role || "user");
     },
     [setRole, setToken],

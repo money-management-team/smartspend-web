@@ -1,0 +1,372 @@
+.dashboard-hero-card {
+  min-height: 215px;
+
+  padding: 30px 34px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 42px;
+
+  overflow: hidden;
+
+  border-radius: 20px;
+
+  color: var(--navigation-active-text);
+
+  background:
+    radial-gradient(
+      circle at 78% 18%,
+      color-mix(in srgb, var(--navigation-active-text) 7%, transparent),
+      transparent 38%
+    ),
+    linear-gradient(
+      135deg,
+      var(--primary) 0%,
+      var(--color-primary) 58%,
+      var(--primary-hover) 100%
+    );
+
+  box-shadow:
+    0 6px 18px
+    color-mix(in srgb, var(--primary) 12%, transparent);
+}
+
+
+/* =========================================
+   CONTENT
+========================================= */
+
+.dashboard-hero-card__content {
+  min-width: 0;
+
+  display: grid;
+
+  /*
+   * مهم:
+   * start تعمل تلقائياً:
+   * LTR = يسار
+   * RTL = يمين
+   */
+  justify-items: start;
+
+  text-align: start;
+}
+
+
+/* =========================================
+   MONTH
+========================================= */
+
+.dashboard-hero-card__month {
+  margin-bottom: 12px;
+
+  padding: 5px 10px;
+
+  border-radius: 999px;
+
+  color:
+    color-mix(in srgb, var(--navigation-active-text) 88%, transparent);
+
+  background:
+    color-mix(in srgb, var(--navigation-active-text) 14%, transparent);
+
+  font-size: 11px;
+
+  line-height: 1;
+}
+
+
+/* =========================================
+   TITLE
+========================================= */
+
+.dashboard-hero-card h1 {
+  margin: 0;
+
+  color: var(--navigation-active-text);
+
+  font-size: 28px;
+
+  font-weight: 760;
+
+  line-height: 1.2;
+}
+
+
+/* =========================================
+   DESCRIPTION
+========================================= */
+
+.dashboard-hero-card p {
+  max-width: 560px;
+
+  margin:
+    12px
+    0
+    15px;
+
+  color:
+    color-mix(in srgb, var(--navigation-active-text) 82%, transparent);
+
+  font-size: 13px;
+
+  line-height: 1.55;
+}
+
+
+/* =========================================
+   BALANCE
+========================================= */
+
+.dashboard-hero-card__balance {
+  /*
+   * نحافظ على ترتيب العملة والأرقام
+   * حتى داخل الصفحة العربية
+   */
+  direction: ltr;
+
+  unicode-bidi: isolate;
+
+  color: var(--navigation-active-text);
+
+  font-size: 38px;
+
+  font-weight: 760;
+
+  line-height: 1.05;
+
+  letter-spacing: -0.7px;
+}
+
+
+/* =========================================
+   BALANCE LABEL
+========================================= */
+
+.dashboard-hero-card__content small {
+  margin-top: 7px;
+
+  color:
+    color-mix(in srgb, var(--navigation-active-text) 68%, transparent);
+
+  font-size: 11px;
+}
+
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.dashboard-hero-card__actions {
+  width: 320px;
+
+  flex:
+    0
+    0
+    320px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      2,
+      minmax(0, 1fr)
+    );
+
+  gap: 12px;
+}
+
+
+/* =========================================
+   ACTION BUTTON
+========================================= */
+
+.dashboard-hero-card__actions button {
+  min-height: 72px;
+
+  padding: 14px;
+
+  display: grid;
+
+  align-content: center;
+
+  /*
+   * نفس الفكرة:
+   * الإنجليزية = يسار
+   * العربية = يمين
+   */
+  justify-items: start;
+
+  gap: 8px;
+
+  border:
+    1px solid
+    color-mix(in srgb, var(--navigation-active-text) 18%, transparent);
+
+  border-radius: 15px;
+
+  color: var(--navigation-active-text);
+
+  background:
+    color-mix(in srgb, var(--navigation-active-text) 9%, transparent);
+
+  font: inherit;
+
+  font-size: 12px;
+
+  text-align: start;
+
+  cursor: pointer;
+
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+
+.dashboard-hero-card__actions button:hover {
+  background:
+    color-mix(in srgb, var(--navigation-active-text) 15%, transparent);
+
+  transform:
+    translateY(-1px);
+}
+
+
+/* =========================================
+   ACTION ICONS
+========================================= */
+
+.dashboard-hero-card__actions svg {
+  width: 17px;
+
+  height: 17px;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================================
+   RTL
+========================================= */
+
+/*
+ * لا نستخدم justify-items: end هنا.
+ *
+ * لأن start في CSS logical properties:
+ *
+ * LTR:
+ * start = left
+ *
+ * RTL:
+ * start = right
+ *
+ * ولذلك التصميم يتغير تلقائياً
+ * بدون قلب المحاذاة بشكل خاطئ.
+ */
+
+[dir="rtl"]
+.dashboard-hero-card__content {
+  text-align: right;
+}
+
+
+[dir="rtl"]
+.dashboard-hero-card__actions button {
+  text-align: right;
+}
+
+
+/*
+ * تأكيد ترتيب Hero في العربية:
+ *
+ * CONTENT → يمين
+ * ACTIONS → يسار
+ */
+
+[dir="rtl"]
+.dashboard-hero-card {
+  direction: rtl;
+}
+
+
+/* =========================================
+   LTR
+========================================= */
+
+[dir="ltr"]
+.dashboard-hero-card {
+  direction: ltr;
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 980px) {
+  .dashboard-hero-card {
+    align-items: stretch;
+
+    flex-direction: column;
+  }
+
+
+  .dashboard-hero-card__actions {
+    width: 100%;
+
+    flex-basis: auto;
+  }
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 560px) {
+  .dashboard-hero-card {
+    padding:
+      24px
+      20px;
+
+    gap: 26px;
+  }
+
+
+  .dashboard-hero-card h1 {
+    font-size: 24px;
+  }
+
+
+  .dashboard-hero-card__balance {
+    font-size: 32px;
+  }
+
+
+  .dashboard-hero-card__actions {
+    gap: 10px;
+  }
+
+
+  .dashboard-hero-card__actions button {
+    min-height: 64px;
+
+    padding: 12px;
+  }
+}
+
+
+/* =========================================
+   VERY SMALL MOBILE
+========================================= */
+
+@media (max-width: 400px) {
+  .dashboard-hero-card__actions {
+    grid-template-columns: 1fr;
+  }
+}

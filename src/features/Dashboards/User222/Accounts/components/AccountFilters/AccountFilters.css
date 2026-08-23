@@ -1,0 +1,105 @@
+.account-filters {
+  margin-top: 25px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  flex-wrap: wrap;
+}
+
+
+/* =========================================
+   FILTER
+========================================= */
+
+.account-filter {
+  min-width: 50px;
+
+  height: 35px;
+
+  padding:
+    0
+    17px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 999px;
+
+  color:
+    var(--color-text-secondary);
+
+  background:
+    var(--color-surface);
+
+  font: inherit;
+
+  font-size: 12px;
+
+  cursor: pointer;
+
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+
+.account-filter:hover {
+  border-color:
+    var(--color-primary);
+
+  color:
+    var(--color-primary);
+}
+
+
+/* Active */
+
+.account-filter--active {
+  border-color:
+    var(--color-primary);
+
+  color: var(--navigation-active-text);
+
+  background:
+    var(--color-primary);
+}
+
+
+.account-filter--active:hover {
+  color: var(--navigation-active-text);
+
+  background:
+    var(--color-primary-hover);
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+  .account-filters {
+    margin-top: 20px;
+
+    gap: 7px;
+  }
+
+
+  .account-filter {
+    height: 34px;
+
+    padding-inline: 14px;
+  }
+}

@@ -1,7 +1,6 @@
 import {
   LuLandmark,
   LuWalletCards,
-  LuCreditCard,
   LuBanknote,
   LuPencil,
   LuTrash2,
@@ -14,53 +13,35 @@ import "./AccountCard.css";
 const accountIcons = {
   bank: LuLandmark,
   wallet: LuWalletCards,
-  credit: LuCreditCard,
   cash: LuBanknote,
+  savings: LuLandmark,
+  custom: LuWalletCards,
 };
 
-const formatAmount = (amount) => {
-  const absoluteAmount =
-    Math.abs(amount).toLocaleString(
-      "en-US",
-    );
+const formatAmount = (amount, currency) => {
+  const number = Number(amount) || 0;
 
-  return amount < 0
-    ? `-$${absoluteAmount}`
-    : `$${absoluteAmount}`;
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currency || "ILS",
+  }).format(number);
 };
 
 export default function AccountCard({
   account,
+  onEdit,
+  onArchive,
 }) {
   const { t } = useTranslation();
 
-  const Icon =
-    accountIcons[account.type];
+  const Icon = accountIcons[account.type] ?? LuWalletCards;
 
-  const isNegative =
-    account.amount < 0;
-
-  const handleEdit = () => {
-    console.log(
-      "Edit account:",
-      account.id,
-    );
-  };
-
-  const handleDelete = () => {
-    console.log(
-      "Delete account:",
-      account.id,
-    );
-  };
+  const amount = Number(account.current_balance ?? account.opening_balance ?? 0);
+  const isNegative = amount < 0;
 
   return (
     <article
-      className={`account-card ${
-        account.type === "credit"
-          ? "account-card--credit"
-          : ""
-      }`}
+      className="account-card"
     >
       {/* =========================
           HEADER
@@ -73,22 +54,18 @@ export default function AccountCard({
 
         <div className="account-card__identity">
           <strong>
-            {t(
-              `dashboard.accounts.items.${account.key}.name`,
-            )}
+            {account.name}
           </strong>
 
-          {account.provider && (
+          {account.last_four_digits && (
             <small>
-              {account.provider}
+              •••• {account.last_four_digits}
             </small>
           )}
         </div>
 
         <span className="account-card__type">
-          {t(
-            `dashboard.accounts.types.${account.type}`,
-          )}
+          {t(`dashboard.accounts.types.${account.type}`)}
         </span>
       </header>
 
@@ -105,49 +82,16 @@ export default function AccountCard({
           }
           dir="ltr"
         >
-          {formatAmount(
-            account.amount,
-          )}
+          {formatAmount(amount, account.currency_code)}
         </strong>
 
         <span className="account-card__updated">
-          USD ·{" "}
+          {account.currency_code} ·{" "}
           {t(
             "dashboard.accounts.updatedToday",
           )}
         </span>
       </div>
-
-      {/* =========================
-          CREDIT LIMIT
-      ========================= */}
-
-      {account.type === "credit" && (
-        <div className="account-card__credit">
-          <div className="account-card__credit-meta">
-            <span>
-              {t(
-                "dashboard.accounts.creditLimit",
-              )}
-            </span>
-
-            <strong>
-              $
-              {account.creditLimit.toLocaleString(
-                "en-US",
-              )}
-            </strong>
-          </div>
-
-          <div className="account-card__progress">
-            <span
-              style={{
-                width: `${account.progress}%`,
-              }}
-            />
-          </div>
-        </div>
-      )}
 
       {/* =========================
           ACTIONS
@@ -157,7 +101,7 @@ export default function AccountCard({
         <button
           type="button"
           className="account-card__edit"
-          onClick={handleEdit}
+          onClick={onEdit}
         >
           <LuPencil />
 
@@ -171,9 +115,9 @@ export default function AccountCard({
         <button
           type="button"
           className="account-card__delete"
-          onClick={handleDelete}
+          onClick={onArchive}
           aria-label={t(
-            "dashboard.accounts.delete",
+            "dashboard.accounts.archive",
           )}
         >
           <LuTrash2 />

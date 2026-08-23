@@ -10,6 +10,7 @@ import SectionCard from "../shared/SectionCard";
 import ProgressBar from "../shared/ProgressBar";
 
 import "./MoneyDistribution.css";
+import { formatMoney } from "../../../utils/formatters";
 
 function AccountHeading({ icon: Icon, label, amount, hideLabel }) {
   return (
@@ -47,8 +48,17 @@ function AccountLine({ name, note, amount, progress }) {
   );
 }
 
-export default function MoneyDistribution() {
-  const { t } = useTranslation();
+const groups = [
+  { type: "cash", icon: LuCoins },
+  { type: "bank", icon: LuLandmark },
+  { type: "savings", icon: LuLandmark },
+  { type: "wallet", icon: LuWalletCards },
+  { type: "custom", icon: LuWalletCards },
+];
+
+export default function MoneyDistribution({ accounts }) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language?.startsWith("ar") ? "ar" : "en";
 
   const hideLabel = t("dashboard.user.money.hideAccounts");
 
@@ -64,59 +74,40 @@ export default function MoneyDistribution() {
       }
     >
       <div className="money-distribution__grid">
-        <article className="money-account">
-          <AccountHeading
-            icon={LuCoins}
-            label={t("dashboard.user.money.totalCash")}
-            amount={t("dashboard.user.money.cashAmount")}
-            hideLabel={hideLabel}
-          />
+        {groups.map(({ type, icon }) => {
+          const groupAccounts = accounts.filter((account) => account.type === type);
+          if (groupAccounts.length === 0) return null;
 
-          <AccountLine
-            name={t("dashboard.user.money.cashOnHand")}
-            amount={t("dashboard.user.money.cashAmount")}
-            progress={78}
-          />
-        </article>
+          const total = groupAccounts.reduce(
+            (sum, account) => sum + Number(account.current_balance || 0),
+            0,
+          );
+          const largestBalance = Math.max(
+            ...groupAccounts.map((account) => Math.abs(Number(account.current_balance || 0))),
+            1,
+          );
 
-        <article className="money-account">
-          <AccountHeading
-            icon={LuLandmark}
-            label={t("dashboard.user.money.totalBank")}
-            amount={t("dashboard.user.money.bankAmount")}
-            hideLabel={hideLabel}
-          />
+          return (
+            <article className="money-account" key={type}>
+              <AccountHeading
+                icon={icon}
+                label={t(`dashboard.accounts.types.${type}`)}
+                amount={formatMoney(total, groupAccounts[0].currency_code, locale)}
+                hideLabel={hideLabel}
+              />
 
-          <AccountLine
-            name={t("dashboard.user.money.checking")}
-            note={t("dashboard.user.money.mercuryBank")}
-            amount={t("dashboard.user.money.checkingAmount")}
-            progress={58}
-          />
-
-          <AccountLine
-            name={t("dashboard.user.money.businessSavings")}
-            note={t("dashboard.user.money.mercuryBank")}
-            amount={t("dashboard.user.money.businessSavingsAmount")}
-            progress={88}
-          />
-        </article>
-
-        <article className="money-account money-account--wallet">
-          <AccountHeading
-            icon={LuWalletCards}
-            label={t("dashboard.user.money.totalWallets")}
-            amount={t("dashboard.user.money.walletAmount")}
-            hideLabel={hideLabel}
-          />
-
-          <AccountLine
-            name={t("dashboard.user.money.appleWallet")}
-            note={t("dashboard.user.money.applePay")}
-            amount={t("dashboard.user.money.walletAmount")}
-            progress={78}
-          />
-        </article>
+              {groupAccounts.map((account) => (
+                <AccountLine
+                  key={account.id}
+                  name={account.name}
+                  note={account.currency_code}
+                  amount={formatMoney(account.current_balance, account.currency_code, locale)}
+                  progress={(Math.abs(Number(account.current_balance || 0)) / largestBalance) * 100}
+                />
+              ))}
+            </article>
+          );
+        })}
       </div>
     </SectionCard>
   );

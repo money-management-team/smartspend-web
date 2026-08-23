@@ -1,0 +1,254 @@
+.saving-goal-card {
+  min-width: 0;
+
+  min-height: 326px;
+
+  padding:
+    20px;
+
+  box-sizing: border-box;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-lg);
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    var(--shadow-card);
+}
+
+
+/* =========================================
+   TOP
+========================================= */
+
+.saving-goal-card__top {
+  min-height: 108px;
+
+  display: flex;
+
+  align-items: flex-start;
+
+  gap: 22px;
+}
+
+
+/* =========================================
+   CONTENT
+========================================= */
+
+.saving-goal-card__content {
+  min-width: 0;
+
+  flex: 1;
+
+  padding-top: 7px;
+
+  text-align: start;
+}
+
+
+.saving-goal-card__content h2 {
+  margin: 0;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  line-height: 1.3;
+}
+
+
+.saving-goal-card__content p {
+  margin:
+    14px
+    0
+    0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 12px;
+
+  line-height: 1.45;
+}
+
+
+.saving-goal-card__separator {
+  margin-inline:
+    4px;
+}
+
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.saving-goal-card__actions {
+  margin-top: 17px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+
+/* Add Funds */
+
+.saving-goal-card__add {
+  min-width: 78px;
+
+  height: 34px;
+
+  padding:
+    0
+    14px;
+
+  border: 0;
+
+  border-radius: 999px;
+
+  color: var(--navigation-active-text);
+
+  background:
+    var(--color-primary);
+
+  font: inherit;
+
+  font-size: 10px;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 2px 6px
+    color-mix(in srgb, var(--primary) 16%, transparent);
+
+  transition:
+    background-color 160ms ease;
+}
+
+
+.saving-goal-card__add:hover {
+  background:
+    var(--color-primary-hover);
+}
+
+
+/* Delete */
+
+.saving-goal-card__delete {
+  width: 38px;
+
+  height: 34px;
+
+  flex:
+    0
+    0
+    38px;
+
+  padding: 0;
+
+  display: grid;
+
+  place-items: center;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 999px;
+
+  color: var(--danger);
+
+  background:
+    var(--color-surface);
+
+  cursor: pointer;
+
+  box-shadow:
+    var(--shadow-xs);
+
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+
+.saving-goal-card__delete:hover {
+  border-color:
+    color-mix(in srgb, var(--danger) 35%, transparent);
+
+  background:
+    var(--danger-soft);
+}
+
+
+.saving-goal-card__delete svg {
+  width: 15px;
+
+  height: 15px;
+}
+
+
+/* =========================================
+   RTL
+========================================= */
+
+[dir="rtl"]
+.saving-goal-card {
+  direction: rtl;
+}
+
+
+[dir="rtl"]
+.saving-goal-card__content {
+  text-align: right;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 520px) {
+  .saving-goal-card {
+    min-height: auto;
+
+    padding:
+      17px;
+  }
+
+
+  .saving-goal-card__top {
+    gap: 15px;
+  }
+
+
+  .saving-goal-card__content p {
+    font-size: 11px;
+  }
+}
+
+
+@media (max-width: 390px) {
+  .saving-goal-card__top {
+    align-items: center;
+
+    flex-direction: column;
+  }
+
+
+  .saving-goal-card__content {
+    width: 100%;
+  }
+}

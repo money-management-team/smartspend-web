@@ -5,9 +5,10 @@ import "./AccountFilters.css";
 const filters = [
   "all",
   "bank",
-  "credit",
   "wallet",
   "cash",
+  "savings",
+  "custom",
 ];
 
 export default function AccountFilters({
@@ -36,9 +37,7 @@ export default function AccountFilters({
               onChange(filter)
             }
           >
-            {t(
-              `dashboard.accounts.filters.${filter}`,
-            )}
+            {t(`dashboard.accounts.filters.${filter}`)}
           </button>
         );
       })}

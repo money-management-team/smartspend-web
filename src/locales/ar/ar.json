@@ -1,4 +1,21 @@
 {
+  "common": {
+    "retry": "إعادة المحاولة",
+    "close": "إغلاق",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "saving": "جارٍ الحفظ...",
+    "notAvailable": "غير متوفر"
+  },
+  "api": {
+    "errors": {
+      "network": "تعذر الاتصال بالخادم. تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.",
+      "requestFailed": "تعذر إكمال الطلب. يرجى المحاولة مرة أخرى.",
+      "rateLimited": "تم تجاوز عدد المحاولات. حاول مجددًا بعد {{seconds}} ثوانٍ.",
+      "aFew": "عدة",
+      "workspaceUnavailable": "تعذر تحديد مساحة العمل الحالية."
+    }
+  },
   "auth": {
     "register": {
       "title": "إنشاء حساب جديد",
@@ -160,7 +177,8 @@
   },
   "dashboard": {
     "header": {
-      "searchPlaceholder": "البحث في المعاملات والحسابات..."
+      "searchPlaceholder": "البحث في المعاملات والحسابات...",
+      "userProfile": "الملف الشخصي"
     },
     "sidebar": {
       "tagline": "إدارة مالية بالذكاء الاصطناعي",
@@ -189,7 +207,8 @@
       "hero": {
         "month": "أغسطس ٢٠٢٦",
         "title": "أهلاً بعودتك، ليلى",
-        "subtitle": "أموالك على المسار الصحيح هذا الشهر. صافي التدفق النقدي ارتفع 12.4٪.",
+        "welcome": "أهلاً بعودتك، {{name}}",
+        "subtitle": "ملخص مباشر لحساباتك وعملياتك خلال الفترة المحددة.",
         "balance": "$US ٥٠٬٨٩٠",
         "balanceLabel": "الرصيد الإجمالي",
         "actions": {
@@ -198,6 +217,9 @@
           "transfer": "تحويل",
           "goal": "هدف جديد"
         }
+      },
+      "states": {
+        "loading": "جارٍ تحميل لوحة التحكم..."
       },
       "summary": {
         "cash": {
@@ -233,7 +255,9 @@
         "businessSavingsAmount": "$US ٣٢٬٧٥٠",
         "mercuryBank": "Mercury Bank",
         "appleWallet": "محفظة أبل",
-        "applePay": "Apple Pay"
+        "applePay": "Apple Pay",
+        "accountsCount_one": "{{count}} حساب",
+        "accountsCount_other": "{{count}} حسابات"
       },
       "stats": {
         "title": "إحصائيات عامة",
@@ -392,14 +416,18 @@
         "bank": "حساب بنكي",
         "credit": "بطاقة ائتمان",
         "wallet": "محفظة رقمية",
-        "cash": "نقد"
+        "cash": "نقد",
+        "savings": "حساب ادخار",
+        "custom": "حساب مخصص"
       },
 
       "types": {
         "bank": "حساب بنكي",
         "credit": "بطاقة ائتمان",
         "wallet": "محفظة رقمية",
-        "cash": "نقد"
+        "cash": "نقد",
+        "savings": "حساب ادخار",
+        "custom": "حساب مخصص"
       },
 
       "items": {
@@ -423,7 +451,21 @@
       "updatedToday": "تم التحديث اليوم",
       "creditLimit": "حد الائتمان",
       "edit": "تعديل",
-      "delete": "حذف الحساب"
+      "delete": "حذف الحساب",
+      "archive": "أرشفة الحساب",
+      "confirmArchive": "هل تريد أرشفة الحساب «{{name}}»؟",
+      "form": {
+        "createTitle": "إضافة حساب جديد",
+        "editTitle": "تعديل الحساب",
+        "name": "اسم الحساب",
+        "type": "نوع الحساب",
+        "currency": "العملة",
+        "openingBalance": "الرصيد الافتتاحي"
+      },
+      "states": {
+        "loading": "جارٍ تحميل الحسابات...",
+        "empty": "لا توجد حسابات ضمن هذا التصنيف."
+      }
     },
     "financialOperations": {
   "title": "العمليات المالية",
@@ -443,13 +485,19 @@
   "types": {
     "expense": "مصروف",
     "income": "دخل",
-    "transfer": "تحويل"
+    "transfer": "تحويل",
+    "fee": "رسوم",
+    "reversal": "عملية عكس"
   },
 
   "form": {
     "amount": "المبلغ",
     "category": "الفئة",
     "account": "الحساب",
+    "destinationAccount": "الحساب المستلم",
+    "selectDestinationAccount": "اختر الحساب المستلم",
+    "noCategories": "لا توجد تصنيفات متاحة",
+    "noAccounts": "لا توجد حسابات متاحة",
     "note": "ملاحظة",
     "notePlaceholder": "وصف مختصر",
     "date": "التاريخ",
@@ -458,7 +506,17 @@
 
   "ledger": {
     "title": "السجل",
-    "delete": "حذف العملية"
+    "delete": "عكس العملية",
+    "reversePrompt": "اكتب سبب عكس العملية (3 أحرف على الأقل):"
+  },
+
+  "states": {
+    "loading": "جارٍ تحميل العمليات...",
+    "empty": "لا توجد عمليات."
+  },
+
+  "messages": {
+    "created": "تمت إضافة العملية بنجاح."
   },
 
   "filters": {
@@ -765,7 +823,8 @@
     },
 
     "save": "حفظ",
-    "saving": "جارٍ الحفظ..."
+    "saving": "جارٍ الحفظ...",
+    "saved": "تم حفظ البيانات بنجاح."
   },
 
   "security": {
@@ -784,7 +843,16 @@
     "security": "الأمان",
     "faq": "الأسئلة الشائعة",
     "signIn": "تسجيل الدخول",
-    "startNow": "ابدأ الآن"
+    "startNow": "ابدأ الآن",
+    "dashboard": "لوحة التحكم"
+  },
+
+  "notFound": {
+    "eyebrow": "هل تهت في رحلتك المالية؟",
+    "title": "هذه الصفحة خرجت عن الميزانية",
+    "description": "قد تكون الصفحة التي تبحث عنها قد نُقلت أو تغيرت أو لم تعد موجودة. دعنا نعيدك إلى المسار الصحيح.",
+    "home": "العودة للرئيسية",
+    "back": "الرجوع للخلف"
   },
 
   "hero": {

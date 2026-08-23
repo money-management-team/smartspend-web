@@ -17,6 +17,7 @@ import SavingsGoals from "../features/Dashboards/User/SavingsGoals/SavingsGoals"
 import Settings from "../features/Dashboards/User/Settings/Settings";
 
 import Home from "../features/PublicPages/Home/Home";
+import NotFound from "../features/PublicPages/NotFound/NotFound";
 
 import AuthLayout from "../layouts/AuthLayout/AuthLayout";
 import DashboardLayout from "../layouts/DashboardLayout/DashboardLayout";
@@ -36,6 +37,10 @@ const routes = [
       {
         index: true,
         element: <Home />,
+      },
+      {
+        path: "*",
+        element: <NotFound />,
       },
     ],
   },

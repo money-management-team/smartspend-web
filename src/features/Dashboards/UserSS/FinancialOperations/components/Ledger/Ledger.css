@@ -1,0 +1,310 @@
+.ledger {
+  min-width: 0;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-lg);
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    var(--shadow-card);
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.ledger__header {
+  min-height: 82px;
+
+  padding:
+    17px
+    20px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 18px;
+
+  box-sizing: border-box;
+
+  border-bottom:
+    1px solid
+    var(--color-border);
+}
+
+
+.ledger__header h2 {
+  margin: 0;
+
+  font-size: 14px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================
+   FILTERS
+========================================= */
+
+.ledger__filters {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  flex-wrap: wrap;
+}
+
+
+.ledger__filter {
+  height: 30px;
+
+  padding:
+    0
+    14px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 999px;
+
+  color:
+    var(--color-text-secondary);
+
+  background:
+    var(--color-surface);
+
+  font: inherit;
+
+  font-size: 10px;
+
+  cursor: pointer;
+}
+
+
+.ledger__filter--active {
+  border-color:
+    var(--color-primary);
+
+  color: var(--navigation-active-text);
+
+  background:
+    var(--color-primary);
+}
+
+
+/* =========================================
+   LIST
+========================================= */
+
+.ledger__list {
+  padding:
+    18px
+    20px;
+}
+
+
+/* =========================================
+   ROW
+========================================= */
+
+.ledger-row {
+  min-height: 62px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    auto;
+
+  align-items: center;
+
+  gap: 16px;
+
+  border-bottom:
+    1px solid
+    var(--color-border);
+}
+
+
+.ledger-row:last-child {
+  border-bottom: 0;
+}
+
+
+/* COPY */
+
+.ledger-row__copy {
+  min-width: 0;
+
+  display: grid;
+
+  gap: 5px;
+
+  text-align: start;
+}
+
+
+.ledger-row__copy strong {
+  overflow: hidden;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 12px;
+
+  font-weight: 500;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+
+.ledger-row__copy small {
+  overflow: hidden;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 9px;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+
+/* AMOUNT */
+
+.ledger-row__amount {
+  min-width: 72px;
+
+  text-align: end;
+
+  font-size: 11px;
+
+  font-weight: 500;
+
+  white-space: nowrap;
+}
+
+
+.ledger-row__amount--income {
+  color:
+    var(--color-success);
+}
+
+
+.ledger-row__amount--expense {
+  color: var(--danger);
+}
+
+
+.ledger-row__amount--transfer {
+  color:
+    var(--color-text-secondary);
+}
+
+
+/* DELETE */
+
+.ledger-row__delete {
+  width: 30px;
+
+  height: 30px;
+
+  display: grid;
+
+  place-items: center;
+
+  padding: 0;
+
+  border: 0;
+
+  border-radius: 50%;
+
+  color:
+    var(--color-text-secondary);
+
+  background:
+    transparent;
+
+  cursor: pointer;
+}
+
+
+.ledger-row__delete:hover {
+  color: var(--danger);
+
+  background:
+    var(--danger-soft);
+}
+
+
+.ledger-row__delete svg {
+  width: 14px;
+
+  height: 14px;
+}
+
+
+/* =========================================
+   RTL
+========================================= */
+
+[dir="rtl"]
+.ledger {
+  direction: rtl;
+}
+
+
+[dir="rtl"]
+.ledger-row__copy {
+  text-align: right;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 650px) {
+  .ledger__header {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+
+  .ledger__list {
+    padding-inline: 14px;
+  }
+
+
+  .ledger-row {
+    gap: 8px;
+  }
+
+
+  .ledger-row__copy small {
+    white-space: normal;
+
+    line-height: 1.4;
+  }
+}

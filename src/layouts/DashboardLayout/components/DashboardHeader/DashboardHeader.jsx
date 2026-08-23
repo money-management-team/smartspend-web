@@ -10,15 +10,31 @@ import {
 
 import { useTranslation } from "react-i18next";
 
+import { useAuthContext } from "../../../../contexts/auth/useAuthContext";
 import { useThemeContext } from "../../../../contexts/theme/useThemeContext";
 
 import "./DashboardHeader.css";
+
+const getUserInitials = (name) => {
+  const nameParts = name?.trim().split(/\s+/).filter(Boolean) ?? [];
+
+  if (nameParts.length === 0) return "U";
+
+  if (nameParts.length === 1) {
+    return Array.from(nameParts[0]).slice(0, 2).join("").toLocaleUpperCase();
+  }
+
+  return `${Array.from(nameParts[0])[0]}${Array.from(nameParts.at(-1))[0]}`
+    .toLocaleUpperCase();
+};
 
 export default function DashboardHeader({
   onToggleSidebar,
 }) {
   const { t, i18n } = useTranslation();
+  const { user } = useAuthContext();
   const { isDark, toggleTheme } = useThemeContext();
+  const userInitials = getUserInitials(user?.name);
 
   const isArabic =
     (
@@ -95,8 +111,10 @@ export default function DashboardHeader({
         <button
           type="button"
           className="dashboard-header__avatar"
+          aria-label={user?.name || t("dashboard.header.userProfile")}
+          title={user?.name || undefined}
         >
-          LH
+          {userInitials}
         </button>
       </div>
     </header>

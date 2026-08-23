@@ -1,141 +1,13 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import {
   LuTrash2,
 } from "react-icons/lu";
 
 import { useTranslation } from "react-i18next";
+import { getApiErrorMessage } from "../../../api/apiClient";
 
 import "./Ledger.css";
-
-const transactions = [
-  {
-    id: 1,
-    key: "retainer",
-    category: "salary",
-    account: "checking",
-    date: "2026-08-03",
-    amount: 4200,
-    type: "income",
-  },
-  {
-    id: 2,
-    key: "businessSavings",
-    category: "transfer",
-    account: "checking",
-    date: "2026-08-02",
-    amount: 1500,
-    type: "transfer",
-  },
-  {
-    id: 3,
-    key: "wholeFoods",
-    category: "groceries",
-    account: "platinum",
-    date: "2026-08-02",
-    amount: -184,
-    type: "expense",
-  },
-  {
-    id: 4,
-    key: "figma",
-    category: "software",
-    account: "platinum",
-    date: "2026-08-01",
-    amount: -144,
-    type: "expense",
-  },
-  {
-    id: 5,
-    key: "uber",
-    category: "transport",
-    account: "wallet",
-    date: "2026-07-31",
-    amount: -62,
-    type: "expense",
-  },
-  {
-    id: 6,
-    key: "dividend",
-    category: "investments",
-    account: "savings",
-    date: "2026-07-30",
-    amount: 810,
-    type: "income",
-  },
-  {
-    id: 7,
-    key: "nobu",
-    category: "food",
-    account: "platinum",
-    date: "2026-07-29",
-    amount: -268,
-    type: "expense",
-  },
-  {
-    id: 8,
-    key: "electricity",
-    category: "utilities",
-    account: "checking",
-    date: "2026-07-28",
-    amount: -132,
-    type: "expense",
-  },
-  {
-    id: 9,
-    key: "workshop",
-    category: "freelance",
-    account: "checking",
-    date: "2026-07-27",
-    amount: 1600,
-    type: "income",
-  },
-  {
-    id: 10,
-    key: "gym",
-    category: "health",
-    account: "wallet",
-    date: "2026-07-26",
-    amount: -89,
-    type: "expense",
-  },
-  {
-    id: 11,
-    key: "dubai",
-    category: "travel",
-    account: "platinum",
-    date: "2026-07-24",
-    amount: -640,
-    type: "expense",
-  },
-  {
-    id: 12,
-    key: "cash",
-    category: "transfer",
-    account: "checking",
-    date: "2026-07-22",
-    amount: 300,
-    type: "transfer",
-  },
-  {
-    id: 13,
-    key: "coffee",
-    category: "food",
-    account: "cash",
-    date: "2026-07-21",
-    amount: -46,
-    type: "expense",
-  },
-  {
-    id: 14,
-    key: "appStore",
-    category: "freelance",
-    account: "checking",
-    date: "2026-07-20",
-    amount: 980,
-    type: "income",
-  },
-];
 
 const filters = [
   "all",
@@ -144,25 +16,44 @@ const filters = [
   "transfer",
 ];
 
-export default function Ledger() {
+export default function Ledger({
+  transactions,
+  isLoading,
+  error,
+  onRetry,
+  onReverse,
+}) {
   const { t } = useTranslation();
 
   const [filter, setFilter] =
     useState("all");
+  const [reversingId, setReversingId] = useState(null);
+  const [actionError, setActionError] = useState("");
 
-  const filtered =
-    filter === "all"
-      ? transactions
-      : transactions.filter(
-          (transaction) =>
-            transaction.type === filter,
-        );
+  const filtered = useMemo(
+    () =>
+      filter === "all"
+        ? transactions
+        : transactions.filter((transaction) => transaction.type === filter),
+    [filter, transactions],
+  );
 
-  const handleDelete = (id) => {
-    console.log(
-      "Delete transaction",
-      id,
+  const handleReverse = async (transaction) => {
+    const reason = window.prompt(
+      t("dashboard.financialOperations.ledger.reversePrompt"),
     );
+    if (!reason || reason.trim().length < 3) return;
+
+    setReversingId(transaction.id);
+    setActionError("");
+
+    try {
+      await onReverse(transaction.id, reason.trim());
+    } catch (requestError) {
+      setActionError(getApiErrorMessage(requestError, t));
+    } finally {
+      setReversingId(null);
+    }
   };
 
   return (
@@ -198,7 +89,25 @@ export default function Ledger() {
       </header>
 
       <div className="ledger__list">
-        {filtered.map(
+        {isLoading && (
+          <p className="ledger__state">
+            {t("dashboard.financialOperations.states.loading")}
+          </p>
+        )}
+        {!isLoading && error && (
+          <div className="ledger__state ledger__state--error" role="alert">
+            <p>{error}</p>
+            <button type="button" onClick={onRetry}>{t("common.retry")}</button>
+          </div>
+        )}
+        {!isLoading && !error && filtered.length === 0 && (
+          <p className="ledger__state">
+            {t("dashboard.financialOperations.states.empty")}
+          </p>
+        )}
+        {actionError && <p className="ledger__state ledger__state--error">{actionError}</p>}
+
+        {!isLoading && !error && filtered.map(
           (transaction) => (
             <article
               className="ledger-row"
@@ -206,21 +115,18 @@ export default function Ledger() {
             >
               <div className="ledger-row__copy">
                 <strong>
-                  {t(
-                    `dashboard.financialOperations.transactions.${transaction.key}`,
-                  )}
+                  {transaction.description ||
+                    transaction.category?.name ||
+                    t(`dashboard.financialOperations.types.${transaction.type}`)}
                 </strong>
 
                 <small>
-                  {t(
-                    `dashboard.financialOperations.categories.${transaction.category}`,
-                  )}
+                  {transaction.category?.name ||
+                    t(`dashboard.financialOperations.types.${transaction.type}`)}
                   {" · "}
-                  {t(
-                    `dashboard.financialOperations.accounts.${transaction.account}`,
-                  )}
+                  {transaction.ledger_entries?.[0]?.account?.name || t("common.notAvailable")}
                   {" · "}
-                  {transaction.date}
+                  {new Date(transaction.occurred_at).toLocaleDateString()}
                 </small>
               </div>
 
@@ -228,34 +134,27 @@ export default function Ledger() {
                 className={`ledger-row__amount ledger-row__amount--${transaction.type}`}
                 dir="ltr"
               >
-                {transaction.amount > 0 &&
-                transaction.type === "income"
+                {transaction.type === "income"
                   ? "+"
-                  : transaction.amount < 0
+                  : transaction.type === "expense" || transaction.type === "fee"
                     ? "-"
                     : ""}
-                $
-                {Math.abs(
-                  transaction.amount,
-                ).toLocaleString(
-                  "en-US",
-                )}
+                {Number(transaction.amount).toLocaleString("en-US")} {transaction.currency_code}
               </strong>
 
+              {transaction.status === "posted" && transaction.type !== "reversal" && (
               <button
                 type="button"
                 className="ledger-row__delete"
-                onClick={() =>
-                  handleDelete(
-                    transaction.id,
-                  )
-                }
+                onClick={() => handleReverse(transaction)}
+                disabled={reversingId === transaction.id}
                 aria-label={t(
                   "dashboard.financialOperations.ledger.delete",
                 )}
               >
                 <LuTrash2 />
               </button>
+              )}
             </article>
           ),
         )}

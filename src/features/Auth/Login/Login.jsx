@@ -6,6 +6,7 @@ import logo from "../../../assets/smart-spend-logo.png";
 
 import "./Login.css";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuthContext } from "../../../contexts/auth/useAuthContext";
 import { PATH } from "../../../routes/Path";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
@@ -38,6 +39,7 @@ export default function Login() {
   const { language } = useLanguageContext();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { setToken, setUser, setRole } = useAuthContext();
   const isArabic = language === "ar";
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
@@ -106,7 +108,11 @@ export default function Login() {
       localStorage.setItem("remember_login", String(form.remember));
       localStorage.removeItem("workspace");
 
-      navigate("/Dashboard", { replace: true });
+      setToken(result.data.token);
+      setUser(result.data.user);
+      setRole(result.data.user?.role || "user");
+
+      navigate(PATH.USER.DASHBOARD, { replace: true });
     } catch {
       setGeneralError(
         "تعذر الاتصال بالخادم. تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.",

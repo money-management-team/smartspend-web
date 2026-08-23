@@ -8,12 +8,15 @@ import {
 } from "react-icons/lu";
 
 import logo from "../../../assets/smart-spend-logo.png";
+import { useAuthContext } from "../../../contexts/auth/useAuthContext";
 import { useThemeContext } from "../../../contexts/theme/useThemeContext";
+import { PATH } from "../../../routes/Path";
 
 import "./PublicChrome.css";
 
 export default function PublicNavbar() {
   const { t, i18n } = useTranslation();
+  const { isAuthenticated } = useAuthContext();
   const { isDark, toggleTheme } = useThemeContext();
 
   const currentLanguage = i18n.resolvedLanguage || i18n.language || "en";
@@ -72,16 +75,27 @@ export default function PublicNavbar() {
             {isDark ? <LuSun /> : <LuMoon />}
           </button>
 
-          <NavLink to="/signin" className="home-navbar__signin">
-            {t("home.nav.signIn")}
-          </NavLink>
+          {isAuthenticated ? (
+            <NavLink
+              to={PATH.USER.DASHBOARD}
+              className="home-primary-button home-navbar__start"
+            >
+              {t("home.nav.dashboard")}
+            </NavLink>
+          ) : (
+            <>
+              <NavLink to={PATH.AUTH.SIGNIN} className="home-navbar__signin">
+                {t("home.nav.signIn")}
+              </NavLink>
 
-          <NavLink
-            to="/register"
-            className="home-primary-button home-navbar__start"
-          >
-            {t("home.nav.startNow")}
-          </NavLink>
+              <NavLink
+                to={PATH.AUTH.REGISTER}
+                className="home-primary-button home-navbar__start"
+              >
+                {t("home.nav.startNow")}
+              </NavLink>
+            </>
+          )}
         </div>
       </div>
     </header>

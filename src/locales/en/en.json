@@ -1,4 +1,21 @@
 {
+  "common": {
+    "retry": "Try again",
+    "close": "Close",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "notAvailable": "Not available"
+  },
+  "api": {
+    "errors": {
+      "network": "Unable to connect to the server. Check your internet connection and try again.",
+      "requestFailed": "Unable to complete the request. Please try again.",
+      "rateLimited": "Too many attempts. Try again after {{seconds}} seconds.",
+      "aFew": "a few",
+      "workspaceUnavailable": "Unable to determine the current workspace."
+    }
+  },
   "auth": {
     "register": {
       "title": "Create a new account",
@@ -164,7 +181,8 @@
   },
   "dashboard": {
     "header": {
-      "searchPlaceholder": "Search transactions, accounts..."
+      "searchPlaceholder": "Search transactions, accounts...",
+      "userProfile": "User profile"
     },
     "sidebar": {
       "tagline": "AI money management",
@@ -193,7 +211,8 @@
       "hero": {
         "month": "August 2026",
         "title": "Welcome back, Layla",
-        "subtitle": "Your money is on track this month. Net cash flow is up 12.4%.",
+        "welcome": "Welcome back, {{name}}",
+        "subtitle": "A live summary of your accounts and transactions for the selected period.",
         "balance": "$50,890",
         "balanceLabel": "Total balance",
         "actions": {
@@ -202,6 +221,9 @@
           "transfer": "Transfer",
           "goal": "New goal"
         }
+      },
+      "states": {
+        "loading": "Loading dashboard..."
       },
       "summary": {
         "cash": {
@@ -237,7 +259,9 @@
         "businessSavingsAmount": "$32,750",
         "mercuryBank": "Mercury Bank",
         "appleWallet": "Apple Wallet",
-        "applePay": "Apple Pay"
+        "applePay": "Apple Pay",
+        "accountsCount_one": "{{count}} account",
+        "accountsCount_other": "{{count}} accounts"
       },
       "stats": {
         "title": "General statistics",
@@ -396,14 +420,18 @@
     "bank": "Bank account",
     "credit": "Credit card",
     "wallet": "Digital wallet",
-    "cash": "Cash"
+    "cash": "Cash",
+    "savings": "Savings account",
+    "custom": "Custom account"
   },
 
   "types": {
     "bank": "Bank account",
     "credit": "Credit card",
     "wallet": "Digital wallet",
-    "cash": "Cash"
+    "cash": "Cash",
+    "savings": "Savings account",
+    "custom": "Custom account"
   },
 
   "items": {
@@ -427,7 +455,21 @@
   "updatedToday": "Updated today",
   "creditLimit": "Credit limit",
   "edit": "Edit",
-  "delete": "Delete account"
+  "delete": "Delete account",
+  "archive": "Archive account",
+  "confirmArchive": "Do you want to archive the account “{{name}}”?",
+  "form": {
+    "createTitle": "Add new account",
+    "editTitle": "Edit account",
+    "name": "Account name",
+    "type": "Account type",
+    "currency": "Currency",
+    "openingBalance": "Opening balance"
+  },
+  "states": {
+    "loading": "Loading accounts...",
+    "empty": "No accounts found for this filter."
+  }
 },"financialOperations": {
   "title": "Financial operations",
   "subtitle": "Record income, expenses and transfers, and review your ledger.",
@@ -446,13 +488,19 @@
   "types": {
     "expense": "Expense",
     "income": "Income",
-    "transfer": "Transfer"
+    "transfer": "Transfer",
+    "fee": "Fee",
+    "reversal": "Reversal"
   },
 
   "form": {
     "amount": "Amount",
     "category": "Category",
     "account": "Account",
+    "destinationAccount": "Destination account",
+    "selectDestinationAccount": "Select the destination account",
+    "noCategories": "No categories available",
+    "noAccounts": "No accounts available",
     "note": "Note",
     "notePlaceholder": "Short description",
     "date": "Date",
@@ -461,7 +509,17 @@
 
   "ledger": {
     "title": "Ledger",
-    "delete": "Delete operation"
+    "delete": "Reverse transaction",
+    "reversePrompt": "Enter the reversal reason (at least 3 characters):"
+  },
+
+  "states": {
+    "loading": "Loading transactions...",
+    "empty": "No transactions found."
+  },
+
+  "messages": {
+    "created": "Transaction added successfully."
   },
 
   "filters": {
@@ -770,7 +828,8 @@
     },
 
     "save": "Save",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "saved": "Profile saved successfully."
   },
 
   "security": {
@@ -790,7 +849,16 @@
     "security": "Security",
     "faq": "FAQ",
     "signIn": "Sign in",
-    "startNow": "Start now"
+    "startNow": "Start now",
+    "dashboard": "Dashboard"
+  },
+
+  "notFound": {
+    "eyebrow": "Lost in your financial journey?",
+    "title": "This page has gone off budget",
+    "description": "The page you are looking for may have moved, changed, or no longer exists. Let us get you back on track.",
+    "home": "Back to home",
+    "back": "Go back"
   },
 
   "hero": {

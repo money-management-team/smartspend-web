@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import logo from "../../../assets/smart-spend-logo.png";
 
 import "./Register.css";
+import { useAuthContext } from "../../../contexts/auth/useAuthContext";
 import { PATH } from "../../../routes/Path";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -71,6 +72,7 @@ const featureIcons = [ShieldIcon, SparklesIcon, CardIcon];
 export default function Register() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { setToken, setUser, setRole } = useAuthContext();
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
@@ -145,7 +147,11 @@ export default function Register() {
       localStorage.setItem("user", JSON.stringify(result.data.user));
       localStorage.setItem("workspace", JSON.stringify(result.data.workspace));
 
-      navigate("/Dashboard", { replace: true });
+      setToken(result.data.token);
+      setUser(result.data.user);
+      setRole(result.data.user?.role || "user");
+
+      navigate(PATH.USER.DASHBOARD, { replace: true });
     } catch {
       setGeneralError(
         "تعذر الاتصال بالخادم. تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.",
