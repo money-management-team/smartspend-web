@@ -1,4 +1,5 @@
-import { NavLink } from "react-router-dom";
+import { useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -20,13 +21,36 @@ import {
 import logo from "../../../../assets/smart-spend-logo.png";
 
 import "./DashboardSidebar.css";
+import { useAuthContext } from "../../../../contexts/auth/useAuthContext";
 import { PATH } from "../../../../routes/Path";
 
 export default function DashboardSidebar({
   isOpen,
   onClose,
 }) {
+  const navigate = useNavigate();
   const { t } = useTranslation();
+  const { logout } = useAuthContext();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleLogout = async () => {
+    if (isLoggingOut) return;
+
+    setIsLoggingOut(true);
+
+    try {
+      await logout();
+    } catch (error) {
+      console.error(
+        "Logout failed:",
+        error.response?.data?.message || error.message
+      );
+    } finally {
+      setIsLoggingOut(false);
+      onClose?.();
+      navigate(PATH.AUTH.SIGNIN, { replace: true });
+    }
+  };
 
   const menuGroups = [
     {
@@ -151,7 +175,7 @@ export default function DashboardSidebar({
           : ""
       }`}
     >
-      <div className="dashboard-sidebar__brand">
+      <Link to= {PATH.HOME} className="dashboard-sidebar__brand">
         <img
           src={logo}
           alt="Smart Spend"
@@ -176,7 +200,7 @@ export default function DashboardSidebar({
         >
           <LuX />
         </button>
-      </div>
+      </Link>
 
       <nav className="dashboard-sidebar__nav">
         {menuGroups.map((group) => (
@@ -223,8 +247,11 @@ export default function DashboardSidebar({
 
       <div className="dashboard-sidebar__footer">
         <button
+          onClick={handleLogout}
           type="button"
           className="dashboard-sidebar__logout"
+          disabled={isLoggingOut}
+          aria-busy={isLoggingOut}
         >
           <LuLogOut />
 

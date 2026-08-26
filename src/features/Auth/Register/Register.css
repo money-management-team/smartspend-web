@@ -160,6 +160,10 @@
   text-align: start;
 }
 
+.register-form-panel__header {
+  text-align: center;
+
+}
 .register-form-panel__header h1 {
   margin: 0;
   color: var(--color-text-primary);
@@ -167,6 +171,8 @@
   line-height: 1.22;
   font-weight: 750;
   letter-spacing: -0.45px;
+  
+  
 }
 
 .register-form-panel__header p {
@@ -412,7 +418,7 @@
   letter-spacing: 0;
 }
 
-@media (max-width: 1240px) {
+@media (max-width: 1400px) {
   .register-promo {
     width: min(54vw, 600px);
     flex-basis: min(54vw, 600px);
@@ -423,7 +429,7 @@
   }
 }
 
-@media (max-width: 1040px) {
+@media (max-width: 1200px) {
   .register-promo {
     width: 50%;
     flex-basis: 50%;
@@ -440,7 +446,7 @@
   }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1024px) {
   .register-form-panel {
     order: 1;
     width: min(100%, 480px);

@@ -583,7 +583,7 @@
    RESPONSIVE
 ========================================= */
 
-@media (max-width: 1240px) {
+@media (max-width: 1400px) {
   .verify-promo {
     width: min(54vw, 600px);
 
@@ -597,7 +597,7 @@
 }
 
 
-@media (max-width: 1040px) {
+@media (max-width: 1200px) {
   .verify-promo {
     width: 50%;
 
@@ -616,7 +616,7 @@
 }
 
 
-@media (max-width: 860px) {
+@media (max-width: 1024px) {
   .verify-form-panel {
     order: 1;
 

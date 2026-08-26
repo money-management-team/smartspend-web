@@ -145,7 +145,7 @@
   height: 556px;
 }
 
-@media (max-width: 1240px) {
+@media (max-width: 1400px) {
   .auth-shell {
     width: calc(100% - 64px);
   }
@@ -155,13 +155,13 @@
   }
 }
 
-@media (max-width: 1040px) {
+@media (max-width: 1200px) {
   .auth-card {
     gap: 36px;
   }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 1024px) {
   .auth-shell {
     width: calc(100% - 32px);
     padding-top: 16px;
@@ -174,6 +174,17 @@
     padding: 24px;
     flex-direction: column;
     overflow: visible;
+  }
+
+  .auth-card > :is(
+    .login-promo,
+    .register-promo,
+    .forgot-promo,
+    .reset-promo,
+    .verify-promo,
+    .password-changed-promo
+  ) {
+    display: none;
   }
 }
 

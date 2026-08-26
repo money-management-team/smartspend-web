@@ -14,6 +14,8 @@ import { useAuthContext } from "../../../../contexts/auth/useAuthContext";
 import { useThemeContext } from "../../../../contexts/theme/useThemeContext";
 
 import "./DashboardHeader.css";
+import { Link } from "react-router-dom";
+import { PATH } from "../../../../routes/Path";
 
 const getUserInitials = (name) => {
   const nameParts = name?.trim().split(/\s+/).filter(Boolean) ?? [];
@@ -97,7 +99,7 @@ export default function DashboardHeader({
           </span>
         </button>
 
-        <button
+        <Link to={PATH.USER.NOTIFICATIONS}
           type="button"
           className="dashboard-header__notification"
         >
@@ -106,16 +108,16 @@ export default function DashboardHeader({
           <span className="dashboard-header__notification-badge">
             3
           </span>
-        </button>
+        </Link>
 
-        <button
+        <Link to={PATH.USER.SETTING}
           type="button"
           className="dashboard-header__avatar"
           aria-label={user?.name || t("dashboard.header.userProfile")}
           title={user?.name || undefined}
         >
           {userInitials}
-        </button>
+        </Link>
       </div>
     </header>
   );

@@ -298,7 +298,7 @@
 }
 
 .login-form-panel--en .login-form__fields {
-  margin-top: 0;
+  margin-top: 29px;
 }
 
 
@@ -727,10 +727,6 @@
    ENGLISH LAYOUT
 ========================================= */
 
-.login-form-panel--en .login-form-panel__header {
-  margin-top: 20px;
-}
-
 .login-form-panel--en .login-divider {
   margin-top: 27px;
 }
@@ -752,7 +748,7 @@
    RESPONSIVE - 1240
 ========================================= */
 
-@media (max-width: 1240px) {
+@media (max-width: 1400px) {
   .login-promo {
     width: min(54vw, 600px);
 
@@ -769,7 +765,7 @@
    RESPONSIVE - TABLET
 ========================================= */
 
-@media (max-width: 1040px) {
+@media (max-width: 1200px) {
   .login-promo {
     width: 50%;
 
@@ -794,7 +790,7 @@
    RESPONSIVE - MOBILE / TABLET
 ========================================= */
 
-@media (max-width: 860px) {
+@media (max-width: 1024px) {
   .login-form-panel,
   .login-form-panel--en,
   .login-form-panel--ar {

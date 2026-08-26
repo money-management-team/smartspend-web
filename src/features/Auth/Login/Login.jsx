@@ -325,11 +325,11 @@ export default function Login() {
             </>
           ) : (
             <>
+              {heading}
+
               <div className="login-form__fields login-form__fields--english">
                 {fields}
               </div>
-
-              {heading}
 
               {social}
 

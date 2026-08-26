@@ -324,6 +324,12 @@
   background: var(--danger-soft);
 }
 
+.dashboard-sidebar__logout:disabled {
+  opacity: 0.6;
+
+  cursor: wait;
+}
+
 
 /* ================================
    RTL
