@@ -7,10 +7,11 @@ import "./Register.css";
 import { useAuthContext } from "../../../contexts/auth/useAuthContext";
 import { PATH } from "../../../routes/Path";
 import { Link, useNavigate } from "react-router-dom";
+import {
+  ApiError,
+  getApiErrorMessage,
+} from "../../Dashboards/User/api/apiClient";
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
-
-console.log(API_BASE_URL)
 
 const initialForm = {
   name: "",
@@ -72,7 +73,7 @@ const featureIcons = [ShieldIcon, SparklesIcon, CardIcon];
 export default function Register() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { setToken, setUser, setRole } = useAuthContext();
+  const { register } = useAuthContext();
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
@@ -110,52 +111,17 @@ export default function Register() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/register`, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      await register({
           name: form.name.trim(),
           identifier: form.identifier.trim(),
           password: form.password,
           password_confirmation: form.password_confirmation,
-        }),
       });
 
-      const result = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        if (response.status === 422 && result?.errors) {
-          setErrors(result.errors);
-        }
-
-        setGeneralError(
-          result?.message ?? "تعذر إنشاء الحساب. يرجى المحاولة مرة أخرى.",
-        );
-        return;
-      }
-
-      if (!result?.status || !result?.data?.token) {
-        setGeneralError("تم استلام استجابة غير متوقعة من الخادم.");
-        return;
-      }
-
-      localStorage.setItem("token", result.data.token);
-      localStorage.setItem("token_type", result.data.token_type ?? "Bearer");
-      localStorage.setItem("user", JSON.stringify(result.data.user));
-      localStorage.setItem("workspace", JSON.stringify(result.data.workspace));
-
-      setToken(result.data.token);
-      setUser(result.data.user);
-      setRole(result.data.user?.role || "user");
-
       navigate(PATH.USER.DASHBOARD, { replace: true });
-    } catch {
-      setGeneralError(
-        "تعذر الاتصال بالخادم. تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى.",
-      );
+    } catch (error) {
+      if (error instanceof ApiError) setErrors(error.errors);
+      setGeneralError(getApiErrorMessage(error, t));
     } finally {
       setIsSubmitting(false);
     }

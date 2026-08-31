@@ -1,56 +1,27 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ApiError, getApiErrorMessage } from "../../../api/apiClient";
 import { authApi } from "../../../api/authApi";
+import { useAuthContext } from "../../../../../../contexts/auth/useAuthContext";
 
 import "./ProfileSettings.css";
 
-const initialForm = {
-  name: "",
-  email: "",
-  phone: "",
-  currency: "ILS",
-};
-
 export default function ProfileSettings() {
   const { t } = useTranslation();
+  const { user, workspace, updateUser } = useAuthContext();
 
-  const [form, setForm] =
-    useState(initialForm);
+  const [form, setForm] = useState(() => ({
+    name: user?.name ?? "",
+    email: user?.email ?? "",
+    phone: user?.phone ?? "",
+    currency: workspace?.base_currency_code ?? "ILS",
+  }));
 
   const [isSaving, setIsSaving] =
     useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [hasError, setHasError] = useState(false);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const loadProfile = async () => {
-      try {
-        const response = await authApi.getCurrentUser({ signal: controller.signal });
-        const workspace = JSON.parse(localStorage.getItem("workspace") ?? "null");
-        setForm({
-          name: response.data?.name ?? "",
-          email: response.data?.email ?? "",
-          phone: response.data?.phone ?? "",
-          currency: workspace?.base_currency_code ?? "ILS",
-        });
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          setMessage(getApiErrorMessage(error, t));
-          setHasError(true);
-        }
-      } finally {
-        if (!controller.signal.aborted) setIsLoading(false);
-      }
-    };
-
-    loadProfile();
-    return () => controller.abort();
-  }, [t]);
 
   const handleChange = (event) => {
     const {
@@ -94,7 +65,7 @@ export default function ProfileSettings() {
         email: response.data.email ?? current.email,
         phone: response.data.phone ?? "",
       }));
-      localStorage.setItem("user", JSON.stringify(response.data));
+      updateUser(response.data);
       setMessage(response.message ?? t("dashboard.settings.profile.saved"));
       setHasError(false);
     } catch (error) {
@@ -136,7 +107,7 @@ export default function ProfileSettings() {
               value={form.name}
               onChange={handleChange}
               autoComplete="name"
-              disabled={isLoading || isSaving}
+              disabled={isSaving}
               required
             />
             {errors.name?.map((error) => <small key={error}>{error}</small>)}
@@ -157,7 +128,7 @@ export default function ProfileSettings() {
               value={form.email}
               onChange={handleChange}
               autoComplete="email"
-              disabled={isLoading || isSaving}
+              disabled={isSaving}
               required
             />
             {errors.email?.map((error) => <small key={error}>{error}</small>)}
@@ -179,7 +150,7 @@ export default function ProfileSettings() {
               onChange={handleChange}
               autoComplete="tel"
               dir="ltr"
-              disabled={isLoading || isSaving}
+              disabled={isSaving}
             />
             {errors.phone?.map((error) => <small key={error}>{error}</small>)}
           </label>
@@ -237,7 +208,7 @@ export default function ProfileSettings() {
         <button
           type="submit"
           className="profile-settings__save"
-          disabled={isLoading || isSaving}
+          disabled={isSaving}
         >
           {isSaving
             ? t(

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ApiError,
@@ -16,7 +16,14 @@ const types = [
   "transfer",
 ];
 
-const today = new Date().toISOString().slice(0, 10);
+function getLocalDateInputValue() {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
 
 export default function NewOperation({ accounts, categories, onCreated }) {
   const { t } = useTranslation();
@@ -24,40 +31,67 @@ export default function NewOperation({ accounts, categories, onCreated }) {
   const [type, setType] =
     useState("expense");
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState(() => ({
     amount: "",
     category_id: "",
     account_id: "",
     to_account_id: "",
+    fee_amount: "",
+    fee_category_id: "",
     note: "",
-    date: today,
-  });
+    date: getLocalDateInputValue(),
+  }));
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [hasError, setHasError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const transferKeyRef = useRef(null);
+  const transferAttemptRef = useRef(null);
 
   const availableCategories = useMemo(
     () => categories.filter((category) => category.type === type),
     [categories, type],
   );
 
-  useEffect(() => {
-    setForm((current) => ({
-      ...current,
-      account_id: current.account_id || String(accounts[0]?.id ?? ""),
-      to_account_id:
-        current.to_account_id || String(accounts.find((item) => item.id !== accounts[0]?.id)?.id ?? ""),
-    }));
-  }, [accounts]);
+  const expenseCategories = useMemo(
+    () => categories.filter((category) => category.type === "expense"),
+    [categories],
+  );
 
-  useEffect(() => {
-    setForm((current) => ({
-      ...current,
-      category_id: String(availableCategories[0]?.id ?? ""),
-    }));
-  }, [availableCategories]);
+  const sourceAccount =
+    accounts.find((account) => String(account.id) === String(form.account_id)) ??
+    accounts[0] ??
+    null;
+  const sourceAccountId = String(sourceAccount?.id ?? "");
+
+  const selectedCategory =
+    availableCategories.find(
+      (category) => String(category.id) === String(form.category_id),
+    ) ?? availableCategories[0] ?? null;
+  const selectedCategoryId = String(selectedCategory?.id ?? "");
+
+  const destinationAccounts = accounts.filter(
+    (account) =>
+      String(account.id) !== sourceAccountId &&
+      account.currency_code === sourceAccount?.currency_code,
+  );
+  const destinationAccount =
+    destinationAccounts.find(
+      (account) => String(account.id) === String(form.to_account_id),
+    ) ?? destinationAccounts[0] ?? null;
+  const destinationAccountId = String(destinationAccount?.id ?? "");
+
+  const selectedFeeCategory =
+    expenseCategories.find(
+      (category) => String(category.id) === String(form.fee_category_id),
+    ) ?? expenseCategories[0] ?? null;
+  const selectedFeeCategoryId = String(selectedFeeCategory?.id ?? "");
+  const hasTransferFee = Number(form.fee_amount) > 0;
+  const isSubmitDisabled =
+    isSubmitting ||
+    !sourceAccountId ||
+    (type === "expense" && !selectedCategoryId) ||
+    (type === "transfer" &&
+      (!destinationAccountId || (hasTransferFee && !selectedFeeCategoryId)));
 
   const handleChange = (event) => {
     const { name, value } =
@@ -67,10 +101,15 @@ export default function NewOperation({ accounts, categories, onCreated }) {
       ...previous,
       [name]: value,
     }));
-    setErrors((current) => ({ ...current, [name]: undefined }));
+    setErrors((current) => ({
+      ...current,
+      [name]: undefined,
+      ...(name === "account_id" ? { to_account_id: undefined } : {}),
+      ...(name === "fee_amount" ? { fee_category_id: undefined } : {}),
+    }));
     setMessage("");
     setHasError(false);
-    transferKeyRef.current = null;
+    transferAttemptRef.current = null;
   };
 
   const handleSubmit = async (event) => {
@@ -84,21 +123,35 @@ export default function NewOperation({ accounts, categories, onCreated }) {
 
     try {
       if (type === "transfer") {
-        transferKeyRef.current ??= createIdempotencyKey();
-        await transfersApi.create(
-          {
-            from_account_id: Number(form.account_id),
-            to_account_id: Number(form.to_account_id),
-            amount: form.amount,
-            description: form.note.trim() || undefined,
-            occurred_at: occurredAt,
-          },
-          transferKeyRef.current,
-        );
+        const payload = {
+          from_account_id: Number(sourceAccountId),
+          to_account_id: Number(destinationAccountId),
+          amount: form.amount,
+          description: form.note.trim() || undefined,
+          occurred_at: occurredAt,
+        };
+
+        if (hasTransferFee) {
+          payload.fee_amount = form.fee_amount;
+          payload.fee_category_id = Number(selectedFeeCategoryId);
+        }
+
+        const fingerprint = JSON.stringify(payload);
+
+        if (transferAttemptRef.current?.fingerprint !== fingerprint) {
+          transferAttemptRef.current = {
+            fingerprint,
+            key: createIdempotencyKey(),
+          };
+        }
+
+        await transfersApi.create(payload, transferAttemptRef.current.key);
       } else {
         const payload = {
-          account_id: Number(form.account_id),
-          category_id: form.category_id ? Number(form.category_id) : undefined,
+          account_id: Number(sourceAccountId),
+          category_id: selectedCategoryId
+            ? Number(selectedCategoryId)
+            : undefined,
           amount: form.amount,
           description: form.note.trim() || undefined,
           occurred_at: occurredAt,
@@ -110,16 +163,28 @@ export default function NewOperation({ accounts, categories, onCreated }) {
           await transactionsApi.createExpense(payload);
         }
       }
-
-      setMessage(t("dashboard.financialOperations.messages.created"));
-      setHasError(false);
-      setForm((current) => ({ ...current, amount: "", note: "" }));
-      transferKeyRef.current = null;
-      await onCreated?.();
     } catch (error) {
       setMessage(getApiErrorMessage(error, t));
       setHasError(true);
       if (error instanceof ApiError) setErrors(error.errors);
+      setIsSubmitting(false);
+      return;
+    }
+
+    setMessage(t("dashboard.financialOperations.messages.created"));
+    setHasError(false);
+    setForm((current) => ({
+      ...current,
+      amount: "",
+      fee_amount: "",
+      note: "",
+    }));
+    transferAttemptRef.current = null;
+
+    try {
+      await onCreated?.();
+    } catch (refreshError) {
+      console.error("The operation was saved, but refreshing the ledger failed.", refreshError);
     } finally {
       setIsSubmitting(false);
     }
@@ -150,8 +215,9 @@ export default function NewOperation({ accounts, categories, onCreated }) {
                   : "new-operation__type"
               }
               onClick={() => {
+                if (item === type) return;
                 setType(item);
-                transferKeyRef.current = null;
+                transferAttemptRef.current = null;
                 setMessage("");
                 setHasError(false);
                 setErrors({});
@@ -196,7 +262,7 @@ export default function NewOperation({ accounts, categories, onCreated }) {
 
           <select
             name="category_id"
-            value={form.category_id}
+            value={selectedCategoryId}
             onChange={handleChange}
             disabled={isSubmitting || availableCategories.length === 0}
             required={type === "expense"}
@@ -223,7 +289,7 @@ export default function NewOperation({ accounts, categories, onCreated }) {
 
           <select
             name="account_id"
-            value={form.account_id}
+            value={sourceAccountId}
             onChange={handleChange}
             disabled={isSubmitting || accounts.length === 0}
             required
@@ -247,22 +313,62 @@ export default function NewOperation({ accounts, categories, onCreated }) {
             <span>{t("dashboard.financialOperations.form.destinationAccount")}</span>
             <select
               name="to_account_id"
-              value={form.to_account_id}
+              value={destinationAccountId}
               onChange={handleChange}
-              disabled={isSubmitting || accounts.length < 2}
+              disabled={isSubmitting || destinationAccounts.length === 0}
               required
             >
               <option value="">
                 {t("dashboard.financialOperations.form.selectDestinationAccount")}
               </option>
-              {accounts
-                .filter((account) => String(account.id) !== String(form.account_id))
-                .map((account) => (
-                  <option value={account.id} key={account.id}>{account.name}</option>
-                ))}
+              {destinationAccounts.map((account) => (
+                <option value={account.id} key={account.id}>
+                  {account.name} ({account.currency_code})
+                </option>
+              ))}
             </select>
             {errors.to_account_id?.map((error) => <small key={error}>{error}</small>)}
           </label>
+        )}
+
+        {type === "transfer" && (
+          <>
+            <label className="new-operation__field">
+              <span>{t("dashboard.financialOperations.types.fee")}</span>
+              <input
+                type="number"
+                name="fee_amount"
+                value={form.fee_amount}
+                onChange={handleChange}
+                placeholder="0.00"
+                min="0"
+                step="0.0001"
+                disabled={isSubmitting}
+              />
+              {errors.fee_amount?.map((error) => <small key={error}>{error}</small>)}
+            </label>
+
+            <label className="new-operation__field">
+              <span>{t("dashboard.financialOperations.form.category")}</span>
+              <select
+                name="fee_category_id"
+                value={selectedFeeCategoryId}
+                onChange={handleChange}
+                disabled={isSubmitting || expenseCategories.length === 0}
+                required={hasTransferFee}
+              >
+                {expenseCategories.length === 0 && (
+                  <option value="">
+                    {t("dashboard.financialOperations.form.noCategories")}
+                  </option>
+                )}
+                {expenseCategories.map((category) => (
+                  <option value={category.id} key={category.id}>{category.name}</option>
+                ))}
+              </select>
+              {errors.fee_category_id?.map((error) => <small key={error}>{error}</small>)}
+            </label>
+          </>
         )}
 
         <label className="new-operation__field">
@@ -304,7 +410,7 @@ export default function NewOperation({ accounts, categories, onCreated }) {
         <button
           type="submit"
           className="new-operation__submit"
-          disabled={isSubmitting || accounts.length === 0}
+          disabled={isSubmitDisabled}
         >
           {isSubmitting
             ? t("common.saving")

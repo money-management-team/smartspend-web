@@ -104,10 +104,6 @@ export default function DashboardHeader({
           className="dashboard-header__notification"
         >
           <LuBell />
-
-          <span className="dashboard-header__notification-badge">
-            3
-          </span>
         </Link>
 
         <Link to={PATH.USER.SETTING}

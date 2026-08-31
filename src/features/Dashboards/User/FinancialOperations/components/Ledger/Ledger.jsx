@@ -1,13 +1,16 @@
 import { useMemo, useState } from "react";
 
 import {
-  LuTrash2,
+  LuUndo2,
 } from "react-icons/lu";
 
 import { useTranslation } from "react-i18next";
 import { getApiErrorMessage } from "../../../api/apiClient";
+import { useAuthContext } from "../../../../../../contexts/auth/useAuthContext";
+import { formatDate } from "../../../utils/formatters";
 
 import "./Ledger.css";
+import Loading from "../../../../../../components/Loading/Loading";
 
 const filters = [
   "all",
@@ -23,7 +26,10 @@ export default function Ledger({
   onRetry,
   onReverse,
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const { user, workspace } = useAuthContext();
+  const locale = i18n.language?.startsWith("ar") ? "ar" : "en";
+  const timeZone = user?.timezone ?? workspace?.timezone;
 
   const [filter, setFilter] =
     useState("all");
@@ -90,9 +96,7 @@ export default function Ledger({
 
       <div className="ledger__list">
         {isLoading && (
-          <p className="ledger__state">
-            {t("dashboard.financialOperations.states.loading")}
-          </p>
+          <Loading message={false} />
         )}
         {!isLoading && error && (
           <div className="ledger__state ledger__state--error" role="alert">
@@ -126,7 +130,7 @@ export default function Ledger({
                   {" · "}
                   {transaction.ledger_entries?.[0]?.account?.name || t("common.notAvailable")}
                   {" · "}
-                  {new Date(transaction.occurred_at).toLocaleDateString()}
+                  {formatDate(transaction.occurred_at, locale, timeZone)}
                 </small>
               </div>
 
@@ -142,7 +146,8 @@ export default function Ledger({
                 {Number(transaction.amount).toLocaleString("en-US")} {transaction.currency_code}
               </strong>
 
-              {transaction.status === "posted" && transaction.type !== "reversal" && (
+              {transaction.status === "posted" &&
+                ["expense", "transfer"].includes(transaction.type) && (
               <button
                 type="button"
                 className="ledger-row__delete"
@@ -151,8 +156,9 @@ export default function Ledger({
                 aria-label={t(
                   "dashboard.financialOperations.ledger.delete",
                 )}
+                title={t("dashboard.financialOperations.ledger.delete")}
               >
-                <LuTrash2 />
+                <LuUndo2 />
               </button>
               )}
             </article>

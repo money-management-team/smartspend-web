@@ -3,16 +3,17 @@ import {
   LuCoins,
   LuLandmark,
   LuWalletCards,
-  LuChevronUp,
 } from "react-icons/lu";
+import { Link } from "react-router-dom";
+import { PATH } from "../../../../../../routes/Path";
 
 import SectionCard from "../shared/SectionCard";
 import ProgressBar from "../shared/ProgressBar";
 
 import "./MoneyDistribution.css";
-import { formatMoney } from "../../../utils/formatters";
+import { formatMoney, sumMoney } from "../../../utils/formatters";
 
-function AccountHeading({ icon: Icon, label, amount, hideLabel }) {
+function AccountHeading({ icon: Icon, label, amount }) {
   return (
     <div className="money-account__heading">
       <span className="money-account__icon">
@@ -23,11 +24,6 @@ function AccountHeading({ icon: Icon, label, amount, hideLabel }) {
         <small>{label}</small>
         <strong>{amount}</strong>
       </div>
-
-      <button type="button" className="money-account__hide">
-        {hideLabel}
-        <LuChevronUp />
-      </button>
     </div>
   );
 }
@@ -60,40 +56,48 @@ export default function MoneyDistribution({ accounts }) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language?.startsWith("ar") ? "ar" : "en";
 
-  const hideLabel = t("dashboard.user.money.hideAccounts");
-
   return (
     <SectionCard
       className="money-distribution"
       title={t("dashboard.user.money.title")}
       subtitle={t("dashboard.user.money.subtitle")}
       action={
-        <button type="button" className="dashboard-section-link">
+        <Link to={PATH.USER.ACCOUNTS} className="dashboard-section-link">
           {t("dashboard.user.common.viewAll")}
-        </button>
+        </Link>
       }
     >
       <div className="money-distribution__grid">
-        {groups.map(({ type, icon }) => {
-          const groupAccounts = accounts.filter((account) => account.type === type);
-          if (groupAccounts.length === 0) return null;
+        {groups.flatMap(({ type, icon }) => {
+          const byCurrency = new Map();
 
-          const total = groupAccounts.reduce(
-            (sum, account) => sum + Number(account.current_balance || 0),
-            0,
-          );
-          const largestBalance = Math.max(
-            ...groupAccounts.map((account) => Math.abs(Number(account.current_balance || 0))),
-            1,
-          );
+          accounts
+            .filter((account) => account.type === type)
+            .forEach((account) => {
+              const currency = account.currency_code ?? "ILS";
+              byCurrency.set(currency, [
+                ...(byCurrency.get(currency) ?? []),
+                account,
+              ]);
+            });
 
-          return (
-            <article className="money-account" key={type}>
+          return Array.from(byCurrency, ([currency, groupAccounts]) => {
+            const total = sumMoney(
+              groupAccounts.map((account) => account.current_balance),
+            );
+            const largestBalance = Math.max(
+              ...groupAccounts.map((account) =>
+                Math.abs(Number(account.current_balance || 0)),
+              ),
+              1,
+            );
+
+            return (
+            <article className="money-account" key={`${type}-${currency}`}>
               <AccountHeading
                 icon={icon}
-                label={t(`dashboard.accounts.types.${type}`)}
-                amount={formatMoney(total, groupAccounts[0].currency_code, locale)}
-                hideLabel={hideLabel}
+                label={`${t(`dashboard.accounts.types.${type}`)} · ${currency}`}
+                amount={formatMoney(total, currency, locale)}
               />
 
               {groupAccounts.map((account) => (
@@ -106,7 +110,8 @@ export default function MoneyDistribution({ accounts }) {
                 />
               ))}
             </article>
-          );
+            );
+          });
         })}
       </div>
     </SectionCard>

@@ -1,9 +1,19 @@
 import { useLanguageContext } from "../../contexts/language/useLanguageContext";
 import logo from "../../assets/smart-spend-logo.png";
 import "./AuthLayout.css";
-import { Outlet } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import { useThemeContext } from "../../contexts/theme/useThemeContext";
-import AuthOrbitCanvas from "./AuthOrbitCanvas";
+import { PATH } from "../../routes/Path";
+import AuthAnimatedBackground from "./AuthAnimatedBackground";
+
+const AUTH_VARIANTS = {
+  [PATH.AUTH.SIGNIN]: "login",
+  [PATH.AUTH.REGISTER]: "register",
+  [PATH.AUTH.FORGOT_PASSWORD]: "forgot",
+  [PATH.AUTH.VERIFY_CODE]: "verify",
+  [PATH.AUTH.RESET_PASSWORD]: "reset",
+  [PATH.AUTH.PASSWORD_CHANGED]: "password-changed",
+};
 
 function GlobeIcon() {
   return (
@@ -31,33 +41,47 @@ function SunIcon() {
   );
 }
 
-export default function AuthLayout({ variant = "register" }) {
+export default function AuthLayout({ variant }) {
   const { language, changeLanguage } = useLanguageContext();
   const { isDark, toggleTheme } = useThemeContext();
+  const { pathname } = useLocation();
 
   const isArabic = language === "ar";
   const direction = isArabic ? "rtl" : "ltr";
+  const activeVariant = variant ?? AUTH_VARIANTS[pathname] ?? "login";
+
+  const themeLabel = isArabic
+    ? isDark
+      ? "تفعيل الوضع الفاتح"
+      : "تفعيل الوضع الداكن"
+    : isDark
+      ? "Enable light mode"
+      : "Enable dark mode";
+
+  const languageLabel = isArabic
+    ? "Switch language to English"
+    : "تغيير اللغة إلى العربية";
 
   const handleChangeLanguage = async () => {
     await changeLanguage();
   };
+
   return (
     <div className="auth-shell" dir={direction}>
-      <AuthOrbitCanvas />
+      <AuthAnimatedBackground />
 
       <header className="auth-header">
-        <a className="auth-brand" href="/" aria-label="Smart Spend">
+        <Link className="auth-brand" to={PATH.HOME} aria-label="Smart Spend">
           <img src={logo} alt="" />
           <strong>{isArabic ? "سمارت سبيند" : "Smart Spend"}</strong>
-        </a>
+        </Link>
 
         <div className="auth-actions">
           <button
             className="auth-action auth-action--theme"
             type="button"
-            aria-label={
-              isDark ? "Enable light mode" : "Enable dark mode"
-            }
+            aria-label={themeLabel}
+            title={themeLabel}
             onClick={toggleTheme}
           >
             {isDark ? <SunIcon /> : <MoonIcon />}
@@ -66,6 +90,7 @@ export default function AuthLayout({ variant = "register" }) {
           <button
             className="auth-action auth-action--language"
             type="button"
+            aria-label={languageLabel}
             onClick={handleChangeLanguage}
           >
             <GlobeIcon />
@@ -74,7 +99,12 @@ export default function AuthLayout({ variant = "register" }) {
         </div>
       </header>
 
-      <main className={`auth-card auth-card--${variant}`}>{<Outlet />}</main>
+      <main
+        className={`auth-card auth-card--${activeVariant}`}
+        data-auth-page={activeVariant}
+      >
+        <Outlet />
+      </main>
     </div>
   );
 }

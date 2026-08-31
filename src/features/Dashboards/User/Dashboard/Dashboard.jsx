@@ -9,58 +9,42 @@ import CashFlowChart from "./components/CashFlowChart/CashFlowChart";
 import ExpenseCategories from "./components/ExpenseCategories/ExpenseCategories";
 import BudgetProgress from "./components/BudgetProgress/BudgetProgress";
 import SavingsGoals from "./components/SavingsGoals/SavingsGoals";
-import UpcomingBills from "./components/UpcomingBills/UpcomingBills";
 import RecentTransactions from "./components/RecentTransactions/RecentTransactions";
-import AIInsights from "./components/AIInsights/AIInsights";
 import { dashboardApi } from "../api/dashboardApi";
-import { authApi } from "../api/authApi";
-import { getApiErrorMessage } from "../api/apiClient";
-
+import {
+  getApiErrorMessage,
+  getStoredWorkspace,
+} from "../api/apiClient";
+import { useAuthContext } from "../../../../contexts/auth/useAuthContext";
 import "./Dashboard.css";
+import Loading from "../../../../components/Loading/Loading";
 
 export default function Dashboard() {
   const { t } = useTranslation();
+  const { user, updateWorkspace } = useAuthContext();
   const [dashboard, setDashboard] = useState(null);
-  const [user, setUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("user")) ?? null;
-    } catch {
-      return null;
-    }
-  });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   const loadDashboard = useCallback(async (signal) => {
-    setIsLoading(true);
-    setError("");
-
     try {
-      const [dashboardResponse, userResponse] = await Promise.all([
-        dashboardApi.get({}, { signal }),
-        authApi.getCurrentUser({ signal }),
-      ]);
+      const dashboardResponse = await dashboardApi.get({}, { signal });
 
       setDashboard(dashboardResponse.data);
-      setUser(userResponse.data);
-      localStorage.setItem("user", JSON.stringify(userResponse.data));
+      setError("");
 
       const workspaceId =
         dashboardResponse.data?.scope?.workspace_id ??
         dashboardResponse.data?.scope?.workspace_ids?.[0];
 
       if (workspaceId) {
-        let storedWorkspace = {};
-        try {
-          storedWorkspace = JSON.parse(localStorage.getItem("workspace")) ?? {};
-        } catch {
-          storedWorkspace = {};
-        }
-
-        localStorage.setItem(
-          "workspace",
-          JSON.stringify({ ...storedWorkspace, id: workspaceId }),
-        );
+        updateWorkspace({
+          ...(getStoredWorkspace() ?? {}),
+          id: workspaceId,
+          base_currency_code:
+            dashboardResponse.data?.scope?.primary_currency_code,
+          timezone: dashboardResponse.data?.period?.timezone,
+        });
       }
     } catch (requestError) {
       if (requestError.name !== "AbortError") {
@@ -69,19 +53,23 @@ export default function Dashboard() {
     } finally {
       if (!signal?.aborted) setIsLoading(false);
     }
-  }, [t]);
+  }, [t, updateWorkspace]);
 
   useEffect(() => {
     const controller = new AbortController();
-    loadDashboard(controller.signal);
+    void loadDashboard(controller.signal);
     return () => controller.abort();
   }, [loadDashboard]);
 
+  const handleRetry = () => {
+    setIsLoading(true);
+    setError("");
+    void loadDashboard();
+  };
+
   if (isLoading) {
     return (
-      <div className="user-dashboard__state">
-        {t("dashboard.user.states.loading")}
-      </div>
+      <Loading message={false} />
     );
   }
 
@@ -89,7 +77,7 @@ export default function Dashboard() {
     return (
       <div className="user-dashboard__state user-dashboard__state--error" role="alert">
         <p>{error}</p>
-        <button type="button" onClick={() => loadDashboard()}>
+        <button type="button" onClick={handleRetry}>
           {t("common.retry")}
         </button>
       </div>
@@ -117,14 +105,12 @@ export default function Dashboard() {
       </div>
 
       <div className="user-dashboard__three-grid">
-        <BudgetProgress />
-        <SavingsGoals />
-        <UpcomingBills />
+        <BudgetProgress budgets={dashboard?.planning?.budgets?.items ?? []} />
+        <SavingsGoals goals={dashboard?.planning?.savings_goals?.items ?? []} />
       </div>
 
       <div className="user-dashboard__bottom-grid">
         <RecentTransactions transactions={dashboard?.recent_transactions ?? []} />
-        <AIInsights />
       </div>
     </div>
   );

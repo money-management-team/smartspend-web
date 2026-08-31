@@ -271,6 +271,7 @@
 
 .home-navbar__links a {
   position: relative;
+  cursor: pointer;
 
   padding:
     9px

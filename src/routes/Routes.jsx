@@ -24,6 +24,7 @@ import DashboardLayout from "../layouts/DashboardLayout/DashboardLayout";
 import PublicLayout from "../layouts/PublicLayout/PublicLayout";
 
 import { PATH } from "./Path";
+import { GuestOnly, RequireAuth } from "./RouteGuards";
 
 /* =========================
    Public Routes
@@ -53,7 +54,11 @@ const routes = [
 const guestRoutes = [
   {
     path: "/",
-    element: <AuthLayout />,
+    element: (
+      <GuestOnly>
+        <AuthLayout />
+      </GuestOnly>
+    ),
     children: [
       {
         path: PATH.AUTH.SIGNIN,
@@ -90,7 +95,11 @@ const guestRoutes = [
 const userRoutes = [
   {
     path: "/",
-    element: <DashboardLayout />,
+    element: (
+      <RequireAuth>
+        <DashboardLayout />
+      </RequireAuth>
+    ),
     children: [
       {
         path: PATH.USER.DASHBOARD,

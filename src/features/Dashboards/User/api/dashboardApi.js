@@ -1,4 +1,9 @@
-import { apiRequest, ApiError } from "./apiClient";
+import {
+  apiRequest,
+  ApiError,
+  getStoredWorkspace,
+  updateStoredWorkspace,
+} from "./apiClient";
 
 export const dashboardApi = {
   get: (query = {}, options = {}) =>
@@ -6,38 +11,33 @@ export const dashboardApi = {
 };
 
 export async function resolveWorkspaceId(options = {}) {
-  const storedWorkspace = localStorage.getItem("workspace");
-
-  if (storedWorkspace) {
-    try {
-      const workspace = JSON.parse(storedWorkspace);
-      if (workspace?.id) return workspace.id;
-    } catch {
-      localStorage.removeItem("workspace");
-    }
-  }
-
   const response = await dashboardApi.get({}, options);
-  const workspaceId =
-    response.data?.scope?.workspace_id ?? response.data?.scope?.workspace_ids?.[0];
-
-  if (workspaceId) {
-    let currentWorkspace = {};
-    try {
-      currentWorkspace = JSON.parse(localStorage.getItem("workspace")) ?? {};
-    } catch {
-      currentWorkspace = {};
-    }
-
-    localStorage.setItem(
-      "workspace",
-      JSON.stringify({ ...currentWorkspace, id: workspaceId }),
-    );
-  }
+  const scope = response.data?.scope ?? {};
+  const workspaceIds = Array.from(
+    new Set(
+      [scope.workspace_id, ...(scope.workspace_ids ?? [])]
+        .filter(Boolean)
+        .map(Number),
+    ),
+  );
+  const storedWorkspace = getStoredWorkspace();
+  const storedWorkspaceId = Number(storedWorkspace?.id);
+  const workspaceId = workspaceIds.includes(storedWorkspaceId)
+    ? storedWorkspaceId
+    : workspaceIds.length === 1
+      ? workspaceIds[0]
+      : null;
 
   if (!workspaceId) {
     throw new ApiError("", { code: "WORKSPACE_UNAVAILABLE" });
   }
+
+  updateStoredWorkspace({
+    ...(storedWorkspace ?? {}),
+    id: workspaceId,
+    base_currency_code: scope.primary_currency_code,
+    timezone: response.data?.period?.timezone,
+  });
 
   return workspaceId;
 }

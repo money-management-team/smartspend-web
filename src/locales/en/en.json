@@ -10,6 +10,9 @@
   "api": {
     "errors": {
       "network": "Unable to connect to the server. Check your internet connection and try again.",
+      "timeout": "The request took too long. Please try again.",
+      "unexpected": "The server returned an unexpected response. Please try again.",
+      "server": "The server could not complete the request. Please try again shortly.",
       "requestFailed": "Unable to complete the request. Please try again.",
       "rateLimited": "Too many attempts. Try again after {{seconds}} seconds.",
       "aFew": "a few",
@@ -315,7 +318,8 @@
           "groceries": "$612 / $900",
           "transport": "$188 / $350",
           "software": "$431 / $400"
-        }
+        },
+        "empty": "No active budgets."
       },
       "savingsGoals": {
         "title": "Savings goals",
@@ -323,7 +327,8 @@
           "emergency": "Emergency Fund",
           "studio": "Studio Office",
           "macbook": "New MacBook"
-        }
+        },
+        "empty": "No active savings goals."
       },
       "upcomingBills": {
         "title": "Upcoming bills",
@@ -411,646 +416,625 @@
       }
     },
     "accounts": {
-  "title": "Accounts",
-  "subtitle": "Cash, bank accounts, wallets and cards in one place.",
-  "add": "Add account",
-
-  "filters": {
-    "all": "All",
-    "bank": "Bank account",
-    "credit": "Credit card",
-    "wallet": "Digital wallet",
-    "cash": "Cash",
-    "savings": "Savings account",
-    "custom": "Custom account"
-  },
-
-  "types": {
-    "bank": "Bank account",
-    "credit": "Credit card",
-    "wallet": "Digital wallet",
-    "cash": "Cash",
-    "savings": "Savings account",
-    "custom": "Custom account"
-  },
-
-  "items": {
-    "checking": {
-      "name": "Main Checking"
-    },
-    "savings": {
-      "name": "Business Savings"
-    },
-    "appleWallet": {
-      "name": "Apple Wallet"
-    },
-    "platinum": {
-      "name": "Platinum Card"
-    },
-    "cash": {
-      "name": "Cash on hand"
-    }
-  },
-
-  "updatedToday": "Updated today",
-  "creditLimit": "Credit limit",
-  "edit": "Edit",
-  "delete": "Delete account",
-  "archive": "Archive account",
-  "confirmArchive": "Do you want to archive the account “{{name}}”?",
-  "form": {
-    "createTitle": "Add new account",
-    "editTitle": "Edit account",
-    "name": "Account name",
-    "type": "Account type",
-    "currency": "Currency",
-    "openingBalance": "Opening balance"
-  },
-  "states": {
-    "loading": "Loading accounts...",
-    "empty": "No accounts found for this filter."
-  }
-},"financialOperations": {
-  "title": "Financial operations",
-  "subtitle": "Record income, expenses and transfers, and review your ledger.",
-
-  "smartCapture": {
-    "title": "Smart capture",
-    "description": "Say your operation out loud, or snap the invoice and we'll fill the fields automatically.",
-    "scan": "Scan receipt",
-    "upload": "Upload transfer screenshot"
-  },
-
-  "newOperation": {
-    "title": "New operation"
-  },
-
-  "types": {
-    "expense": "Expense",
-    "income": "Income",
-    "transfer": "Transfer",
-    "fee": "Fee",
-    "reversal": "Reversal"
-  },
-
-  "form": {
-    "amount": "Amount",
-    "category": "Category",
-    "account": "Account",
-    "destinationAccount": "Destination account",
-    "selectDestinationAccount": "Select the destination account",
-    "noCategories": "No categories available",
-    "noAccounts": "No accounts available",
-    "note": "Note",
-    "notePlaceholder": "Short description",
-    "date": "Date",
-    "submit": "Save operation"
-  },
-
-  "ledger": {
-    "title": "Ledger",
-    "delete": "Reverse transaction",
-    "reversePrompt": "Enter the reversal reason (at least 3 characters):"
-  },
-
-  "states": {
-    "loading": "Loading transactions...",
-    "empty": "No transactions found."
-  },
-
-  "messages": {
-    "created": "Transaction added successfully."
-  },
-
-  "filters": {
-    "all": "All",
-    "expense": "Expenses",
-    "income": "Income",
-    "transfer": "Transfers"
-  },
-
-  "categories": {
-    "salary": "Salary",
-    "transfer": "Transfer",
-    "groceries": "Groceries",
-    "software": "Software",
-    "transport": "Transport",
-    "investments": "Investments",
-    "food": "Food & drink",
-    "utilities": "Utilities",
-    "freelance": "Freelance",
-    "health": "Health",
-    "travel": "Travel"
-  },
-
-  "accounts": {
-    "checking": "Main Checking",
-    "savings": "Business Savings",
-    "wallet": "Apple Wallet",
-    "platinum": "Platinum Card",
-    "cash": "Cash on hand"
-  },
-
-  "transactions": {
-    "retainer": "Client retainer — Nexa",
-    "businessSavings": "To Business Savings",
-    "wholeFoods": "Whole Foods",
-    "figma": "Figma annual",
-    "uber": "Uber rides",
-    "dividend": "Dividend payout",
-    "nobu": "Nobu dinner",
-    "electricity": "Electricity bill",
-    "workshop": "Consulting workshop",
-    "gym": "Gym membership",
-    "dubai": "Flight to Dubai",
-    "cash": "To Cash on hand",
-    "coffee": "Coffee roasters",
-    "appStore": "App Store payout"
-  }
-},
-"recurring": {
-  "title": "Recurring operations",
-  "subtitle": "Salaries, rent, bills and subscriptions — reviewed before every deduction.",
-
-  "actions": {
-    "addIncome": "Add recurring income",
-    "addExpense": "Add recurring expense",
-    "schedule": "Schedule",
-    "edit": "Edit",
-    "delete": "Delete"
-  },
-
-  "sections": {
-    "dueNow": "Due now",
-    "dueSubtitle": "Review these before they are deducted.",
-    "income": "Recurring income",
-    "expenses": "Recurring expenses"
-  },
-
-  "items": {
-    "internet": "Internet",
-    "rent": "Rent",
-    "salary": "Monthly salary",
-    "subscriptions": "Subscriptions"
-  },
-
-  "categories": {
-    "utilities": "Utilities",
-    "housing": "Housing",
-    "salary": "Salary",
-    "software": "Software"
-  },
-
-  "accounts": {
-    "checking": "Main Checking",
-    "platinum": "Platinum Card"
-  },
-
-  "frequency": {
-    "monthly": "Monthly"
-  },
-
-  "next": "Next",
-  "overdue": "Overdue",
-  "inDays_one": "in {{count}} day",
-  "inDays_other": "in {{count}} days",
-  "previousAmount": "Previous amount",
-
-  "confirmDeduction": "Confirm deduction",
-  "confirmDeposit": "Confirm deposit"
-},
-"importPage": {
-  "title": "Import bank statement",
-  "subtitle": "PDF, Excel or CSV — extracted, reviewed and matched before import.",
-
-  "steps": {
-    "label": "Import progress",
-    "upload": "Upload file",
-    "extract": "Extract data",
-    "review": "Review data",
-    "match": "Match operations",
-    "confirm": "Confirm import"
-  },
-
-  "upload": {
-    "title": "Upload file",
-    "supported": "Supported: PDF, XLSX, CSV",
-    "dropTitle": "Drag & drop your file here",
-    "browse": "Browse files",
-    "remove": "Remove file"
-  },
-
-  "account": {
-    "label": "Detected account",
-    "checking": "Main Checking",
-    "savings": "Business Savings",
-    "wallet": "Apple Wallet",
-    "cash": "Cash on hand"
-  }
-},"budgets": {
-  "title": "Budgets",
-  "subtitle": "Monthly limits per category, tracked live.",
-  "create": "Create budget",
-
-  "summary": {
-    "monthly": "Monthly budget",
-    "spent": "Spent",
-    "remaining": "Remaining"
-  },
-
-  "list": {
-    "title": "Budgets",
-    "subtitle": "Monthly limits per category, tracked live."
-  },
-
-  "categories": {
-    "dining": "Dining",
-    "groceries": "Groceries",
-    "transport": "Transport",
-    "software": "Software",
-    "travel": "Travel",
-    "health": "Health"
-  },
-
-  "remaining": "Remaining",
-  "overBudget": "Over budget",
-  "delete": "Delete budget"
-},"savingsGoals": {
-  "title": "Savings goals",
-  "subtitle": "Track targets and let AI pick your pace.",
-  "newGoal": "New goal",
-
-  "saved": "Saved",
-  "target": "Target",
-
-  "addFunds": "Add funds",
-  "delete": "Delete goal",
-
-  "goals": {
-    "emergency": "Emergency Fund",
-    "studio": "Studio Office",
-    "macbook": "New MacBook"
-  },
-
-  "plans": {
-    "title": "AI saving plans",
-    "fast": "Fast",
-    "balanced": "Balanced",
-    "comfortable": "Comfortable",
-    "month": "month"
-  }
-}
-,"reports": {
-  "title": "Reports",
-  "subtitle": "Income, expenses and monthly analytics.",
-
-  "exportPdf": "Export PDF",
-  "exportExcel": "Export Excel",
-
-  "summary": {
-    "savingsRate": "Savings rate",
-    "topCategory": "Top category",
-    "averageSpend": "Avg. daily spend"
-  },
-
-  "tabs": {
-    "monthly": "Monthly report",
-    "income": "Income report",
-    "expense": "Expense report"
-  },
-
-  "chart": {
-    "monthlyReport": "Monthly report",
-    "incomeReport": "Income report",
-    "expenseReport": "Expense report",
-    "lastEightMonths": "Last 8 months",
-    "income": "Income",
-    "expenses": "Expenses"
-  },
-
-  "expenseCategories": "Expense categories",
-
-  "categories": {
-    "travel": "Travel",
-    "dining": "Dining",
-    "groceries": "Groceries",
-    "software": "Software",
-    "utilities": "Utilities",
-    "health": "Health",
-    "transport": "Transport"
-  },
-
-  "months": {
-    "jan": "Jan",
-    "feb": "Feb",
-    "mar": "Mar",
-    "apr": "Apr",
-    "may": "May",
-    "jun": "Jun",
-    "jul": "Jul",
-    "aug": "Aug"
-  }
-},"aiAssistant": {
-  "title": "AI Financial Assistant",
-  "subtitle": "Ask anything about your money.",
-
-  "initialMessage": "Your July net cash flow was +$4,450. Dining is your fastest-growing category at +24%. Want a plan to bring it back in line?",
-
-  "conversations": {
-    "title": "Conversations",
-    "newChat": "New chat",
-    "monthlyAnalysis": "Monthly analysis",
-    "savingsTips": "Savings tips",
-    "budgetSuggestions": "Budget suggestions"
-  },
-
-  "suggestions": {
-    "safeSavings": "How much can I safely save this month?",
-    "julySpending": "Where did my money go in July?",
-    "diningBudget": "Suggest a budget for dining",
-    "emergencyFund": "Am I on track for my emergency fund?"
-  },
-
-  "input": {
-    "placeholder": "Ask Smart Spend...",
-    "send": "Send",
-    "sending": "Sending..."
-  }
-},
-"notifications": {
-  "title": "Notifications",
-  "subtitle": "Alerts, bills and AI nudges.",
-
-  "markAllAsRead": "Mark all as read",
-  "unread": "Unread",
-
-  "items": {
-    "rent": {
-      "title": "Rent due in 4 days",
-      "description": "$1,850 will be charged from Main Checking on Aug 28."
-    },
-
-    "softwareBudget": {
-      "title": "Software budget exceeded",
-      "description": "You are $31 over the monthly software limit."
-    },
-
-    "monthlyAnalysis": {
-      "title": "AI monthly analysis ready",
-      "description": "Your July breakdown and 3 recommendations are available."
-    },
-
-    "newDevice": {
-      "title": "New device signed in",
-      "description": "MacBook Pro · Amman, Jordan."
-    }
-  }
-},
-"settings": {
-  "title": "Settings",
-  "subtitle": "Profile, security and preferences.",
-
-  "tabs": {
-    "label": "Settings sections",
-    "profile": "Profile",
-    "security": "Security",
-    "preferences": "Preferences"
-  },
-
-  "profile": {
-    "title": "Profile",
-
-    "fields": {
-      "fullName": "Full name",
-      "email": "Email",
-      "phone": "Phone",
-      "currency": "Currency"
-    },
-
-    "save": "Save",
-    "saving": "Saving...",
-    "saved": "Profile saved successfully."
-  },
-
-  "security": {
-    "title": "Security"
-  },
-
-  "preferences": {
-    "title": "Preferences"
-  }
-}
-  }
-  ,
-  "home": {
-  "nav": {
-    "features": "Features",
-    "howItWorks": "How it works",
-    "security": "Security",
-    "faq": "FAQ",
-    "signIn": "Sign in",
-    "startNow": "Start now",
-    "dashboard": "Dashboard"
-  },
-
-  "notFound": {
-    "eyebrow": "Lost in your financial journey?",
-    "title": "This page has gone off budget",
-    "description": "The page you are looking for may have moved, changed, or no longer exists. Let us get you back on track.",
-    "home": "Back to home",
-    "back": "Go back"
-  },
-
-  "hero": {
-    "badge": "AI-powered personal finance",
-    "titleStart": "Manage your money smarter,",
-    "titleHighlight": "all in one place",
-    "description": "Smart Spend connects your accounts, organizes every transaction, tracks your budgets and savings goals, and explains your spending in plain language.",
-    "primaryButton": "Start managing my money",
-    "watchDemo": "Watch the demo",
-    "users": "50,000+ users trust Smart Spend"
-  },
-
-  "stats": {
-    "users": {
-      "title": "50k+ Users",
-      "text": "Growing community"
-    },
-    "security": {
-      "title": "Secure Financial Data",
-      "text": "Encrypted end to end"
-    },
-    "ai": {
-      "title": "AI-Powered Insights",
-      "text": "Clear, useful advice"
-    },
-    "monitoring": {
-      "title": "24/7 Monitoring",
-      "text": "Always watching your accounts"
-    }
-  },
-
-  "features": {
-    "title": "Smart features for every need",
-    "subtitle": "Everything you need to understand, plan and grow your money.",
-
-    "items": {
-      "sync": {
-        "title": "Automatic Sync",
-        "description": "Connect your accounts and automatically organize transactions."
+      "title": "Accounts",
+      "subtitle": "Cash, bank accounts, wallets and cards in one place.",
+      "add": "Add account",
+      "filters": {
+        "all": "All",
+        "bank": "Bank account",
+        "credit": "Credit card",
+        "wallet": "Digital wallet",
+        "cash": "Cash",
+        "savings": "Savings account",
+        "custom": "Custom account"
       },
-      "analytics": {
-        "title": "Smart Analytics",
-        "description": "Understand where your money goes."
+      "types": {
+        "bank": "Bank account",
+        "credit": "Credit card",
+        "wallet": "Digital wallet",
+        "cash": "Cash",
+        "savings": "Savings account",
+        "custom": "Custom account"
       },
-      "goals": {
-        "title": "Savings Goals",
-        "description": "Set financial goals and track your progress."
+      "items": {
+        "checking": {
+          "name": "Main Checking"
+        },
+        "savings": {
+          "name": "Business Savings"
+        },
+        "appleWallet": {
+          "name": "Apple Wallet"
+        },
+        "platinum": {
+          "name": "Platinum Card"
+        },
+        "cash": {
+          "name": "Cash on hand"
+        }
       },
-      "security": {
-        "title": "Trusted Security",
-        "description": "Keep your financial information protected."
+      "updatedToday": "Updated today",
+      "creditLimit": "Credit limit",
+      "edit": "Edit",
+      "delete": "Delete account",
+      "archive": "Archive account",
+      "confirmArchive": "Do you want to archive the account “{{name}}”?",
+      "form": {
+        "createTitle": "Add new account",
+        "editTitle": "Edit account",
+        "name": "Account name",
+        "type": "Account type",
+        "currency": "Currency",
+        "openingBalance": "Opening balance"
       },
-      "alerts": {
-        "title": "Custom Alerts",
-        "description": "Get alerts about budgets and upcoming bills."
-      },
-      "budgets": {
-        "title": "Shared Budgets",
-        "description": "Manage shared spending with family or partners."
+      "states": {
+        "loading": "Loading accounts...",
+        "empty": "No accounts found for this filter."
       }
-    }
-  },
-
-  "ai": {
-    "badge": "AI Assistant",
-    "title": "Your money, explained by AI",
-    "description": "Smart Spend reads your patterns and turns them into clear next steps.",
-    "primary": "View insights",
-    "secondary": "See recommendations",
-    "cardTitle": "Your dining expenses increased 18% this month.",
-    "recommendation": "Recommendation",
-    "recommendationText": "Reducing dining expenses by 10% could help you save approximately $45 this month."
-  },
-
-  "steps": {
-    "title": "Start your journey in 3 simple steps",
-    "subtitle": "Setup takes a few minutes. The clarity lasts.",
-
-    "items": {
-      "account": {
-        "title": "Create your account",
-        "description": "Sign up in under a minute, no card required."
+    },
+    "financialOperations": {
+      "title": "Financial operations",
+      "subtitle": "Record income, expenses and transfers, and review your ledger.",
+      "smartCapture": {
+        "title": "Smart capture",
+        "description": "Say your operation out loud, or snap the invoice and we'll fill the fields automatically.",
+        "scan": "Scan receipt",
+        "upload": "Upload transfer screenshot"
       },
-      "connect": {
-        "title": "Link your accounts",
-        "description": "Securely connect banks and cards in a few taps."
+      "newOperation": {
+        "title": "New operation"
       },
-      "control": {
-        "title": "Control your money",
-        "description": "Track budgets, bills and savings in one place."
-      }
-    }
-  },
-
-  "security": {
-    "badge": "Security",
-    "title": "Your financial data stays protected",
-    "subtitle": "Security is a default, not a feature you have to turn on.",
-
-    "items": {
-      "connections": {
-        "title": "Secure account connections",
-        "description": "Read-only connections through trusted providers."
+      "types": {
+        "expense": "Expense",
+        "income": "Income",
+        "transfer": "Transfer",
+        "fee": "Fee",
+        "reversal": "Reversal"
       },
-      "storage": {
-        "title": "Strong data protection",
-        "description": "Data is encrypted in transit and at rest."
+      "form": {
+        "amount": "Amount",
+        "category": "Category",
+        "account": "Account",
+        "destinationAccount": "Destination account",
+        "selectDestinationAccount": "Select the destination account",
+        "noCategories": "No categories available",
+        "noAccounts": "No accounts available",
+        "note": "Note",
+        "notePlaceholder": "Short description",
+        "date": "Date",
+        "submit": "Save operation"
       },
-      "privacy": {
-        "title": "Privacy-focused design",
-        "description": "We never sell your personal financial data."
+      "ledger": {
+        "title": "Ledger",
+        "delete": "Reverse transaction",
+        "reversePrompt": "Enter the reversal reason (at least 3 characters):"
       },
-      "monitoring": {
-        "title": "Real-time monitoring",
-        "description": "Unusual activity is flagged when it happens."
-      }
-    }
-  },
-
-  "dashboardPreview": {
-    "title": "Everything you need, in one dashboard",
-    "subtitle": "Balance, income, expenses, savings, budgets, transactions and AI insights — one clear view."
-  },
-
-  "preview": {
-    "totalBalance": "Total balance",
-    "income": "Income",
-    "expenses": "Expenses",
-    "savings": "Savings",
-    "monthlyBudget": "Monthly budget",
-    "recentTransactions": "Recent transactions"
-  },
-
-  "faq": {
-    "title": "Frequently Asked Questions",
-    "subtitle": "Answers to the questions we hear most.",
-
-    "items": {
-      "security": {
-        "question": "Is my financial data safe?",
-        "answer": "Your data is encrypted in transit and at rest, and account connections are read-only by default."
+      "states": {
+        "loading": "Loading transactions...",
+        "empty": "No transactions found."
+      },
+      "messages": {
+        "created": "Transaction added successfully."
+      },
+      "filters": {
+        "all": "All",
+        "expense": "Expenses",
+        "income": "Income",
+        "transfer": "Transfers"
       },
       "categories": {
-        "question": "How are expenses categorized?",
-        "answer": "Smart Spend automatically categorizes transactions and lets you edit categories at any time."
+        "salary": "Salary",
+        "transfer": "Transfer",
+        "groceries": "Groceries",
+        "software": "Software",
+        "transport": "Transport",
+        "investments": "Investments",
+        "food": "Food & drink",
+        "utilities": "Utilities",
+        "freelance": "Freelance",
+        "health": "Health",
+        "travel": "Travel"
       },
-      "multipleAccounts": {
-        "question": "Can I connect multiple accounts?",
-        "answer": "Yes. You can manage multiple bank accounts, wallets and cards."
+      "accounts": {
+        "checking": "Main Checking",
+        "savings": "Business Savings",
+        "wallet": "Apple Wallet",
+        "platinum": "Platinum Card",
+        "cash": "Cash on hand"
       },
-      "freePlan": {
-        "question": "Is there a free plan?",
-        "answer": "Smart Spend can support different subscription plans depending on your account."
+      "transactions": {
+        "retainer": "Client retainer — Nexa",
+        "businessSavings": "To Business Savings",
+        "wholeFoods": "Whole Foods",
+        "figma": "Figma annual",
+        "uber": "Uber rides",
+        "dividend": "Dividend payout",
+        "nobu": "Nobu dinner",
+        "electricity": "Electricity bill",
+        "workshop": "Consulting workshop",
+        "gym": "Gym membership",
+        "dubai": "Flight to Dubai",
+        "cash": "To Cash on hand",
+        "coffee": "Coffee roasters",
+        "appStore": "App Store payout"
+      }
+    },
+    "recurring": {
+      "title": "Recurring operations",
+      "subtitle": "Salaries, rent, bills and subscriptions — reviewed before every deduction.",
+      "actions": {
+        "addIncome": "Add recurring income",
+        "addExpense": "Add recurring expense",
+        "schedule": "Schedule",
+        "edit": "Edit",
+        "delete": "Delete"
       },
-      "aiAnalysis": {
-        "question": "How does AI analyze my spending?",
-        "answer": "AI looks at patterns in your financial activity and provides understandable insights and recommendations."
+      "sections": {
+        "dueNow": "Due now",
+        "dueSubtitle": "Review these before they are deducted.",
+        "income": "Recurring income",
+        "expenses": "Recurring expenses"
       },
-      "arabic": {
-        "question": "Can I use Smart Spend in Arabic?",
-        "answer": "Yes. Smart Spend supports both Arabic and English."
+      "items": {
+        "internet": "Internet",
+        "rent": "Rent",
+        "salary": "Monthly salary",
+        "subscriptions": "Subscriptions"
+      },
+      "categories": {
+        "utilities": "Utilities",
+        "housing": "Housing",
+        "salary": "Salary",
+        "software": "Software"
+      },
+      "accounts": {
+        "checking": "Main Checking",
+        "platinum": "Platinum Card"
+      },
+      "frequency": {
+        "monthly": "Monthly"
+      },
+      "next": "Next",
+      "overdue": "Overdue",
+      "inDays_one": "in {{count}} day",
+      "inDays_other": "in {{count}} days",
+      "previousAmount": "Previous amount",
+      "confirmDeduction": "Confirm deduction",
+      "confirmDeposit": "Confirm deposit"
+    },
+    "importPage": {
+      "title": "Import bank statement",
+      "subtitle": "PDF, Excel or CSV — extracted, reviewed and matched before import.",
+      "steps": {
+        "label": "Import progress",
+        "upload": "Upload file",
+        "extract": "Extract data",
+        "review": "Review data",
+        "match": "Match operations",
+        "confirm": "Confirm import"
+      },
+      "upload": {
+        "title": "Upload file",
+        "supported": "Supported: PDF, XLSX, CSV",
+        "dropTitle": "Drag & drop your file here",
+        "browse": "Browse files",
+        "remove": "Remove file"
+      },
+      "account": {
+        "label": "Detected account",
+        "checking": "Main Checking",
+        "savings": "Business Savings",
+        "wallet": "Apple Wallet",
+        "cash": "Cash on hand"
+      }
+    },
+    "budgets": {
+      "title": "Budgets",
+      "subtitle": "Monthly limits per category, tracked live.",
+      "create": "Create budget",
+      "summary": {
+        "monthly": "Monthly budget",
+        "spent": "Spent",
+        "remaining": "Remaining"
+      },
+      "list": {
+        "title": "Budgets",
+        "subtitle": "Monthly limits per category, tracked live."
+      },
+      "categories": {
+        "dining": "Dining",
+        "groceries": "Groceries",
+        "transport": "Transport",
+        "software": "Software",
+        "travel": "Travel",
+        "health": "Health"
+      },
+      "remaining": "Remaining",
+      "overBudget": "Over budget",
+      "delete": "Delete budget",
+      "edit": "Edit budget",
+      "confirmArchive": "Archive “{{name}}”?",
+      "states": {
+        "loading": "Loading budgets...",
+        "empty": "No active budgets yet."
+      },
+      "form": {
+        "createTitle": "Create budget",
+        "editTitle": "Edit budget limit",
+        "name": "Budget name",
+        "category": "Expense category",
+        "general": "General budget",
+        "limit": "Budget limit",
+        "currency": "Currency",
+        "startDate": "Start date",
+        "endDate": "End date"
+      }
+    },
+    "savingsGoals": {
+      "title": "Savings goals",
+      "subtitle": "Track targets and let AI pick your pace.",
+      "newGoal": "New goal",
+      "saved": "Saved",
+      "target": "Target",
+      "addFunds": "Add funds",
+      "delete": "Delete goal",
+      "goals": {
+        "emergency": "Emergency Fund",
+        "studio": "Studio Office",
+        "macbook": "New MacBook"
+      },
+      "plans": {
+        "title": "AI saving plans",
+        "fast": "Fast",
+        "balanced": "Balanced",
+        "comfortable": "Comfortable",
+        "month": "month"
+      },
+      "edit": "Edit goal",
+      "confirmArchive": "Archive “{{name}}”?",
+      "targetDateLabel": "Target date",
+      "states": {
+        "loading": "Loading savings goals...",
+        "empty": "No active savings goals yet."
+      },
+      "form": {
+        "createTitle": "Create savings goal",
+        "editTitle": "Edit target amount",
+        "name": "Goal name",
+        "targetAmount": "Target amount",
+        "currency": "Currency",
+        "targetDate": "Target date (optional)"
+      },
+      "contribution": {
+        "title": "Add funds",
+        "fromAccount": "From account",
+        "amount": "Amount",
+        "noAccounts": "No eligible account with the same currency is available."
+      }
+    },
+    "reports": {
+      "title": "Reports",
+      "subtitle": "Income, expenses and monthly analytics.",
+      "exportPdf": "Export PDF",
+      "exportExcel": "Export Excel",
+      "summary": {
+        "savingsRate": "Savings rate",
+        "topCategory": "Top category",
+        "averageSpend": "Avg. daily spend",
+        "net": "Net cash flow"
+      },
+      "tabs": {
+        "monthly": "Monthly report",
+        "income": "Income report",
+        "expense": "Expense report"
+      },
+      "chart": {
+        "monthlyReport": "Monthly report",
+        "incomeReport": "Income report",
+        "expenseReport": "Expense report",
+        "lastEightMonths": "Last 8 months",
+        "income": "Income",
+        "expenses": "Expenses"
+      },
+      "expenseCategories": "Expense categories",
+      "categories": {
+        "travel": "Travel",
+        "dining": "Dining",
+        "groceries": "Groceries",
+        "software": "Software",
+        "utilities": "Utilities",
+        "health": "Health",
+        "transport": "Transport"
+      },
+      "months": {
+        "jan": "Jan",
+        "feb": "Feb",
+        "mar": "Mar",
+        "apr": "Apr",
+        "may": "May",
+        "jun": "Jun",
+        "jul": "Jul",
+        "aug": "Aug",
+        "sep": "Sep",
+        "oct": "Oct",
+        "nov": "Nov",
+        "dec": "Dec"
+      },
+      "states": {
+        "loading": "Loading reports...",
+        "noExpenseCategories": "No expense categories for this period."
+      }
+    },
+    "aiAssistant": {
+      "title": "AI Financial Assistant",
+      "subtitle": "Ask anything about your money.",
+      "initialMessage": "Your July net cash flow was +$4,450. Dining is your fastest-growing category at +24%. Want a plan to bring it back in line?",
+      "conversations": {
+        "title": "Conversations",
+        "newChat": "New chat",
+        "monthlyAnalysis": "Monthly analysis",
+        "savingsTips": "Savings tips",
+        "budgetSuggestions": "Budget suggestions"
+      },
+      "suggestions": {
+        "safeSavings": "How much can I safely save this month?",
+        "julySpending": "Where did my money go in July?",
+        "diningBudget": "Suggest a budget for dining",
+        "emergencyFund": "Am I on track for my emergency fund?"
+      },
+      "input": {
+        "placeholder": "Ask Smart Spend...",
+        "send": "Send",
+        "sending": "Sending..."
+      }
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Alerts, bills and AI nudges.",
+      "markAllAsRead": "Mark all as read",
+      "unread": "Unread",
+      "items": {
+        "rent": {
+          "title": "Rent due in 4 days",
+          "description": "$1,850 will be charged from Main Checking on Aug 28."
+        },
+        "softwareBudget": {
+          "title": "Software budget exceeded",
+          "description": "You are $31 over the monthly software limit."
+        },
+        "monthlyAnalysis": {
+          "title": "AI monthly analysis ready",
+          "description": "Your July breakdown and 3 recommendations are available."
+        },
+        "newDevice": {
+          "title": "New device signed in",
+          "description": "MacBook Pro · Amman, Jordan."
+        }
+      },
+      "states": {
+        "loading": "Loading financial alerts...",
+        "empty": "No financial alerts right now."
+      }
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Profile, security and preferences.",
+      "tabs": {
+        "label": "Settings sections",
+        "profile": "Profile",
+        "security": "Security",
+        "preferences": "Preferences"
+      },
+      "profile": {
+        "title": "Profile",
+        "fields": {
+          "fullName": "Full name",
+          "email": "Email",
+          "phone": "Phone",
+          "currency": "Currency"
+        },
+        "save": "Save",
+        "saving": "Saving...",
+        "saved": "Profile saved successfully."
+      },
+      "security": {
+        "title": "Security"
+      },
+      "preferences": {
+        "title": "Preferences"
       }
     }
   },
-
-  "cta": {
-    "title": "Ready to take control of your future?",
-    "subtitle": "Join thousands of smart users and start your financial journey today.",
-    "signup": "Sign up free",
-    "sales": "Talk to sales"
-  },
-
-  "footer": {
-    "description": "Smart Spend helps you understand your money, plan ahead and reach your goals with AI-powered clarity.",
-
-    "product": "Product",
-    "company": "Company",
-    "legal": "Legal",
-
-    "links": {
+  "home": {
+    "nav": {
       "features": "Features",
-      "pricing": "Pricing",
+      "howItWorks": "How it works",
       "security": "Security",
-      "dashboard": "Dashboard",
-      "about": "About us",
-      "contact": "Contact",
-      "support": "Support",
-      "terms": "Terms & Conditions",
-      "privacy": "Privacy Policy"
+      "faq": "FAQ",
+      "signIn": "Sign in",
+      "startNow": "Start now",
+      "dashboard": "Dashboard"
     },
-
-    "rights": "All rights reserved."
+    "notFound": {
+      "eyebrow": "Lost in your financial journey?",
+      "title": "This page has gone off budget",
+      "description": "The page you are looking for may have moved, changed, or no longer exists. Let us get you back on track.",
+      "home": "Back to home",
+      "back": "Go back"
+    },
+    "hero": {
+      "badge": "AI-powered personal finance",
+      "titleStart": "Manage your money smarter,",
+      "titleHighlight": "all in one place",
+      "description": "Smart Spend connects your accounts, organizes every transaction, tracks your budgets and savings goals, and explains your spending in plain language.",
+      "primaryButton": "Start managing my money",
+      "watchDemo": "Watch the demo",
+      "users": "50,000+ users trust Smart Spend"
+    },
+    "stats": {
+      "users": {
+        "title": "50k+ Users",
+        "text": "Growing community"
+      },
+      "security": {
+        "title": "Secure Financial Data",
+        "text": "Encrypted end to end"
+      },
+      "ai": {
+        "title": "AI-Powered Insights",
+        "text": "Clear, useful advice"
+      },
+      "monitoring": {
+        "title": "24/7 Monitoring",
+        "text": "Always watching your accounts"
+      }
+    },
+    "features": {
+      "title": "Smart features for every need",
+      "subtitle": "Everything you need to understand, plan and grow your money.",
+      "items": {
+        "sync": {
+          "title": "Automatic Sync",
+          "description": "Connect your accounts and automatically organize transactions."
+        },
+        "analytics": {
+          "title": "Smart Analytics",
+          "description": "Understand where your money goes."
+        },
+        "goals": {
+          "title": "Savings Goals",
+          "description": "Set financial goals and track your progress."
+        },
+        "security": {
+          "title": "Trusted Security",
+          "description": "Keep your financial information protected."
+        },
+        "alerts": {
+          "title": "Custom Alerts",
+          "description": "Get alerts about budgets and upcoming bills."
+        },
+        "budgets": {
+          "title": "Shared Budgets",
+          "description": "Manage shared spending with family or partners."
+        }
+      }
+    },
+    "ai": {
+      "badge": "AI Assistant",
+      "title": "Your money, explained by AI",
+      "description": "Smart Spend reads your patterns and turns them into clear next steps.",
+      "primary": "View insights",
+      "secondary": "See recommendations",
+      "cardTitle": "Your dining expenses increased 18% this month.",
+      "recommendation": "Recommendation",
+      "recommendationText": "Reducing dining expenses by 10% could help you save approximately $45 this month."
+    },
+    "steps": {
+      "title": "Start your journey in 3 simple steps",
+      "subtitle": "Setup takes a few minutes. The clarity lasts.",
+      "items": {
+        "account": {
+          "title": "Create your account",
+          "description": "Sign up in under a minute, no card required."
+        },
+        "connect": {
+          "title": "Link your accounts",
+          "description": "Securely connect banks and cards in a few taps."
+        },
+        "control": {
+          "title": "Control your money",
+          "description": "Track budgets, bills and savings in one place."
+        }
+      }
+    },
+    "security": {
+      "badge": "Security",
+      "title": "Your financial data stays protected",
+      "subtitle": "Security is a default, not a feature you have to turn on.",
+      "items": {
+        "connections": {
+          "title": "Secure account connections",
+          "description": "Read-only connections through trusted providers."
+        },
+        "storage": {
+          "title": "Strong data protection",
+          "description": "Data is encrypted in transit and at rest."
+        },
+        "privacy": {
+          "title": "Privacy-focused design",
+          "description": "We never sell your personal financial data."
+        },
+        "monitoring": {
+          "title": "Real-time monitoring",
+          "description": "Unusual activity is flagged when it happens."
+        }
+      }
+    },
+    "dashboardPreview": {
+      "title": "Everything you need, in one dashboard",
+      "subtitle": "Balance, income, expenses, savings, budgets, transactions and AI insights — one clear view."
+    },
+    "preview": {
+      "totalBalance": "Total balance",
+      "income": "Income",
+      "expenses": "Expenses",
+      "savings": "Savings",
+      "monthlyBudget": "Monthly budget",
+      "recentTransactions": "Recent transactions"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "subtitle": "Answers to the questions we hear most.",
+      "items": {
+        "security": {
+          "question": "Is my financial data safe?",
+          "answer": "Your data is encrypted in transit and at rest, and account connections are read-only by default."
+        },
+        "categories": {
+          "question": "How are expenses categorized?",
+          "answer": "Smart Spend automatically categorizes transactions and lets you edit categories at any time."
+        },
+        "multipleAccounts": {
+          "question": "Can I connect multiple accounts?",
+          "answer": "Yes. You can manage multiple bank accounts, wallets and cards."
+        },
+        "freePlan": {
+          "question": "Is there a free plan?",
+          "answer": "Smart Spend can support different subscription plans depending on your account."
+        },
+        "aiAnalysis": {
+          "question": "How does AI analyze my spending?",
+          "answer": "AI looks at patterns in your financial activity and provides understandable insights and recommendations."
+        },
+        "arabic": {
+          "question": "Can I use Smart Spend in Arabic?",
+          "answer": "Yes. Smart Spend supports both Arabic and English."
+        }
+      }
+    },
+    "cta": {
+      "title": "Ready to take control of your future?",
+      "subtitle": "Join thousands of smart users and start your financial journey today.",
+      "signup": "Sign up free",
+      "sales": "Talk to sales"
+    },
+    "footer": {
+      "description": "Smart Spend helps you understand your money, plan ahead and reach your goals with AI-powered clarity.",
+      "product": "Product",
+      "company": "Company",
+      "legal": "Legal",
+      "links": {
+        "features": "Features",
+        "pricing": "Pricing",
+        "security": "Security",
+        "dashboard": "Dashboard",
+        "about": "About us",
+        "contact": "Contact",
+        "support": "Support",
+        "terms": "Terms & Conditions",
+        "privacy": "Privacy Policy"
+      },
+      "rights": "All rights reserved."
+    }
   }
-}
 }

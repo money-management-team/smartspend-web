@@ -21,9 +21,6 @@ export default function FinancialOperations() {
   const [error, setError] = useState("");
 
   const loadData = useCallback(async (signal) => {
-    setIsLoading(true);
-    setError("");
-
     try {
       const [accountsResponse, categoriesResponse, transactionsResponse] =
         await Promise.all([
@@ -35,10 +32,13 @@ export default function FinancialOperations() {
       setAccounts(accountsResponse.data?.accounts ?? []);
       setCategories(categoriesResponse.data?.categories ?? []);
       setTransactions(transactionsResponse.data?.transactions?.data ?? []);
+      setError("");
+      return true;
     } catch (requestError) {
       if (requestError.name !== "AbortError") {
         setError(getApiErrorMessage(requestError, t));
       }
+      return false;
     } finally {
       if (!signal?.aborted) setIsLoading(false);
     }
@@ -46,9 +46,21 @@ export default function FinancialOperations() {
 
   useEffect(() => {
     const controller = new AbortController();
-    loadData(controller.signal);
-    return () => controller.abort();
+    const requestStart = window.setTimeout(() => {
+      void loadData(controller.signal);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(requestStart);
+      controller.abort();
+    };
   }, [loadData]);
+
+  const handleRetry = () => {
+    setIsLoading(true);
+    setError("");
+    void loadData();
+  };
 
   const handleReverse = async (transactionId, reason) => {
     await transactionsApi.reverse(transactionId, reason);
@@ -74,7 +86,7 @@ export default function FinancialOperations() {
           <NewOperation
             accounts={accounts}
             categories={categories}
-            onCreated={() => loadData()}
+            onCreated={loadData}
           />
         </aside>
 
@@ -82,7 +94,7 @@ export default function FinancialOperations() {
           transactions={transactions}
           isLoading={isLoading}
           error={error}
-          onRetry={() => loadData()}
+          onRetry={handleRetry}
           onReverse={handleReverse}
         />
       </div>

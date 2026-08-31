@@ -1,73 +1,37 @@
 import { useTranslation } from "react-i18next";
-
 import "./ExpenseCategoriesTable.css";
 
-const categories = [
-  {
-    key: "travel",
-    value: 640,
-  },
-  {
-    key: "dining",
-    value: 314,
-  },
-  {
-    key: "groceries",
-    value: 184,
-  },
-  {
-    key: "software",
-    value: 144,
-  },
-  {
-    key: "utilities",
-    value: 132,
-  },
-  {
-    key: "health",
-    value: 89,
-  },
-  {
-    key: "transport",
-    value: 62,
-  },
-];
+function formatMoney(value, currency, language) {
+  const locale = language?.toLowerCase().startsWith("ar") ? "ar-EG" : "en-US";
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: currency || "ILS",
+    maximumFractionDigits: 2,
+  }).format(Number(value || 0));
+}
 
-export default function ExpenseCategoriesTable() {
-  const { t } = useTranslation();
+export default function ExpenseCategoriesTable({ categories, currency }) {
+  const { t, i18n } = useTranslation();
+  const expenseCategories = categories
+    .filter((category) => category.type === "expense")
+    .sort((a, b) => Number(b.total) - Number(a.total));
 
   return (
     <section className="expense-categories-table">
       <header className="expense-categories-table__header">
-        <h2>
-          {t(
-            "dashboard.reports.expenseCategories",
-          )}
-        </h2>
+        <h2>{t("dashboard.reports.expenseCategories")}</h2>
       </header>
 
       <div className="expense-categories-table__body">
-        {categories.map(
-          (category) => (
-            <div
-              className="expense-category-row"
-              key={category.key}
-            >
-              <span>
-                {t(
-                  `dashboard.reports.categories.${category.key}`,
-                )}
-              </span>
-
-              <strong dir="ltr">
-                $
-                {category.value.toLocaleString(
-                  "en-US",
-                )}
-              </strong>
-            </div>
-          ),
+        {expenseCategories.length === 0 && (
+          <div className="expense-category-row"><span>{t("dashboard.reports.states.noExpenseCategories")}</span></div>
         )}
+        {expenseCategories.map((category) => (
+          <div className="expense-category-row" key={category.category_id ?? category.name}>
+            <span>{category.name}</span>
+            <strong dir="ltr">{formatMoney(category.total, currency, i18n.resolvedLanguage || i18n.language)}</strong>
+          </div>
+        ))}
       </div>
     </section>
   );

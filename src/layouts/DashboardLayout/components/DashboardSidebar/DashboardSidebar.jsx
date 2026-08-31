@@ -88,7 +88,7 @@ export default function DashboardSidebar({
           label: t(
             "dashboard.sidebar.recurring",
           ),
-          path: "/dashboard/recurring",
+          path: PATH.USER.RECURRING,
           icon: LuRepeat2,
         },
 
@@ -96,7 +96,7 @@ export default function DashboardSidebar({
           label: t(
             "dashboard.sidebar.import",
           ),
-          path: "/dashboard/import",
+          path: PATH.USER.IMPORT,
           icon: LuFileUp,
         },
       ],
@@ -112,7 +112,7 @@ export default function DashboardSidebar({
           label: t(
             "dashboard.sidebar.budgets",
           ),
-          path: "/dashboard/budgets",
+          path: PATH.USER.BUDGETS,
           icon: LuChartPie,
         },
 
@@ -120,7 +120,7 @@ export default function DashboardSidebar({
           label: t(
             "dashboard.sidebar.savingsGoals",
           ),
-          path: "/dashboard/savings-goals",
+          path: PATH.USER.SAVINGS_GOALS,
           icon: LuTarget,
         },
 
@@ -128,7 +128,7 @@ export default function DashboardSidebar({
           label: t(
             "dashboard.sidebar.reports",
           ),
-          path: "/dashboard/reports",
+          path: PATH.USER.REPORTS,
           icon: LuChartNoAxesCombined,
         },
       ],
@@ -144,7 +144,7 @@ export default function DashboardSidebar({
           label: t(
             "dashboard.sidebar.aiAssistant",
           ),
-          path: "/dashboard/ai-assistant",
+          path: PATH.USER.AI_ASSISTANT,
           icon: LuSparkles,
         },
 
@@ -152,7 +152,7 @@ export default function DashboardSidebar({
           label: t(
             "dashboard.sidebar.notifications",
           ),
-          path: "/dashboard/notifications",
+          path: PATH.USER.NOTIFICATIONS,
           icon: LuBell,
         },
 
@@ -160,7 +160,7 @@ export default function DashboardSidebar({
           label: t(
             "dashboard.sidebar.settings",
           ),
-          path: "/dashboard/settings",
+          path: PATH.USER.SETTING,
           icon: LuSettings,
         },
       ],

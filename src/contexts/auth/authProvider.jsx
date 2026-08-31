@@ -1,81 +1,55 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import api from "../../services/api";
+import { authApi } from "../../features/Dashboards/User/api/authApi";
+import {
+  ApiError,
+  AUTH_SESSION_EXPIRED_EVENT,
+  clearAuthSession,
+  getStoredAuthSession,
+  persistAuthSession,
+  updateStoredUser,
+  updateStoredWorkspace,
+} from "../../features/Dashboards/User/api/apiClient";
 import { AuthContext } from "./authContext";
 
-const getStoredUser = () => {
-  try {
-    return JSON.parse(localStorage.getItem("user") ?? "null");
-  } catch {
-    return null;
-  }
+const emptySession = {
+  user: null,
+  token: null,
+  role: "guest",
+  workspace: null,
 };
 
 export default function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => getStoredUser());
-  const [token, setTokenState] = useState(
-    () => localStorage.getItem("ACCESS_TOKEN") || localStorage.getItem("token"),
-  );
-  const [role, setRoleState] = useState(
-    () => {
-      const storedUser = getStoredUser();
-
-      return (
-        localStorage.getItem("ROLE") ||
-        storedUser?.role ||
-        "guest"
-      );
-    },
-  );
+  const [session, setSession] = useState(() => getStoredAuthSession());
   const [initializing, setInitializing] = useState(true);
-
-  const setToken = useCallback((nextToken) => {
-    setTokenState(nextToken);
-
-    if (nextToken) {
-      localStorage.setItem("ACCESS_TOKEN", nextToken);
-      localStorage.setItem("token", nextToken);
-    } else {
-      localStorage.removeItem("ACCESS_TOKEN");
-      localStorage.removeItem("token");
-    }
-  }, []);
-
-  const setRole = useCallback((nextRole) => {
-    const resolvedRole = nextRole || "guest";
-
-    setRoleState(resolvedRole);
-    localStorage.setItem("ROLE", resolvedRole);
-  }, []);
+  const [initializationError, setInitializationError] = useState(null);
 
   const clearAuth = useCallback(() => {
-    setUser(null);
-    setToken(null);
-    setRole("guest");
-    localStorage.removeItem("user");
-    localStorage.removeItem("token_type");
-  }, [setRole, setToken]);
+    clearAuthSession();
+    setSession(emptySession);
+  }, []);
 
-  const applyAuthData = useCallback(
-    (authData) => {
-      if (!authData?.token || !authData?.user) {
-        throw new Error("Invalid authentication response.");
-      }
-
-      setToken(authData.token);
-      setUser(authData.user);
-      localStorage.setItem("user", JSON.stringify(authData.user));
-      setRole(authData.user.role || "user");
-    },
-    [setRole, setToken],
-  );
+  const applyAuthData = useCallback((authData, options) => {
+    persistAuthSession(authData, options);
+    setSession({
+      token: authData.token,
+      user: authData.user,
+      workspace: authData.workspace ?? null,
+      role: authData.user.role ?? "user",
+    });
+    setInitializationError(null);
+    setInitializing(false);
+  }, []);
 
   const login = useCallback(
-    async (credentials) => {
-      const response = await api.post("/login", credentials);
-      const authData = response.data.data;
+    async (credentials, { remember = true } = {}) => {
+      const response = await authApi.login(credentials);
+      const authData = response.data;
 
-      applyAuthData(authData);
+      if (!authData?.token || !authData?.user) {
+        throw new ApiError("", { code: "MALFORMED_RESPONSE" });
+      }
 
+      applyAuthData(authData, { remember });
       return authData.user;
     },
     [applyAuthData],
@@ -83,11 +57,14 @@ export default function AuthProvider({ children }) {
 
   const register = useCallback(
     async (registrationData) => {
-      const response = await api.post("/register", registrationData);
-      const authData = response.data.data;
+      const response = await authApi.register(registrationData);
+      const authData = response.data;
 
-      applyAuthData(authData);
+      if (!authData?.token || !authData?.user) {
+        throw new ApiError("", { code: "MALFORMED_RESPONSE" });
+      }
 
+      applyAuthData(authData, { remember: true });
       return authData.user;
     },
     [applyAuthData],
@@ -95,73 +72,108 @@ export default function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     try {
-      await api.post("/logout");
+      if (session.token) await authApi.logout();
     } finally {
       clearAuth();
     }
+  }, [clearAuth, session.token]);
+
+  const updateUser = useCallback((user) => {
+    if (!user) return;
+
+    updateStoredUser(user);
+    setSession((current) => ({
+      ...current,
+      user,
+      role: user.role ?? current.role ?? "user",
+    }));
+  }, []);
+
+  const updateWorkspace = useCallback((workspace) => {
+    updateStoredWorkspace(workspace);
+    setSession((current) => ({ ...current, workspace }));
+  }, []);
+
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      clearAuth();
+      setInitializing(false);
+    };
+
+    globalThis.addEventListener?.(
+      AUTH_SESSION_EXPIRED_EVENT,
+      handleSessionExpired,
+    );
+
+    return () => {
+      globalThis.removeEventListener?.(
+        AUTH_SESSION_EXPIRED_EVENT,
+        handleSessionExpired,
+      );
+    };
   }, [clearAuth]);
 
   useEffect(() => {
-    let cancelled = false;
+    if (!session.token) {
+      setInitializing(false);
+      return undefined;
+    }
 
-    const loadCurrentUser = async () => {
-      if (!token) {
-        setInitializing(false);
+    const controller = new AbortController();
 
-        return;
-      }
-
+    const restoreSession = async () => {
       try {
-        const response = await api.get("/user");
+        const response = await authApi.getCurrentUser({
+          signal: controller.signal,
+        });
 
-        if (!cancelled) {
-          const currentUser = response.data.data;
-
-          setUser(currentUser);
-          setRole(currentUser?.role || "user");
+        if (!controller.signal.aborted) {
+          updateUser(response.data);
+          setInitializationError(null);
         }
-      } catch {
-        if (!cancelled) {
+      } catch (error) {
+        if (controller.signal.aborted) return;
+
+        if (error instanceof ApiError && error.status === 401) {
           clearAuth();
+        } else {
+          setInitializationError(error);
         }
       } finally {
-        if (!cancelled) {
-          setInitializing(false);
-        }
+        if (!controller.signal.aborted) setInitializing(false);
       }
     };
 
-    loadCurrentUser();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [clearAuth, setRole, token]);
+    restoreSession();
+    return () => controller.abort();
+  }, [clearAuth, session.token, updateUser]);
 
   const value = useMemo(
     () => ({
-      user,
-      setUser,
-      token,
-      setToken,
-      role,
-      setRole,
+      user: session.user,
+      token: session.token,
+      role: session.role,
+      workspace: session.workspace,
       login,
       register,
       logout,
+      clearAuth,
+      updateUser,
+      updateWorkspace,
       initializing,
-      isAuthenticated: Boolean(token),
+      initializationError,
+      isAuthenticated: Boolean(session.token),
     }),
     [
+      clearAuth,
+      initializationError,
       initializing,
       login,
       logout,
       register,
-      role,
-      setRole,
-      setToken,
-      token,
-      user,
+      session,
+      updateUser,
+      updateWorkspace,
     ],
   );
 

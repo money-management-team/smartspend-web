@@ -6,6 +6,9 @@ import {
 } from "react-icons/lu";
 
 import SectionCard from "../shared/SectionCard";
+import { Link } from "react-router-dom";
+import { PATH } from "../../../../../../routes/Path";
+import { useAuthContext } from "../../../../../../contexts/auth/useAuthContext";
 
 import "./RecentTransactions.css";
 import { formatDate, formatMoney } from "../../../utils/formatters";
@@ -20,16 +23,18 @@ const icons = {
 
 export default function RecentTransactions({ transactions }) {
   const { t, i18n } = useTranslation();
+  const { user, workspace } = useAuthContext();
   const locale = i18n.language?.startsWith("ar") ? "ar" : "en";
+  const timeZone = user?.timezone ?? workspace?.timezone;
 
   return (
     <SectionCard
       className="recent-transactions-card"
       title={t("dashboard.user.recentTransactions.title")}
       action={
-        <button type="button" className="dashboard-section-link">
+        <Link to={PATH.USER.FINANCIAL_OPERATIONS} className="dashboard-section-link">
           {t("dashboard.user.common.viewAll")}
-        </button>
+        </Link>
       }
     >
       <div className="recent-transactions-card__list">
@@ -50,7 +55,7 @@ export default function RecentTransactions({ transactions }) {
                   {transaction.description || transaction.category?.name || transaction.type}
                 </strong>
                 <small>
-                  {transaction.category?.name || transaction.status} · {formatDate(transaction.occurred_at, locale)}
+                  {transaction.category?.name || transaction.status} · {formatDate(transaction.occurred_at, locale, timeZone)}
                 </small>
               </div>
 

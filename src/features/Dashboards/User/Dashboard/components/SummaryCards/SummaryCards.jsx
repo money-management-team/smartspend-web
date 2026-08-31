@@ -8,7 +8,23 @@ import {
 } from "react-icons/lu";
 
 import "./SummaryCards.css";
-import { formatMoney } from "../../../utils/formatters";
+import { formatMoney, sumMoney } from "../../../utils/formatters";
+
+function totalsByCurrency(accounts) {
+  const grouped = new Map();
+
+  accounts.forEach((account) => {
+    const currency = account.currency_code ?? "ILS";
+    const balances = grouped.get(currency) ?? [];
+    balances.push(account.current_balance ?? "0.0000");
+    grouped.set(currency, balances);
+  });
+
+  return Array.from(grouped, ([currency, balances]) => ({
+    currency,
+    total: sumMoney(balances),
+  }));
+}
 
 const cards = [
   {
@@ -36,11 +52,7 @@ export default function SummaryCards({ accounts }) {
     <section className="dashboard-summary-cards">
       {cards.map(({ key, icon: Icon, types }) => {
         const matchingAccounts = accounts.filter((account) => types.includes(account.type));
-        const total = matchingAccounts.reduce(
-          (sum, account) => sum + Number(account.current_balance || 0),
-          0,
-        );
-        const currency = matchingAccounts[0]?.currency_code ?? accounts[0]?.currency_code ?? "ILS";
+        const totals = totalsByCurrency(matchingAccounts);
 
         return (
         <article
@@ -55,9 +67,14 @@ export default function SummaryCards({ accounts }) {
               )}
             </span>
 
-            <strong className="dashboard-summary-card__amount">
-              {formatMoney(total, currency, locale)}
-            </strong>
+            <div className="dashboard-summary-card__amount">
+              {(totals.length > 0
+                ? totals
+                : [{ currency: "ILS", total: "0.0000" }]
+              ).map(({ currency, total }) => (
+                <strong key={currency}>{formatMoney(total, currency, locale)}</strong>
+              ))}
+            </div>
 
             <span className="dashboard-summary-card__change">
               <LuTrendingUp />

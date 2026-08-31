@@ -38,3 +38,15 @@
       40px;
   }
 }
+.notifications-page__state {
+  margin-top: 25px;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+.notifications-page__state p { margin: 0 0 10px; }
+.notifications-page__state button { border: 0; border-radius: 999px; padding: 9px 16px; background: var(--color-primary); color: var(--navigation-active-text); cursor: pointer; }
+.notifications-page__state--error { color: var(--danger); }

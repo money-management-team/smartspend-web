@@ -1,0 +1,60 @@
+.budget-form-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: color-mix(in srgb, #0f172a 45%, transparent);
+}
+
+.budget-form-modal__dialog {
+  width: min(560px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.budget-form-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 22px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.budget-form-modal__header h2,
+.budget-form-modal__header p { margin: 0; }
+.budget-form-modal__header h2 { font-size: 18px; }
+.budget-form-modal__header p { margin-top: 5px; color: var(--color-text-secondary); font-size: 12px; }
+.budget-form-modal__header > button { border: 0; background: transparent; color: var(--color-text-secondary); font-size: 24px; cursor: pointer; }
+
+.budget-form-modal__form { display: grid; gap: 15px; padding: 20px 22px 22px; }
+.budget-form-modal__form label { display: grid; gap: 7px; font-size: 12px; font-weight: 600; }
+.budget-form-modal__form input,
+.budget-form-modal__form select {
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  font: inherit;
+}
+.budget-form-modal__form small,
+.budget-form-modal__error { color: var(--danger); font-size: 11px; }
+.budget-form-modal__error { margin: 0; }
+.budget-form-modal__dates { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.budget-form-modal__footer { display: flex; justify-content: flex-end; gap: 10px; padding-top: 6px; }
+.budget-form-modal__footer button { min-height: 40px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text-primary); cursor: pointer; }
+.budget-form-modal__footer button[type="submit"] { border-color: var(--color-primary); background: var(--color-primary); color: var(--navigation-active-text); }
+
+@media (max-width: 560px) {
+  .budget-form-modal__dates { grid-template-columns: 1fr; }
+}

@@ -5,19 +5,22 @@ import {
   LuArrowRightLeft,
   LuTarget,
 } from "react-icons/lu";
+import { useNavigate } from "react-router-dom";
+import { PATH } from "../../../../../../routes/Path";
 
 import "./DashboardHero.css";
 import { formatMoney } from "../../../utils/formatters";
 
 const actions = [
-  { key: "income", icon: LuPlus },
-  { key: "expense", icon: LuMinus },
-  { key: "transfer", icon: LuArrowRightLeft },
-  { key: "goal", icon: LuTarget },
+  { key: "income", icon: LuPlus, path: PATH.USER.FINANCIAL_OPERATIONS },
+  { key: "expense", icon: LuMinus, path: PATH.USER.FINANCIAL_OPERATIONS },
+  { key: "transfer", icon: LuArrowRightLeft, path: PATH.USER.FINANCIAL_OPERATIONS },
+  { key: "goal", icon: LuTarget, path: PATH.USER.SAVINGS_GOALS },
 ];
 
 export default function DashboardHero({ user, totals, period }) {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const locale = i18n.language?.startsWith("ar") ? "ar" : "en";
 
   return (
@@ -41,8 +44,8 @@ export default function DashboardHero({ user, totals, period }) {
       </div>
 
       <div className="dashboard-hero-card__actions">
-        {actions.map(({ key, icon: Icon }) => (
-          <button type="button" key={key}>
+        {actions.map(({ key, icon: Icon, path }) => (
+          <button type="button" key={key} onClick={() => navigate(path)}>
             <Icon />
             <span>{t(`dashboard.user.hero.actions.${key}`)}</span>
           </button>

@@ -346,3 +346,26 @@
     gap: 5px;
   }
 }
+.budget-list__empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 18px;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+.budget-item__actions { display: flex; align-items: center; gap: 4px; }
+.budget-item__edit {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: var(--color-primary);
+  background: transparent;
+  cursor: pointer;
+}
+.budget-item__edit:hover { background: var(--primary-soft); }
+.budget-item__edit svg { width: 14px; height: 14px; }
+.budget-item__category { display: block; margin-top: 4px; color: var(--color-text-secondary); font-size: 10px; }

@@ -78,6 +78,12 @@
 ========================================= */
 
 .dashboard-summary-card__amount {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+
   margin-top: 18px;
 
   color: var(--color-text-primary);
@@ -206,6 +212,10 @@
 
 [dir="ltr"] .dashboard-summary-card {
   direction: ltr;
+}
+
+.dashboard-summary-card__amount strong {
+  font: inherit;
 }
 
 [dir="ltr"] .dashboard-summary-card__content {

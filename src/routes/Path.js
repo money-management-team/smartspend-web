@@ -1,5 +1,5 @@
 export const PATH = {
-  HOME:'/',
+  HOME: "/",
   AUTH: {
     SIGNIN: "/signin",
     REGISTER: "/register",
@@ -15,10 +15,10 @@ export const PATH = {
     RECURRING: "/dashboard/recurring",
     IMPORT: "/dashboard/import",
     BUDGETS: "/dashboard/budgets",
-    SAVINGS_GOALS: "dashboard/savings-goals",
-    REPORTS: "dashboard/reports",
-    AI_ASSISTANT: "dashboard/ai-assistant",
-    NOTIFICATIONS: "dashboard/notifications",
-    SETTING: "dashboard/settings",
+    SAVINGS_GOALS: "/dashboard/savings-goals",
+    REPORTS: "/dashboard/reports",
+    AI_ASSISTANT: "/dashboard/ai-assistant",
+    NOTIFICATIONS: "/dashboard/notifications",
+    SETTING: "/dashboard/settings",
   },
 };

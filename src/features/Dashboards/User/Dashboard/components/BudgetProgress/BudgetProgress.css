@@ -30,3 +30,6 @@
 .budget-progress-card__danger {
   color: var(--danger) !important;
 }
+
+.budget-progress-card__empty { margin: 0; color: var(--color-text-secondary); font-size: 11px; }
+.dashboard-section-link { text-decoration: none; }

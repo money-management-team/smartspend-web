@@ -27,6 +27,17 @@ export default function PublicNavbar() {
     await i18n.changeLanguage(isArabic ? "en" : "ar");
   };
 
+  const scrollToSection = (id) => {
+  const section = document.getElementById(id);
+
+  if (section) {
+    section.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }
+};
+
   return (
     <header className="home-navbar">
       <div className="home-container home-navbar__inner">
@@ -39,17 +50,18 @@ export default function PublicNavbar() {
           </span>
         </Link>
 
+
         <nav
           className="home-navbar__links"
           aria-label="Public navigation"
         >
-          <a href="#features">{t("home.nav.features")}</a>
+          <a  onClick={() => scrollToSection("features")}>{t("home.nav.features")}</a>
 
-          <a href="#how-it-works">{t("home.nav.howItWorks")}</a>
+          <a onClick={() => scrollToSection("how-it-works")}>{t("home.nav.howItWorks")}</a>
 
-          <a href="#security">{t("home.nav.security")}</a>
+          <a onClick={() => scrollToSection("security")}>{t("home.nav.security")}</a>
 
-          <a href="#faq">{t("home.nav.faq")}</a>
+          <a onClick={() => scrollToSection("faq")}>{t("home.nav.faq")}</a>
         </nav>
 
         <div className="home-navbar__actions">

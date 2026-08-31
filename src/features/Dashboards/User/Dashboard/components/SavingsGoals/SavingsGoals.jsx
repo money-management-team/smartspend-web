@@ -1,40 +1,40 @@
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-
 import SectionCard from "../shared/SectionCard";
 import ProgressBar from "../shared/ProgressBar";
-
+import { PATH } from "../../../../../../routes/Path";
 import "./SavingsGoals.css";
 
-const goals = [
-  { key: "emergency", value: 73 },
-  { key: "studio", value: 32 },
-  { key: "macbook", value: 82 },
-];
-
-export default function SavingsGoals() {
+export default function SavingsGoals({ goals = [] }) {
   const { t } = useTranslation();
+  const visibleGoals = goals.slice(0, 3);
 
   return (
     <SectionCard
       className="savings-goals-card"
       title={t("dashboard.user.savingsGoals.title")}
       action={
-        <button type="button" className="dashboard-section-link">
+        <Link to={PATH.USER.SAVINGS_GOALS} className="dashboard-section-link">
           {t("dashboard.user.common.viewAll")}
-        </button>
+        </Link>
       }
     >
       <div className="savings-goals-card__list">
-        {goals.map((goal) => (
-          <div className="savings-goals-card__item" key={goal.key}>
-            <div className="savings-goals-card__meta">
-              <strong>{t(`dashboard.user.savingsGoals.items.${goal.key}`)}</strong>
-              <span>{goal.value}%</span>
+        {visibleGoals.length === 0 && (
+          <p className="savings-goals-card__empty">{t("dashboard.user.savingsGoals.empty")}</p>
+        )}
+        {visibleGoals.map((goal) => {
+          const value = Math.min(100, Math.max(0, Number(goal.percentage_funded || 0)));
+          return (
+            <div className="savings-goals-card__item" key={goal.goal_id}>
+              <div className="savings-goals-card__meta">
+                <strong>{goal.name}</strong>
+                <span>{Number(goal.percentage_funded || 0).toFixed(1)}%</span>
+              </div>
+              <ProgressBar value={value} />
             </div>
-
-            <ProgressBar value={goal.value} />
-          </div>
-        ))}
+          );
+        })}
       </div>
     </SectionCard>
   );
