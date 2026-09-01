@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 
-import PublicFooter from "../../features/PublicPages/components/PublicFooter";
-import PublicNavbar from "../../features/PublicPages/components/PublicNavbar";
+import PublicFooter from "../../features/PublicPage/components/PublicFooter";
+import PublicNavbar from "../../features/PublicPage/components/PublicNavbar";
 
 export default function PublicLayout() {
   return (

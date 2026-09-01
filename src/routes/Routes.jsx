@@ -16,13 +16,12 @@ import Reports from "../features/Dashboards/User/Reports/Reports";
 import SavingsGoals from "../features/Dashboards/User/SavingsGoals/SavingsGoals";
 import Settings from "../features/Dashboards/User/Settings/Settings";
 
-import Home from "../features/PublicPages/Home/Home";
-import NotFound from "../features/PublicPages/NotFound/NotFound";
+import Home from "../features/PublicPage/Home/Home";
+import NotFound from "../features/PublicPage/NotFound/NotFound";
 
 import AuthLayout from "../layouts/AuthLayout/AuthLayout";
 import DashboardLayout from "../layouts/DashboardLayout/DashboardLayout";
 import PublicLayout from "../layouts/PublicLayout/PublicLayout";
-
 import { PATH } from "./Path";
 import { GuestOnly, RequireAuth } from "./RouteGuards";
 
