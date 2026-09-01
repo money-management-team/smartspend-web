@@ -196,7 +196,7 @@ export default function Login() {
       {/* Submit */}
 
       <button className="login-submit" type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "جارٍ تسجيل الدخول..." : t("auth.login.submit")}
+        {isSubmitting ? t("auth.login.loading") : t("auth.login.submit")}
       </button>
     </>
   );

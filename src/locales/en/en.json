@@ -46,6 +46,7 @@
         "link": "Terms & Privacy Policy"
       },
       "submit": "Create account",
+      "loading" : "Account creation is underway...", 
       "social": {
         "divider": "Or continue with",
         "google": "Google",
@@ -90,6 +91,8 @@
       "forgotPassword": "Forgot password?",
       "remember": "Remember me on this device",
       "submit": "Sign in",
+      "loading": "Logging in...",
+
       "social": {
         "divider": "Or continue with",
         "google": "Google",
@@ -102,11 +105,7 @@
       "promo": {
         "title": "Manage your money smartly",
         "subtitle": "A smart financial platform that tracks income and spending and helps you build budgets and savings goals with AI.",
-        "chips": [
-          "Accounts",
-          "Smart analytics",
-          "Savings goals"
-        ]
+        "chips": ["Accounts", "Smart analytics", "Savings goals"]
       }
     },
     "forgotPassword": {

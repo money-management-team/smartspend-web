@@ -349,7 +349,7 @@ export default function Register() {
           {/* Submit */}
 
           <button className="register-submit" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "جارٍ إنشاء الحساب..." : t("auth.register.submit")}
+            {isSubmitting ? "" : t("auth.register.submit")}
           </button>
 
           {/* Divider */}
