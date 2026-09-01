@@ -106,3 +106,4 @@ export default function Recurring() {
     </div>
   );
 }
+console.log("test");
