@@ -3,7 +3,7 @@
 }
 
 .cash-flow-card__chart {
-  height: 350px;
+  height: 290px;
   padding: 16px 14px 8px 10px;
 }
 
@@ -23,12 +23,78 @@
   color: var(--color-text-secondary);
 }
 
+.cash-flow-card__figures {
+  margin: 0;
+  padding: 4px 18px 18px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.cash-flow-card__figure {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--dashboard-soft-surface);
+}
+
+.cash-flow-card__figure dt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-secondary);
+  font-size: 10px;
+}
+
+.cash-flow-card__figure dt::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-text-muted);
+}
+
+.cash-flow-card__figure--income dt::before {
+  background: var(--chart-green);
+}
+
+.cash-flow-card__figure--expense dt::before {
+  background: var(--chart-orange);
+}
+
+.cash-flow-card__figure dd {
+  margin: 5px 0 0;
+  overflow: hidden;
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cash-flow-card__negative {
+  color: var(--danger) !important;
+}
+
+.cash-flow-card__empty {
+  margin: 0;
+  padding: 48px 18px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  text-align: center;
+}
+
 @media (max-width: 560px) {
   .cash-flow-card {
     min-height: 390px;
   }
 
   .cash-flow-card__chart {
-    height: 310px;
+    height: 250px;
+  }
+
+  .cash-flow-card__figures {
+    grid-template-columns: 1fr;
   }
 }

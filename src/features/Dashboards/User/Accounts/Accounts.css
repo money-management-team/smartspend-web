@@ -97,5 +97,60 @@
   border: 0;
   color: var(--color-primary);
   background: transparent;
+  font: inherit;
   cursor: pointer;
+}
+
+.accounts-page__state p {
+  margin: 0;
+}
+
+/* One-time success message (e.g. after archiving). */
+
+.accounts-page__notice {
+  margin-top: 18px;
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border: 1px solid color-mix(in srgb, var(--color-success) 28%, transparent);
+  border-radius: var(--radius-md);
+
+  color: color-mix(in srgb, var(--color-success) 85%, var(--color-text-primary));
+  background: var(--success-soft);
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.accounts-page__notice p {
+  margin: 0;
+  flex: 1;
+}
+
+.accounts-page__notice button {
+  width: 28px;
+  height: 28px;
+
+  flex: none;
+  display: grid;
+  place-items: center;
+
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.accounts-page__notice button:hover {
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
+}
+
+:root[data-theme="dark"] .accounts-page__notice {
+  color: color-mix(in srgb, var(--color-success) 62%, #ffffff);
 }

@@ -1,0 +1,203 @@
+/* =========================================
+   DEBT PAYMENT FORM
+   (shell, inputs and buttons come from AccountForm.css; the textarea and
+   error block from ReverseTransactionDialog.css)
+========================================= */
+
+.debt-payment-form {
+  width: min(100%, 540px);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+.debt-payment-form header button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.debt-payment-form__title {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.debt-payment-form__title p {
+  margin: 0;
+  overflow: hidden;
+
+  color: var(--color-text-secondary);
+  font-size: 13px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.debt-payment-form__note,
+.debt-payment-form__warning {
+  padding: 11px 13px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.debt-payment-form__note {
+  margin: 16px 0 0;
+
+  border: 1px solid color-mix(in srgb, var(--color-primary) 24%, transparent);
+  background: var(--primary-soft);
+}
+
+.debt-payment-form__note p {
+  margin: 0;
+  color: inherit;
+}
+
+.debt-payment-form__warning {
+  margin: 0;
+
+  border: 1px solid color-mix(in srgb, var(--color-warning) 28%, transparent);
+  background: var(--warning-soft);
+}
+
+.debt-payment-form__note svg,
+.debt-payment-form__warning svg {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.debt-payment-form__note svg {
+  color: var(--color-primary);
+}
+
+.debt-payment-form__warning svg {
+  color: var(--color-warning);
+}
+
+/* The debt's remaining and paid amounts, as the backend reported them. */
+
+.debt-payment-form__balance {
+  margin: 14px 0 0;
+  padding: 10px 13px;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+
+  border-radius: var(--radius-md);
+
+  background: var(--surface-soft);
+}
+
+.debt-payment-form__balance div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.debt-payment-form__balance dt {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.debt-payment-form__balance dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+
+  color: var(--color-text-strong);
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.debt-payment-form__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+
+.debt-payment-form__row label {
+  align-content: start;
+}
+
+.debt-payment-form__fill {
+  width: max-content;
+  padding: 0;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.debt-payment-form__fill:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.debt-payment-form__fill:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.debt-payment-form__effect {
+  margin: 0;
+
+  color: var(--color-text-primary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.debt-payment-form__effect-amount {
+  font-weight: 700;
+}
+
+.debt-payment-form__effect-amount--payable {
+  color: var(--color-danger);
+}
+
+.debt-payment-form__effect-amount--receivable {
+  color: var(--color-success);
+}
+
+.debt-payment-form > .loading {
+  margin-top: 18px;
+}
+
+.debt-payment-form__options-error {
+  margin-top: 18px;
+}
+
+.debt-payment-form__options-error button {
+  width: max-content;
+  padding: 0;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  cursor: pointer;
+}
+
+@media (max-width: 520px) {
+  .debt-payment-form__row,
+  .debt-payment-form__balance {
+    grid-template-columns: 1fr;
+  }
+}

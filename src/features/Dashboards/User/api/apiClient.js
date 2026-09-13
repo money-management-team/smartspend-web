@@ -183,6 +183,19 @@ export function updateStoredWorkspace(workspace) {
   }
 }
 
+// Keeps only the query params an endpoint documents, so a list wrapper can
+// never send a filter the backend doesn't accept (e.g. an invented
+// `workspace_id`).
+export function pickQuery(query, allowedKeys) {
+  const picked = {};
+
+  allowedKeys.forEach((key) => {
+    if (query?.[key] !== undefined) picked[key] = query[key];
+  });
+
+  return picked;
+}
+
 function createQueryString(query = {}) {
   const params = new URLSearchParams();
 
@@ -205,6 +218,7 @@ function getErrorCode(status) {
   if (status === 401) return "UNAUTHENTICATED";
   if (status === 403) return "FORBIDDEN";
   if (status === 404) return "NOT_FOUND";
+  if (status === 409) return "CONFLICT";
   if (status === 422) return "VALIDATION_ERROR";
   if (status === 429) return "RATE_LIMITED";
   if (status >= 500) return "SERVER_ERROR";

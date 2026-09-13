@@ -1,45 +1,15 @@
-import { useTranslation } from "react-i18next";
-
-import RecurringOperationRow from "../RecurringOperationRow/RecurringOperationRow";
-
 import "./RecurringSection.css";
 
-export default function RecurringSection({
-  titleKey,
-  subtitleKey,
-  items,
-  variant = "default",
-}) {
-  const { t } = useTranslation();
-
+export default function RecurringSection({ title, subtitle, children }) {
   return (
-    <section
-      className={`recurring-section ${
-        variant === "due"
-          ? "recurring-section--due"
-          : ""
-      }`}
-    >
+    <section className="recurring-section">
       <header className="recurring-section__header">
-        <h2>
-          {t(titleKey)} ({items.length})
-        </h2>
+        <h2>{title}</h2>
 
-        {subtitleKey && (
-          <p>
-            {t(subtitleKey)}
-          </p>
-        )}
+        {subtitle && <p>{subtitle}</p>}
       </header>
 
-      <div className="recurring-section__list">
-        {items.map((item) => (
-          <RecurringOperationRow
-            key={item.id}
-            item={item}
-          />
-        ))}
-      </div>
+      <div className="recurring-section__list">{children}</div>
     </section>
   );
 }

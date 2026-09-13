@@ -1,38 +1,52 @@
-import { LuSigma, LuMinus, LuPlus } from "react-icons/lu";
+import { LuChartPie, LuCircleCheck, LuCircleAlert, LuTriangleAlert } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
+
+import { getDisplayLocale } from "../../../Accounts/accountHelpers";
 
 import "./BudgetSummary.css";
 
-function formatMoney(value, currency, language) {
-  const locale = language?.toLowerCase().startsWith("ar") ? "ar-EG" : "en-US";
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: currency || "ILS",
-    maximumFractionDigits: 2,
-  }).format(Number(value || 0));
-}
-
-export default function BudgetSummary({ summary }) {
+/*
+ * Counts of the listed budgets by the backend's progress status. Money isn't
+ * totalled here: a general budget already includes the expenses of category
+ * budgets in the same period, and budgets can use different currencies, so a
+ * sum would double-count or mix currencies.
+ */
+export default function BudgetSummary({ counts, isPartial }) {
   const { t, i18n } = useTranslation();
+  const locale = getDisplayLocale(i18n.language);
   const items = [
-    { key: "monthly", amount: summary?.limit, icon: LuSigma, primary: true },
-    { key: "spent", amount: summary?.spent, icon: LuMinus },
-    { key: "remaining", amount: summary?.remaining, icon: LuPlus },
+    { key: "active", icon: LuChartPie, primary: true },
+    { key: "onTrack", icon: LuCircleCheck, tone: "safe" },
+    { key: "attention", icon: LuTriangleAlert, tone: "attention" },
+    { key: "exceeded", icon: LuCircleAlert, tone: "exceeded" },
   ];
 
   return (
-    <section className="budget-summary">
-      {items.map(({ key, amount, icon: Icon, primary }) => (
-        <article key={key} className={`budget-summary-card ${primary ? "budget-summary-card--primary" : ""}`}>
-          <div className="budget-summary-card__top">
-            <span className="budget-summary-card__label">{t(`dashboard.budgets.summary.${key}`)}</span>
-            <span className="budget-summary-card__icon"><Icon /></span>
-          </div>
-          <strong className="budget-summary-card__amount" dir="ltr">
-            {formatMoney(amount, summary?.currency, i18n.resolvedLanguage || i18n.language)}
-          </strong>
-        </article>
-      ))}
+    <section className="budget-summary" aria-label={t("dashboard.budgets.summary.label")}>
+      <div className="budget-summary__grid">
+        {items.map(({ key, icon: Icon, primary, tone }) => (
+          <article
+            key={key}
+            className={`budget-summary-card${primary ? " budget-summary-card--primary" : ""}${
+              tone ? ` budget-summary-card--${tone}` : ""
+            }`}
+          >
+            <div className="budget-summary-card__top">
+              <span className="budget-summary-card__label">
+                {t(`dashboard.budgets.summary.${key}`)}
+              </span>
+              <span className="budget-summary-card__icon" aria-hidden="true">
+                <Icon />
+              </span>
+            </div>
+            <strong className="budget-summary-card__amount">
+              {new Intl.NumberFormat(locale).format(counts[key] ?? 0)}
+            </strong>
+          </article>
+        ))}
+      </div>
+
+      {isPartial && <p className="budget-summary__hint">{t("dashboard.budgets.summary.pageHint")}</p>}
     </section>
   );
 }

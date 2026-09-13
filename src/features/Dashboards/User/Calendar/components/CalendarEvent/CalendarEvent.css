@@ -1,0 +1,225 @@
+.calendar-event {
+  padding: 11px 13px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+
+  border: 1px solid var(--color-border);
+  border-inline-start: 3px solid var(--calendar-other);
+  border-radius: var(--radius-md);
+
+  background: var(--color-surface);
+}
+
+.calendar-event--recurring_occurrence {
+  border-inline-start-color: var(--calendar-recurring);
+}
+
+.calendar-event--debt_due {
+  border-inline-start-color: var(--calendar-debt);
+}
+
+.calendar-event--budget_period_end {
+  border-inline-start-color: var(--calendar-budget);
+}
+
+.calendar-event--savings_goal_target {
+  border-inline-start-color: var(--calendar-goal);
+}
+
+/* Icon */
+
+.calendar-event__icon {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  color: var(--calendar-other);
+  background: var(--surface-soft);
+}
+
+.calendar-event--recurring_occurrence .calendar-event__icon {
+  color: var(--calendar-recurring);
+  background: var(--primary-soft);
+}
+
+.calendar-event--debt_due .calendar-event__icon {
+  color: var(--calendar-debt);
+  background: var(--danger-soft);
+}
+
+.calendar-event--budget_period_end .calendar-event__icon {
+  color: var(--calendar-budget);
+  background: var(--warning-soft);
+}
+
+.calendar-event--savings_goal_target .calendar-event__icon {
+  color: var(--calendar-goal);
+  background: var(--success-soft);
+}
+
+.calendar-event__icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* Copy */
+
+.calendar-event__copy {
+  min-width: 0;
+  flex: 1;
+
+  display: grid;
+  gap: 4px;
+}
+
+.calendar-event__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.calendar-event__type {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.calendar-event__status,
+.calendar-event__severity {
+  padding: 2px 8px;
+
+  border-radius: var(--radius-pill);
+
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.calendar-event__status--warning,
+.calendar-event__severity--warning {
+  color: var(--warning);
+  background: var(--warning-soft);
+}
+
+.calendar-event__status--critical,
+.calendar-event__severity--critical {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.calendar-event__title {
+  margin: 0;
+
+  color: var(--color-text-primary);
+
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.calendar-event__link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.calendar-event__link:hover,
+.calendar-event__link:focus-visible {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.calendar-event__meta {
+  margin: 0;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+}
+
+.calendar-event__direction--income {
+  color: var(--color-success);
+}
+
+.calendar-event__direction--expense {
+  color: var(--color-danger);
+}
+
+.calendar-event__amount {
+  color: var(--color-text-primary);
+
+  font-family: var(--font-heading);
+  font-size: 13px;
+}
+
+/* Actions (open the subject's page) */
+
+.calendar-event__actions {
+  flex: none;
+
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.calendar-event__action {
+  height: 28px;
+  padding: 0 11px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  font-size: 11px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.calendar-event__action:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.calendar-event__action--open {
+  color: var(--color-primary);
+}
+
+.calendar-event__action svg {
+  width: 13px;
+  height: 13px;
+}
+
+[dir="rtl"] .calendar-event__open-icon {
+  transform: scaleX(-1);
+}
+
+@media (max-width: 560px) {
+  .calendar-event {
+    flex-wrap: wrap;
+  }
+
+  .calendar-event__actions {
+    width: 100%;
+  }
+}

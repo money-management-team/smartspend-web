@@ -1,97 +1,57 @@
+import { createElement } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
-  LuCoins,
-  LuLandmark,
-  LuWalletCards,
-  LuTrendingUp,
+  LuArrowDownRight,
+  LuArrowUpRight,
+  LuScale,
 } from "react-icons/lu";
 
 import "./SummaryCards.css";
-import { formatMoney, sumMoney } from "../../../utils/formatters";
-
-function totalsByCurrency(accounts) {
-  const grouped = new Map();
-
-  accounts.forEach((account) => {
-    const currency = account.currency_code ?? "ILS";
-    const balances = grouped.get(currency) ?? [];
-    balances.push(account.current_balance ?? "0.0000");
-    grouped.set(currency, balances);
-  });
-
-  return Array.from(grouped, ([currency, balances]) => ({
-    currency,
-    total: sumMoney(balances),
-  }));
-}
+import { getDisplayLocale } from "../../../Accounts/accountHelpers";
+import { formatOptionalMoney, isNegativeAmount } from "../../dashboardHelpers";
 
 const cards = [
-  {
-    key: "cash",
-    icon: LuCoins,
-    types: ["cash"],
-  },
-  {
-    key: "bank",
-    icon: LuLandmark,
-    types: ["bank", "savings"],
-  },
-  {
-    key: "wallets",
-    icon: LuWalletCards,
-    types: ["wallet", "custom"],
-  },
+  { key: "income", icon: LuArrowUpRight },
+  { key: "expense", icon: LuArrowDownRight },
+  { key: "net", icon: LuScale },
 ];
 
-export default function SummaryCards({ accounts }) {
+/*
+ * Income, expense and net of the selected period, exactly as the backend
+ * calculated them (`data.totals`). Transfers between the user's own accounts
+ * are not part of these figures; they are reported separately.
+ */
+export default function SummaryCards({ totals }) {
   const { t, i18n } = useTranslation();
-  const locale = i18n.language?.startsWith("ar") ? "ar" : "en";
+  const locale = getDisplayLocale(i18n.language);
 
   return (
-    <section className="dashboard-summary-cards">
-      {cards.map(({ key, icon: Icon, types }) => {
-        const matchingAccounts = accounts.filter((account) => types.includes(account.type));
-        const totals = totalsByCurrency(matchingAccounts);
+    <section className="dashboard-summary-cards" aria-label={t("dashboard.user.summary.label")}>
+      {cards.map(({ key, icon }) => {
+        const value = totals?.[key];
+        const tone = key === "net" && isNegativeAmount(value) ? " dashboard-summary-card__amount--negative" : "";
 
         return (
-        <article
-          className="dashboard-summary-card"
-          key={key}
-        >
-          {/* Content */}
-          <div className="dashboard-summary-card__content">
-            <span className="dashboard-summary-card__label">
-              {t(
-                `dashboard.user.summary.${key}.label`,
-              )}
-            </span>
+          <article className={`dashboard-summary-card dashboard-summary-card--${key}`} key={key}>
+            <div className="dashboard-summary-card__content">
+              <span className="dashboard-summary-card__label">
+                {t(`dashboard.user.summary.${key}.label`)}
+              </span>
 
-            <div className="dashboard-summary-card__amount">
-              {(totals.length > 0
-                ? totals
-                : [{ currency: "ILS", total: "0.0000" }]
-              ).map(({ currency, total }) => (
-                <strong key={currency}>{formatMoney(total, currency, locale)}</strong>
-              ))}
+              <div className={`dashboard-summary-card__amount${tone}`}>
+                <strong>{formatOptionalMoney(value, totals?.currency_code, locale)}</strong>
+              </div>
+
+              <span className="dashboard-summary-card__hint">
+                {t(`dashboard.user.summary.${key}.hint`)}
+              </span>
             </div>
 
-            <span className="dashboard-summary-card__change">
-              <LuTrendingUp />
-
-              <span>
-                {t("dashboard.user.money.accountsCount", {
-                  count: matchingAccounts.length,
-                })}
-              </span>
+            <span className="dashboard-summary-card__icon">
+              {createElement(icon)}
             </span>
-          </div>
-
-          {/* Icon */}
-          <span className="dashboard-summary-card__icon">
-            <Icon />
-          </span>
-        </article>
+          </article>
         );
       })}
     </section>

@@ -71,12 +71,14 @@
 .auth-actions {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 6px;
 }
 
 .auth-action {
-  padding: 0;
+  min-height: 38px;
+  padding: 0 10px;
   border: 0;
+  border-radius: var(--radius-pill);
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -84,6 +86,11 @@
   background: transparent;
   font: inherit;
   cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.auth-action:hover {
+  background: color-mix(in srgb, var(--color-surface-hover) 70%, transparent);
 }
 
 .auth-action svg {
@@ -101,19 +108,92 @@
   line-height: 1;
 }
 
+
+/* =========================================
+   AUTH DESIGN TOKENS
+   Shared by every auth page. Built from the
+   global tokens in src/index.css.
+========================================= */
+
+.auth-card {
+  --auth-card-border: color-mix(in srgb, var(--color-border) 85%, transparent);
+  --auth-card-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 18px 40px -18px rgba(15, 23, 42, 0.16),
+    0 40px 80px -40px color-mix(in srgb, var(--color-primary) 24%, transparent);
+
+  --auth-control-bg: var(--color-surface);
+  --auth-control-bg-hover: var(--color-surface-soft);
+  --auth-control-border: var(--color-border);
+  --auth-control-border-hover: var(--border-strong);
+
+  --auth-label: var(--color-text-strong);
+  --auth-muted: var(--color-text-muted);
+  --auth-link: var(--color-primary);
+  --auth-link-hover: var(--color-primary-hover);
+
+  --auth-danger: var(--color-danger);
+  --auth-warning: color-mix(in srgb, var(--color-warning) 88%, #000000);
+  --auth-success: color-mix(in srgb, var(--color-success) 85%, #000000);
+
+  --auth-promo-bg:
+    linear-gradient(
+      150deg,
+      color-mix(in srgb, var(--color-primary) 86%, #ffffff) 0%,
+      var(--color-primary) 34%,
+      var(--color-primary-hover) 72%,
+      color-mix(in srgb, var(--color-primary-hover) 72%, #0b1b4d) 100%
+    );
+  --auth-promo-highlight: color-mix(in srgb, var(--navigation-active-text) 22%, transparent);
+  --auth-promo-accent: color-mix(in srgb, var(--color-insights) 30%, transparent);
+}
+
+:root[data-theme="dark"] .auth-card {
+  --auth-card-border: color-mix(in srgb, var(--color-text-strong) 8%, transparent);
+  --auth-card-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--color-text-strong) 5%, transparent),
+    0 28px 64px -24px rgba(0, 0, 0, 0.65);
+
+  --auth-control-bg: color-mix(in srgb, var(--color-background) 60%, var(--color-surface));
+  --auth-control-bg-hover: color-mix(in srgb, var(--color-surface-soft) 50%, var(--color-surface));
+  --auth-control-border: color-mix(in srgb, var(--border-strong) 75%, transparent);
+  --auth-control-border-hover: var(--color-text-muted);
+
+  --auth-link: color-mix(in srgb, var(--color-primary) 60%, #ffffff);
+  --auth-link-hover: color-mix(in srgb, var(--color-primary) 42%, #ffffff);
+
+  --auth-danger: color-mix(in srgb, var(--color-danger) 58%, #ffffff);
+  --auth-warning: color-mix(in srgb, var(--color-warning) 62%, #ffffff);
+  --auth-success: color-mix(in srgb, var(--color-success) 62%, #ffffff);
+
+  --auth-promo-bg:
+    linear-gradient(
+      150deg,
+      color-mix(in srgb, var(--color-primary) 82%, #0b1220) 0%,
+      color-mix(in srgb, var(--color-primary-hover) 62%, #0b1220) 58%,
+      color-mix(in srgb, var(--color-primary-hover) 40%, #0b1220) 100%
+    );
+  --auth-promo-highlight: color-mix(in srgb, var(--navigation-active-text) 12%, transparent);
+  --auth-promo-accent: color-mix(in srgb, var(--color-insights) 26%, transparent);
+}
+
+
+/* =========================================
+   AUTH CARD
+========================================= */
+
 .auth-card {
   width: 100%;
-  /* height: 710px; */
   margin-top: 12px;
-  padding: 32px;
+  padding: 14px;
   position: relative;
   z-index: 1;
   display: flex;
   align-items: stretch;
-  gap: 70px;
+  gap: 48px;
   box-sizing: border-box;
   overflow: hidden;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--auth-card-border);
   border-radius: var(--radius-xl);
   background:
     color-mix(
@@ -122,7 +202,7 @@
       transparent
     );
   backdrop-filter: blur(14px);
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--auth-card-shadow);
 }
 
 .auth-card::before {
@@ -141,23 +221,54 @@
     );
 }
 
-.auth-card--login {
-  height: 556px;
+/* Column sizing: brand panel + form panel */
+
+.auth-card > .auth-promo {
+  flex: 0 1 620px;
+  min-width: 0;
+  min-height: 540px;
 }
+
+.auth-panel {
+  flex: 0 1 432px;
+  min-width: 0;
+  margin-inline: auto;
+  padding: 32px 16px;
+  align-self: center;
+  color: var(--color-text-primary);
+  text-align: start;
+}
+
+.auth-form {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.auth-form > .auth-button {
+  margin-top: 4px;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
 
 @media (max-width: 1400px) {
   .auth-shell {
     width: calc(100% - 64px);
   }
-
-  .auth-card {
-    gap: 56px;
-  }
 }
 
 @media (max-width: 1200px) {
   .auth-card {
-    gap: 36px;
+    gap: 32px;
+  }
+
+  .auth-panel {
+    flex-basis: 412px;
+    padding-inline: 12px 20px;
   }
 }
 
@@ -167,30 +278,42 @@
     padding-top: 16px;
   }
 
-  .auth-card,
-  .auth-card--login {
-    height: auto;
-    min-height: 0;
-    padding: 24px;
+  .auth-card {
+    gap: 24px;
+  }
+
+  .auth-panel {
+    flex-basis: 380px;
+  }
+}
+
+/* Tablet portrait and below: single centered form card */
+
+@media (max-width: 900px) {
+  .auth-card {
+    width: min(100%, 520px);
+    margin: clamp(16px, 6vh, 56px) auto 0;
+    padding: 40px 36px 36px;
     flex-direction: column;
+    gap: 0;
     overflow: visible;
   }
 
-  .auth-card > :is(
-    .login-promo,
-    .register-promo,
-    .forgot-promo,
-    .reset-promo,
-    .verify-promo,
-    .password-changed-promo
-  ) {
+  .auth-card > .auth-promo {
     display: none;
+  }
+
+  .auth-panel {
+    flex: none;
+    width: 100%;
+    margin: 0;
+    padding: 0;
   }
 }
 
 @media (max-width: 560px) {
   .auth-shell {
-    width: calc(100% - 20px);
+    width: calc(100% - 24px);
   }
 
   .auth-header {
@@ -207,12 +330,23 @@
   }
 
   .auth-actions {
-    gap: 12px;
+    gap: 2px;
   }
 
   .auth-card {
-    margin-top: 8px;
-    padding: 18px;
-    border-radius: var(--radius-lg);
+    margin-top: 12px;
+    padding: 28px 20px 24px;
+    border-radius: 20px;
+  }
+
+  .auth-form {
+    margin-top: 26px;
+    gap: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-action {
+    transition: none;
   }
 }

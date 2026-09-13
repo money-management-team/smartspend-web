@@ -52,60 +52,6 @@
 
 
 /* =========================================
-   BUTTON
-========================================= */
-
-.notifications-header__read-all {
-  min-height: 38px;
-
-  margin-top: 11px;
-
-  padding:
-    0
-    18px;
-
-  flex-shrink: 0;
-
-  border:
-    1px solid
-    var(--color-border);
-
-  border-radius: 999px;
-
-  color:
-    var(--color-text-primary);
-
-  background:
-    var(--color-surface);
-
-  font: inherit;
-
-  font-size: 12px;
-
-  white-space: nowrap;
-
-  cursor: pointer;
-
-  box-shadow:
-    var(--shadow-sm);
-
-  transition:
-    color 160ms ease,
-    border-color 160ms ease,
-    background-color 160ms ease;
-}
-
-
-.notifications-header__read-all:hover {
-  border-color:
-    var(--color-primary);
-
-  color:
-    var(--color-primary);
-}
-
-
-/* =========================================
    RTL
 ========================================= */
 
@@ -131,12 +77,5 @@
 
   .notifications-header__copy h1 {
     font-size: 25px;
-  }
-
-
-  .notifications-header__read-all {
-    width: max-content;
-
-    margin-top: 0;
   }
 }

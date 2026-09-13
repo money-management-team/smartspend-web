@@ -1,0 +1,25 @@
+/* =========================================
+   AUTH ALERT
+========================================= */
+
+.auth-alert {
+  margin: 0;
+  padding: 10px 14px;
+
+  border: 1px solid color-mix(in srgb, var(--color-danger) 22%, transparent);
+  border-radius: var(--radius-md);
+
+  color: var(--auth-danger);
+  background: var(--danger-soft);
+
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.auth-alert--success {
+  border-color: color-mix(in srgb, var(--color-success) 22%, transparent);
+
+  color: var(--auth-success);
+  background: var(--success-soft);
+}

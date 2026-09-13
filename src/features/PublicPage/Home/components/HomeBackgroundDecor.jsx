@@ -1,57 +1,30 @@
 export default function HomeBackgroundDecor() {
   return (
-    <div
-      className="home-background-decor"
-      aria-hidden="true"
-    >
-      <svg
-        className="home-background-decor__lines"
-        viewBox="0 0 1440 900"
-        preserveAspectRatio="none"
-        focusable="false"
-      >
-        <path
-          className="home-background-decor__path home-background-decor__path--primary"
-          d="M-80 205 C190 45 405 315 705 178 S1185 42 1520 222"
-          pathLength="1"
-          vectorEffect="non-scaling-stroke"
-        />
+    <div className="home-background-decor" aria-hidden="true">
+      <div className="home-background-decor__grid" />
+      <div className="home-background-decor__beam home-background-decor__beam--one" />
+      <div className="home-background-decor__beam home-background-decor__beam--two" />
+      <div className="home-background-decor__side-light home-background-decor__side-light--start" />
+      <div className="home-background-decor__side-light home-background-decor__side-light--end" />
+      <div className="home-background-decor__orb home-background-decor__orb--blue" />
+      <div className="home-background-decor__orb home-background-decor__orb--purple" />
+      <div className="home-background-decor__orb home-background-decor__orb--green" />
 
-        <path
-          className="home-background-decor__path home-background-decor__path--insights"
-          d="M-70 690 C245 520 480 785 825 615 S1210 490 1510 650"
-          pathLength="1"
-          vectorEffect="non-scaling-stroke"
-        />
-
-        <path
-          className="home-background-decor__path home-background-decor__path--success"
-          d="M960 -35 C1110 145 1090 315 1505 388"
-          pathLength="1"
-          vectorEffect="non-scaling-stroke"
-        />
+      <svg className="home-background-decor__lines" viewBox="0 0 1600 1000" preserveAspectRatio="none" focusable="false">
+        <path className="home-background-decor__path home-background-decor__path--primary" d="M-120 250 C240 40 520 330 870 145 S1320 65 1710 260" pathLength="1" vectorEffect="non-scaling-stroke" />
+        <path className="home-background-decor__path home-background-decor__path--secondary" d="M-100 790 C300 585 565 880 970 635 S1420 540 1690 720" pathLength="1" vectorEffect="non-scaling-stroke" />
       </svg>
 
-      <div className="home-background-decor__item home-background-decor__arc home-background-decor__arc--start">
-        <span />
-      </div>
+      {Array.from({ length: 12 }, (_, index) => (
+        <span
+          key={index}
+          className={`home-background-decor__particle home-background-decor__particle--${index + 1}`}
+        />
+      ))}
 
-      <div className="home-background-decor__item home-background-decor__arc home-background-decor__arc--end">
-        <span />
-      </div>
-
-      <div className="home-background-decor__item home-background-decor__dots home-background-decor__dots--top">
-        <span />
-        <span />
-        <span />
-        <span />
-      </div>
-
-      <div className="home-background-decor__item home-background-decor__dots home-background-decor__dots--bottom">
-        <span />
-        <span />
-        <span />
-      </div>
+      <span className="home-background-decor__micro-ring home-background-decor__micro-ring--one" />
+      <span className="home-background-decor__micro-ring home-background-decor__micro-ring--two" />
+      <span className="home-background-decor__micro-ring home-background-decor__micro-ring--three" />
     </div>
   );
 }

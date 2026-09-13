@@ -114,6 +114,30 @@
   white-space: nowrap;
 }
 
+.money-account__count {
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.money-account__name {
+  color: var(--color-text-primary);
+  font-size: 11px;
+  text-decoration: none;
+}
+
+.money-account__name:hover {
+  color: var(--color-primary);
+}
+
+.money-distribution__empty {
+  margin: 0;
+  padding: 24px 18px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  text-align: center;
+}
+
 @media (max-width: 720px) {
   .money-distribution__grid {
     grid-template-columns: 1fr;

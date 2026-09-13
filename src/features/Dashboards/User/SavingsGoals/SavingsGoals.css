@@ -3,54 +3,195 @@
   max-width: 1240px;
 
   margin: 0 auto;
-
-  padding:
-    28px
-    32px
-    50px;
+  padding: 28px 32px 50px;
 
   box-sizing: border-box;
 
-  color:
-    var(--color-text-primary);
+  color: var(--color-text-primary);
 }
 
+.savings-goals-page > .loading {
+  margin-block: 24px;
+}
+
+/* =========================================
+   NOTICE (one-time success message)
+========================================= */
+
+.savings-goals-page__notice {
+  margin-top: 22px;
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border: 1px solid color-mix(in srgb, var(--color-success) 28%, transparent);
+  border-radius: var(--radius-md);
+
+  color: color-mix(in srgb, var(--color-success) 85%, var(--color-text-primary));
+  background: var(--success-soft);
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* `color: inherit` beats the global `p` color from index.css. */
+.savings-goals-page__notice p {
+  margin: 0;
+  flex: 1;
+  color: inherit;
+}
+
+.savings-goals-page__notice a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.savings-goals-page__notice button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+
+  flex: none;
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: 50%;
+
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.savings-goals-page__notice button:hover {
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
+}
+
+:root[data-theme="dark"] .savings-goals-page__notice {
+  color: color-mix(in srgb, var(--color-success) 62%, #ffffff);
+}
 
 /* =========================================
    GRID
 ========================================= */
 
 .savings-goals-page__grid {
-  margin-top: 25px;
+  margin-top: 20px;
 
   display: grid;
-
-  grid-template-columns:
-    repeat(
-      2,
-      minmax(0, 1fr)
-    );
-
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: start;
-
-  gap:
-    20px
-    22px;
+  gap: 20px 22px;
 }
 
-
 /* =========================================
-   RTL
+   STATES
 ========================================= */
 
-[dir="rtl"]
-.savings-goals-page {
-  direction: rtl;
+.savings-goals-page__state {
+  margin-top: 20px;
+  padding: 28px 16px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  text-align: center;
 }
 
+.savings-goals-page__state p {
+  margin: 0;
+  color: inherit;
+}
+
+.savings-goals-page__state--error {
+  color: var(--color-danger);
+}
+
+.savings-goals-page__state button {
+  margin-top: 10px;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  cursor: pointer;
+}
 
 /* =========================================
-   TABLET
+   PAGINATION
+========================================= */
+
+.savings-goals-page__pagination {
+  margin-top: 20px;
+  padding: 12px 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  font-size: 11px;
+}
+
+.savings-goals-page__pages {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.savings-goals-page__pages button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  cursor: pointer;
+}
+
+.savings-goals-page__pages button:hover:not(:disabled) {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.savings-goals-page__pages button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.savings-goals-page__pages svg {
+  width: 15px;
+  height: 15px;
+}
+
+[dir="rtl"] .savings-goals-page__pages svg {
+  transform: scaleX(-1);
+}
+
+/* =========================================
+   RESPONSIVE
 ========================================= */
 
 @media (max-width: 980px) {
@@ -59,35 +200,12 @@
   }
 }
 
-
-/* =========================================
-   MOBILE
-========================================= */
-
 @media (max-width: 720px) {
   .savings-goals-page {
-    padding:
-      22px
-      16px
-      40px;
+    padding: 22px 16px 40px;
   }
 
   .savings-goals-page__grid {
-    margin-top: 20px;
-
     gap: 16px;
   }
 }
-.savings-goals-page__state {
-  margin-top: 24px;
-  padding: 18px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
-  text-align: center;
-}
-.savings-goals-page__state p { margin: 0 0 10px; }
-.savings-goals-page__state button { border: 0; border-radius: 999px; padding: 9px 16px; background: var(--color-primary); color: var(--navigation-active-text); cursor: pointer; }
-.savings-goals-page__state--error { color: var(--danger); }
-.savings-goals-page__empty { grid-column: 1 / -1; margin: 0; padding: 28px; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); color: var(--color-text-secondary); text-align: center; }

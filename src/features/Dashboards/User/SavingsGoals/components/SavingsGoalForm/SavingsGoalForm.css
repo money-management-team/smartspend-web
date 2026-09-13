@@ -1,70 +1,118 @@
-.savings-goal-form-modal,
-.contribution-form-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background: color-mix(in srgb, #0f172a 45%, transparent);
-}
+/* =========================================
+   SAVINGS GOAL FORM
+   (shell, inputs and buttons come from AccountForm.css; the textarea and
+   error block from ReverseTransactionDialog.css)
+========================================= */
 
-.savings-goal-form-modal__dialog,
-.contribution-form-modal__dialog {
-  width: min(520px, 100%);
+.savings-goal-form {
+  width: min(100%, 520px);
   max-height: calc(100vh - 40px);
-  overflow: auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
+  overflow-y: auto;
 }
 
-.savings-goal-form-modal__dialog > header,
-.contribution-form-modal__dialog > header {
+.savings-goal-form header button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.savings-goal-form__note {
+  margin: 16px 0 0;
+  padding: 11px 13px;
+
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 20px 22px;
-  border-bottom: 1px solid var(--color-border);
-}
-.savings-goal-form-modal__dialog h2,
-.savings-goal-form-modal__dialog p,
-.contribution-form-modal__dialog h2,
-.contribution-form-modal__dialog p { margin: 0; }
-.savings-goal-form-modal__dialog header p,
-.contribution-form-modal__dialog header p { margin-top: 5px; color: var(--color-text-secondary); font-size: 12px; }
-.savings-goal-form-modal__dialog header > button,
-.contribution-form-modal__dialog header > button { border: 0; background: transparent; color: var(--color-text-secondary); font-size: 24px; cursor: pointer; }
+  gap: 9px;
 
-.savings-goal-form-modal__dialog form,
-.contribution-form-modal__dialog form { display: grid; gap: 15px; padding: 20px 22px 22px; }
-.savings-goal-form-modal__dialog label,
-.contribution-form-modal__dialog label { display: grid; gap: 7px; font-size: 12px; font-weight: 600; }
-.savings-goal-form-modal__dialog input,
-.savings-goal-form-modal__dialog select,
-.contribution-form-modal__dialog input,
-.contribution-form-modal__dialog select {
-  width: 100%;
-  min-height: 42px;
-  box-sizing: border-box;
-  padding: 0 12px;
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 24%, transparent);
+  border-radius: var(--radius-md);
+
   color: var(--color-text-primary);
-  background: var(--color-surface);
-  font: inherit;
+  background: var(--primary-soft);
+
+  font-size: 13px;
+  line-height: 1.55;
 }
-.savings-goal-form-modal__dialog small,
-.contribution-form-modal__dialog small,
-.savings-goal-form-modal__error,
-.contribution-form-modal__error { color: var(--danger); font-size: 11px; }
-.savings-goal-form-modal__error,
-.contribution-form-modal__error { margin: 0; }
-.savings-goal-form-modal__dialog footer,
-.contribution-form-modal__dialog footer { display: flex; justify-content: flex-end; gap: 10px; padding-top: 6px; }
-.savings-goal-form-modal__dialog footer button,
-.contribution-form-modal__dialog footer button { min-height: 40px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text-primary); cursor: pointer; }
-.savings-goal-form-modal__dialog footer button[type="submit"],
-.contribution-form-modal__dialog footer button[type="submit"] { border-color: var(--color-primary); background: var(--color-primary); color: var(--navigation-active-text); }
+
+.savings-goal-form__note svg {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.savings-goal-form__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+
+.savings-goal-form__row--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.savings-goal-form__row label {
+  align-content: start;
+}
+
+/* Fixed field (edit: currency) */
+
+.savings-goal-form__fixed {
+  padding: 12px 14px;
+
+  display: grid;
+  gap: 10px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--surface-soft);
+}
+
+.savings-goal-form__fixed dl {
+  margin: 0;
+}
+
+.savings-goal-form__fixed dl div {
+  display: grid;
+  gap: 3px;
+}
+
+.savings-goal-form__fixed dt {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.savings-goal-form__fixed dd {
+  margin: 0;
+
+  color: var(--color-text-strong);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.savings-goal-form__fixed p {
+  margin: 0;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.savings-goal-form__fixed svg {
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 520px) {
+  .savings-goal-form__row {
+    grid-template-columns: 1fr;
+  }
+}

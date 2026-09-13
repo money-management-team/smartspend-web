@@ -37,6 +37,20 @@
   border-radius: 50%;
 }
 
+.expense-categories-card__empty,
+.expense-categories-card__note {
+  margin: 0;
+  padding: 0 18px 18px;
+  color: var(--color-text-secondary);
+  font-size: 10px;
+}
+
+.expense-categories-card__empty {
+  padding: 48px 18px;
+  font-size: 12px;
+  text-align: center;
+}
+
 @media (max-width: 560px) {
   .expense-categories-card {
     min-height: 390px;

@@ -57,6 +57,60 @@
 
 
 /* =========================================
+   NOTICE (one-time success message)
+========================================= */
+
+.financial-operations-page__notice {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border: 1px solid color-mix(in srgb, var(--color-success) 28%, transparent);
+  border-radius: var(--radius-md);
+
+  color: color-mix(in srgb, var(--color-success) 85%, var(--color-text-primary));
+  background: var(--success-soft);
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.financial-operations-page__notice p {
+  margin: 0;
+  flex: 1;
+  color: inherit;
+}
+
+.financial-operations-page__notice button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+
+  flex: none;
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: 50%;
+
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.financial-operations-page__notice button:hover {
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
+}
+
+:root[data-theme="dark"] .financial-operations-page__notice {
+  color: color-mix(in srgb, var(--color-success) 62%, #ffffff);
+}
+
+
+/* =========================================
    LAYOUT
 ========================================= */
 

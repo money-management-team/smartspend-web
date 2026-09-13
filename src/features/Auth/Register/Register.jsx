@@ -1,79 +1,81 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 
-import logo from "../../../assets/smart-spend-logo.png";
-
-import "./Register.css";
 import { useAuthContext } from "../../../contexts/auth/useAuthContext";
 import { PATH } from "../../../routes/Path";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  ApiError,
-  getApiErrorMessage,
-} from "../../Dashboards/User/api/apiClient";
+import { getApiErrorMessage } from "../../Dashboards/User/api/apiClient";
 
+import AuthAlert from "../components/AuthAlert/AuthAlert";
+import AuthButton from "../components/AuthButton/AuthButton";
+import AuthCheckbox from "../components/AuthCheckbox/AuthCheckbox";
+import AuthField from "../components/AuthField/AuthField";
+import AuthHeading from "../components/AuthHeading/AuthHeading";
+import {
+  CardIcon,
+  MailIcon,
+  ShieldIcon,
+  SparklesIcon,
+  UserIcon,
+} from "../components/AuthIcons";
+import AuthPromo from "../components/AuthPromo/AuthPromo";
+import AuthSocial from "../components/AuthSocial/AuthSocial";
+import AuthSwitchPrompt from "../components/AuthSwitchPrompt/AuthSwitchPrompt";
+import PasswordField from "../components/PasswordField/PasswordField";
+
+import "./Register.css";
 
 const initialForm = {
   name: "",
   identifier: "",
   password: "",
-  password_confirmation: "",
-  terms: false,
+  passwordConfirmation: "",
+  termsAccepted: false,
 };
 
-function UserIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 12.25a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8Z" />
-      <path d="M6.5 19.1v-1.25c0-2.15 2.1-3.9 4.7-3.9h1.6c2.6 0 4.7 1.75 4.7 3.9v1.25" />
-    </svg>
-  );
-}
+/*
+ * Backend field → form field. The single consent checkbox covers both the
+ * terms and the privacy policy, so both consent errors land on it.
+ */
+const FORM_FIELD_BY_API_FIELD = {
+  name: "name",
+  identifier: "identifier",
+  password: "password",
+  password_confirmation: "passwordConfirmation",
+  terms_accepted: "termsAccepted",
+  privacy_accepted: "termsAccepted",
+};
 
-function MailIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
+const toRegisterPayload = (form) => ({
+  name: form.name.trim(),
+  identifier: form.identifier.trim(),
+  password: form.password,
+  password_confirmation: form.passwordConfirmation,
+  terms_accepted: form.termsAccepted,
+  privacy_accepted: form.termsAccepted,
+});
 
-      <path d="m5 7 7 5.2L19 7" />
-    </svg>
-  );
-}
+const toFormErrors = (apiErrors = {}) => {
+  const formErrors = {};
 
-function ShieldIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 3.7 19 6.4v5.35c0 4.6-2.95 7.7-7 8.9-4.05-1.2-7-4.3-7-8.9V6.4l7-2.7Z" />
-    </svg>
-  );
-}
+  Object.entries(apiErrors).forEach(([apiField, messages]) => {
+    const field = FORM_FIELD_BY_API_FIELD[apiField];
+    if (!field) return;
 
-function SparklesIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="m12 3 1.15 4.1a5.2 5.2 0 0 0 3.65 3.65L21 12l-4.2 1.2a5.2 5.2 0 0 0-3.6 3.6L12 21l-1.2-4.2a5.2 5.2 0 0 0-3.6-3.6L3 12l4.2-1.25a5.2 5.2 0 0 0 3.55-3.55L12 3Z" />
+    formErrors[field] = [
+      ...new Set([...(formErrors[field] ?? []), ...[].concat(messages)]),
+    ];
+  });
 
-      <path d="m18.3 3.4.45 1.55a2 2 0 0 0 1.35 1.35l1.5.45-1.5.45a2 2 0 0 0-1.35 1.35l-.45 1.55-.45-1.55A2 2 0 0 0 16.5 7.2L15 6.75l1.5-.45a2 2 0 0 0 1.35-1.35l.45-1.55Z" />
-    </svg>
-  );
-}
-
-function CardIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="3" y="5.3" width="18" height="13.4" rx="2.2" />
-
-      <path d="M3 9.2h18" />
-    </svg>
-  );
-}
+  return formErrors;
+};
 
 const featureIcons = [ShieldIcon, SparklesIcon, CardIcon];
 
 export default function Register() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { register } = useAuthContext();
+  const { register, loginWithGoogle } = useAuthContext();
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
@@ -99,29 +101,48 @@ export default function Register() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
 
     setErrors({});
     setGeneralError("");
 
-    if (!form.terms) {
-      setErrors({ terms: ["يجب الموافقة على الشروط والأحكام"] });
+    if (!form.termsAccepted) {
+      setErrors({ termsAccepted: [t("auth.register.terms.required")] });
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      await register({
-          name: form.name.trim(),
-          identifier: form.identifier.trim(),
-          password: form.password,
-          password_confirmation: form.password_confirmation,
-      });
+      await register(toRegisterPayload(form));
 
       navigate(PATH.USER.DASHBOARD, { replace: true });
     } catch (error) {
-      if (error instanceof ApiError) setErrors(error.errors);
+      if (error?.code === "VALIDATION_ERROR") {
+        setErrors(toFormErrors(error.errors));
+      }
       setGeneralError(getApiErrorMessage(error, t));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGoogleCredential = async (idToken) => {
+    if (isSubmitting) return;
+
+    setErrors({});
+    setGeneralError("");
+    setIsSubmitting(true);
+
+    try {
+      await loginWithGoogle(idToken);
+
+      navigate(PATH.USER.DASHBOARD, { replace: true });
+    } catch (error) {
+      // No field to show `id_token` errors under, so its message is the alert.
+      setGeneralError(
+        error?.errors?.id_token?.[0] ?? getApiErrorMessage(error, t),
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -129,254 +150,138 @@ export default function Register() {
 
   const features = [0, 1, 2].map((index) => ({
     title: t(`auth.register.promo.features.${index}.title`),
-
     description: t(`auth.register.promo.features.${index}.description`),
   }));
 
   return (
     <>
-      {/* ==========================
-          PROMO SECTION
-      ========================== */}
-
-      <section
-        className="register-promo"
-        aria-label={t("auth.register.promo.title")}
+      <AuthPromo
+        title={t("auth.register.promo.title")}
+        subtitle={t("auth.register.promo.subtitle")}
       >
-        <div className="register-promo__rings" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </div>
+        <ul className="register-features">
+          {features.map((feature, index) => {
+            const Icon = featureIcons[index];
 
-        <div className="register-promo__content">
-          <div className="register-promo__logo">
-            <img src={logo} alt="Smart Spend" />
-          </div>
+            return (
+              <li className="register-feature" key={index}>
+                <span className="register-feature__icon" aria-hidden="true">
+                  <Icon />
+                </span>
 
-          <h2>{t("auth.register.promo.title")}</h2>
+                <span className="register-feature__copy">
+                  <strong>{feature.title}</strong>
+                  <small>{feature.description}</small>
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </AuthPromo>
 
-          <p className="register-promo__subtitle">
-            {t("auth.register.promo.subtitle")}
-          </p>
+      <section className="auth-panel">
+        <AuthHeading
+          title={t("auth.register.title")}
+          subtitle={t("auth.register.subtitle")}
+        />
 
-          <div className="register-promo__features">
-            {features.map((feature, index) => {
-              const Icon = featureIcons[index];
+        <form className="auth-form register-form" onSubmit={handleSubmit}>
+          <AuthField
+            id="register-name"
+            label={t("auth.register.fields.fullName.label")}
+            icon={<UserIcon />}
+            errors={errors.name}
+            type="text"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            placeholder={t("auth.register.fields.fullName.placeholder")}
+            autoComplete="name"
+            disabled={isSubmitting}
+            required
+          />
 
-              return (
-                <article className="register-feature" key={index}>
-                  <span className="register-feature__icon">
-                    <Icon />
-                  </span>
+          <AuthField
+            id="register-identifier"
+            label={t("auth.register.fields.contact.label")}
+            icon={<MailIcon />}
+            errors={errors.identifier}
+            type="text"
+            name="identifier"
+            value={form.identifier}
+            onChange={handleChange}
+            placeholder={t("auth.register.fields.contact.placeholder")}
+            autoComplete="username"
+            disabled={isSubmitting}
+            required
+          />
 
-                  <span className="register-feature__copy">
-                    <strong>{feature.title}</strong>
+          <PasswordField
+            id="register-password"
+            label={t("auth.register.fields.password.label")}
+            errors={errors.password}
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            placeholder={t("auth.register.fields.password.placeholder")}
+            autoComplete="new-password"
+            disabled={isSubmitting}
+            minLength={8}
+            required
+          />
 
-                    <small>{feature.description}</small>
-                  </span>
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+          <PasswordField
+            id="register-confirm-password"
+            label={t("auth.register.fields.confirmPassword.label")}
+            errors={errors.passwordConfirmation}
+            name="passwordConfirmation"
+            value={form.passwordConfirmation}
+            onChange={handleChange}
+            placeholder={t("auth.register.fields.confirmPassword.placeholder")}
+            autoComplete="new-password"
+            disabled={isSubmitting}
+            minLength={8}
+            required
+          />
 
-      {/* ==========================
-          REGISTER FORM
-      ========================== */}
+          <AuthCheckbox
+            id="register-terms"
+            name="termsAccepted"
+            checked={form.termsAccepted}
+            onChange={handleChange}
+            errors={errors.termsAccepted}
+            disabled={isSubmitting}
+          >
+            {t("auth.register.terms.prefix")}{" "}
+            <a href="#terms">{t("auth.register.terms.link")}</a>
+          </AuthCheckbox>
 
-      <section className="register-form-panel">
-        <header className="register-form-panel__header">
-          <h1>{t("auth.register.title")}</h1>
+          {generalError && <AuthAlert>{generalError}</AuthAlert>}
 
-          <p>{t("auth.register.subtitle")}</p>
-        </header>
-
-        <form className="register-form" onSubmit={handleSubmit}>
-          {/* Full Name */}
-
-          <label className="register-field">
-            <span>{t("auth.register.fields.fullName.label")}</span>
-
-            <span className="register-input-wrap">
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={handleChange}
-                placeholder={t("auth.register.fields.fullName.placeholder")}
-                autoComplete="name"
-                aria-invalid={Boolean(errors.name)}
-                aria-describedby={errors.name ? "register-name-error" : undefined}
-                disabled={isSubmitting}
-                required
-              />
-
-              <span className="register-input-icon">
-                <UserIcon />
-              </span>
-            </span>
-
-            {errors.name?.map((error, index) => (
-              <small className="register-field__error" id={index === 0 ? "register-name-error" : undefined} key={error}>
-                {error}
-              </small>
-            ))}
-          </label>
-
-          {/* Email / Phone */}
-
-          <label className="register-field">
-            <span>{t("auth.register.fields.contact.label")}</span>
-
-            <span className="register-input-wrap">
-              <input
-                type="text"
-                name="identifier"
-                value={form.identifier}
-                onChange={handleChange}
-                placeholder={t("auth.register.fields.contact.placeholder")}
-                autoComplete="username"
-                aria-invalid={Boolean(errors.identifier)}
-                aria-describedby={errors.identifier ? "register-identifier-error" : undefined}
-                disabled={isSubmitting}
-                required
-              />
-
-              <span className="register-input-icon">
-                <MailIcon />
-              </span>
-            </span>
-
-            {errors.identifier?.map((error, index) => (
-              <small className="register-field__error" id={index === 0 ? "register-identifier-error" : undefined} key={error}>
-                {error}
-              </small>
-            ))}
-          </label>
-
-          {/* Password */}
-
-          <label className="register-field">
-            <span>{t("auth.register.fields.password.label")}</span>
-
-            <span className="register-input-wrap">
-              <input
-                type="password"
-                name="password"
-                value={form.password}
-                onChange={handleChange}
-                placeholder={t("auth.register.fields.password.placeholder")}
-                autoComplete="new-password"
-                aria-invalid={Boolean(errors.password)}
-                aria-describedby={errors.password ? "register-password-error" : undefined}
-                disabled={isSubmitting}
-                minLength={8}
-                required
-              />
-            </span>
-
-            {errors.password?.map((error, index) => (
-              <small className="register-field__error" id={index === 0 ? "register-password-error" : undefined} key={error}>
-                {error}
-              </small>
-            ))}
-          </label>
-
-          {/* Confirm Password */}
-
-          <label className="register-field">
-            <span>{t("auth.register.fields.confirmPassword.label")}</span>
-
-            <span className="register-input-wrap">
-              <input
-                type="password"
-                name="password_confirmation"
-                value={form.password_confirmation}
-                onChange={handleChange}
-                placeholder={t(
-                  "auth.register.fields.confirmPassword.placeholder",
-                )}
-                autoComplete="new-password"
-                aria-invalid={Boolean(errors.password_confirmation)}
-                aria-describedby={errors.password_confirmation ? "register-confirm-password-error" : undefined}
-                disabled={isSubmitting}
-                minLength={8}
-                required
-              />
-            </span>
-
-            {errors.password_confirmation?.map((error, index) => (
-              <small className="register-field__error" id={index === 0 ? "register-confirm-password-error" : undefined} key={error}>
-                {error}
-              </small>
-            ))}
-          </label>
-
-          {/* Terms */}
-
-          <label className="register-consent">
-            <input
-              type="checkbox"
-              name="terms"
-              checked={form.terms}
-              onChange={handleChange}
-              aria-invalid={Boolean(errors.terms)}
-              disabled={isSubmitting}
-            />
-
-            <span className="register-consent__check" aria-hidden="true" />
-
-            <span>
-              {t("auth.register.terms.prefix")}{" "}
-              <a href="#terms">{t("auth.register.terms.link")}</a>
-            </span>
-          </label>
-
-          {errors.terms?.map((error) => (
-            <small className="register-field__error register-terms-error" key={error}>
-              {error}
-            </small>
-          ))}
-
-          {generalError && (
-            <p className="register-form__error" role="alert">
-              {generalError}
-            </p>
-          )}
-
-          {/* Submit */}
-
-          <button className="register-submit" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? "" : t("auth.register.submit")}
-          </button>
-
-          {/* Divider */}
-
-          <div className="register-divider" aria-hidden="true">
-            <span />
-
-            <small>{t("auth.register.social.divider")}</small>
-
-            <span />
-          </div>
-
-          {/* Social */}
-
-          <div className="register-social">
-            <button type="button">{t("auth.register.social.google")}</button>
-
-            <button type="button">{t("auth.register.social.apple")}</button>
-          </div>
-
-          {/* Login */}
-
-          <p className="register-login">
-            {t("auth.register.login.prefix")}{" "}
-            <Link to={PATH.AUTH.SIGNIN}>{t("auth.register.login.link")}</Link>
-          </p>
+          <AuthButton
+            loading={isSubmitting}
+            loadingLabel={t("auth.register.loading")}
+          >
+            {t("auth.register.submit")}
+          </AuthButton>
         </form>
+
+        <AuthSocial
+          dividerLabel={t("auth.register.social.divider")}
+          googleLabel={t("auth.register.social.google")}
+          appleLabel={t("auth.register.social.apple")}
+          onGoogleCredential={handleGoogleCredential}
+          onGoogleUnavailable={() =>
+            setGeneralError(t("auth.common.googleUnavailable"))
+          }
+          disabled={isSubmitting}
+        />
+
+        <AuthSwitchPrompt
+          prefix={t("auth.register.login.prefix")}
+          linkLabel={t("auth.register.login.link")}
+          to={PATH.AUTH.SIGNIN}
+        />
       </section>
     </>
   );

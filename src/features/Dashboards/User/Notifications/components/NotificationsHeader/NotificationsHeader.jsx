@@ -2,9 +2,7 @@ import { useTranslation } from "react-i18next";
 
 import "./NotificationsHeader.css";
 
-export default function NotificationsHeader({
-  onMarkAllAsRead,
-}) {
+export default function NotificationsHeader() {
   const { t } = useTranslation();
 
   return (
@@ -22,16 +20,6 @@ export default function NotificationsHeader({
           )}
         </p>
       </div>
-
-      <button
-        type="button"
-        className="notifications-header__read-all"
-        onClick={onMarkAllAsRead}
-      >
-        {t(
-          "dashboard.notifications.markAllAsRead",
-        )}
-      </button>
     </header>
   );
 }

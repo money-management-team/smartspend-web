@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SectionCard from "../shared/SectionCard";
 import ProgressBar from "../shared/ProgressBar";
-import { PATH } from "../../../../../../routes/Path";
+import { PATH, getBudgetDetailsPath } from "../../../../../../routes/Path";
 import "./BudgetProgress.css";
 
 export default function BudgetProgress({ budgets = [] }) {
@@ -29,7 +29,13 @@ export default function BudgetProgress({ budgets = [] }) {
           return (
             <div className="budget-progress-card__item" key={item.budget_id}>
               <div className="budget-progress-card__meta">
-                <strong>{item.name}</strong>
+                {item.budget_id != null ? (
+                  <Link to={getBudgetDetailsPath(item.budget_id)}>
+                    <strong>{item.name}</strong>
+                  </Link>
+                ) : (
+                  <strong>{item.name}</strong>
+                )}
                 <span className={danger ? "budget-progress-card__danger" : ""}>
                   {Number(item.percentage_used || 0).toFixed(1)}%
                 </span>

@@ -1,67 +1,63 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
-import logo from "../../../assets/smart-spend-logo.png";
+import { useAuthContext } from "../../../contexts/auth/useAuthContext";
+import { PATH } from "../../../routes/Path";
+import { authApi } from "../../Dashboards/User/api/authApi";
+import { getApiErrorMessage } from "../../Dashboards/User/api/apiClient";
+
+import AuthAlert from "../components/AuthAlert/AuthAlert";
+import AuthBackLink from "../components/AuthBackLink/AuthBackLink";
+import AuthButton from "../components/AuthButton/AuthButton";
+import AuthHeading from "../components/AuthHeading/AuthHeading";
+import { CheckIcon, LockIcon, ShieldIcon } from "../components/AuthIcons";
+import AuthPromo from "../components/AuthPromo/AuthPromo";
+import AuthSteps from "../components/AuthSteps/AuthSteps";
+import PasswordField from "../components/PasswordField/PasswordField";
 
 import "./ResetPassword.css";
 
-function ArrowIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M19 12H5" />
-      <path d="m11 6-6 6 6 6" />
-    </svg>
-  );
-}
-
-function ShieldIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 3.7 19 6.4v5.35c0 4.6-2.95 7.7-7 8.9-4.05-1.2-7-4.3-7-8.9V6.4l7-2.7Z" />
-    </svg>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <rect
-        x="5"
-        y="10"
-        width="14"
-        height="10"
-        rx="2"
-      />
-
-      <path d="M8 10V7.5a4 4 0 0 1 8 0V10" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="m6.5 12.2 3.3 3.3 7.7-7.7" />
-    </svg>
-  );
-}
+const STRENGTH_SEGMENTS = [1, 2, 3];
 
 export default function ResetPassword() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { clearAuth } = useAuthContext();
+  const [searchParams] = useSearchParams();
+
+  /*
+   * From the emailed link: /reset-password?token=…&identifier=…
+   * An email can't contain spaces, so a space in `identifier` is a "+" that
+   * reached us unencoded (query parsing turns "+" into a space).
+   */
+  const token = searchParams.get("token") ?? "";
+  const identifier = (searchParams.get("identifier") ?? "").replaceAll(" ", "+");
+  const isLinkComplete = Boolean(token && identifier);
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] =
     useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [generalError, setGeneralError] = useState("");
+  // The backend rejected the link itself (bad or expired token / identifier).
+  const [isLinkRejected, setIsLinkRejected] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const canUseLink = isLinkComplete && !isLinkRejected;
 
   /*
    * ==========================================
    * PASSWORD RULES
+   * Backend: at least 8 characters, letters and numbers.
    * ==========================================
    */
 
   const passwordRules = useMemo(
     () => ({
       minLength: password.length >= 8,
+
+      hasLetter: /\p{L}/u.test(password),
 
       hasLowercase: /[a-z]/.test(password),
 
@@ -73,15 +69,9 @@ export default function ResetPassword() {
   );
 
   /*
-   * Uppercase + Lowercase requirement
-   */
-  const hasUpperAndLower =
-    passwordRules.hasLowercase &&
-    passwordRules.hasUppercase;
-
-  /*
    * ==========================================
    * PASSWORD STRENGTH
+   * Informational only; it doesn't gate submitting.
    * ==========================================
    */
 
@@ -177,7 +167,7 @@ export default function ResetPassword() {
 
   const isPasswordValid =
     passwordRules.minLength &&
-    hasUpperAndLower &&
+    passwordRules.hasLetter &&
     passwordRules.hasNumber;
 
   /*
@@ -191,6 +181,8 @@ export default function ResetPassword() {
     confirmPassword.length > 0 &&
     password === confirmPassword;
 
+  const showMismatch = Boolean(confirmPassword) && !passwordsMatch;
+
   /*
    * ==========================================
    * ENABLE SUBMIT
@@ -198,6 +190,7 @@ export default function ResetPassword() {
    */
 
   const canSubmit =
+    canUseLink &&
     isPasswordValid &&
     passwordsMatch;
 
@@ -207,373 +200,201 @@ export default function ResetPassword() {
    * ==========================================
    */
 
-  const handleSubmit = (event) => {
+  const clearFeedback = (field) => {
+    setFieldErrors((current) =>
+      current[field] ? { ...current, [field]: undefined } : current,
+    );
+    setGeneralError("");
+  };
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!isPasswordValid) {
+    if (!canSubmit || isSubmitting) {
       return;
     }
 
-    if (!passwordsMatch) {
-      return;
+    setFieldErrors({});
+    setGeneralError("");
+    setIsSubmitting(true);
+
+    try {
+      await authApi.resetPassword({
+        token,
+        identifier,
+        password,
+        passwordConfirmation: confirmPassword,
+      });
+
+      // The backend revoked every access token for this account, so any
+      // session stored in this browser is stale. No auto-login.
+      clearAuth();
+      navigate(PATH.AUTH.PASSWORD_CHANGED, { replace: true });
+    } catch (error) {
+      const errors =
+        error?.code === "VALIDATION_ERROR" ? error.errors ?? {} : {};
+      const linkMessage = errors.token?.[0] ?? errors.identifier?.[0];
+
+      setFieldErrors({
+        password: errors.password,
+        passwordConfirmation: errors.password_confirmation,
+      });
+      setIsLinkRejected(Boolean(linkMessage));
+      setGeneralError(linkMessage ?? getApiErrorMessage(error, t));
+    } finally {
+      setIsSubmitting(false);
     }
-
-    console.log({
-      password,
-      password_confirmation:
-        confirmPassword,
-    });
-
-    /*
-     * Backend API later:
-     *
-     * await resetPassword({
-     *   password,
-     *   password_confirmation:
-     *     confirmPassword,
-     * });
-     *
-     * window.location.hash =
-     *   "#password-changed";
-     */
   };
+
+  const requirements = [
+    {
+      key: "length",
+      passed: passwordRules.minLength,
+    },
+    {
+      key: "letters",
+      passed: passwordRules.hasLetter,
+    },
+    {
+      key: "number",
+      passed: passwordRules.hasNumber,
+    },
+  ];
+
+  const isFormDisabled = !canUseLink || isSubmitting;
 
   return (
     <>
-      {/* ======================================
-          PROMO SECTION
-      ====================================== */}
-
-      <section
-        className="reset-promo"
-        aria-label={t(
-          "auth.resetPassword.promo.title",
-        )}
+      <AuthPromo
+        title={t("auth.resetPassword.promo.title")}
+        subtitle={t("auth.resetPassword.promo.subtitle")}
       >
-        {/* Rings */}
+        <div className="auth-promo__chips">
+          <span className="auth-promo__chip">
+            <ShieldIcon />
+            {t("auth.resetPassword.promo.dataProtection")}
+          </span>
 
-        <div
-          className="reset-promo__rings"
-          aria-hidden="true"
-        >
-          <span />
-          <span />
-          <span />
+          <span className="auth-promo__chip">
+            <LockIcon />
+            {t("auth.resetPassword.promo.encryption")}
+          </span>
         </div>
+      </AuthPromo>
 
-        {/* Content */}
+      <section className="auth-panel">
+        <AuthSteps current={3} />
 
-        <div className="reset-promo__content">
-          {/* Logo */}
+        <AuthHeading
+          icon={<LockIcon />}
+          title={t("auth.resetPassword.title")}
+          subtitle={t("auth.resetPassword.subtitle")}
+        />
 
-          <div className="reset-promo__logo">
-            <img
-              src={logo}
-              alt="Smart Spend"
-            />
-          </div>
-
-          {/* Title */}
-
-          <h2>
-            {t(
-              "auth.resetPassword.promo.title",
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <PasswordField
+            id="reset-password"
+            label={t("auth.resetPassword.fields.password.label")}
+            describedBy="reset-password-strength"
+            errors={fieldErrors.password}
+            name="password"
+            value={password}
+            placeholder={t(
+              "auth.resetPassword.fields.password.placeholder",
             )}
-          </h2>
+            autoComplete="new-password"
+            disabled={isFormDisabled}
+            onChange={(event) => {
+              setPassword(event.target.value);
+              clearFeedback("password");
+            }}
+          />
 
-          {/* Subtitle */}
+          {/* Strength + requirements */}
 
-          <p className="reset-promo__subtitle">
-            {t(
-              "auth.resetPassword.promo.subtitle",
-            )}
-          </p>
-
-          {/* Promo Features */}
-
-          <div className="reset-promo__features">
-            <div className="reset-promo-feature">
-              <ShieldIcon />
-
-              <span>
-                {t(
-                  "auth.resetPassword.promo.dataProtection",
-                )}
-              </span>
-            </div>
-
-            <div className="reset-promo-feature">
-              <LockIcon />
-
-              <span>
-                {t(
-                  "auth.resetPassword.promo.encryption",
-                )}
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ======================================
-          FORM SECTION
-      ====================================== */}
-
-      <section className="reset-form-panel">
-        {/* Progress */}
-
-        <div
-          className="reset-progress"
-          aria-hidden="true"
-        >
-          <span className="reset-progress__item reset-progress__item--active" />
-
-          <span className="reset-progress__item reset-progress__item--active" />
-
-          <span className="reset-progress__item reset-progress__item--active" />
-
-          <span className="reset-progress__item" />
-        </div>
-
-        {/* Header */}
-
-        <header className="reset-header">
-          <h1>
-            {t(
-              "auth.resetPassword.title",
-            )}
-          </h1>
-
-          <p>
-            {t(
-              "auth.resetPassword.subtitle",
-            )}
-          </p>
-        </header>
-
-        {/* Form */}
-
-        <form
-          className="reset-form"
-          onSubmit={handleSubmit}
-        >
-          {/* =================================
-              NEW PASSWORD
-          ================================= */}
-
-          <label className="reset-field">
-            <span>
-              {t(
-                "auth.resetPassword.fields.password.label",
-              )}
-            </span>
-
-            <span className="reset-input-wrap">
-              <input
-                type="password"
-                name="password"
-                value={password}
-                placeholder={t(
-                  "auth.resetPassword.fields.password.placeholder",
-                )}
-                autoComplete="new-password"
-                onChange={(event) =>
-                  setPassword(
-                    event.target.value,
-                  )
-                }
-              />
-            </span>
-          </label>
-
-          {/* =================================
-              PASSWORD STRENGTH
-          ================================= */}
-
-          <div className="reset-strength">
-            {/* Strength Bar */}
-
-            <div className="reset-strength__bar">
-              <span
-                className={`
-                  reset-strength__value
-                  reset-strength__value--${passwordStrength.level}
-                `}
-              />
-            </div>
-
-            {/* Strength Header */}
-
+          <div
+            className={`reset-strength reset-strength--${passwordStrength.level}`}
+            id="reset-password-strength"
+          >
             <div className="reset-strength__heading">
-              <span>
-                {t(
-                  "auth.resetPassword.strength.label",
-                )}
-              </span>
+              <span>{t("auth.resetPassword.strength.label")}</span>
 
-              <strong
-                className={`
-                  reset-strength__text
-                  reset-strength__text--${passwordStrength.level}
-                `}
-              >
+              <strong className="reset-strength__text" aria-live="polite">
                 {passwordStrength.label}
               </strong>
             </div>
 
-            {/* =================================
-                REQUIREMENTS
-            ================================= */}
+            <span className="reset-strength__meter" aria-hidden="true">
+              {STRENGTH_SEGMENTS.map((segment) => (
+                <span key={segment} />
+              ))}
+            </span>
 
-            <div className="reset-requirements">
-              {/* 8 Characters */}
-
-              <div
-                className={`
-                  reset-requirement
-                  ${
-                    passwordRules.minLength
-                      ? "reset-requirement--passed"
-                      : ""
-                  }
-                `}
-              >
-                <span className="reset-requirement__check">
-                  {passwordRules.minLength && (
+            <ul className="reset-requirements">
+              {requirements.map((requirement) => (
+                <li
+                  className={`reset-requirement${
+                    requirement.passed ? " reset-requirement--passed" : ""
+                  }`}
+                  key={requirement.key}
+                >
+                  <span className="reset-requirement__check" aria-hidden="true">
                     <CheckIcon />
-                  )}
-                </span>
+                  </span>
 
-                <span>
-                  {t(
-                    "auth.resetPassword.requirements.length",
-                  )}
-                </span>
-              </div>
-
-              {/* Uppercase + Lowercase */}
-
-              <div
-                className={`
-                  reset-requirement
-                  ${
-                    hasUpperAndLower
-                      ? "reset-requirement--passed"
-                      : ""
-                  }
-                `}
-              >
-                <span className="reset-requirement__check">
-                  {hasUpperAndLower && (
-                    <CheckIcon />
-                  )}
-                </span>
-
-                <span>
-                  {t(
-                    "auth.resetPassword.requirements.letters",
-                  )}
-                </span>
-              </div>
-
-              {/* Number */}
-
-              <div
-                className={`
-                  reset-requirement
-                  ${
-                    passwordRules.hasNumber
-                      ? "reset-requirement--passed"
-                      : ""
-                  }
-                `}
-              >
-                <span className="reset-requirement__check">
-                  {passwordRules.hasNumber && (
-                    <CheckIcon />
-                  )}
-                </span>
-
-                <span>
-                  {t(
-                    "auth.resetPassword.requirements.number",
-                  )}
-                </span>
-              </div>
-            </div>
+                  <span>
+                    {t(`auth.resetPassword.requirements.${requirement.key}`)}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* =================================
-              CONFIRM PASSWORD
-          ================================= */}
-
-          <label className="reset-field reset-field--confirm">
-            <span>
-              {t(
-                "auth.resetPassword.fields.confirmPassword.label",
-              )}
-            </span>
-
-            <span className="reset-input-wrap">
-              <input
-                type="password"
-                name="confirmPassword"
-                value={confirmPassword}
-                placeholder={t(
-                  "auth.resetPassword.fields.confirmPassword.placeholder",
-                )}
-                autoComplete="new-password"
-                onChange={(event) =>
-                  setConfirmPassword(
-                    event.target.value,
-                  )
-                }
-              />
-            </span>
-          </label>
-
-          {/* Password mismatch */}
-
-          {confirmPassword &&
-            !passwordsMatch && (
-              <p className="reset-password-error">
-                {t(
-                  "auth.resetPassword.passwordMismatch",
-                  {
-                    defaultValue:
-                      "Passwords do not match",
-                  },
-                )}
-              </p>
+          <PasswordField
+            id="reset-confirm-password"
+            label={t("auth.resetPassword.fields.confirmPassword.label")}
+            errors={
+              showMismatch
+                ? [t("auth.resetPassword.passwordMismatch")]
+                : fieldErrors.passwordConfirmation
+            }
+            name="confirmPassword"
+            value={confirmPassword}
+            placeholder={t(
+              "auth.resetPassword.fields.confirmPassword.placeholder",
             )}
+            autoComplete="new-password"
+            disabled={isFormDisabled}
+            onChange={(event) => {
+              setConfirmPassword(event.target.value);
+              clearFeedback("passwordConfirmation");
+            }}
+          />
 
-          {/* Submit */}
+          {!isLinkComplete && (
+            <AuthAlert>{t("auth.resetPassword.invalidLink")}</AuthAlert>
+          )}
 
-          <button
-            className="reset-submit"
-            type="submit"
-            disabled={!canSubmit}
-          >
-            {t(
-              "auth.resetPassword.submit",
-            )}
-          </button>
+          {generalError && <AuthAlert>{generalError}</AuthAlert>}
+
+          {canUseLink ? (
+            <AuthButton
+              disabled={!canSubmit}
+              loading={isSubmitting}
+              loadingLabel={t("auth.resetPassword.loading")}
+            >
+              {t("auth.resetPassword.submit")}
+            </AuthButton>
+          ) : (
+            <AuthButton to={PATH.AUTH.FORGOT_PASSWORD}>
+              {t("auth.resetPassword.requestNewLink")}
+            </AuthButton>
+          )}
         </form>
 
-        {/* Back */}
-
-        <a
-          className="reset-back"
-          href="#login"
-        >
-          <ArrowIcon />
-
-          <span>
-            {t(
-              "auth.resetPassword.back",
-            )}
-          </span>
-        </a>
+        <AuthBackLink to={PATH.AUTH.SIGNIN}>
+          {t("auth.resetPassword.back")}
+        </AuthBackLink>
       </section>
     </>
   );

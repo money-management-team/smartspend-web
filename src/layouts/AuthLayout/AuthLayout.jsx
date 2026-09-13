@@ -7,8 +7,11 @@ import { PATH } from "../../routes/Path";
 import AuthAnimatedBackground from "./AuthAnimatedBackground";
 
 const AUTH_VARIANTS = {
+  [PATH.AUTH.ACCOUNT_TYPE]: "account-type",
   [PATH.AUTH.SIGNIN]: "login",
   [PATH.AUTH.REGISTER]: "register",
+  [PATH.AUTH.COMPANY_SIGNIN]: "company-login",
+  [PATH.AUTH.COMPANY_REGISTER]: "company-register",
   [PATH.AUTH.FORGOT_PASSWORD]: "forgot",
   [PATH.AUTH.VERIFY_CODE]: "verify",
   [PATH.AUTH.RESET_PASSWORD]: "reset",
@@ -48,7 +51,11 @@ export default function AuthLayout({ variant }) {
 
   const isArabic = language === "ar";
   const direction = isArabic ? "rtl" : "ltr";
-  const activeVariant = variant ?? AUTH_VARIANTS[pathname] ?? "login";
+  const activeVariant =
+    variant ??
+    AUTH_VARIANTS[pathname] ??
+    // /verify-email/:id/:hash has params, so it can't be a key above.
+    (pathname.startsWith(`${PATH.AUTH.VERIFY_EMAIL}/`) ? "verify-email" : "login");
 
   const themeLabel = isArabic
     ? isDark

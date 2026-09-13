@@ -11,7 +11,10 @@ import {
 import { useTranslation } from "react-i18next";
 
 import { useAuthContext } from "../../../../contexts/auth/useAuthContext";
+import { useUnreadNotifications } from "../../../../contexts/notifications/useUnreadNotifications";
 import { useThemeContext } from "../../../../contexts/theme/useThemeContext";
+import { getDisplayLocale } from "../../../../features/Dashboards/User/Accounts/accountHelpers";
+import { formatUnreadBadge } from "../../../../features/Dashboards/User/Notifications/notificationHelpers";
 
 import "./DashboardHeader.css";
 import { Link } from "react-router-dom";
@@ -36,6 +39,8 @@ export default function DashboardHeader({
   const { t, i18n } = useTranslation();
   const { user } = useAuthContext();
   const { isDark, toggleTheme } = useThemeContext();
+  // GET /notifications/unread-count, owned by UnreadNotificationsProvider.
+  const { count: unreadCount } = useUnreadNotifications();
   const userInitials = getUserInitials(user?.name);
 
   const isArabic =
@@ -99,11 +104,22 @@ export default function DashboardHeader({
           </span>
         </button>
 
-        <Link to={PATH.USER.NOTIFICATIONS}
-          type="button"
+        <Link
+          to={PATH.USER.NOTIFICATIONS}
           className="dashboard-header__notification"
+          aria-label={
+            unreadCount > 0
+              ? t("dashboard.notifications.bell.unread", { count: unreadCount })
+              : t("dashboard.notifications.bell.label")
+          }
         >
-          <LuBell />
+          <LuBell aria-hidden="true" />
+
+          {unreadCount > 0 && (
+            <span className="dashboard-header__badge" aria-hidden="true">
+              {formatUnreadBadge(unreadCount, getDisplayLocale(i18n.language))}
+            </span>
+          )}
         </Link>
 
         <Link to={PATH.USER.SETTING}

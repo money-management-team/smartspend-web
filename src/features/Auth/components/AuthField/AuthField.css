@@ -1,0 +1,246 @@
+/* =========================================
+   AUTH FIELD
+========================================= */
+
+.auth-field {
+  display: grid;
+  gap: 8px;
+
+  color: var(--color-text-primary);
+
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.auth-field__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.auth-field__label {
+  color: var(--auth-label);
+
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Optional link in the label row (e.g. "Forgot password?") */
+
+.auth-field__link {
+  color: var(--auth-link);
+
+  font-size: 12.5px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+
+  text-decoration: none;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.auth-field__link:hover {
+  color: var(--auth-link-hover);
+
+  text-decoration: underline;
+}
+
+.auth-field__control {
+  position: relative;
+}
+
+
+/* =========================================
+   INPUT
+========================================= */
+
+.auth-field__input {
+  width: 100%;
+  height: 46px;
+
+  padding-inline: 14px;
+
+  border: 1px solid var(--auth-control-border);
+  border-radius: var(--radius-md);
+  outline: none;
+
+  color: var(--color-text-primary);
+  background: var(--auth-control-bg);
+
+  font: inherit;
+  font-size: 14px;
+
+  box-shadow: var(--shadow-xs);
+
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    background-color 160ms ease;
+}
+
+.auth-field__input--end {
+  padding-inline-end: 44px;
+}
+
+.auth-field__input::placeholder {
+  color: var(--input-placeholder);
+
+  opacity: 1;
+}
+
+.auth-field__input:hover:not(:focus, :disabled) {
+  border-color: var(--auth-control-border-hover);
+}
+
+.auth-field__input:focus,
+.auth-field__input:focus-visible {
+  outline: none;
+
+  border-color: var(--color-primary);
+
+  box-shadow: 0 0 0 4px var(--input-focus-ring);
+}
+
+.auth-field__input:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.auth-field__input[aria-invalid="true"] {
+  border-color: var(--auth-danger);
+}
+
+.auth-field__input[aria-invalid="true"]:focus {
+  box-shadow: 0 0 0 4px var(--danger-soft);
+}
+
+/* Keep browser autofill on-theme (especially in dark mode) */
+
+.auth-field__input:-webkit-autofill {
+  -webkit-text-fill-color: var(--color-text-primary);
+  caret-color: var(--color-text-primary);
+
+  box-shadow:
+    0 0 0 1000px var(--auth-control-bg) inset,
+    var(--shadow-xs);
+}
+
+.auth-field__input:-webkit-autofill:focus {
+  box-shadow:
+    0 0 0 1000px var(--auth-control-bg) inset,
+    0 0 0 4px var(--input-focus-ring);
+}
+
+
+/* =========================================
+   ICON / END ACTION
+========================================= */
+
+.auth-field__icon {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 14px;
+  translate: 0 -50%;
+
+  width: 18px;
+  height: 18px;
+
+  display: grid;
+  place-items: center;
+
+  color: var(--auth-muted);
+
+  pointer-events: none;
+
+  transition: color 160ms ease;
+}
+
+.auth-field__input:focus ~ .auth-field__icon {
+  color: var(--color-primary);
+}
+
+.auth-field__icon svg,
+.auth-field__toggle svg {
+  width: 18px;
+  height: 18px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.65;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Show / hide password button (PasswordField) */
+
+.auth-field__toggle {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 6px;
+  translate: 0 -50%;
+
+  width: 34px;
+  height: 34px;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: var(--radius-sm);
+
+  color: var(--auth-muted);
+  background: transparent;
+
+  cursor: pointer;
+
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+.auth-field__toggle:hover:not(:disabled) {
+  color: var(--color-text-primary);
+  background: var(--auth-control-bg-hover);
+}
+
+.auth-field__toggle[aria-pressed="true"] {
+  color: var(--auth-link);
+}
+
+.auth-field__toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 0;
+}
+
+.auth-field__toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+
+/* =========================================
+   ERRORS
+========================================= */
+
+.auth-field__errors {
+  display: grid;
+  gap: 2px;
+}
+
+.auth-field__errors small {
+  color: var(--auth-danger);
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-field__input,
+  .auth-field__icon,
+  .auth-field__toggle {
+    transition: none;
+  }
+}

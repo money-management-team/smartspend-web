@@ -1,0 +1,81 @@
+/* =========================================
+   TRANSFER FORM
+   (shell, inputs and buttons come from AccountForm.css; the error block from
+   ReverseTransactionDialog.css)
+========================================= */
+
+.transfer-form {
+  width: min(100%, 520px);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+.transfer-form__note {
+  margin: 16px 0 0;
+  padding: 11px 13px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+
+  border: 1px solid color-mix(in srgb, var(--color-primary) 24%, transparent);
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: var(--primary-soft);
+
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.transfer-form__note svg {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.transfer-form__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+
+/* Keep both inputs on one line even when only one column has a hint. */
+.transfer-form__row label {
+  align-content: start;
+}
+
+.transfer-form > .loading {
+  margin-top: 18px;
+}
+
+.transfer-form__options-error {
+  margin-top: 18px;
+}
+
+.transfer-form__options-error button {
+  width: max-content;
+  padding: 0;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  cursor: pointer;
+}
+
+.transfer-form header button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media (max-width: 520px) {
+  .transfer-form__row {
+    grid-template-columns: 1fr;
+  }
+}

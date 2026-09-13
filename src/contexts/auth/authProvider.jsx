@@ -1,5 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { authApi } from "../../features/Dashboards/User/api/authApi";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  authApi,
+  normalizeCurrentUser,
+} from "../../features/Dashboards/User/api/authApi";
 import {
   ApiError,
   AUTH_SESSION_EXPIRED_EVENT,
@@ -22,14 +25,19 @@ export default function AuthProvider({ children }) {
   const [session, setSession] = useState(() => getStoredAuthSession());
   const [initializing, setInitializing] = useState(true);
   const [initializationError, setInitializationError] = useState(null);
+  // Token whose user/workspace just came from login or register, so the
+  // restore effect doesn't fetch GET /user again for it.
+  const freshTokenRef = useRef(null);
 
   const clearAuth = useCallback(() => {
+    freshTokenRef.current = null;
     clearAuthSession();
     setSession(emptySession);
   }, []);
 
   const applyAuthData = useCallback((authData, options) => {
     persistAuthSession(authData, options);
+    freshTokenRef.current = authData.token;
     setSession({
       token: authData.token,
       user: authData.user,
@@ -49,8 +57,17 @@ export default function AuthProvider({ children }) {
         throw new ApiError("", { code: "MALFORMED_RESPONSE" });
       }
 
-      applyAuthData(authData, { remember });
-      return authData.user;
+      // The login response has no workspace; GET /user completes the session
+      // before anything is stored.
+      const userResponse = await authApi.getCurrentUser({
+        token: authData.token,
+      });
+      const { user, workspace } = normalizeCurrentUser(userResponse.data);
+
+      if (!user) throw new ApiError("", { code: "MALFORMED_RESPONSE" });
+
+      applyAuthData({ ...authData, user, workspace }, { remember });
+      return user;
     },
     [applyAuthData],
   );
@@ -65,6 +82,22 @@ export default function AuthProvider({ children }) {
       }
 
       applyAuthData(authData, { remember: true });
+      return authData.user;
+    },
+    [applyAuthData],
+  );
+
+  // 200 (existing user) and 201 (new user) carry the same full session.
+  const loginWithGoogle = useCallback(
+    async (idToken, { remember = true } = {}) => {
+      const response = await authApi.loginWithGoogle(idToken);
+      const authData = response.data;
+
+      if (!authData?.token || !authData?.user) {
+        throw new ApiError("", { code: "MALFORMED_RESPONSE" });
+      }
+
+      applyAuthData(authData, { remember });
       return authData.user;
     },
     [applyAuthData],
@@ -119,6 +152,8 @@ export default function AuthProvider({ children }) {
       return undefined;
     }
 
+    if (session.token === freshTokenRef.current) return undefined;
+
     const controller = new AbortController();
 
     const restoreSession = async () => {
@@ -128,7 +163,10 @@ export default function AuthProvider({ children }) {
         });
 
         if (!controller.signal.aborted) {
-          updateUser(response.data);
+          const { user, workspace } = normalizeCurrentUser(response.data);
+
+          updateUser(user);
+          if (workspace) updateWorkspace(workspace);
           setInitializationError(null);
         }
       } catch (error) {
@@ -146,7 +184,7 @@ export default function AuthProvider({ children }) {
 
     restoreSession();
     return () => controller.abort();
-  }, [clearAuth, session.token, updateUser]);
+  }, [clearAuth, session.token, updateUser, updateWorkspace]);
 
   const value = useMemo(
     () => ({
@@ -156,6 +194,7 @@ export default function AuthProvider({ children }) {
       workspace: session.workspace,
       login,
       register,
+      loginWithGoogle,
       logout,
       clearAuth,
       updateUser,
@@ -169,6 +208,7 @@ export default function AuthProvider({ children }) {
       initializationError,
       initializing,
       login,
+      loginWithGoogle,
       logout,
       register,
       session,

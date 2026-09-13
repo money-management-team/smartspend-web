@@ -1,0 +1,330 @@
+/* =========================================
+   CATEGORIES PAGE
+   Same container, header, chips and states as the Accounts page.
+========================================= */
+
+.categories-page {
+  width: 100%;
+  max-width: 1240px;
+
+  margin: 0 auto;
+  padding: 28px 32px 50px;
+
+  box-sizing: border-box;
+
+  color: var(--color-text-primary);
+}
+
+/* Header */
+
+.categories-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.categories-page__copy {
+  min-width: 0;
+  text-align: start;
+}
+
+.categories-page__copy h1 {
+  margin: 0;
+
+  color: var(--color-text-primary);
+  font-size: 28px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.categories-page__copy p {
+  margin: 12px 0 0;
+
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.categories-page__add {
+  min-width: 130px;
+  height: 38px;
+  padding: 0 18px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+
+  border: 0;
+  border-radius: 999px;
+
+  color: var(--navigation-active-text);
+  background: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+
+  font: inherit;
+  font-size: 13px;
+
+  cursor: pointer;
+
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.categories-page__add:hover {
+  background: var(--color-primary-hover);
+}
+
+.categories-page__add:active {
+  transform: translateY(1px);
+}
+
+.categories-page__add svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+/* One-time success message (create, edit, archive). */
+
+.categories-page__notice {
+  margin-top: 18px;
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border: 1px solid color-mix(in srgb, var(--color-success) 28%, transparent);
+  border-radius: var(--radius-md);
+
+  color: color-mix(in srgb, var(--color-success) 85%, var(--color-text-primary));
+  background: var(--success-soft);
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.categories-page__notice p {
+  margin: 0;
+  flex: 1;
+  color: inherit;
+}
+
+.categories-page__notice button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+
+  flex: none;
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: 50%;
+
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.categories-page__notice button:hover {
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
+}
+
+:root[data-theme="dark"] .categories-page__notice {
+  color: color-mix(in srgb, var(--color-success) 62%, #ffffff);
+}
+
+/* Type filter */
+
+.categories-page__filters {
+  margin-top: 25px;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+}
+
+.categories-page__filter {
+  min-width: 50px;
+  height: 35px;
+  padding: 0 17px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 12px;
+
+  cursor: pointer;
+
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.categories-page__filter:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.categories-page__filter--active,
+.categories-page__filter--active:hover {
+  border-color: var(--color-primary);
+  color: var(--navigation-active-text);
+  background: var(--color-primary);
+}
+
+.categories-page__filter--active:hover {
+  background: var(--color-primary-hover);
+}
+
+/* Sections */
+
+.categories-page__section {
+  margin-top: 26px;
+}
+
+.categories-page__section-head {
+  margin-bottom: 14px;
+  text-align: start;
+}
+
+.categories-page__section-head h2 {
+  margin: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color: var(--color-text-strong);
+  font-size: 16px;
+}
+
+.categories-page__section-head p {
+  margin: 6px 0 0;
+
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.categories-page__count {
+  min-width: 22px;
+  padding: 3px 7px;
+
+  box-sizing: border-box;
+
+  border-radius: 999px;
+
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+}
+
+/* Grid */
+
+.categories-page__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 16px;
+}
+
+/* Loading / empty / error */
+
+.categories-page > .loading,
+.categories-page > .categories-page__state {
+  margin-top: 20px;
+}
+
+.categories-page__state {
+  grid-column: 1 / -1;
+
+  margin: 0;
+  padding: 36px 20px;
+
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.categories-page__state--error {
+  color: var(--color-danger, #dc2626);
+}
+
+.categories-page__state p {
+  margin: 0;
+  color: inherit;
+}
+
+.categories-page__state button {
+  margin-top: 10px;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Responsive */
+
+@media (max-width: 1100px) {
+  .categories-page__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .categories-page {
+    padding: 22px 16px 40px;
+  }
+
+  .categories-page__grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .categories-page__header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+  }
+
+  .categories-page__copy h1 {
+    font-size: 25px;
+  }
+
+  .categories-page__add {
+    width: max-content;
+  }
+
+  .categories-page__filters {
+    margin-top: 20px;
+    gap: 7px;
+  }
+}

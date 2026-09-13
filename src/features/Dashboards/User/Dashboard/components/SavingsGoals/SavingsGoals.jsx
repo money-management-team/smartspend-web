@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import SectionCard from "../shared/SectionCard";
 import ProgressBar from "../shared/ProgressBar";
-import { PATH } from "../../../../../../routes/Path";
+import { PATH, getSavingsGoalDetailsPath } from "../../../../../../routes/Path";
 import "./SavingsGoals.css";
 
 export default function SavingsGoals({ goals = [] }) {
@@ -28,7 +28,13 @@ export default function SavingsGoals({ goals = [] }) {
           return (
             <div className="savings-goals-card__item" key={goal.goal_id}>
               <div className="savings-goals-card__meta">
-                <strong>{goal.name}</strong>
+                {goal.goal_id != null ? (
+                  <Link to={getSavingsGoalDetailsPath(goal.goal_id)}>
+                    <strong>{goal.name}</strong>
+                  </Link>
+                ) : (
+                  <strong>{goal.name}</strong>
+                )}
                 <span>{Number(goal.percentage_funded || 0).toFixed(1)}%</span>
               </div>
               <ProgressBar value={value} />

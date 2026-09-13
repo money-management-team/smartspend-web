@@ -1,0 +1,452 @@
+/* =========================================
+   ACCOUNT TYPE - OPTIONS
+   Personal / Company choice shown before
+   sign-in and registration.
+========================================= */
+
+.account-type__options {
+  margin: 30px 0 0;
+  padding: 0;
+
+  display: grid;
+  gap: 14px;
+
+  list-style: none;
+}
+
+
+/* =========================================
+   OPTION CARD
+   The CTA link's ::after covers the card,
+   so the whole card is clickable while the
+   link keeps a short accessible name.
+========================================= */
+
+.account-type-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  padding: 18px;
+
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 16px 14px;
+
+  border: 1px solid var(--auth-control-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--auth-control-bg);
+  box-shadow: var(--shadow-xs);
+
+  text-align: start;
+
+  transition:
+    transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 200ms ease,
+    box-shadow 260ms ease;
+
+  animation: account-type-rise 520ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+.account-type-card:nth-child(1) {
+  animation-delay: 60ms;
+}
+
+.account-type-card:nth-child(2) {
+  animation-delay: 150ms;
+}
+
+/* Soft glow in the inline-end corner, revealed on hover */
+
+.account-type-card::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -70px;
+  inset-inline-end: -60px;
+  z-index: -1;
+
+  width: 190px;
+  height: 190px;
+
+  border-radius: 50%;
+
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-primary) 16%, transparent),
+    transparent 70%
+  );
+
+  opacity: 0;
+  scale: 0.8;
+
+  pointer-events: none;
+
+  transition:
+    opacity 320ms ease,
+    scale 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.account-type-card:hover {
+  transform: translateY(-3px);
+
+  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--auth-control-border));
+
+  box-shadow:
+    0 2px 4px rgba(15, 23, 42, 0.04),
+    0 18px 36px -18px color-mix(in srgb, var(--color-primary) 45%, transparent);
+}
+
+.account-type-card:hover::before {
+  opacity: 1;
+  scale: 1;
+}
+
+/* Keyboard focus lands on the CTA; ring the whole card */
+
+.account-type-card:has(.account-type-card__cta:focus-visible) {
+  border-color: var(--color-primary);
+
+  box-shadow: 0 0 0 4px var(--input-focus-ring);
+}
+
+
+/* =========================================
+   ICON
+========================================= */
+
+.account-type-card__icon {
+  width: 48px;
+  height: 48px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 14px;
+
+  color: var(--auth-link);
+  background: var(--primary-soft);
+
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 16%, transparent),
+    0 0 0 5px color-mix(in srgb, var(--color-primary) 5%, transparent);
+
+  transition:
+    color 220ms ease,
+    background-color 220ms ease,
+    box-shadow 260ms ease,
+    scale 320ms cubic-bezier(0.34, 1.4, 0.64, 1),
+    rotate 320ms cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  animation: account-type-icon-pop 560ms cubic-bezier(0.34, 1.4, 0.64, 1) backwards;
+  animation-delay: inherit;
+}
+
+.account-type-card__icon svg {
+  width: 26px;
+  height: 26px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.account-type-card:hover .account-type-card__icon {
+  color: var(--navigation-active-text);
+  background: var(--gradient-primary);
+
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--navigation-active-text) 22%, transparent),
+    0 0 0 5px color-mix(in srgb, var(--color-primary) 10%, transparent),
+    0 10px 20px -8px color-mix(in srgb, var(--color-primary) 60%, transparent);
+
+  scale: 1.06;
+  rotate: -5deg;
+}
+
+
+/* =========================================
+   COPY
+========================================= */
+
+.account-type-card__copy {
+  min-width: 0;
+  padding-block-start: 2px;
+}
+
+.account-type-card__title {
+  margin: 0;
+
+  color: var(--color-text-strong);
+
+  font-family: var(--font-heading);
+  font-size: 17px;
+  font-weight: var(--font-weight-extrabold);
+  line-height: 1.3;
+}
+
+.account-type-card__description {
+  margin: 5px 0 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 13.5px;
+  line-height: 1.6;
+
+  text-wrap: pretty;
+}
+
+
+/* =========================================
+   CTA
+========================================= */
+
+.account-type-card__cta {
+  grid-column: 1 / -1;
+
+  min-height: 44px;
+  padding-inline: 16px 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, transparent);
+  border-radius: var(--radius-md);
+
+  color: var(--auth-link);
+  background: var(--primary-soft);
+
+  font-size: 14px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
+  text-decoration: none;
+
+  transition:
+    color 200ms ease,
+    background-color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 240ms ease;
+}
+
+/* Stretched hit area: the card is the nearest positioned ancestor */
+
+.account-type-card__cta::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+
+  border-radius: inherit;
+}
+
+.account-type-card__cta:focus-visible {
+  outline: none;
+}
+
+.account-type-card:hover .account-type-card__cta,
+.account-type-card__cta:focus-visible {
+  color: var(--navigation-active-text);
+  border-color: transparent;
+  background: var(--gradient-primary);
+
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--navigation-active-text) 18%, transparent),
+    0 10px 22px -10px color-mix(in srgb, var(--color-primary) 70%, transparent);
+}
+
+/* ArrowIcon points toward inline-start; mirror it so it points forward */
+
+.account-type-card__cta svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  transform: scaleX(-1);
+
+  transition: translate 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.account-type-card:hover .account-type-card__cta svg,
+.account-type-card__cta:focus-visible svg {
+  translate: 3px 0;
+}
+
+
+/* =========================================
+   ENTRANCE
+========================================= */
+
+.account-type > .auth-heading {
+  animation: account-type-rise 480ms cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+
+.account-type > .auth-switch-prompt {
+  animation: account-type-fade 480ms ease 260ms backwards;
+}
+
+@keyframes account-type-rise {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes account-type-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes account-type-icon-pop {
+  from {
+    opacity: 0;
+    scale: 0.7;
+  }
+
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+
+/* =========================================
+   DARK THEME
+========================================= */
+
+:root[data-theme="dark"] .account-type-card:hover {
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.2),
+    0 20px 40px -20px rgba(0, 0, 0, 0.7),
+    0 0 0 1px color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+:root[data-theme="dark"] .account-type-card::before {
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-primary) 22%, transparent),
+    transparent 70%
+  );
+}
+
+:root[data-theme="dark"] .account-type-card__cta {
+  border-color: color-mix(in srgb, var(--color-primary) 28%, transparent);
+}
+
+
+/* =========================================
+   RTL
+========================================= */
+
+[dir="rtl"] .account-type-card:hover .account-type-card__icon {
+  rotate: 5deg;
+}
+
+[dir="rtl"] .account-type-card__cta svg {
+  transform: none;
+}
+
+[dir="rtl"] .account-type-card:hover .account-type-card__cta svg,
+[dir="rtl"] .account-type-card__cta:focus-visible svg {
+  translate: -3px 0;
+}
+
+[dir="rtl"] .account-type-card__title {
+  line-height: 1.45;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 560px) {
+  .account-type__options {
+    margin-top: 24px;
+    gap: 12px;
+  }
+
+  .account-type-card {
+    padding: 16px;
+    gap: 14px 12px;
+  }
+
+  .account-type-card__icon {
+    width: 44px;
+    height: 44px;
+
+    border-radius: 13px;
+  }
+
+  .account-type-card__icon svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .account-type-card__title {
+    font-size: 16px;
+  }
+
+  .account-type-card__description {
+    font-size: 13px;
+  }
+}
+
+
+/* =========================================
+   REDUCED MOTION
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .account-type > .auth-heading,
+  .account-type > .auth-switch-prompt,
+  .account-type-card,
+  .account-type-card__icon {
+    animation: none;
+  }
+
+  .account-type-card,
+  .account-type-card::before,
+  .account-type-card__icon,
+  .account-type-card__cta,
+  .account-type-card__cta svg {
+    transition: none;
+  }
+
+  .account-type-card:hover {
+    transform: none;
+  }
+
+  .account-type-card:hover .account-type-card__icon,
+  [dir="rtl"] .account-type-card:hover .account-type-card__icon {
+    scale: none;
+    rotate: none;
+  }
+
+  .account-type-card:hover .account-type-card__cta svg,
+  .account-type-card__cta:focus-visible svg,
+  [dir="rtl"] .account-type-card:hover .account-type-card__cta svg,
+  [dir="rtl"] .account-type-card__cta:focus-visible svg {
+    translate: none;
+  }
+}

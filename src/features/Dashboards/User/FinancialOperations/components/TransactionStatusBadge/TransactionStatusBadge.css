@@ -1,0 +1,37 @@
+.transaction-status-badge {
+  width: max-content;
+  padding: 4px 9px;
+
+  display: inline-flex;
+  align-items: center;
+
+  border-radius: 999px;
+
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.transaction-status-badge--success {
+  color: color-mix(in srgb, var(--color-success) 85%, var(--color-text-primary));
+  background: var(--success-soft);
+}
+
+.transaction-status-badge--warning {
+  color: color-mix(in srgb, var(--color-warning) 85%, var(--color-text-primary));
+  background: var(--warning-soft);
+}
+
+.transaction-status-badge--info {
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+.transaction-status-badge--danger {
+  color: color-mix(in srgb, var(--color-danger) 80%, var(--color-text-primary));
+  background: var(--danger-soft);
+}

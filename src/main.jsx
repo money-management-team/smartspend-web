@@ -7,6 +7,7 @@ import "./index.css";
 
 import App from "./App.jsx";
 import AuthProvider from "./contexts/auth/authProvider.jsx";
+import EmailVerificationProvider from "./contexts/emailVerification/emailVerificationProvider.jsx";
 import LanguageProvider from "./contexts/language/languageProvider.jsx";
 import ThemeProvider from "./contexts/theme/themeProvider.jsx";
 
@@ -16,7 +17,9 @@ createRoot(document.getElementById("root")).render(
       <ThemeProvider>
         <LanguageProvider>
           <AuthProvider>
-            <App />
+            <EmailVerificationProvider>
+              <App />
+            </EmailVerificationProvider>
           </AuthProvider>
         </LanguageProvider>
       </ThemeProvider>

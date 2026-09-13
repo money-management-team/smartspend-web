@@ -6,10 +6,14 @@ import {
   LuLayoutDashboard,
   LuWalletCards,
   LuCircleDollarSign,
+  LuArrowRightLeft,
   LuRepeat2,
+  LuCalendarDays,
   LuFileUp,
   LuChartPie,
+  LuTags,
   LuTarget,
+  LuHandCoins,
   LuChartNoAxesCombined,
   LuSparkles,
   LuBell,
@@ -22,6 +26,9 @@ import logo from "../../../../assets/smart-spend-logo.png";
 
 import "./DashboardSidebar.css";
 import { useAuthContext } from "../../../../contexts/auth/useAuthContext";
+import { useUnreadNotifications } from "../../../../contexts/notifications/useUnreadNotifications";
+import { getDisplayLocale } from "../../../../features/Dashboards/User/Accounts/accountHelpers";
+import { formatUnreadBadge } from "../../../../features/Dashboards/User/Notifications/notificationHelpers";
 import { PATH } from "../../../../routes/Path";
 
 export default function DashboardSidebar({
@@ -29,8 +36,10 @@ export default function DashboardSidebar({
   onClose,
 }) {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { logout } = useAuthContext();
+  // Shared with the header bell (GET /notifications/unread-count).
+  const { count: unreadCount } = useUnreadNotifications();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
@@ -86,10 +95,26 @@ export default function DashboardSidebar({
 
         {
           label: t(
+            "dashboard.sidebar.transfers",
+          ),
+          path: PATH.USER.TRANSFERS,
+          icon: LuArrowRightLeft,
+        },
+
+        {
+          label: t(
             "dashboard.sidebar.recurring",
           ),
           path: PATH.USER.RECURRING,
           icon: LuRepeat2,
+        },
+
+        {
+          label: t(
+            "dashboard.sidebar.calendar",
+          ),
+          path: PATH.USER.CALENDAR,
+          icon: LuCalendarDays,
         },
 
         {
@@ -110,6 +135,14 @@ export default function DashboardSidebar({
       items: [
         {
           label: t(
+            "dashboard.sidebar.categories",
+          ),
+          path: PATH.USER.CATEGORIES,
+          icon: LuTags,
+        },
+
+        {
+          label: t(
             "dashboard.sidebar.budgets",
           ),
           path: PATH.USER.BUDGETS,
@@ -122,6 +155,14 @@ export default function DashboardSidebar({
           ),
           path: PATH.USER.SAVINGS_GOALS,
           icon: LuTarget,
+        },
+
+        {
+          label: t(
+            "dashboard.sidebar.debts",
+          ),
+          path: PATH.USER.DEBTS,
+          icon: LuHandCoins,
         },
 
         {
@@ -154,6 +195,14 @@ export default function DashboardSidebar({
           ),
           path: PATH.USER.NOTIFICATIONS,
           icon: LuBell,
+          badge:
+            unreadCount > 0
+              ? formatUnreadBadge(unreadCount, getDisplayLocale(i18n.language))
+              : null,
+          badgeLabel:
+            unreadCount > 0
+              ? t("dashboard.notifications.bell.unread", { count: unreadCount })
+              : undefined,
         },
 
         {
@@ -237,6 +286,21 @@ export default function DashboardSidebar({
                     <span>
                       {item.label}
                     </span>
+
+                    {item.badge && (
+                      <>
+                        <span
+                          className="dashboard-sidebar__badge"
+                          aria-hidden="true"
+                        >
+                          {item.badge}
+                        </span>
+
+                        <span className="dashboard-sidebar__sr-only">
+                          {item.badgeLabel}
+                        </span>
+                      </>
+                    )}
                   </NavLink>
                 );
               })}

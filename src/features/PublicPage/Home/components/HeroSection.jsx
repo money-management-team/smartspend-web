@@ -10,6 +10,8 @@ import {
   LuActivity,
 } from "react-icons/lu";
 
+import { AUTH_INTENT, getAccountTypePath } from "../../../../routes/Path";
+
 export default function HeroSection() {
   const { t } = useTranslation();
 
@@ -19,7 +21,7 @@ export default function HeroSection() {
         <div className="hero-section__grid">
           <div className="hero-section__content">
             <span className="home-badge hero-entrance hero-entrance--badge">
-              <LuSparkles />
+              <LuSparkles aria-hidden="true" />
 
               {t("home.hero.badge")}
             </span>
@@ -37,7 +39,7 @@ export default function HeroSection() {
 
             <div className="hero-section__buttons hero-entrance hero-entrance--actions">
               <Link
-                to="/register"
+                to={getAccountTypePath(AUTH_INTENT.REGISTER)}
                 className="home-primary-button"
               >
                 {t("home.hero.primaryButton")}
@@ -47,18 +49,14 @@ export default function HeroSection() {
                 type="button"
                 className="home-secondary-button"
               >
-                <FiPlayCircle />
-
+                <FiPlayCircle aria-hidden="true" />
 
                 {t("home.hero.watchDemo")}
               </button>
             </div>
 
-            <div
-              className="hero-users hero-entrance hero-entrance--users"
-              aria-label={t("home.hero.users")}
-            >
-              <div className="hero-users__avatars">
+            <div className="hero-users hero-entrance hero-entrance--users">
+              <div className="hero-users__avatars" aria-hidden="true">
                 <span />
                 <span />
                 <span />
@@ -70,7 +68,11 @@ export default function HeroSection() {
             </div>
           </div>
 
-          <div className="hero-dashboard hero-entrance hero-entrance--visual">
+          {/* Decorative product preview: hidden from assistive tech */}
+          <div
+            className="hero-dashboard hero-entrance hero-entrance--visual"
+            aria-hidden="true"
+          >
             <DashboardMock />
           </div>
         </div>
@@ -83,18 +85,21 @@ export default function HeroSection() {
           />
 
           <Stat
+            tone="success"
             icon={<LuShieldCheck />}
             title={t("home.stats.security.title")}
             text={t("home.stats.security.text")}
           />
 
           <Stat
+            tone="insights"
             icon={<LuBrainCircuit />}
             title={t("home.stats.ai.title")}
             text={t("home.stats.ai.text")}
           />
 
           <Stat
+            tone="warning"
             icon={<LuActivity />}
             title={t("home.stats.monitoring.title")}
             text={t("home.stats.monitoring.text")}
@@ -109,10 +114,15 @@ function Stat({
   icon,
   title,
   text,
+  tone,
 }) {
   return (
-    <article className="hero-stat hero-entrance hero-entrance--stat">
-      <span>
+    <article
+      className={`hero-stat hero-entrance hero-entrance--stat${
+        tone ? ` hero-stat--${tone}` : ""
+      }`}
+    >
+      <span className="hero-stat__icon" aria-hidden="true">
         {icon}
       </span>
 
@@ -146,7 +156,7 @@ function DashboardMock() {
         </small>
 
         <strong>
-          $24,580.90
+          <bdi>$24,580.90</bdi>
         </strong>
 
         <div className="dashboard-mock__balance-row">
@@ -155,7 +165,7 @@ function DashboardMock() {
               {t("home.preview.income")}
             </small>
 
-            <b>$5,400</b>
+            <b><bdi>$5,400</bdi></b>
           </div>
 
           <div>
@@ -163,7 +173,7 @@ function DashboardMock() {
               {t("home.preview.expenses")}
             </small>
 
-            <b>$3,120</b>
+            <b><bdi>$3,120</bdi></b>
           </div>
 
           <div>
@@ -171,7 +181,7 @@ function DashboardMock() {
               {t("home.preview.savings")}
             </small>
 
-            <b>$1,850</b>
+            <b><bdi>$1,850</bdi></b>
           </div>
         </div>
       </div>
@@ -197,19 +207,19 @@ function DashboardMock() {
             {t("home.preview.recentTransactions")}
           </strong>
 
-          <p>
-            Salary
-            <b>+$4,200</b>
+          <p className="dashboard-mock__tx-row is-positive">
+            <span>Salary</span>
+            <b><bdi>+$4,200</bdi></b>
           </p>
 
-          <p>
-            Whole Foods
-            <b>-$84</b>
+          <p className="dashboard-mock__tx-row">
+            <span>Whole Foods</span>
+            <b><bdi>-$84</bdi></b>
           </p>
 
-          <p>
-            Metro Card
-            <b>-$24</b>
+          <p className="dashboard-mock__tx-row">
+            <span>Metro Card</span>
+            <b><bdi>-$24</bdi></b>
           </p>
         </div>
       </div>

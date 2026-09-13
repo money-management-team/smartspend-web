@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import SettingsTabs from "./components/SettingsTabs/SettingsTabs";
 import ProfileSettings from "./components/ProfileSettings/ProfileSettings";
+import ChangePassword from "./components/ChangePassword/ChangePassword";
 
 import "./Settings.css";
 
@@ -34,13 +35,7 @@ export default function Settings() {
       )}
 
       {activeTab === "security" && (
-        <section className="settings-placeholder">
-          <h2>
-            {t(
-              "dashboard.settings.security.title",
-            )}
-          </h2>
-        </section>
+        <ChangePassword />
       )}
 
       {activeTab === "preferences" && (

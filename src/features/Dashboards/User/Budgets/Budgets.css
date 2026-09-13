@@ -3,26 +3,72 @@
   max-width: 1240px;
 
   margin: 0 auto;
-
-  padding:
-    28px
-    32px
-    50px;
+  padding: 28px 32px 50px;
 
   box-sizing: border-box;
 
   color: var(--color-text-primary);
 }
 
-
 /* ================================
-   RTL
+   NOTICE (one-time success message)
 ================================ */
 
-[dir="rtl"] .budgets-page {
-  direction: rtl;
+.budgets-page__notice {
+  margin-top: 22px;
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border: 1px solid color-mix(in srgb, var(--color-success) 28%, transparent);
+  border-radius: var(--radius-md);
+
+  color: color-mix(in srgb, var(--color-success) 85%, var(--color-text-primary));
+  background: var(--success-soft);
+
+  font-size: 13px;
+  line-height: 1.5;
 }
 
+/* `color: inherit` beats the global `p` color from index.css. */
+.budgets-page__notice p {
+  margin: 0;
+  flex: 1;
+  color: inherit;
+}
+
+.budgets-page__notice a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.budgets-page__notice button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+
+  flex: none;
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: 50%;
+
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.budgets-page__notice button:hover {
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
+}
+
+:root[data-theme="dark"] .budgets-page__notice {
+  color: color-mix(in srgb, var(--color-success) 62%, #ffffff);
+}
 
 /* ================================
    RESPONSIVE
@@ -30,21 +76,6 @@
 
 @media (max-width: 720px) {
   .budgets-page {
-    padding:
-      22px
-      16px
-      40px;
+    padding: 22px 16px 40px;
   }
 }
-.budgets-page__state {
-  margin-top: 24px;
-  padding: 18px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
-  text-align: center;
-}
-.budgets-page__state p { margin: 0 0 10px; }
-.budgets-page__state button { border: 0; border-radius: 999px; padding: 9px 16px; background: var(--color-primary); color: var(--navigation-active-text); cursor: pointer; }
-.budgets-page__state--error { color: var(--danger); }

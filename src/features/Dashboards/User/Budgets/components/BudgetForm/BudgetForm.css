@@ -1,60 +1,237 @@
-.budget-form-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background: color-mix(in srgb, #0f172a 45%, transparent);
-}
+/* =========================================
+   BUDGET FORM
+   (shell, inputs and buttons come from AccountForm.css; the textarea and
+   error block from ReverseTransactionDialog.css)
+========================================= */
 
-.budget-form-modal__dialog {
-  width: min(560px, 100%);
+.budget-form {
+  width: min(100%, 540px);
   max-height: calc(100vh - 40px);
-  overflow: auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
+  overflow-y: auto;
 }
 
-.budget-form-modal__header {
+.budget-form header button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* A field that isn't wrapped in its <label> (it holds a retry button). */
+
+.budget-form__field {
+  display: grid;
+  gap: 7px;
+  font-size: 14px;
+}
+
+.budget-form__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+
+.budget-form__row--single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.budget-form__row label {
+  align-content: start;
+}
+
+.budget-form__hint {
+  margin-top: -8px;
+}
+
+/* =========================================
+   SCOPE (radio cards)
+========================================= */
+
+.budget-form__scopes {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+
+  border: 0;
+}
+
+.budget-form__scopes legend {
+  margin-bottom: 7px;
+  padding: 0;
+  font-size: 14px;
+}
+
+.budget-form__scope-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.account-form-modal__dialog .budget-form__scope {
+  padding: 12px;
+
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  column-gap: 10px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  cursor: pointer;
+
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.account-form-modal__dialog .budget-form__scope input {
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  padding: 0;
+
+  accent-color: var(--color-primary);
+}
+
+.budget-form__scope > span {
+  display: grid;
+  gap: 4px;
+}
+
+.budget-form__scope strong {
+  color: var(--color-text-strong);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.budget-form__scope small {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.account-form-modal__dialog .budget-form__scope--active {
+  border-color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+.budget-form__scope:has(input:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.budget-form__scopes:disabled .budget-form__scope {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* =========================================
+   FIXED FIELDS (edit: scope, category, currency)
+========================================= */
+
+.budget-form__fixed {
+  padding: 12px 14px;
+
+  display: grid;
+  gap: 10px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--surface-soft);
+}
+
+.budget-form__fixed dl {
+  margin: 0;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.budget-form__fixed dl div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.budget-form__fixed dt {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.budget-form__fixed dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+
+  color: var(--color-text-strong);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.budget-form__fixed p,
+.budget-form__note {
+  margin: 0;
+
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 20px 22px;
-  border-bottom: 1px solid var(--color-border);
+  gap: 8px;
+
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
 }
 
-.budget-form-modal__header h2,
-.budget-form-modal__header p { margin: 0; }
-.budget-form-modal__header h2 { font-size: 18px; }
-.budget-form-modal__header p { margin-top: 5px; color: var(--color-text-secondary); font-size: 12px; }
-.budget-form-modal__header > button { border: 0; background: transparent; color: var(--color-text-secondary); font-size: 24px; cursor: pointer; }
+.budget-form__fixed svg,
+.budget-form__note svg {
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
 
-.budget-form-modal__form { display: grid; gap: 15px; padding: 20px 22px 22px; }
-.budget-form-modal__form label { display: grid; gap: 7px; font-size: 12px; font-weight: 600; }
-.budget-form-modal__form input,
-.budget-form-modal__form select {
-  width: 100%;
-  min-height: 42px;
-  box-sizing: border-box;
-  padding: 0 12px;
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
+/* Lowering the limit under what is spent: allowed, but worth knowing. */
+
+.budget-form__note {
+  padding: 10px 12px;
+
+  border: 1px solid color-mix(in srgb, var(--color-warning) 28%, transparent);
+  border-radius: var(--radius-md);
+
   color: var(--color-text-primary);
-  background: var(--color-surface);
-  font: inherit;
+  background: var(--warning-soft);
 }
-.budget-form-modal__form small,
-.budget-form-modal__error { color: var(--danger); font-size: 11px; }
-.budget-form-modal__error { margin: 0; }
-.budget-form-modal__dates { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.budget-form-modal__footer { display: flex; justify-content: flex-end; gap: 10px; padding-top: 6px; }
-.budget-form-modal__footer button { min-height: 40px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-text-primary); cursor: pointer; }
-.budget-form-modal__footer button[type="submit"] { border-color: var(--color-primary); background: var(--color-primary); color: var(--navigation-active-text); }
 
-@media (max-width: 560px) {
-  .budget-form-modal__dates { grid-template-columns: 1fr; }
+.budget-form__note svg {
+  color: var(--color-warning);
+}
+
+/* =========================================
+   CATEGORY OPTIONS ERROR
+========================================= */
+
+.budget-form__options-error button {
+  width: max-content;
+  padding: 0;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  cursor: pointer;
+}
+
+@media (max-width: 520px) {
+  .budget-form__row,
+  .budget-form__scope-options,
+  .budget-form__fixed dl {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-form-modal__dialog .budget-form__scope {
+    transition: none;
+  }
 }

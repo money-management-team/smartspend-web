@@ -135,6 +135,32 @@
   flex-shrink: 0;
 }
 
+.dashboard-summary-card__hint {
+  margin-top: 12px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 11px;
+
+  line-height: 1.4;
+}
+
+.dashboard-summary-card__amount--negative {
+  color: var(--danger);
+}
+
+.dashboard-summary-card--income .dashboard-summary-card__icon {
+  color: var(--success);
+
+  background: var(--success-soft);
+}
+
+.dashboard-summary-card--expense .dashboard-summary-card__icon {
+  color: var(--warning);
+
+  background: var(--warning-soft);
+}
+
 /* =========================================
    ICON
 ========================================= */

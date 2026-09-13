@@ -1,0 +1,179 @@
+/* Type colours (`--calendar-*`) are defined on `.calendar-page`. */
+
+.calendar-filters {
+  padding: 14px 18px;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px 22px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.calendar-filters__group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+
+  display: grid;
+  gap: 6px;
+
+  border: 0;
+}
+
+.calendar-filters__group legend {
+  margin-bottom: 6px;
+  padding: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 11px;
+}
+
+.calendar-filters__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.calendar-filters__chip {
+  height: 30px;
+  padding: 0 12px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 12px;
+
+  cursor: pointer;
+}
+
+.calendar-filters__chip:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.calendar-filters__chip--active,
+.calendar-filters__chip--active:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: var(--primary-soft);
+  font-weight: 600;
+}
+
+.calendar-filters__swatch {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+  background: var(--calendar-other);
+}
+
+.calendar-filters__chip--recurring_occurrence .calendar-filters__swatch {
+  background: var(--calendar-recurring);
+}
+
+.calendar-filters__chip--debt_due .calendar-filters__swatch {
+  background: var(--calendar-debt);
+}
+
+.calendar-filters__chip--budget_period_end .calendar-filters__swatch {
+  background: var(--calendar-budget);
+}
+
+.calendar-filters__chip--savings_goal_target .calendar-filters__swatch {
+  background: var(--calendar-goal);
+}
+
+/* Owner + clear */
+
+.calendar-filters__end {
+  margin-inline-start: auto;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.calendar-filters__field {
+  min-width: 150px;
+
+  display: grid;
+  gap: 5px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 11px;
+  text-align: start;
+}
+
+.calendar-filters__field select {
+  height: 34px;
+  padding-inline: 10px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  outline: none;
+
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 12px;
+}
+
+.calendar-filters__field select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--input-focus-ring);
+}
+
+.calendar-filters__clear {
+  height: 34px;
+  padding: 0 12px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 11px;
+
+  cursor: pointer;
+}
+
+.calendar-filters__clear:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.calendar-filters__clear svg {
+  width: 13px;
+  height: 13px;
+}
+
+@media (max-width: 720px) {
+  .calendar-filters__end {
+    width: 100%;
+    margin-inline-start: 0;
+  }
+}

@@ -1,17 +1,21 @@
 import { useState } from "react";
-import { useLanguageContext } from "../../../contexts/language/useLanguageContext";
 import { useTranslation } from "react-i18next";
-
-import logo from "../../../assets/smart-spend-logo.png";
-
-import "./Login.css";
 import { Link, useNavigate } from "react-router-dom";
+
 import { useAuthContext } from "../../../contexts/auth/useAuthContext";
 import { PATH } from "../../../routes/Path";
-import {
-  ApiError,
-  getApiErrorMessage,
-} from "../../Dashboards/User/api/apiClient";
+import { getApiErrorMessage } from "../../Dashboards/User/api/apiClient";
+
+import AuthAlert from "../components/AuthAlert/AuthAlert";
+import AuthButton from "../components/AuthButton/AuthButton";
+import AuthCheckbox from "../components/AuthCheckbox/AuthCheckbox";
+import AuthField from "../components/AuthField/AuthField";
+import AuthHeading from "../components/AuthHeading/AuthHeading";
+import { MailIcon } from "../components/AuthIcons";
+import AuthPromo from "../components/AuthPromo/AuthPromo";
+import AuthSocial from "../components/AuthSocial/AuthSocial";
+import AuthSwitchPrompt from "../components/AuthSwitchPrompt/AuthSwitchPrompt";
+import PasswordField from "../components/PasswordField/PasswordField";
 
 const initialForm = {
   identifier: "",
@@ -19,30 +23,12 @@ const initialForm = {
   remember: true,
 };
 
-function MailIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
-
-      <path d="m5 7 7 5.2L19 7" />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="m6.7 12.2 3.2 3.2 7.4-7.4" />
-    </svg>
-  );
-}
+const PROMO_CHIPS = [0, 1, 2];
 
 export default function Login() {
-  const { language } = useLanguageContext();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { login } = useAuthContext();
-  const isArabic = language === "ar";
+  const { login, loginWithGoogle } = useAuthContext();
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
@@ -68,6 +54,7 @@ export default function Login() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
 
     setErrors({});
     setGeneralError("");
@@ -84,233 +71,122 @@ export default function Login() {
 
       navigate(PATH.USER.DASHBOARD, { replace: true });
     } catch (error) {
-      if (error instanceof ApiError) setErrors(error.errors);
+      if (error?.code === "VALIDATION_ERROR") setErrors(error.errors);
       setGeneralError(getApiErrorMessage(error, t));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const fields = (
+  const handleGoogleCredential = async (idToken) => {
+    if (isSubmitting) return;
+
+    setErrors({});
+    setGeneralError("");
+    setIsSubmitting(true);
+
+    try {
+      await loginWithGoogle(idToken, { remember: form.remember });
+
+      navigate(PATH.USER.DASHBOARD, { replace: true });
+    } catch (error) {
+      // No field to show `id_token` errors under, so its message is the alert.
+      setGeneralError(
+        error?.errors?.id_token?.[0] ?? getApiErrorMessage(error, t),
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
     <>
-      {/* Email / Phone */}
+      <AuthPromo
+        title={t("auth.login.promo.title")}
+        subtitle={t("auth.login.promo.subtitle")}
+      >
+        <div className="auth-promo__chips">
+          {PROMO_CHIPS.map((index) => (
+            <span className="auth-promo__chip" key={index}>
+              {t(`auth.login.promo.chips.${index}`)}
+            </span>
+          ))}
+        </div>
+      </AuthPromo>
 
-      <label className="login-field">
-        <span>{t("auth.login.fields.contact.label")}</span>
+      <section className="auth-panel">
+        <AuthHeading
+          title={t("auth.login.title")}
+          subtitle={t("auth.login.subtitle")}
+        />
 
-        <span className="login-input-wrap">
-          <input
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <AuthField
+            id="login-identifier"
+            label={t("auth.login.fields.contact.label")}
+            icon={<MailIcon />}
+            errors={errors.identifier}
             type="text"
             name="identifier"
             value={form.identifier}
             onChange={handleChange}
             placeholder={t("auth.login.fields.contact.placeholder")}
             autoComplete="username"
-            aria-invalid={Boolean(errors.identifier)}
-            aria-describedby={
-              errors.identifier ? "login-identifier-error" : undefined
-            }
             disabled={isSubmitting}
             required
           />
 
-          <span className="login-input-icon">
-            <MailIcon />
-          </span>
-        </span>
-
-        {errors.identifier?.map((error, index) => (
-          <small
-            className="login-field__error"
-            id={index === 0 ? "login-identifier-error" : undefined}
-            key={error}
-          >
-            {error}
-          </small>
-        ))}
-      </label>
-
-      {/* Password */}
-
-      <label className="login-field">
-        <span className="login-field__heading">
-          <span>{t("auth.login.fields.password.label")}</span>
-
-          <Link to={PATH.AUTH.FORGOT_PASSWORD}>
-            {t("auth.login.forgotPassword")}
-          </Link>
-        </span>
-
-        <span className="login-input-wrap">
-          <input
-            type="password"
+          <PasswordField
+            id="login-password"
+            label={t("auth.login.fields.password.label")}
+            labelAction={
+              <Link className="auth-field__link" to={PATH.AUTH.FORGOT_PASSWORD}>
+                {t("auth.login.forgotPassword")}
+              </Link>
+            }
+            errors={errors.password}
             name="password"
             value={form.password}
             onChange={handleChange}
             placeholder={t("auth.login.fields.password.placeholder")}
             autoComplete="current-password"
-            aria-invalid={Boolean(errors.password)}
-            aria-describedby={
-              errors.password ? "login-password-error" : undefined
-            }
             disabled={isSubmitting}
             required
           />
-        </span>
 
-        {errors.password?.map((error, index) => (
-          <small
-            className="login-field__error"
-            id={index === 0 ? "login-password-error" : undefined}
-            key={error}
+          <AuthCheckbox
+            id="login-remember"
+            name="remember"
+            checked={form.remember}
+            onChange={handleChange}
+            disabled={isSubmitting}
           >
-            {error}
-          </small>
-        ))}
-      </label>
+            {t("auth.login.remember")}
+          </AuthCheckbox>
 
-      {/* Remember */}
+          {generalError && <AuthAlert>{generalError}</AuthAlert>}
 
-      <label className="login-remember">
-        <input
-          type="checkbox"
-          name="remember"
-          checked={form.remember}
-          onChange={handleChange}
+          <AuthButton loading={isSubmitting} loadingLabel={t("auth.login.loading")}>
+            {t("auth.login.submit")}
+          </AuthButton>
+        </form>
+
+        <AuthSocial
+          dividerLabel={t("auth.login.social.divider")}
+          googleLabel={t("auth.login.social.google")}
+          appleLabel={t("auth.login.social.apple")}
+          onGoogleCredential={handleGoogleCredential}
+          onGoogleUnavailable={() =>
+            setGeneralError(t("auth.common.googleUnavailable"))
+          }
           disabled={isSubmitting}
         />
 
-        <span className="login-remember__check" aria-hidden="true">
-          <CheckIcon />
-        </span>
-
-        <span>{t("auth.login.remember")}</span>
-      </label>
-
-      {generalError && (
-        <p className="login-form__error" role="alert">
-          {generalError}
-        </p>
-      )}
-
-      {/* Submit */}
-
-      <button className="login-submit" type="submit" disabled={isSubmitting}>
-        {isSubmitting ? t("auth.login.loading") : t("auth.login.submit")}
-      </button>
-    </>
-  );
-
-  const heading = (
-    <header className="login-form-panel__header">
-      <h1>{t("auth.login.title")}</h1>
-
-      <p>{t("auth.login.subtitle")}</p>
-    </header>
-  );
-
-  const social = (
-    <>
-      <div className="login-divider" aria-hidden="true">
-        <span />
-
-        <small>{t("auth.login.social.divider")}</small>
-
-        <span />
-      </div>
-
-      <div className="login-social">
-        <button type="button">{t("auth.login.social.google")}</button>
-
-        <button type="button">{t("auth.login.social.apple")}</button>
-      </div>
-    </>
-  );
-
-  return (
-    <>
-      {/* ==========================
-          PROMO
-      ========================== */}
-
-      <section className="login-promo" aria-label={t("auth.login.promo.title")}>
-        <div className="login-promo__rings" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </div>
-
-        <div className="login-promo__content">
-          <div className="login-promo__logo">
-            <img src={logo} alt="Smart Spend" />
-          </div>
-
-          <h2>{t("auth.login.promo.title")}</h2>
-
-          <p className="login-promo__subtitle">
-            {t("auth.login.promo.subtitle")}
-          </p>
-
-          <div className="login-promo__chips">
-            <span className="login-promo__chip">
-              {t("auth.login.promo.chips.0")}
-            </span>
-
-            <span className="login-promo__chip">
-              {t("auth.login.promo.chips.1")}
-            </span>
-
-            <span className="login-promo__chip">
-              {t("auth.login.promo.chips.2")}
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* ==========================
-          FORM
-      ========================== */}
-
-      <section
-        className={`login-form-panel ${
-          isArabic ? "login-form-panel--ar" : "login-form-panel--en"
-        }`}
-      >
-        <form className="login-form" onSubmit={handleSubmit}>
-          {isArabic ? (
-            <>
-              {heading}
-
-              <div className="login-form__fields">{fields}</div>
-
-              {social}
-
-              <p className="login-register">
-                {t("auth.login.register.prefix")}{" "}
-                <Link to={PATH.AUTH.REGISTER}>
-                  {t("auth.login.register.link")}
-                </Link>
-              </p>
-            </>
-          ) : (
-            <>
-              {heading}
-
-              <div className="login-form__fields login-form__fields--english">
-                {fields}
-              </div>
-
-              {social}
-
-              <p className="login-register">
-                {t("auth.login.register.prefix")}{" "}
-                <Link to={PATH.AUTH.REGISTER}>
-                  {t("auth.login.register.link")}
-                </Link>
-              </p>
-            </>
-          )}
-        </form>
+        <AuthSwitchPrompt
+          prefix={t("auth.login.register.prefix")}
+          linkLabel={t("auth.login.register.link")}
+          to={PATH.AUTH.REGISTER}
+        />
       </section>
     </>
   );

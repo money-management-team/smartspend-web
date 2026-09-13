@@ -1,76 +1,72 @@
 .budget-summary {
   margin-top: 25px;
+}
 
+.budget-summary__grid {
   display: grid;
-
-  grid-template-columns:
-    repeat(
-      3,
-      minmax(0, 1fr)
-    );
-
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
 }
 
+.budget-summary__hint {
+  margin: 10px 0 0;
+
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  text-align: start;
+}
 
 /* ================================
    CARD
 ================================ */
 
 .budget-summary-card {
+  --budget-summary-tone: var(--color-primary);
+
   min-width: 0;
-
-  min-height: 131px;
-
-  padding:
-    21px
-    22px;
+  min-height: 118px;
+  padding: 20px 22px;
 
   display: flex;
-
   flex-direction: column;
-
   justify-content: space-between;
+  gap: 14px;
 
   box-sizing: border-box;
 
-  border:
-    1px solid
-    var(--color-border);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
 
-  border-radius:
-    var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
 
-  background:
-    var(--color-surface);
-
-  box-shadow:
-    var(--shadow-card);
+  text-align: start;
 }
 
+.budget-summary-card--safe {
+  --budget-summary-tone: var(--color-success);
+}
+
+.budget-summary-card--attention {
+  --budget-summary-tone: var(--color-warning);
+}
+
+.budget-summary-card--exceeded {
+  --budget-summary-tone: var(--color-danger);
+}
 
 /* ================================
    PRIMARY
 ================================ */
 
 .budget-summary-card--primary {
-  border-color:
-    var(--color-primary);
+  border-color: var(--color-primary);
 
   color: var(--navigation-active-text);
+  background: linear-gradient(135deg, var(--primary), var(--color-primary));
 
-  background:
-    linear-gradient(
-      135deg,
-      var(--primary),
-      var(--color-primary)
-    );
-
-  box-shadow:
-    0 5px 14px
-    color-mix(in srgb, var(--primary) 15%, transparent);
+  box-shadow: 0 5px 14px color-mix(in srgb, var(--primary) 15%, transparent);
 }
-
 
 /* ================================
    TOP
@@ -78,33 +74,20 @@
 
 .budget-summary-card__top {
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
-
   gap: 16px;
 }
 
-
 .budget-summary-card__label {
-  color:
-    var(--color-text-secondary);
-
-  font-size: 11px;
-
-  line-height: 1.2;
-
-  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.3;
 }
 
-
-.budget-summary-card--primary
-.budget-summary-card__label {
-  color:
-    color-mix(in srgb, var(--navigation-active-text) 82%, transparent);
+.budget-summary-card--primary .budget-summary-card__label {
+  color: color-mix(in srgb, var(--navigation-active-text) 82%, transparent);
 }
-
 
 /* ================================
    ICON
@@ -112,133 +95,61 @@
 
 .budget-summary-card__icon {
   width: 38px;
-
   height: 38px;
 
-  flex:
-    0
-    0
-    38px;
-
+  flex: 0 0 38px;
   display: grid;
-
   place-items: center;
 
   border-radius: 50%;
 
-  color:
-    var(--color-primary);
-
-  background:
-    var(--surface-soft);
+  color: var(--budget-summary-tone);
+  background: color-mix(in srgb, var(--budget-summary-tone) 12%, transparent);
 }
 
-
-.budget-summary-card--primary
-.budget-summary-card__icon {
+.budget-summary-card--primary .budget-summary-card__icon {
   color: var(--navigation-active-text);
-
-  background:
-    color-mix(in srgb, var(--navigation-active-text) 15%, transparent);
+  background: color-mix(in srgb, var(--navigation-active-text) 15%, transparent);
 }
-
 
 .budget-summary-card__icon svg {
   width: 16px;
-
   height: 16px;
 }
 
-
 /* ================================
-   AMOUNT
+   VALUE
 ================================ */
 
 .budget-summary-card__amount {
-  align-self: flex-start;
-
-  color:
-    var(--color-text-primary);
-
+  color: var(--color-text-primary);
+  font-family: var(--font-heading);
   font-size: 26px;
-
   font-weight: 750;
-
   line-height: 1;
-
-  white-space: nowrap;
-
-  unicode-bidi: isolate;
 }
 
-
-.budget-summary-card--primary
-.budget-summary-card__amount {
+.budget-summary-card--primary .budget-summary-card__amount {
   color: var(--navigation-active-text);
 }
 
-
 /* ================================
-   RTL
-================================ */
-
-[dir="rtl"]
-.budget-summary-card {
-  text-align: right;
-}
-
-
-[dir="rtl"]
-.budget-summary-card__label {
-  text-transform: none;
-}
-
-
-[dir="rtl"]
-.budget-summary-card__amount {
-  align-self: flex-start;
-}
-
-
-/* ================================
-   TABLET
+   RESPONSIVE
 ================================ */
 
 @media (max-width: 900px) {
-  .budget-summary {
-    grid-template-columns:
-      repeat(
-        2,
-        minmax(0, 1fr)
-      );
-  }
-
-
-  .budget-summary-card--primary {
-    grid-column:
-      1 / -1;
+  .budget-summary__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-
-/* ================================
-   MOBILE
-================================ */
-
-@media (max-width: 620px) {
-  .budget-summary {
+@media (max-width: 420px) {
+  .budget-summary__grid {
     grid-template-columns: 1fr;
-
     gap: 13px;
   }
 
-
-  .budget-summary-card--primary {
-    grid-column: auto;
-  }
-
-
   .budget-summary-card {
-    min-height: 116px;
+    min-height: 104px;
   }
 }

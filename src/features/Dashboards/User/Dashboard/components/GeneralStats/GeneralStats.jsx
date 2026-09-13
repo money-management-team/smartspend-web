@@ -1,44 +1,68 @@
+import { createElement } from "react";
 import { useTranslation } from "react-i18next";
 import {
   LuPiggyBank,
-  LuReceiptText,
+  LuWallet,
   LuArrowRightLeft,
-  LuTarget,
+  LuSlidersHorizontal,
 } from "react-icons/lu";
 
 import SectionCard from "../shared/SectionCard";
 
 import "./GeneralStats.css";
-import { formatMoney } from "../../../utils/formatters";
+import { getDisplayLocale } from "../../../Accounts/accountHelpers";
+import { formatPercentage } from "../../../Budgets/budgetHelpers";
+import { formatOptionalMoney, getTransfersSummary } from "../../dashboardHelpers";
 
-export default function GeneralStats({ totals, categories, transactions, period }) {
+const formatCount = (value, locale) => {
+  const number = Number(value);
+  return value == null || value === "" || !Number.isFinite(number) ? "—" : number.toLocaleString(locale);
+};
+
+/*
+ * Figures the backend calculated for the period, shown as sent: savings rate,
+ * accounts, transfers (`data.transfers`, kept apart from income and expense)
+ * and balance adjustments.
+ */
+export default function GeneralStats({ totals, transfers }) {
   const { t, i18n } = useTranslation();
-  const locale = i18n.language?.startsWith("ar") ? "ar" : "en";
-  const expenseCategories = categories.filter((category) => category.type === "expense");
-  const topCategory = [...expenseCategories].sort(
-    (a, b) => Number(b.total) - Number(a.total),
-  )[0];
-  const periodDays = period?.date_from && period?.date_to
-    ? Math.max(
-        1,
-        Math.round(
-          (new Date(period.date_to) - new Date(period.date_from)) / 86400000,
-        ) + 1,
-      )
-    : 1;
+  const locale = getDisplayLocale(i18n.language);
+  const transferSummary = getTransfersSummary(transfers);
+  const activeAccounts = totals?.active_accounts_count ?? totals?.accounts_count;
+
   const stats = [
-    { key: "savingsRate", icon: LuPiggyBank, value: `${totals?.savings_rate ?? 0}%` },
     {
-      key: "avgDailySpend",
-      icon: LuReceiptText,
-      value: formatMoney(
-        Number(totals?.expense || 0) / periodDays,
-        totals?.currency_code,
-        locale,
-      ),
+      key: "savingsRate",
+      icon: LuPiggyBank,
+      value: formatPercentage(totals?.savings_rate, locale),
     },
-    { key: "transactions", icon: LuArrowRightLeft, value: transactions.length },
-    { key: "topCategory", icon: LuTarget, value: topCategory?.name ?? "—" },
+    {
+      key: "activeAccounts",
+      icon: LuWallet,
+      value: formatCount(activeAccounts, locale),
+      note:
+        totals?.accounts_count != null && totals?.active_accounts_count != null
+          ? t("dashboard.user.stats.activeAccounts.note", { count: Number(totals.accounts_count) })
+          : "",
+    },
+    {
+      key: "transfers",
+      icon: LuArrowRightLeft,
+      value: transferSummary?.count != null ? formatCount(transferSummary.count, locale) : "—",
+      note:
+        transferSummary?.amount != null
+          ? formatOptionalMoney(
+              transferSummary.amount,
+              transferSummary.currency || totals?.currency_code,
+              locale,
+            )
+          : "",
+    },
+    {
+      key: "adjustments",
+      icon: LuSlidersHorizontal,
+      value: formatOptionalMoney(totals?.adjustments, totals?.currency_code, locale),
+    },
   ];
 
   return (
@@ -48,19 +72,28 @@ export default function GeneralStats({ totals, categories, transactions, period 
       subtitle={t("dashboard.user.stats.subtitle")}
     >
       <div className="general-stats-card__grid">
-        {stats.map(({ key, icon: Icon, value }) => (
+        {stats.map(({ key, icon, value, note }) => (
           <article className="general-stat" key={key}>
             <span className="general-stat__icon">
-              <Icon />
+              {createElement(icon)}
             </span>
 
             <div>
               <small>{t(`dashboard.user.stats.${key}.label`)}</small>
-              <strong>{value}</strong>
+              <strong>
+                <bdi>{value}</bdi>
+              </strong>
+              {note && (
+                <span className="general-stat__note">
+                  <bdi>{note}</bdi>
+                </span>
+              )}
             </div>
           </article>
         ))}
       </div>
+
+      <p className="general-stats-card__footnote">{t("dashboard.user.stats.transfersNote")}</p>
     </SectionCard>
   );
 }

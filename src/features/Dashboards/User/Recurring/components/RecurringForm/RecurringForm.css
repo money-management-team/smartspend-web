@@ -1,0 +1,205 @@
+/* =========================================
+   RECURRING FORM
+   (shell, inputs and buttons come from AccountForm.css; the textarea and
+   error block from ReverseTransactionDialog.css)
+========================================= */
+
+.recurring-form {
+  width: min(100%, 600px);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+.recurring-form header button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.recurring-form__note {
+  margin: 16px 0 0;
+  padding: 11px 13px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+
+  border: 1px solid color-mix(in srgb, var(--color-primary) 24%, transparent);
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: var(--primary-soft);
+
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.recurring-form__note svg {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.recurring-form__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+
+.recurring-form__row label {
+  align-content: start;
+}
+
+/* Type (create) and processing mode */
+
+.recurring-form fieldset {
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+  border: 0;
+}
+
+.recurring-form legend {
+  margin-bottom: 7px;
+  padding: 0;
+  font-size: 14px;
+}
+
+.recurring-form fieldset > small {
+  color: var(--color-danger, #dc2626);
+  font-size: 12px;
+}
+
+.recurring-form__types > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.account-form-modal__dialog .recurring-form__type,
+.account-form-modal__dialog .recurring-form__mode {
+  padding: 10px 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.account-form-modal__dialog .recurring-form__type input,
+.account-form-modal__dialog .recurring-form__mode input {
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  padding: 0;
+  flex-shrink: 0;
+  accent-color: var(--color-primary);
+}
+
+.recurring-form__type--active,
+.recurring-form__mode--active {
+  border-color: var(--color-primary) !important;
+  background: var(--primary-soft);
+}
+
+.recurring-form__type--income.recurring-form__type--active {
+  border-color: var(--success) !important;
+  background: var(--success-soft);
+}
+
+.recurring-form__mode > span {
+  display: grid;
+  gap: 3px;
+}
+
+.recurring-form__mode strong {
+  font-size: 13px;
+}
+
+.recurring-form__mode small {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Fixed fields (edit) */
+
+.recurring-form__fixed {
+  padding: 12px 14px;
+
+  display: grid;
+  gap: 10px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--surface-soft);
+}
+
+.recurring-form__fixed dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 10px 14px;
+}
+
+.recurring-form__fixed dl div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.recurring-form__fixed dt {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.recurring-form__fixed dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+
+  color: var(--color-text-strong);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.recurring-form__fixed p {
+  margin: 0;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.recurring-form__fixed svg {
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.recurring-form__retry {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  color: var(--color-primary);
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 520px) {
+  .recurring-form__types > div {
+    grid-template-columns: 1fr;
+  }
+}

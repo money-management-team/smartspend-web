@@ -1,18 +1,19 @@
 import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 
-import logo from "../../../assets/smart-spend-logo.png";
+import { PATH } from "../../../routes/Path";
+
+import AuthBackLink from "../components/AuthBackLink/AuthBackLink";
+import AuthButton from "../components/AuthButton/AuthButton";
+import AuthHeading from "../components/AuthHeading/AuthHeading";
+import { ShieldCheckIcon } from "../components/AuthIcons";
+import AuthPromo from "../components/AuthPromo/AuthPromo";
+import AuthSteps from "../components/AuthSteps/AuthSteps";
 
 import "./VerifyCode.css";
 
-function ArrowIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M19 12H5" />
-      <path d="m11 6-6 6 6 6" />
-    </svg>
-  );
-}
+const CODE_LENGTH = 4;
+const CODE_SLOTS = Array.from({ length: CODE_LENGTH }, (_, index) => index);
 
 export default function VerifyCode() {
   const { t } = useTranslation();
@@ -84,175 +85,82 @@ export default function VerifyCode() {
 
   return (
     <>
-      {/* ==========================
-          PROMO SECTION
-      ========================== */}
-
-      <section
-        className="verify-promo"
-        aria-label={t(
-          "auth.verifyCode.promo.title",
-        )}
+      <AuthPromo
+        title={t("auth.verifyCode.promo.title")}
+        subtitle={t("auth.verifyCode.promo.subtitle")}
       >
-        <div
-          className="verify-promo__rings"
-          aria-hidden="true"
-        >
-          <span />
-          <span />
-          <span />
-        </div>
-
-        <div className="verify-promo__content">
-          <div className="verify-promo__logo">
-            <img
-              src={logo}
-              alt="Smart Spend"
-            />
+        <div className="verify-users">
+          <div className="verify-users__avatars" aria-hidden="true">
+            <span>S</span>
+            <span>M</span>
+            <span>A</span>
           </div>
 
-          <h2>
-            {t(
-              "auth.verifyCode.promo.title",
-            )}
-          </h2>
-
-          <p className="verify-promo__subtitle">
-            {t(
-              "auth.verifyCode.promo.subtitle",
-            )}
-          </p>
-
-          <div className="verify-users">
-            <div
-              className="verify-users__avatars"
-              aria-hidden="true"
-            >
-              <span>S</span>
-              <span>M</span>
-              <span>A</span>
-            </div>
-
-            <span className="verify-users__text">
-              {t(
-                "auth.verifyCode.promo.users",
-              )}
-            </span>
-          </div>
+          <span className="verify-users__text">
+            {t("auth.verifyCode.promo.users")}
+          </span>
         </div>
-      </section>
+      </AuthPromo>
 
-      {/* ==========================
-          VERIFY FORM
-      ========================== */}
+      <section className="auth-panel">
+        <AuthSteps current={2} />
 
-      <section className="verify-form-panel">
-        <div
-          className="verify-progress"
-          aria-hidden="true"
-        >
-          <span className="verify-progress__item verify-progress__item--active" />
-          <span className="verify-progress__item verify-progress__item--active" />
-          <span className="verify-progress__item" />
-          <span className="verify-progress__item" />
-        </div>
+        <AuthHeading
+          icon={<ShieldCheckIcon />}
+          title={t("auth.verifyCode.title")}
+          subtitle={t("auth.verifyCode.subtitle")}
+        />
 
-        <header className="verify-header">
-          <h1>
-            {t("auth.verifyCode.title")}
-          </h1>
-
-          <p>
-            {t("auth.verifyCode.subtitle")}
-          </p>
-        </header>
-
-        <form
-          className="verify-form"
-          onSubmit={handleSubmit}
-        >
+        <form className="auth-form" onSubmit={handleSubmit}>
           <div
-            className="verify-code-inputs"
+            className="verify-code"
+            role="group"
+            aria-label={t("auth.verifyCode.title")}
             dir="ltr"
             onPaste={handlePaste}
           >
-            {[0, 1, 2, 3].map((index) => (
+            {CODE_SLOTS.map((index) => (
               <input
                 key={index}
                 ref={(element) => {
-                  inputsRef.current[index] =
-                    element;
+                  inputsRef.current[index] = element;
                 }}
+                className="verify-code__input"
                 type="text"
                 inputMode="numeric"
-                autoComplete={
-                  index === 0
-                    ? "one-time-code"
-                    : "off"
-                }
+                autoComplete={index === 0 ? "one-time-code" : "off"}
                 maxLength={1}
-                aria-label={`Code digit ${
-                  index + 1
-                }`}
-                onChange={(event) =>
-                  handleChange(
-                    event,
-                    index,
-                  )
-                }
-                onKeyDown={(event) =>
-                  handleKeyDown(
-                    event,
-                    index,
-                  )
-                }
+                placeholder=" "
+                aria-label={t("auth.verifyCode.digitLabel", {
+                  index: index + 1,
+                  total: CODE_LENGTH,
+                })}
+                onChange={(event) => handleChange(event, index)}
+                onKeyDown={(event) => handleKeyDown(event, index)}
               />
             ))}
           </div>
 
-          <p className="verify-phone">
-            {t(
-              "auth.verifyCode.codeSent",
-            )}{" "}
-            <strong>05•••••21</strong>
+          <p className="verify-sent">
+            {t("auth.verifyCode.codeSent")}{" "}
+            <strong>
+              <bdi>05•••••21</bdi>
+            </strong>
           </p>
+
+          <AuthButton>{t("auth.verifyCode.submit")}</AuthButton>
 
           <p className="verify-resend">
-            {t(
-              "auth.verifyCode.resend.prefix",
-            )}{" "}
-            <button
-              type="button"
-              onClick={handleResend}
-            >
-              {t(
-                "auth.verifyCode.resend.link",
-              )}
+            {t("auth.verifyCode.resend.prefix")}{" "}
+            <button type="button" onClick={handleResend}>
+              {t("auth.verifyCode.resend.link")}
             </button>
           </p>
-
-          <button
-            className="verify-submit"
-            type="submit"
-          >
-            {t(
-              "auth.verifyCode.submit",
-            )}
-          </button>
         </form>
 
-        <a
-          href="#forgot-password"
-          className="verify-edit-phone"
-        >
-          <ArrowIcon />
-
-          <span>
-            {t(
-              "auth.verifyCode.editPhone",
-            )}
-          </span>
-        </a>
+        <AuthBackLink to={PATH.AUTH.FORGOT_PASSWORD}>
+          {t("auth.verifyCode.editPhone")}
+        </AuthBackLink>
       </section>
     </>
   );

@@ -1,0 +1,98 @@
+/* =========================================
+   GOAL ACTION DIALOG (pause / resume / archive)
+   (shell and buttons come from AccountForm.css; the error block from
+   ReverseTransactionDialog.css)
+========================================= */
+
+.goal-action-dialog {
+  width: min(100%, 480px);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+.goal-action-dialog header button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.goal-action-dialog__body {
+  margin: 16px 0 4px;
+
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.goal-action-dialog__body p {
+  margin: 0;
+}
+
+.goal-action-dialog__body ul {
+  margin: 12px 0 0;
+  padding-inline-start: 20px;
+
+  display: grid;
+  gap: 6px;
+}
+
+/* Archive while the goal still holds money. */
+
+.goal-action-dialog__blocked {
+  margin-top: 14px;
+  padding: 11px 13px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+
+  border: 1px solid color-mix(in srgb, var(--color-warning) 28%, transparent);
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: var(--warning-soft);
+
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.goal-action-dialog__blocked svg {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  color: var(--color-warning);
+}
+
+.goal-action-dialog__blocked > div {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+}
+
+.goal-action-dialog__blocked p {
+  margin: 0;
+  color: inherit;
+}
+
+.goal-action-dialog__blocked button,
+.goal-action-dialog__blocked a {
+  padding: 0;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.goal-action-dialog__error {
+  margin-top: 14px;
+}
+
+.goal-action-dialog footer {
+  margin-top: 18px;
+}

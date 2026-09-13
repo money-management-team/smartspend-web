@@ -3,12 +3,14 @@ import { useTranslation } from "react-i18next";
 import { ApiError, getApiErrorMessage } from "../../../api/apiClient";
 import { authApi } from "../../../api/authApi";
 import { useAuthContext } from "../../../../../../contexts/auth/useAuthContext";
+import { useEmailVerification } from "../../../../../../contexts/emailVerification/useEmailVerification";
 
 import "./ProfileSettings.css";
 
 export default function ProfileSettings() {
   const { t } = useTranslation();
   const { user, workspace, updateUser } = useAuthContext();
+  const { refresh: refreshEmailStatus } = useEmailVerification();
 
   const [form, setForm] = useState(() => ({
     name: user?.name ?? "",
@@ -66,6 +68,10 @@ export default function ProfileSettings() {
         phone: response.data.phone ?? "",
       }));
       updateUser(response.data);
+      // A new email address starts unverified; re-read the shared status.
+      if ((response.data.email ?? null) !== (user?.email ?? null)) {
+        refreshEmailStatus();
+      }
       setMessage(response.message ?? t("dashboard.settings.profile.saved"));
       setHasError(false);
     } catch (error) {

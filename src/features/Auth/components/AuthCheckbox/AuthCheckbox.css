@@ -1,0 +1,141 @@
+/* =========================================
+   AUTH CHECKBOX
+========================================= */
+
+.auth-checkbox {
+  display: grid;
+  gap: 6px;
+}
+
+.auth-checkbox__control {
+  position: relative;
+
+  justify-self: start;
+
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 13px;
+  line-height: 1.5;
+
+  cursor: pointer;
+  user-select: none;
+}
+
+.auth-checkbox__input {
+  position: absolute;
+
+  inline-size: 1px;
+  block-size: 1px;
+
+  opacity: 0;
+  pointer-events: none;
+}
+
+.auth-checkbox__box {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  margin-block-start: 1px;
+
+  display: grid;
+  place-items: center;
+
+  border: 1.5px solid var(--auth-control-border-hover);
+  border-radius: 6px;
+
+  color: var(--navigation-active-text);
+  background: var(--auth-control-bg);
+
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.auth-checkbox__control:hover .auth-checkbox__box {
+  border-color: var(--color-primary);
+}
+
+.auth-checkbox__box svg {
+  width: 13px;
+  height: 13px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  opacity: 0;
+  transform: scale(0.6);
+
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.auth-checkbox__input:checked + .auth-checkbox__box {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+}
+
+.auth-checkbox__input:checked + .auth-checkbox__box svg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.auth-checkbox__input:focus-visible + .auth-checkbox__box {
+  box-shadow: 0 0 0 4px var(--input-focus-ring);
+}
+
+.auth-checkbox__input[aria-invalid="true"]:not(:checked) + .auth-checkbox__box {
+  border-color: var(--auth-danger);
+}
+
+.auth-checkbox__input:disabled + .auth-checkbox__box {
+  opacity: 0.6;
+}
+
+.auth-checkbox__control:has(.auth-checkbox__input:disabled) {
+  cursor: not-allowed;
+}
+
+/* Links inside the label (e.g. terms) */
+
+.auth-checkbox__label a {
+  color: var(--auth-link);
+
+  font-weight: var(--font-weight-semibold);
+
+  text-decoration: none;
+  text-underline-offset: 3px;
+}
+
+.auth-checkbox__label a:hover {
+  color: var(--auth-link-hover);
+
+  text-decoration: underline;
+}
+
+.auth-checkbox__errors {
+  display: grid;
+  gap: 2px;
+}
+
+.auth-checkbox__errors small {
+  color: var(--auth-danger);
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-checkbox__box,
+  .auth-checkbox__box svg {
+    transition: none;
+  }
+}

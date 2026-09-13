@@ -1,0 +1,54 @@
+/* =========================================
+   BUDGET STATUS BADGE
+   One tone per backend progress status, from the theme tokens.
+========================================= */
+
+.budget-status-badge {
+  --budget-tone: var(--color-primary);
+
+  padding: 5px 10px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  border-radius: 999px;
+
+  color: color-mix(in srgb, var(--budget-tone) 85%, var(--color-text-primary));
+  background: color-mix(in srgb, var(--budget-tone) 13%, transparent);
+
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.budget-status-badge svg {
+  width: 12px;
+  height: 12px;
+}
+
+.budget-status-badge--safe {
+  --budget-tone: var(--color-success);
+}
+
+.budget-status-badge--warning {
+  --budget-tone: var(--color-warning);
+}
+
+.budget-status-badge--near_limit {
+  --budget-tone: color-mix(in srgb, var(--color-warning) 45%, var(--color-danger));
+}
+
+.budget-status-badge--exceeded {
+  --budget-tone: var(--color-danger);
+}
+
+.budget-status-badge--archived {
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+}
+
+:root[data-theme="dark"] .budget-status-badge:not(.budget-status-badge--archived) {
+  color: color-mix(in srgb, var(--budget-tone) 62%, #ffffff);
+}

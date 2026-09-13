@@ -1,0 +1,109 @@
+/* =========================================
+   AUTH BUTTON (primary CTA)
+========================================= */
+
+.auth-button {
+  width: 100%;
+  height: 46px;
+  padding-inline: 16px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  border: 0;
+  border-radius: var(--radius-md);
+
+  color: var(--navigation-active-text);
+  background: var(--gradient-primary);
+
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+
+  cursor: pointer;
+
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--navigation-active-text) 18%, transparent),
+    0 1px 2px rgba(15, 23, 42, 0.08),
+    0 10px 22px -10px color-mix(in srgb, var(--color-primary) 70%, transparent);
+
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    filter 160ms ease,
+    opacity 160ms ease;
+}
+
+/* The link variant must keep white text over the global a:hover color */
+
+.auth-button:hover:not(:disabled) {
+  color: var(--navigation-active-text);
+
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--navigation-active-text) 18%, transparent),
+    0 2px 4px rgba(15, 23, 42, 0.08),
+    0 14px 28px -10px color-mix(in srgb, var(--color-primary) 75%, transparent);
+}
+
+.auth-button:active:not(:disabled) {
+  filter: brightness(0.97);
+  transform: translateY(0);
+}
+
+.auth-button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.auth-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+
+  filter: saturate(0.7);
+  box-shadow: none;
+}
+
+/* Loading is also disabled, but should read as "working", not "unavailable" */
+
+.auth-button[aria-busy="true"] {
+  cursor: progress;
+  opacity: 0.82;
+
+  filter: none;
+}
+
+.auth-button__spinner {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+
+  border: 2px solid color-mix(in srgb, var(--navigation-active-text) 35%, transparent);
+  border-top-color: var(--navigation-active-text);
+  border-radius: 50%;
+
+  animation: auth-button-spin 700ms linear infinite;
+}
+
+@keyframes auth-button-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-button,
+  .auth-button:hover:not(:disabled) {
+    transform: none;
+    transition: none;
+  }
+
+  .auth-button__spinner {
+    animation-duration: 1.6s;
+  }
+}

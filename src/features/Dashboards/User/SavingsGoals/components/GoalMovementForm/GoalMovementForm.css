@@ -1,0 +1,158 @@
+/* =========================================
+   GOAL CONTRIBUTION / WITHDRAWAL FORM
+   (shell, inputs and buttons come from AccountForm.css; the error block from
+   ReverseTransactionDialog.css)
+========================================= */
+
+.goal-movement-form {
+  width: min(100%, 520px);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+.goal-movement-form header button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.goal-movement-form__title {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.goal-movement-form__title p {
+  margin: 0;
+  overflow: hidden;
+
+  color: var(--color-text-secondary);
+  font-size: 13px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goal-movement-form__note,
+.goal-movement-form__warning {
+  margin: 16px 0 0;
+  padding: 11px 13px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.goal-movement-form__note {
+  border: 1px solid color-mix(in srgb, var(--color-primary) 24%, transparent);
+  background: var(--primary-soft);
+}
+
+.goal-movement-form__note > div {
+  display: grid;
+  gap: 6px;
+}
+
+.goal-movement-form__note p {
+  margin: 0;
+  color: inherit;
+}
+
+.goal-movement-form__warning {
+  margin: 0;
+
+  border: 1px solid color-mix(in srgb, var(--color-warning) 28%, transparent);
+  background: var(--warning-soft);
+}
+
+.goal-movement-form__note svg,
+.goal-movement-form__warning svg {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.goal-movement-form__note svg {
+  color: var(--color-primary);
+}
+
+.goal-movement-form__warning svg {
+  color: var(--color-warning);
+}
+
+/* The goal's current balance, as the backend reported it. */
+
+.goal-movement-form__balance {
+  margin: 14px 0 0;
+  padding: 10px 13px;
+
+  border-radius: var(--radius-md);
+
+  background: var(--surface-soft);
+}
+
+.goal-movement-form__balance div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.goal-movement-form__balance dt {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.goal-movement-form__balance dd {
+  margin: 0;
+
+  color: var(--color-text-strong);
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.goal-movement-form__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+
+.goal-movement-form__row label {
+  align-content: start;
+}
+
+.goal-movement-form > .loading {
+  margin-top: 18px;
+}
+
+.goal-movement-form__options-error {
+  margin-top: 18px;
+}
+
+.goal-movement-form__options-error button {
+  width: max-content;
+  padding: 0;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  cursor: pointer;
+}
+
+@media (max-width: 520px) {
+  .goal-movement-form__row {
+    grid-template-columns: 1fr;
+  }
+}

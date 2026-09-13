@@ -1,0 +1,338 @@
+/* =========================================
+   DEBT FORM (create and edit)
+   (shell, inputs and buttons come from AccountForm.css; the textarea and
+   error block from ReverseTransactionDialog.css)
+========================================= */
+
+.debt-form {
+  width: min(100%, 560px);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+.debt-form header button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.debt-form__title {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.debt-form__title p {
+  margin: 0;
+  overflow: hidden;
+
+  color: var(--color-text-secondary);
+  font-size: 13px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Direction choice (create) */
+
+.debt-form__directions {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+
+  display: grid;
+  gap: 8px;
+
+  border: 0;
+}
+
+.debt-form__directions legend {
+  margin-bottom: 8px;
+  padding: 0;
+
+  font-size: 14px;
+}
+
+.debt-form__directions > small {
+  color: var(--color-danger, #dc2626);
+  font-size: 12px;
+}
+
+.debt-form__direction-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* The tone is set at single-class specificity so the modifiers override it. */
+.debt-form__direction {
+  --debt-direction-tone: var(--color-primary);
+}
+
+.account-form-modal__dialog .debt-form__direction {
+  padding: 12px;
+
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--color-surface);
+
+  cursor: pointer;
+
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.debt-form__direction--payable {
+  --debt-direction-tone: var(--color-warning);
+}
+
+.debt-form__direction--receivable {
+  --debt-direction-tone: var(--color-success);
+}
+
+.account-form-modal__dialog .debt-form__direction:hover,
+.account-form-modal__dialog .debt-form__direction:focus-within {
+  border-color: var(--debt-direction-tone);
+}
+
+.account-form-modal__dialog .debt-form__direction--selected {
+  border-color: var(--debt-direction-tone);
+  background: color-mix(in srgb, var(--debt-direction-tone) 9%, transparent);
+}
+
+/* The radio stays focusable and readable by assistive tech, but hidden. */
+.account-form-modal__dialog .debt-form__direction input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  opacity: 0;
+}
+
+.debt-form__direction-icon {
+  width: 30px;
+  height: 30px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  color: var(--debt-direction-tone);
+  background: color-mix(in srgb, var(--debt-direction-tone) 14%, transparent);
+}
+
+.debt-form__direction-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+[dir="rtl"] .debt-form__direction-icon svg {
+  transform: scaleX(-1);
+}
+
+.debt-form__direction-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.debt-form__direction-copy strong {
+  color: var(--color-text-strong);
+  font-size: 13px;
+}
+
+.debt-form__direction-copy span {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+/* Rows */
+
+.debt-form__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+
+.debt-form__row label {
+  align-content: start;
+}
+
+/* Opening movement (create) */
+
+.debt-form__movement {
+  padding: 12px 14px;
+
+  display: grid;
+  gap: 12px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--surface-soft);
+}
+
+.debt-form__movement--on {
+  border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+
+.debt-form__movement .loading {
+  margin: 0;
+}
+
+/* Notes, warnings and the effect line */
+
+.debt-form__note,
+.debt-form__warning,
+.debt-form__effect {
+  margin: 0;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.debt-form__note {
+  color: var(--color-text-secondary);
+}
+
+.debt-form__note svg,
+.debt-form__warning svg {
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.debt-form__warning {
+  padding: 10px 12px;
+
+  border: 1px solid color-mix(in srgb, var(--color-warning) 28%, transparent);
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: var(--warning-soft);
+}
+
+.debt-form__warning svg {
+  color: var(--color-warning);
+}
+
+.debt-form__effect {
+  display: block;
+  color: var(--color-text-primary);
+}
+
+.debt-form__effect-amount {
+  font-weight: 700;
+}
+
+.debt-form__effect-amount--payable {
+  color: var(--color-success);
+}
+
+.debt-form__effect-amount--receivable {
+  color: var(--color-danger);
+}
+
+.debt-form__options-error button {
+  width: max-content;
+  padding: 0;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Fixed fields (edit: direction, currency; the amount once locked) */
+
+.debt-form__fixed {
+  padding: 12px 14px;
+
+  display: grid;
+  gap: 10px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--surface-soft);
+}
+
+.debt-form__fixed dl {
+  margin: 0;
+
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.debt-form__fixed dl div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.debt-form__fixed dt {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.debt-form__fixed dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+
+  color: var(--color-text-strong);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.debt-form__fixed p {
+  margin: 0;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.debt-form__fixed svg {
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 520px) {
+  .debt-form__direction-options,
+  .debt-form__row,
+  .debt-form__fixed dl {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-form-modal__dialog .debt-form__direction {
+    transition: none;
+  }
+}

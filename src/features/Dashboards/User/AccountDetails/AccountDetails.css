@@ -1,0 +1,358 @@
+/* =========================================
+   ACCOUNT DETAILS
+   Same container and card language as the Accounts page.
+========================================= */
+
+.account-details {
+  --account-color: var(--color-primary);
+
+  width: 100%;
+  max-width: 1240px;
+
+  margin: 0 auto;
+  padding: 28px 32px 50px;
+
+  display: grid;
+  gap: 18px;
+
+  box-sizing: border-box;
+
+  color: var(--color-text-primary);
+}
+
+/* Back link */
+
+.account-details__back {
+  width: max-content;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.account-details__back:hover {
+  color: var(--color-primary);
+}
+
+.account-details__back svg {
+  width: 16px;
+  height: 16px;
+}
+
+[dir="rtl"] .account-details__back svg {
+  transform: scaleX(-1);
+}
+
+/* Header */
+
+.account-details__header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+}
+
+.account-details__icon {
+  width: 56px;
+  height: 56px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+.account-details__header--colored .account-details__icon {
+  color: var(--account-color);
+  background: color-mix(in srgb, var(--account-color) 14%, transparent);
+}
+
+.account-details__icon svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 1.8;
+}
+
+.account-details__identity {
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.account-details__identity h1 {
+  margin: 0;
+
+  overflow: hidden;
+
+  color: var(--color-text-strong);
+  font-family: var(--font-heading);
+  font-size: 26px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-details__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.account-details__chip {
+  padding: 5px 10px;
+
+  border-radius: 999px;
+
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+
+  font-size: 11px;
+  line-height: 1;
+}
+
+.account-details__chip--active {
+  color: color-mix(in srgb, var(--color-success) 85%, var(--color-text-primary));
+  background: var(--success-soft);
+}
+
+.account-details__chip--archived {
+  color: color-mix(in srgb, var(--color-warning) 85%, var(--color-text-primary));
+  background: var(--warning-soft);
+}
+
+/* Actions */
+
+.account-details__actions {
+  display: flex;
+  gap: 9px;
+}
+
+.account-details__action {
+  height: 36px;
+  padding: 0 16px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+
+  font: inherit;
+  font-size: 12px;
+
+  cursor: pointer;
+
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.account-details__action:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.account-details__action--archive:hover {
+  color: var(--color-text-strong);
+  border-color: var(--border-strong);
+  background: var(--surface-soft);
+}
+
+.account-details__action svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* Archived note */
+
+.account-details__note {
+  margin: 0;
+  padding: 12px 14px;
+
+  border: 1px solid color-mix(in srgb, var(--color-warning) 28%, transparent);
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: var(--warning-soft);
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Balance */
+
+.account-details__balance,
+.account-details__panel,
+.account-details__state {
+  padding: 22px 24px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 17px;
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.account-details__balance {
+  display: grid;
+  gap: 10px;
+}
+
+.account-details__balance > span,
+.account-details__balance small {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.account-details__amount {
+  width: max-content;
+
+  color: var(--color-text-primary);
+  font-family: var(--font-heading);
+  font-size: 34px;
+  font-weight: 750;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.account-details__amount--negative {
+  color: var(--danger);
+}
+
+/* Details list */
+
+.account-details__panel h2 {
+  margin: 0 0 14px;
+
+  color: var(--color-text-strong);
+  font-size: 16px;
+}
+
+.account-details__list {
+  margin: 0;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 32px;
+}
+
+.account-details__row {
+  padding: 12px 0;
+
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+
+  border-bottom: 1px solid var(--color-border);
+}
+
+.account-details__row dt {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.account-details__row dd {
+  margin: 0;
+
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: end;
+  overflow-wrap: anywhere;
+}
+
+.account-details__swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-details__swatch > span {
+  width: 14px;
+  height: 14px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+}
+
+/* Error / not-found state */
+
+.account-details__state {
+  text-align: center;
+}
+
+.account-details__state h1 {
+  margin: 0;
+
+  color: var(--color-text-strong);
+  font-size: 18px;
+}
+
+.account-details__state p {
+  margin: 8px 0 0;
+
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.account-details__state button {
+  margin-top: 12px;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Responsive */
+
+@media (max-width: 860px) {
+  .account-details__header {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .account-details__actions {
+    grid-column: 1 / -1;
+  }
+
+  .account-details__action {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .account-details__list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .account-details {
+    padding: 22px 16px 40px;
+  }
+
+  .account-details__identity h1 {
+    font-size: 22px;
+  }
+
+  .account-details__amount {
+    font-size: 28px;
+  }
+}

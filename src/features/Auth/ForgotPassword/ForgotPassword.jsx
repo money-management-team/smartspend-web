@@ -1,175 +1,110 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import logo from "../../../assets/smart-spend-logo.png";
-
-import "./ForgotPassword.css";
-import { Link } from "react-router-dom";
 import { PATH } from "../../../routes/Path";
+import { authApi } from "../../Dashboards/User/api/authApi";
+import { getApiErrorMessage } from "../../Dashboards/User/api/apiClient";
 
-function MailIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <rect
-        x="3.5"
-        y="5.5"
-        width="17"
-        height="13"
-        rx="2"
-      />
-
-      <path d="m5 7 7 5.2L19 7" />
-    </svg>
-  );
-}
-
-function ArrowIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M19 12H5" />
-      <path d="m11 6-6 6 6 6" />
-    </svg>
-  );
-}
+import AuthAlert from "../components/AuthAlert/AuthAlert";
+import AuthBackLink from "../components/AuthBackLink/AuthBackLink";
+import AuthButton from "../components/AuthButton/AuthButton";
+import AuthField from "../components/AuthField/AuthField";
+import AuthHeading from "../components/AuthHeading/AuthHeading";
+import { KeyIcon, MailIcon } from "../components/AuthIcons";
+import AuthPromo from "../components/AuthPromo/AuthPromo";
+import AuthSteps from "../components/AuthSteps/AuthSteps";
 
 export default function ForgotPassword() {
   const { t } = useTranslation();
+  const [email, setEmail] = useState("");
+  const [fieldErrors, setFieldErrors] = useState();
+  const [generalError, setGeneralError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (event) => {
+  const handleChange = (event) => {
+    setEmail(event.target.value);
+    setFieldErrors(undefined);
+    setGeneralError("");
+    // The confirmation was for the previous address.
+    setSuccessMessage("");
+  };
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
 
-    // API Logic Later
+    setFieldErrors(undefined);
+    setGeneralError("");
+    setSuccessMessage("");
+    setIsSubmitting(true);
 
-    // window.location.hash = "#verify-code";
+    try {
+      const response = await authApi.forgotPassword(email.trim());
+
+      // Same response whether or not the email is registered.
+      setSuccessMessage(
+        response.message || t("auth.forgotPassword.success"),
+      );
+    } catch (error) {
+      if (error?.code === "VALIDATION_ERROR") {
+        setFieldErrors(error.errors?.identifier ?? error.errors?.email);
+      }
+      setGeneralError(getApiErrorMessage(error, t));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <>
-      {/* =============================
-          BLUE PROMO SECTION
-      ============================== */}
+      <AuthPromo
+        title={t("auth.forgotPassword.promo.title")}
+        subtitle={t("auth.forgotPassword.promo.subtitle")}
+      />
 
-      <section
-        className="forgot-promo"
-        aria-label={t(
-          "auth.forgotPassword.promo.title",
-        )}
-      >
-        <div
-          className="forgot-promo__rings"
-          aria-hidden="true"
-        >
-          <span />
-          <span />
-          <span />
-        </div>
+      <section className="auth-panel">
+        <AuthSteps current={1} />
 
-        <div className="forgot-promo__content">
-          <div className="forgot-promo__logo">
-            <img
-              src={logo}
-              alt="Smart Spend"
-            />
-          </div>
+        <AuthHeading
+          icon={<KeyIcon />}
+          title={t("auth.forgotPassword.title")}
+          subtitle={t("auth.forgotPassword.subtitle")}
+        />
 
-          <h2>
-            {t(
-              "auth.forgotPassword.promo.title",
-            )}
-          </h2>
+        <form className="auth-form" onSubmit={handleSubmit}>
+          <AuthField
+            id="forgot-email"
+            label={t("auth.forgotPassword.field.label")}
+            icon={<MailIcon />}
+            errors={fieldErrors}
+            type="email"
+            name="identifier"
+            value={email}
+            onChange={handleChange}
+            placeholder={t("auth.forgotPassword.field.placeholder")}
+            autoComplete="email"
+            disabled={isSubmitting}
+            required
+          />
 
-          <p>
-            {t(
-              "auth.forgotPassword.promo.subtitle",
-            )}
-          </p>
-        </div>
-      </section>
+          {generalError && <AuthAlert>{generalError}</AuthAlert>}
 
-      {/* =============================
-          FORM SECTION
-      ============================== */}
+          {successMessage && (
+            <AuthAlert variant="success">{successMessage}</AuthAlert>
+          )}
 
-      <section className="forgot-form-panel">
-        {/* Progress */}
-
-        <div
-          className="forgot-progress"
-          aria-hidden="true"
-        >
-          <span className="forgot-progress__item forgot-progress__item--active" />
-
-          <span className="forgot-progress__item" />
-
-          <span className="forgot-progress__item" />
-
-          <span className="forgot-progress__item" />
-        </div>
-
-        {/* Header */}
-
-        <header className="forgot-form-header">
-          <h1>
-            {t("auth.forgotPassword.title")}
-          </h1>
-
-          <p>
-            {t(
-              "auth.forgotPassword.subtitle",
-            )}
-          </p>
-        </header>
-
-        {/* Form */}
-
-        <form
-          className="forgot-form"
-          onSubmit={handleSubmit}
-        >
-          <label className="forgot-field">
-            <span className="forgot-field__label">
-              {t(
-                "auth.forgotPassword.field.label",
-              )}
-            </span>
-
-            <span className="forgot-input-wrap">
-              <input
-                type="text"
-                name="contact"
-                placeholder={t(
-                  "auth.forgotPassword.field.placeholder",
-                )}
-                autoComplete="email"
-              />
-
-              <span className="forgot-input-icon">
-                <MailIcon />
-              </span>
-            </span>
-          </label>
-
-          <button
-            className="forgot-submit"
-            type="submit"
+          <AuthButton
+            loading={isSubmitting}
+            loadingLabel={t("auth.forgotPassword.loading")}
           >
-            {t(
-              "auth.forgotPassword.submit",
-            )}
-          </button>
+            {t("auth.forgotPassword.submit")}
+          </AuthButton>
         </form>
 
-        {/* Back */}
-
-        <Link
-        to={PATH.AUTH.SIGNIN}
-          className="forgot-back"
-        >
-          <ArrowIcon />
-
-          <span>
-            {t("auth.forgotPassword.back")}
-          </span>
-        </Link>
+        <AuthBackLink to={PATH.AUTH.SIGNIN}>
+          {t("auth.forgotPassword.back")}
+        </AuthBackLink>
       </section>
     </>
   );

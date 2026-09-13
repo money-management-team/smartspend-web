@@ -1,0 +1,124 @@
+.debt-filters {
+  margin-top: 22px;
+  padding: 14px 18px;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  align-items: end;
+  gap: 10px 12px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.debt-filters__field {
+  min-width: 0;
+
+  display: grid;
+  gap: 5px;
+
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  text-align: start;
+}
+
+.debt-filters__field--search {
+  grid-column: span 2;
+}
+
+.debt-filters__field select,
+.debt-filters__field input {
+  width: 100%;
+  height: 34px;
+  padding-inline: 10px;
+
+  box-sizing: border-box;
+
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  outline: none;
+
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 12px;
+}
+
+.debt-filters__field select:focus,
+.debt-filters__field input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--input-focus-ring);
+}
+
+.debt-filters__search {
+  position: relative;
+  display: block;
+}
+
+.debt-filters__search svg {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 10px;
+
+  width: 14px;
+  height: 14px;
+
+  color: var(--color-text-secondary);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.debt-filters__field .debt-filters__search input {
+  padding-inline-start: 30px;
+}
+
+.debt-filters__clear {
+  width: max-content;
+  height: 34px;
+  padding: 0 12px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 11px;
+
+  cursor: pointer;
+}
+
+.debt-filters__clear:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.debt-filters__clear svg {
+  width: 13px;
+  height: 13px;
+}
+
+.debt-filters :disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+@media (max-width: 420px) {
+  .debt-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .debt-filters__field--search {
+    grid-column: auto;
+  }
+}

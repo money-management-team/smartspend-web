@@ -48,17 +48,48 @@ export function subtractMoney(left, right) {
   );
 }
 
-export function formatDate(value, locale, timeZone) {
+// Accepts ISO strings, "YYYY-MM-DD" (read as midday UTC so the day never
+// shifts) and the backend's "YYYY-MM-DD HH:mm:ss". Null when unparseable.
+export function parseDateValue(value) {
+  const text = String(value ?? "").trim();
+  if (!text) return null;
+
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(text)
+    ? `${text}T12:00:00Z`
+    : /^\d{4}-\d{2}-\d{2} \d/.test(text)
+      ? text.replace(" ", "T")
+      : text;
+  const date = new Date(normalized);
+
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatParsedDate(value, locale, timeZone, options) {
   if (!value) return "—";
 
-  const dateValue = /^\d{4}-\d{2}-\d{2}$/.test(value)
-    ? `${value}T12:00:00Z`
-    : value;
+  const date = parseDateValue(value);
+  if (!date) return String(value);
 
   return new Intl.DateTimeFormat(locale, {
+    ...options,
+    ...(timeZone ? { timeZone } : {}),
+  }).format(date);
+}
+
+export function formatDate(value, locale, timeZone) {
+  return formatParsedDate(value, locale, timeZone, {
     year: "numeric",
     month: "short",
     day: "numeric",
-    ...(timeZone ? { timeZone } : {}),
-  }).format(new Date(dateValue));
+  });
+}
+
+export function formatDateTime(value, locale, timeZone) {
+  return formatParsedDate(value, locale, timeZone, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }

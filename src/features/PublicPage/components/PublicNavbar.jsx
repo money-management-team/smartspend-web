@@ -10,7 +10,7 @@ import {
 import logo from "../../../assets/smart-spend-logo.png";
 import { useAuthContext } from "../../../contexts/auth/useAuthContext";
 import { useThemeContext } from "../../../contexts/theme/useThemeContext";
-import { PATH } from "../../../routes/Path";
+import { AUTH_INTENT, getAccountTypePath, PATH } from "../../../routes/Path";
 
 import "./PublicChrome.css";
 
@@ -96,12 +96,15 @@ export default function PublicNavbar() {
             </NavLink>
           ) : (
             <>
-              <NavLink to={PATH.AUTH.SIGNIN} className="home-navbar__signin">
+              <NavLink
+                to={getAccountTypePath(AUTH_INTENT.SIGNIN)}
+                className="home-navbar__signin"
+              >
                 {t("home.nav.signIn")}
               </NavLink>
 
               <NavLink
-                to={PATH.AUTH.REGISTER}
+                to={getAccountTypePath(AUTH_INTENT.REGISTER)}
                 className="home-primary-button home-navbar__start"
               >
                 {t("home.nav.startNow")}

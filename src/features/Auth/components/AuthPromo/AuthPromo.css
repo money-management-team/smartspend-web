@@ -1,0 +1,363 @@
+/* =========================================
+   AUTH PROMO - BRAND PANEL
+   Column sizing lives in AuthLayout.css
+   (.auth-card > .auth-promo).
+========================================= */
+
+.auth-promo {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+
+  border-radius: 20px;
+
+  color: var(--navigation-active-text);
+
+  background:
+    radial-gradient(
+      120% 80% at 0% 0%,
+      var(--auth-promo-highlight),
+      transparent 55%
+    ),
+    radial-gradient(
+      90% 70% at 100% 100%,
+      var(--auth-promo-accent),
+      transparent 60%
+    ),
+    var(--auth-promo-bg);
+
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--navigation-active-text) 20%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--navigation-active-text) 7%, transparent);
+}
+
+/* Faint grid, faded out toward the edges */
+
+.auth-promo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in srgb, var(--navigation-active-text) 7%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--navigation-active-text) 7%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 36px 36px;
+  background-position: center;
+
+  -webkit-mask-image: radial-gradient(ellipse 70% 62% at 50% 45%, #000 15%, transparent 78%);
+  mask-image: radial-gradient(ellipse 70% 62% at 50% 45%, #000 15%, transparent 78%);
+}
+
+
+/* =========================================
+   BACKGROUND RINGS
+========================================= */
+
+.auth-promo__rings {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.auth-promo__rings span {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  translate: -50% -50%;
+
+  border: 1px solid color-mix(in srgb, var(--navigation-active-text) 10%, transparent);
+  border-radius: 50%;
+
+  animation: auth-orbit 64s linear infinite;
+}
+
+/* Small orbiting light on each ring */
+
+.auth-promo__rings span::after {
+  content: "";
+  position: absolute;
+  inset-block-start: -3px;
+  inset-inline-start: 50%;
+
+  width: 6px;
+  height: 6px;
+  margin-inline-start: -3px;
+
+  border-radius: 50%;
+
+  background: var(--navigation-active-text);
+  box-shadow: 0 0 10px 2px color-mix(in srgb, var(--navigation-active-text) 55%, transparent);
+  opacity: 0.7;
+}
+
+.auth-promo__rings span:nth-child(1) {
+  width: 580px;
+  height: 580px;
+
+  border-color: color-mix(in srgb, var(--navigation-active-text) 7%, transparent);
+}
+
+.auth-promo__rings span:nth-child(2) {
+  width: 420px;
+  height: 420px;
+
+  animation-duration: 48s;
+  animation-direction: reverse;
+  animation-delay: -18s;
+}
+
+.auth-promo__rings span:nth-child(3) {
+  width: 260px;
+  height: 260px;
+
+  border-color: color-mix(in srgb, var(--navigation-active-text) 14%, transparent);
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--navigation-active-text) 7%, transparent),
+    transparent 70%
+  );
+
+  animation-duration: 36s;
+  animation-delay: -9s;
+}
+
+.auth-promo__rings span:nth-child(3)::after {
+  width: 4px;
+  height: 4px;
+  inset-block-start: -2px;
+  margin-inline-start: -2px;
+}
+
+@keyframes auth-orbit {
+  to {
+    rotate: 360deg;
+  }
+}
+
+
+/* =========================================
+   CONTENT
+========================================= */
+
+.auth-promo__content {
+  position: relative;
+  z-index: 1;
+
+  flex: 1;
+
+  padding: 48px 44px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.auth-promo__logo {
+  width: 88px;
+  height: 88px;
+  flex: 0 0 88px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 26px;
+
+  background: var(--navigation-active-text);
+
+  box-shadow:
+    0 0 0 8px color-mix(in srgb, var(--navigation-active-text) 9%, transparent),
+    0 0 0 16px color-mix(in srgb, var(--navigation-active-text) 4%, transparent),
+    0 20px 40px -14px rgba(8, 20, 60, 0.5);
+}
+
+.auth-promo__logo img {
+  width: 52px;
+  height: 60px;
+
+  object-fit: contain;
+}
+
+.auth-promo__title {
+  max-width: 460px;
+  margin: 36px 0 12px;
+
+  color: var(--navigation-active-text);
+
+  font-size: 30px;
+  font-weight: var(--font-weight-extrabold);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+
+  text-wrap: balance;
+}
+
+.auth-promo__subtitle {
+  max-width: 430px;
+  margin: 0;
+
+  color: color-mix(in srgb, var(--navigation-active-text) 80%, transparent);
+
+  font-size: 14.5px;
+  line-height: 1.75;
+
+  text-wrap: pretty;
+}
+
+
+/* =========================================
+   CHIPS (glass pills under the subtitle)
+========================================= */
+
+.auth-promo__chips {
+  margin-top: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.auth-promo__chip {
+  min-height: 36px;
+  padding-inline: 14px 16px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 1px solid color-mix(in srgb, var(--navigation-active-text) 18%, transparent);
+  border-radius: var(--radius-pill);
+
+  color: var(--navigation-active-text);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--navigation-active-text) 16%, transparent),
+    color-mix(in srgb, var(--navigation-active-text) 7%, transparent)
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--navigation-active-text) 16%, transparent),
+    0 6px 16px -8px rgba(8, 20, 60, 0.45);
+
+  font-size: 12.5px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  white-space: nowrap;
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Default marker: a glowing dot */
+
+.auth-promo__chip::before {
+  content: "";
+
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+
+  border-radius: 50%;
+
+  background: var(--navigation-active-text);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--navigation-active-text) 70%, transparent);
+}
+
+/* Chips that carry their own icon drop the dot */
+
+.auth-promo__chip:has(svg)::before {
+  content: none;
+}
+
+.auth-promo__chip svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+/* =========================================
+   RTL
+========================================= */
+
+[dir="rtl"] .auth-promo__title {
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1200px) {
+  .auth-promo__content {
+    padding-inline: 32px;
+  }
+
+  .auth-promo__title {
+    font-size: 27px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .auth-promo__content {
+    padding: 40px 24px;
+  }
+
+  .auth-promo__logo {
+    width: 76px;
+    height: 76px;
+    flex-basis: 76px;
+
+    border-radius: 22px;
+  }
+
+  .auth-promo__logo img {
+    width: 45px;
+    height: 52px;
+  }
+
+  .auth-promo__title {
+    margin-top: 30px;
+
+    font-size: 24px;
+  }
+
+  .auth-promo__subtitle {
+    font-size: 13.5px;
+  }
+}
+
+
+/* =========================================
+   REDUCED MOTION
+========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-promo__rings span {
+    animation: none;
+  }
+}

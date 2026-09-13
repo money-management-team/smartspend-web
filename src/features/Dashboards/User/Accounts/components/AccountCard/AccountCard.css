@@ -83,6 +83,87 @@
 }
 
 
+/* Account color (validated hex) tints the icon badge. */
+
+.account-card--colored .account-card__icon {
+  color:
+    var(--account-color);
+
+  background:
+    color-mix(in srgb, var(--account-color) 14%, transparent);
+}
+
+
+/* =========================================
+   LINK (whole card opens the details page)
+========================================= */
+
+.account-card {
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+
+.account-card:hover {
+  border-color:
+    color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+}
+
+
+.account-card__link {
+  min-width: 0;
+
+  color: inherit;
+
+  text-decoration: none;
+}
+
+
+.account-card__link strong {
+  display: block;
+}
+
+
+.account-card__link::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 0;
+
+  border-radius: inherit;
+}
+
+
+.account-card__link:focus-visible {
+  outline: none;
+}
+
+
+.account-card:has(.account-card__link:focus-visible) {
+  outline: 2px solid var(--color-primary);
+
+  outline-offset: 2px;
+}
+
+
+/* Actions sit above the stretched link. */
+
+.account-card__actions button {
+  position: relative;
+
+  z-index: 1;
+}
+
+
+.account-card__actions button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.6;
+}
+
+
 /* =========================================
    IDENTITY
 ========================================= */
@@ -364,7 +445,9 @@
 
   border-radius: 999px;
 
-  color: var(--danger);
+  /* Archive, not delete: neutral rather than danger red. */
+  color:
+    var(--color-text-secondary);
 
   background:
     var(--color-surface);
@@ -375,17 +458,21 @@
     var(--shadow-xs);
 
   transition:
+    color 160ms ease,
     border-color 160ms ease,
     background-color 160ms ease;
 }
 
 
 .account-card__delete:hover {
+  color:
+    var(--color-text-strong);
+
   border-color:
-    color-mix(in srgb, var(--danger) 35%, transparent);
+    var(--border-strong);
 
   background:
-    var(--danger-soft);
+    var(--surface-soft);
 }
 
 

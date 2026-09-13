@@ -34,6 +34,33 @@
   cursor: pointer;
 }
 
+.user-dashboard__content {
+  position: relative;
+  display: grid;
+  gap: 18px;
+  transition: opacity var(--transition-normal);
+}
+
+.user-dashboard__content--stale > :not(.user-dashboard__refreshing) {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.user-dashboard__refreshing {
+  position: sticky;
+  top: 8px;
+  z-index: 2;
+  justify-self: center;
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  color: var(--color-primary);
+  background: var(--primary-soft);
+  box-shadow: var(--shadow-sm);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .user-dashboard__charts-grid {
   display: grid;
   grid-template-columns: minmax(0, 2.08fr) minmax(270px, 0.92fr);

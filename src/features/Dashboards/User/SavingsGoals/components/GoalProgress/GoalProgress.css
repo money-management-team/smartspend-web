@@ -31,11 +31,17 @@
   color:
     var(--color-text-primary);
 
+  max-width: 80px;
+
   font-size: 14px;
 
   font-weight: 750;
 
   line-height: 1;
+
+  text-align: center;
+
+  overflow-wrap: anywhere;
 }
 
 

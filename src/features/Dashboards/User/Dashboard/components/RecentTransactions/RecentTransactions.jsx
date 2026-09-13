@@ -1,3 +1,4 @@
+import { createElement } from "react";
 import { useTranslation } from "react-i18next";
 import {
   LuArrowUpRight,
@@ -7,10 +8,12 @@ import {
 
 import SectionCard from "../shared/SectionCard";
 import { Link } from "react-router-dom";
-import { PATH } from "../../../../../../routes/Path";
+import { PATH, getTransactionDetailsPath } from "../../../../../../routes/Path";
 import { useAuthContext } from "../../../../../../contexts/auth/useAuthContext";
 
 import "./RecentTransactions.css";
+import { getDisplayLocale } from "../../../Accounts/accountHelpers";
+import { getTransactionTitle, translateEnum } from "../../../FinancialOperations/transactionHelpers";
 import { formatDate, formatMoney } from "../../../utils/formatters";
 
 const icons = {
@@ -21,11 +24,14 @@ const icons = {
   reversal: LuArrowRightLeft,
 };
 
+// Transfers keep the neutral tone and no sign: they are neither income nor
+// expense.
 export default function RecentTransactions({ transactions }) {
   const { t, i18n } = useTranslation();
   const { user, workspace } = useAuthContext();
-  const locale = i18n.language?.startsWith("ar") ? "ar" : "en";
+  const locale = getDisplayLocale(i18n.language);
   const timeZone = user?.timezone ?? workspace?.timezone;
+  const visibleTransactions = transactions.slice(0, 6);
 
   return (
     <SectionCard
@@ -38,24 +44,37 @@ export default function RecentTransactions({ transactions }) {
       }
     >
       <div className="recent-transactions-card__list">
-        {transactions.slice(0, 6).map((transaction) => {
-          const Icon = icons[transaction.type] ?? LuArrowRightLeft;
+        {visibleTransactions.length === 0 && (
+          <p className="recent-transactions-card__empty">{t("dashboard.user.recentTransactions.empty")}</p>
+        )}
+
+        {visibleTransactions.map((transaction) => {
           const tone = ["income", "expense", "transfer"].includes(transaction.type)
             ? transaction.type
             : "transfer";
+          const title = getTransactionTitle(transaction, t, i18n);
 
           return (
             <article className="recent-transaction" key={transaction.id}>
               <span className={`recent-transaction__icon recent-transaction__icon--${tone}`}>
-                <Icon />
+                {createElement(icons[transaction.type] ?? LuArrowRightLeft)}
               </span>
 
               <div className="recent-transaction__copy">
-                <strong>
-                  {transaction.description || transaction.category?.name || transaction.type}
+                <strong dir="auto">
+                  {transaction.id != null ? (
+                    <Link to={getTransactionDetailsPath(transaction.id)} className="recent-transaction__link">
+                      {title}
+                    </Link>
+                  ) : (
+                    title
+                  )}
                 </strong>
                 <small>
-                  {transaction.category?.name || transaction.status} · {formatDate(transaction.occurred_at, locale, timeZone)}
+                  {transaction.category?.name ||
+                    translateEnum(t, i18n, "dashboard.transactions.types", transaction.type)}
+                  {" · "}
+                  <bdi>{formatDate(transaction.occurred_at, locale, timeZone)}</bdi>
                 </small>
               </div>
 

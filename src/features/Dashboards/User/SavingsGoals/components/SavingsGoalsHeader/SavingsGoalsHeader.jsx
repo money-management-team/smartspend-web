@@ -13,7 +13,7 @@ export default function SavingsGoalsHeader({ onNewGoal }) {
       </div>
 
       <button type="button" className="savings-goals-header__button" onClick={onNewGoal}>
-        <LuPlus />
+        <LuPlus aria-hidden="true" />
         <span>{t("dashboard.savingsGoals.newGoal")}</span>
       </button>
     </header>

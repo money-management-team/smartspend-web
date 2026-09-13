@@ -1,0 +1,259 @@
+/* =========================================
+   NOTIFICATION INBOX
+   Same state, notice and pagination language as the other lists.
+========================================= */
+
+.notification-inbox {
+  display: grid;
+  gap: 16px;
+}
+
+.notification-inbox .loading {
+  margin-block: 12px;
+}
+
+/* Toolbar */
+
+.notification-inbox__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+
+.notification-inbox__heading {
+  min-width: 0;
+  text-align: start;
+}
+
+.notification-inbox__heading h2 {
+  margin: 0;
+
+  color: var(--color-text-primary);
+
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.notification-inbox__heading p {
+  margin: 4px 0 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+}
+
+.notification-inbox__mark-all {
+  height: 36px;
+  padding: 0 16px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 0;
+  border-radius: var(--radius-pill);
+
+  color: var(--navigation-active-text);
+  background: var(--color-primary);
+
+  font: inherit;
+  font-size: 12px;
+
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+
+  transition: background-color var(--transition-fast);
+}
+
+.notification-inbox__mark-all:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.notification-inbox__mark-all:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none;
+}
+
+.notification-inbox__mark-all svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Notice (outcome of a mark-read / mark-all) */
+
+.notification-inbox__notice {
+  padding: 11px 14px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border: 1px solid;
+  border-radius: var(--radius-md);
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.notification-inbox__notice--success {
+  border-color: color-mix(in srgb, var(--color-success) 28%, transparent);
+  color: color-mix(in srgb, var(--color-success) 85%, var(--color-text-primary));
+  background: var(--success-soft);
+}
+
+.notification-inbox__notice--error {
+  border-color: color-mix(in srgb, var(--color-danger) 28%, transparent);
+  color: var(--color-danger);
+  background: var(--danger-soft);
+}
+
+:root[data-theme="dark"] .notification-inbox__notice--success {
+  color: color-mix(in srgb, var(--color-success) 62%, #ffffff);
+}
+
+/* `color: inherit` beats the global `p` color from index.css. */
+.notification-inbox__notice p {
+  margin: 0;
+  flex: 1;
+  color: inherit;
+}
+
+.notification-inbox__notice button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+
+  flex: none;
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: 50%;
+
+  color: inherit;
+  background: transparent;
+
+  cursor: pointer;
+}
+
+.notification-inbox__notice button:hover {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+/* States */
+
+.notification-inbox__state {
+  padding: 28px 16px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  text-align: center;
+}
+
+.notification-inbox__state p {
+  margin: 0;
+  color: inherit;
+}
+
+.notification-inbox__state--error {
+  color: var(--color-danger);
+}
+
+.notification-inbox__state button {
+  margin-top: 10px;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  cursor: pointer;
+}
+
+/* List */
+
+.notification-inbox__list {
+  margin: 0;
+  padding: 0;
+
+  display: grid;
+  gap: 8px;
+
+  list-style: none;
+}
+
+/* Pagination */
+
+.notification-inbox__pagination {
+  padding: 12px 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  font-size: 11px;
+}
+
+.notification-inbox__pages {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.notification-inbox__pages button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  cursor: pointer;
+}
+
+.notification-inbox__pages button:hover:not(:disabled) {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.notification-inbox__pages button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.notification-inbox__pages svg {
+  width: 15px;
+  height: 15px;
+}
+
+[dir="rtl"] .notification-inbox__pages svg {
+  transform: scaleX(-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notification-inbox__mark-all {
+    transition: none;
+  }
+}

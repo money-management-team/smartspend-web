@@ -97,6 +97,29 @@
 }
 
 
+a.recurring-row__name {
+  text-decoration: none;
+}
+
+a.recurring-row__name:hover {
+  color: var(--color-primary);
+}
+
+.recurring-row__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.recurring-row--archived,
+.recurring-row--completed {
+  opacity: 0.78;
+}
+
+.recurring-row__confirm-placeholder {
+  min-width: 118px;
+}
+
 .recurring-row__meta,
 .recurring-row__next,
 .recurring-row__previous {
@@ -241,14 +264,14 @@
 
 
 .recurring-row__actions
-.recurring-row__delete {
+.recurring-row__archive {
   color:
     var(--color-text-secondary);
 }
 
 
 .recurring-row__actions
-.recurring-row__delete:hover {
+.recurring-row__archive:hover {
   color: var(--danger);
 
   background:
@@ -297,6 +320,11 @@
       2 / 3;
 
     justify-self: start;
+  }
+
+
+  .recurring-row__confirm-placeholder {
+    display: none;
   }
 
 

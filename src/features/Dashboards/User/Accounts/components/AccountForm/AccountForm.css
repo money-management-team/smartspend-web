@@ -73,6 +73,37 @@
   margin: 0;
 }
 
+.account-form-modal__hint {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-style: normal;
+  line-height: 1.5;
+}
+
+.account-form-modal__dialog .account-form-modal__check {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 10px;
+  cursor: pointer;
+}
+
+.account-form-modal__dialog .account-form-modal__check input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--color-primary);
+}
+
+.account-form-modal__check small {
+  grid-column: 1 / -1;
+}
+
+.account-form-modal__dialog input:disabled,
+.account-form-modal__dialog select:disabled {
+  opacity: 0.7;
+}
+
 .account-form-modal__dialog footer {
   justify-content: flex-end;
   margin-top: 6px;

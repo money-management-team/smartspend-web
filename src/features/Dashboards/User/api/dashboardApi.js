@@ -5,6 +5,14 @@ import {
   updateStoredWorkspace,
 } from "./apiClient";
 
+/*
+ * GET /dashboard: read-only aggregates calculated by the backend (period,
+ * scope, totals, summary_by_currency, accounts, breakdown, transfers,
+ * planning, commitments, recent_transactions). Nothing here moves money.
+ *
+ * Query: period (today | week | month | quarter | year | all | custom;
+ * default month), date_from / date_to (custom only), workspace_id.
+ */
 export const dashboardApi = {
   get: (query = {}, options = {}) =>
     apiRequest("/dashboard", { query, signal: options.signal }),

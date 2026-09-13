@@ -1,0 +1,132 @@
+/* =========================================
+   RECURRING ACTION DIALOG
+   (shell and buttons come from AccountForm.css; the textarea and error
+   block from ReverseTransactionDialog.css)
+========================================= */
+
+.recurring-action-dialog {
+  width: min(100%, 500px);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+
+.recurring-action-dialog header button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.recurring-action-dialog__body {
+  margin: 16px 0 4px;
+
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.recurring-action-dialog__body p {
+  margin: 0;
+}
+
+.recurring-action-dialog__body ul {
+  margin: 12px 0 0;
+  padding-inline-start: 20px;
+
+  display: grid;
+  gap: 6px;
+}
+
+/* Confirm-next moves money: the first point is emphasised. */
+
+.recurring-action-dialog--confirm .recurring-action-dialog__body li:first-child {
+  color: var(--color-text-strong);
+  font-weight: 600;
+}
+
+.recurring-action-dialog__occurrence {
+  margin-top: 14px;
+  padding: 12px 14px;
+
+  display: grid;
+  gap: 10px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--surface-soft);
+  font-size: 13px;
+}
+
+.recurring-action-dialog__occurrence p {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.recurring-action-dialog__occurrence dl,
+.recurring-action-dialog__failure {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+}
+
+.recurring-action-dialog__occurrence dl div,
+.recurring-action-dialog__failure div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.recurring-action-dialog__occurrence dt,
+.recurring-action-dialog__failure dt {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.recurring-action-dialog__occurrence dd,
+.recurring-action-dialog__failure dd {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-strong);
+  font-weight: 600;
+}
+
+.recurring-action-dialog__reason {
+  margin-top: 14px;
+}
+
+.recurring-action-dialog__error {
+  margin-top: 14px;
+}
+
+.recurring-action-dialog__failure {
+  margin-top: 6px;
+}
+
+.account-form-modal__dialog div.account-form-modal__error p.recurring-action-dialog__hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--color-text-primary);
+}
+
+.recurring-action-dialog__hint svg {
+  width: 14px;
+  height: 14px;
+  margin-top: 3px;
+  flex-shrink: 0;
+  color: var(--color-warning);
+}
+
+.recurring-action-dialog footer {
+  margin-top: 18px;
+}
+
+@media (max-width: 420px) {
+  .recurring-action-dialog__occurrence dl,
+  .recurring-action-dialog__failure {
+    grid-template-columns: 1fr;
+  }
+}

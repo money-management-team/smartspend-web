@@ -178,6 +178,34 @@
   transition: background 160ms ease;
 }
 
+/* Unread notification count (backend figure, "99+" past 99). */
+.dashboard-header__badge {
+  position: absolute;
+  inset-block-start: 1px;
+  inset-inline-end: -2px;
+
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+
+  display: grid;
+  place-items: center;
+
+  box-sizing: border-box;
+
+  border: 2px solid var(--header-background, var(--color-surface));
+  border-radius: var(--radius-pill);
+
+  color: var(--text-inverse);
+  background: var(--color-danger);
+
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+
+  pointer-events: none;
+}
+
 .dashboard-header__icon-button:hover,
 .dashboard-header__notification:hover {
   background: var(--surface-hover);

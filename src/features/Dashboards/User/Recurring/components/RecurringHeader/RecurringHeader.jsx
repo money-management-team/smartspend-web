@@ -6,16 +6,9 @@ import { useTranslation } from "react-i18next";
 
 import "./RecurringHeader.css";
 
-export default function RecurringHeader() {
+// Both buttons open the same form, preset to income or expense.
+export default function RecurringHeader({ onAdd }) {
   const { t } = useTranslation();
-
-  const handleAddIncome = () => {
-    console.log("Add recurring income");
-  };
-
-  const handleAddExpense = () => {
-    console.log("Add recurring expense");
-  };
 
   return (
     <header className="recurring-header">
@@ -33,7 +26,7 @@ export default function RecurringHeader() {
         <button
           type="button"
           className="recurring-header__button recurring-header__button--secondary"
-          onClick={handleAddIncome}
+          onClick={() => onAdd("income")}
         >
           <LuPlus />
 
@@ -47,7 +40,7 @@ export default function RecurringHeader() {
         <button
           type="button"
           className="recurring-header__button recurring-header__button--primary"
-          onClick={handleAddExpense}
+          onClick={() => onAdd("expense")}
         >
           <LuPlus />
 
