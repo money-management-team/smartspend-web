@@ -55,6 +55,132 @@
 
 
 /* =========================================
+   STATES, NOTICES AND ACTIONS
+========================================= */
+
+.import-page__state {
+  margin-top: 20px;
+  padding: 20px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  color: var(--color-danger);
+  background: var(--color-surface);
+
+  font-size: 13px;
+  text-align: center;
+}
+
+.import-page__state p {
+  margin: 0 0 12px;
+}
+
+.import-page__state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.import-page__state button {
+  padding: 9px 16px;
+
+  border: 0;
+  border-radius: var(--radius-pill);
+
+  color: var(--navigation-active-text);
+  background: var(--color-primary);
+
+  font: inherit;
+  font-size: 12px;
+
+  cursor: pointer;
+}
+
+.import-page__state .import-page__secondary {
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+}
+
+.import-page__action {
+  height: 32px;
+  padding: 0 12px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 12px;
+
+  cursor: pointer;
+}
+
+.import-page__action:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.import-page__action svg {
+  width: 14px;
+  height: 14px;
+}
+
+.import-page__notice {
+  margin-top: 16px;
+  padding: 10px 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  border: 1px solid color-mix(in srgb, var(--success) 35%, var(--color-border));
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: var(--success-soft);
+
+  font-size: 13px;
+}
+
+.import-page__notice p {
+  margin: 0;
+  text-align: start;
+}
+
+.import-page__notice button {
+  width: 28px;
+  height: 28px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  border: 0;
+  border-radius: 8px;
+
+  color: var(--color-text-secondary);
+  background: transparent;
+
+  cursor: pointer;
+}
+
+.import-page__notice button:hover {
+  background: var(--color-surface);
+}
+
+
+/* =========================================
    RTL
 ========================================= */
 
@@ -90,5 +216,89 @@
 
   .import-page__header p {
     font-size: 13px;
+  }
+}
+/* Header now carries the link to the import history. */
+.import-page__header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.import-page__history-link {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-strong);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.import-page__history-link:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Review → Confirm hand-off. */
+.import-page__advance {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.15rem;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.import-page__advance p {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.import-page__primary {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.7rem 1.4rem;
+  border: none;
+  border-radius: 12px;
+  background: var(--gradient-primary);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.import-page__primary:hover {
+  transform: translateY(-1px);
+}
+
+[dir="rtl"] .import-page__primary svg {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .import-page__primary:hover svg {
+  transform: scaleX(-1) translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .import-page__primary {
+    transition: none;
+  }
+
+  .import-page__primary:hover {
+    transform: none;
   }
 }

@@ -1,0 +1,327 @@
+/* =========================================
+   ORIGINAL RECEIPT (source file)
+========================================= */
+
+.capture-source {
+  padding:
+    22px
+    24px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 17px;
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    var(--shadow-card);
+}
+
+
+.capture-source__header h2 {
+  margin:
+    0
+    0
+    6px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color:
+    var(--color-text-primary);
+
+  font-family:
+    var(--font-heading);
+
+  font-size: 17px;
+
+  font-weight: 700;
+}
+
+
+.capture-source__header h2 svg {
+  flex: none;
+
+  color:
+    var(--color-primary);
+}
+
+
+.capture-source__header p {
+  margin: 0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+.capture-source__body {
+  margin-block-start: 16px;
+}
+
+
+/* =========================================
+   LOAD ACTION
+========================================= */
+
+.capture-source__load,
+.capture-source__download,
+.capture-source__open,
+.capture-source__error button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  padding:
+    9px
+    16px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-md);
+
+  color:
+    var(--color-text-strong);
+
+  background:
+    var(--color-surface);
+
+  font: inherit;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition:
+    border-color var(--transition-normal),
+    color var(--transition-normal);
+}
+
+
+.capture-source__load:hover,
+.capture-source__download:hover,
+.capture-source__open:hover,
+.capture-source__error button:hover {
+  border-color:
+    var(--color-primary);
+
+  color:
+    var(--color-primary);
+}
+
+
+.capture-source__error button:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================
+   PREVIEW
+========================================= */
+
+.capture-source__image {
+  display: block;
+
+  max-width: 100%;
+
+  max-height: 560px;
+
+  margin:
+    0
+    auto;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-md);
+
+  background:
+    var(--color-surface-soft);
+
+  object-fit: contain;
+}
+
+
+.capture-source__pdf {
+  display: block;
+
+  width: 100%;
+
+  height: 560px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-md);
+
+  background:
+    var(--color-surface-soft);
+}
+
+
+.capture-source__fallback {
+  margin: 0;
+
+  padding:
+    22px
+    16px;
+
+  border:
+    1px dashed
+    var(--border-strong);
+
+  border-radius:
+    var(--radius-md);
+
+  color:
+    var(--color-text-muted);
+
+  font-size: 13px;
+
+  line-height: 1.6;
+
+  text-align: center;
+}
+
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.capture-source__actions {
+  margin-block-start: 14px;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+
+  gap: 10px;
+}
+
+
+.capture-source__filename {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  color:
+    var(--color-text-muted);
+
+  font-size: 12px;
+}
+
+
+.capture-source__filename bdi {
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================
+   ERROR
+========================================= */
+
+.capture-source__error {
+  padding:
+    14px
+    16px;
+
+  display: grid;
+
+  justify-items: start;
+
+  gap: 10px;
+
+  border:
+    1px solid
+    color-mix(in srgb, var(--color-danger) 26%, transparent);
+
+  border-radius:
+    var(--radius-md);
+
+  background:
+    var(--danger-soft);
+}
+
+
+.capture-source__error p {
+  margin: 0;
+
+  color:
+    color-mix(in srgb, var(--color-danger) 85%, var(--color-text-primary));
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+:root[data-theme="dark"] .capture-source__error p {
+  color:
+    color-mix(in srgb, var(--color-danger) 62%, #ffffff);
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 640px) {
+  .capture-source {
+    padding:
+      18px
+      16px;
+  }
+
+
+  .capture-source__pdf {
+    height: 380px;
+  }
+
+
+  .capture-source__image {
+    max-height: 380px;
+  }
+
+
+  .capture-source__load,
+  .capture-source__download,
+  .capture-source__open {
+    width: 100%;
+
+    justify-content: center;
+  }
+
+
+  .capture-source__filename {
+    width: 100%;
+  }
+}

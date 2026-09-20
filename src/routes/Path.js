@@ -27,6 +27,9 @@ export const PATH = {
     RECURRING_DETAILS: "/dashboard/recurring/:recurringTransactionId",
     CALENDAR: "/dashboard/calendar",
     IMPORT: "/dashboard/import",
+    IMPORT_HISTORY: "/dashboard/import/history",
+    AI_EXPENSE_CAPTURES: "/dashboard/ai-expense-captures",
+    AI_EXPENSE_CAPTURE_DETAILS: "/dashboard/ai-expense-captures/:captureId",
     BUDGETS: "/dashboard/budgets",
     BUDGET_DETAILS: "/dashboard/budgets/:budgetId",
     SAVINGS_GOALS: "/dashboard/savings-goals",
@@ -34,6 +37,7 @@ export const PATH = {
     DEBTS: "/dashboard/debts",
     DEBT_DETAILS: "/dashboard/debts/:debtId",
     REPORTS: "/dashboard/reports",
+    REPORT_EXPORTS: "/dashboard/reports/exports",
     AI_ASSISTANT: "/dashboard/ai-assistant",
     NOTIFICATIONS: "/dashboard/notifications",
     SETTING: "/dashboard/settings",
@@ -49,6 +53,13 @@ export const AUTH_INTENT = {
 export const getAccountTypePath = (intent = AUTH_INTENT.REGISTER) =>
   `${PATH.AUTH.ACCOUNT_TYPE}?intent=${intent}`;
 
+/*
+ * The import wizard resumes an existing import from `?import=`, so a link
+ * from the history opens the same page at whatever step its status implies.
+ */
+export const getImportPath = (importId) =>
+  `${PATH.USER.IMPORT}?import=${encodeURIComponent(importId)}`;
+
 export const getAccountDetailsPath = (accountId) =>
   PATH.USER.ACCOUNT_DETAILS.replace(
     ":accountId",
@@ -59,6 +70,13 @@ export const getTransactionDetailsPath = (transactionId) =>
   PATH.USER.TRANSACTION_DETAILS.replace(
     ":transactionId",
     encodeURIComponent(transactionId),
+  );
+
+/* The review screen of one AI expense capture. */
+export const getAiExpenseCapturePath = (captureId) =>
+  PATH.USER.AI_EXPENSE_CAPTURE_DETAILS.replace(
+    ":captureId",
+    encodeURIComponent(captureId),
   );
 
 /* Opens the financial operations page with the new-operation form on `type`

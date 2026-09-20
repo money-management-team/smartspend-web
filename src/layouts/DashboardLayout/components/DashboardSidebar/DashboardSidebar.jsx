@@ -10,6 +10,8 @@ import {
   LuRepeat2,
   LuCalendarDays,
   LuFileUp,
+  LuHistory,
+  LuReceiptText,
   LuChartPie,
   LuTags,
   LuTarget,
@@ -123,6 +125,22 @@ export default function DashboardSidebar({
           ),
           path: PATH.USER.IMPORT,
           icon: LuFileUp,
+        },
+
+        {
+          label: t(
+            "dashboard.sidebar.importHistory",
+          ),
+          path: PATH.USER.IMPORT_HISTORY,
+          icon: LuHistory,
+        },
+
+        {
+          label: t(
+            "dashboard.sidebar.aiCaptures",
+          ),
+          path: PATH.USER.AI_EXPENSE_CAPTURES,
+          icon: LuReceiptText,
         },
       ],
     },

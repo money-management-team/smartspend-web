@@ -1,0 +1,343 @@
+/* =========================================
+   PAGE INTRO (hero + flow strip + today card)
+========================================= */
+
+.operations-intro {
+  margin-bottom: 26px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    296px;
+
+  align-items: end;
+
+  gap: 26px;
+}
+
+
+.operations-intro__kicker {
+  margin-bottom: 8px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  color:
+    var(--color-primary);
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.02em;
+}
+
+
+.operations-intro__copy h1 {
+  margin:
+    0
+    0
+    10px;
+
+  color:
+    var(--color-text-primary);
+
+  font-family:
+    var(--font-heading);
+
+  font-size: 30px;
+
+  font-weight: 800;
+
+  line-height: 1.2;
+
+  letter-spacing: -0.02em;
+}
+
+
+.operations-intro__copy p {
+  margin: 0;
+
+  max-width: 620px;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 14px;
+
+  line-height: 1.7;
+}
+
+
+/* =========================================
+   FLOW STRIP
+========================================= */
+
+.operations-intro__flow {
+  margin-top: 18px;
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+
+.operations-intro__flow-label {
+  color:
+    var(--color-text-primary);
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+
+.operations-intro__flow-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+.operations-intro__flow-line {
+  width: 20px;
+  height: 1px;
+
+  background:
+    var(--border-strong);
+}
+
+
+.operations-intro__flow-step {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  color:
+    var(--color-text-muted);
+
+  font-size: 12px;
+}
+
+
+.operations-intro__flow-step b {
+  width: 21px;
+  height: 21px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 7px;
+
+  background:
+    var(--color-surface-soft);
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+
+.operations-intro__flow-step--active {
+  color:
+    var(--color-text-primary);
+}
+
+
+.operations-intro__flow-step--active b {
+  color: #ffffff;
+
+  background:
+    var(--gradient-primary);
+}
+
+
+/* =========================================
+   TODAY CARD
+========================================= */
+
+.operations-intro__today {
+  position: relative;
+
+  padding:
+    15px
+    16px;
+
+  overflow: hidden;
+
+  display: grid;
+
+  grid-template-columns:
+    46px
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+
+  gap: 12px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-lg);
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--color-surface),
+      var(--color-surface-soft)
+    );
+
+  box-shadow:
+    var(--shadow-card);
+}
+
+
+.operations-intro__today::after {
+  content: "";
+
+  position: absolute;
+
+  inset-inline-end: -34px;
+  top: -58px;
+
+  width: 116px;
+  height: 116px;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(
+      circle,
+      var(--primary-soft-hover),
+      transparent 68%
+    );
+}
+
+
+.operations-intro__today-icon {
+  width: 46px;
+  height: 46px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius:
+    var(--radius-md);
+
+  color: #ffffff;
+
+  background:
+    var(--gradient-primary);
+
+  font-size: 19px;
+}
+
+
+.operations-intro__today-value {
+  min-width: 0;
+}
+
+
+.operations-intro__today-value span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color:
+    var(--color-text-muted);
+
+  font-size: 12px;
+}
+
+
+.operations-intro__today-value strong {
+  display: block;
+
+  color:
+    var(--color-text-primary);
+
+  font-family:
+    var(--font-heading);
+
+  font-size: 21px;
+
+  font-weight: 700;
+}
+
+
+.operations-intro__today-placeholder {
+  font-size: 12px !important;
+
+  font-weight: 500 !important;
+
+  color:
+    var(--color-text-muted) !important;
+
+  line-height: 1.5;
+}
+
+
+.operations-intro__today small {
+  align-self: end;
+
+  color:
+    var(--color-text-muted);
+
+  font-size: 11px;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1050px) {
+  .operations-intro {
+    grid-template-columns: 1fr;
+
+    align-items: stretch;
+  }
+
+
+  .operations-intro__today {
+    max-width: 360px;
+  }
+}
+
+
+@media (max-width: 760px) {
+  .operations-intro__copy h1 {
+    font-size: 25px;
+  }
+
+
+  .operations-intro__copy p {
+    font-size: 13px;
+  }
+
+
+  .operations-intro__flow-label {
+    width: 100%;
+  }
+
+
+  .operations-intro__today {
+    max-width: none;
+  }
+
+
+  .operations-intro__today small {
+    display: none;
+  }
+}

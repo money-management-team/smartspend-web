@@ -1,0 +1,112 @@
+.report-summary__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.report-summary__empty {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  text-align: start;
+}
+
+.report-summary-card {
+  min-width: 0;
+  padding: 16px;
+
+  display: grid;
+  align-content: start;
+  gap: 14px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--color-surface-soft);
+}
+
+.report-summary-card__header strong {
+  padding: 3px 10px;
+
+  display: inline-block;
+
+  border-radius: var(--radius-pill);
+
+  color: var(--color-primary);
+  background: var(--primary-soft);
+
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.report-summary-card__group {
+  display: grid;
+  gap: 8px;
+}
+
+.report-summary-card__group + .report-summary-card__group {
+  padding-top: 12px;
+  border-top: 1px dashed var(--color-border);
+}
+
+.report-summary-card__group h3 {
+  margin: 0;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  font-weight: 700;
+  text-align: start;
+}
+
+.report-summary-card__forecast {
+  padding: 1px 8px;
+
+  border-radius: var(--radius-pill);
+
+  color: var(--color-insights);
+  background: var(--insights-soft);
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.report-summary__fields {
+  margin: 0;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px 14px;
+}
+
+.report-summary__field {
+  min-width: 0;
+  text-align: start;
+}
+
+.report-summary__field dt {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.report-summary__field dd {
+  margin: 3px 0 0;
+
+  color: var(--color-text-strong);
+
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.report-summary__fields--hero .report-summary__field dd {
+  font-size: 19px;
+}

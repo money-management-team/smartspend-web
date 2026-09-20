@@ -11,6 +11,8 @@ import VerifyEmail from "../features/Auth/VerifyEmail/VerifyEmail";
 import AccountDetails from "../features/Dashboards/User/AccountDetails/AccountDetails";
 import Accounts from "../features/Dashboards/User/Accounts/Accounts";
 import AIAssistant from "../features/Dashboards/User/AIAssistant/AIAssistant";
+import AiExpenseCaptureDetails from "../features/Dashboards/User/AiExpenseCaptureDetails/AiExpenseCaptureDetails";
+import AiExpenseCaptures from "../features/Dashboards/User/AiExpenseCaptures/AiExpenseCaptures";
 import BudgetDetails from "../features/Dashboards/User/BudgetDetails/BudgetDetails";
 import Budgets from "../features/Dashboards/User/Budgets/Budgets";
 import Calendar from "../features/Dashboards/User/Calendar/Calendar";
@@ -21,9 +23,11 @@ import DebtDetails from "../features/Dashboards/User/DebtDetails/DebtDetails";
 import Debts from "../features/Dashboards/User/Debts/Debts";
 import FinancialOperations from "../features/Dashboards/User/FinancialOperations/FinancialOperations";
 import Import from "../features/Dashboards/User/Import/Import";
+import ImportHistory from "../features/Dashboards/User/ImportHistory/ImportHistory";
 import Notifications from "../features/Dashboards/User/Notifications/Notifications";
 import Recurring from "../features/Dashboards/User/Recurring/Recurring";
 import RecurringDetails from "../features/Dashboards/User/RecurringDetails/RecurringDetails";
+import ReportExports from "../features/Dashboards/User/ReportExports/ReportExports";
 import Reports from "../features/Dashboards/User/Reports/Reports";
 import SavingsGoalDetails from "../features/Dashboards/User/SavingsGoalDetails/SavingsGoalDetails";
 import SavingsGoals from "../features/Dashboards/User/SavingsGoals/SavingsGoals";
@@ -190,6 +194,18 @@ const userRoutes = [
         path: PATH.USER.IMPORT,
         element: <Import />,
       },
+      {
+        path: PATH.USER.IMPORT_HISTORY,
+        element: <ImportHistory />,
+      },
+      {
+        path: PATH.USER.AI_EXPENSE_CAPTURES,
+        element: <AiExpenseCaptures />,
+      },
+      {
+        path: PATH.USER.AI_EXPENSE_CAPTURE_DETAILS,
+        element: <AiExpenseCaptureDetails />,
+      },
 
       {
         path: PATH.USER.CATEGORIES,
@@ -226,6 +242,10 @@ const userRoutes = [
       {
         path: PATH.USER.REPORTS,
         element: <Reports />,
+      },
+      {
+        path: PATH.USER.REPORT_EXPORTS,
+        element: <ReportExports />,
       },
       {
         path: PATH.USER.AI_ASSISTANT,

@@ -1,0 +1,563 @@
+/* =========================================
+   STEP 2 - CAPTURE CARD
+   Shared by the four input panels: the panel
+   shell, headings and buttons defined here
+   are reused by VoiceCapture, ReceiptCapture,
+   StatementCapture and NewOperation.
+========================================= */
+
+.capture-step {
+  margin-bottom: 30px;
+}
+
+
+.capture-card {
+  padding: 12px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-xl);
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    var(--shadow-card);
+}
+
+
+/* =========================================
+   METHOD TABS
+========================================= */
+
+.capture-card__tabs {
+  padding: 6px;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 7px;
+
+  border-radius:
+    var(--radius-lg);
+
+  background:
+    var(--color-surface-soft);
+}
+
+
+.capture-card__tab {
+  min-height: 72px;
+
+  padding:
+    10px
+    11px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  border:
+    1px solid transparent;
+
+  border-radius:
+    var(--radius-md);
+
+  color:
+    var(--color-text-secondary);
+
+  background: transparent;
+
+  font: inherit;
+
+  text-align: start;
+
+  cursor: pointer;
+
+  transition:
+    background var(--transition-normal),
+    color var(--transition-normal);
+}
+
+
+.capture-card__tab:hover {
+  background:
+    color-mix(in srgb, var(--color-surface) 70%, transparent);
+}
+
+
+.capture-card__tab--active {
+  border-color:
+    var(--color-border);
+
+  color:
+    var(--color-text-primary);
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    var(--shadow-sm);
+}
+
+
+.capture-card__tab-icon {
+  width: 40px;
+  height: 40px;
+
+  flex: none;
+
+  display: grid;
+  place-items: center;
+
+  border-radius:
+    var(--radius-md);
+
+  color:
+    var(--color-text-muted);
+
+  background:
+    var(--color-surface-hover);
+
+  font-size: 18px;
+}
+
+
+.capture-card__tab--active .capture-card__tab-icon {
+  color: #ffffff;
+
+  background:
+    var(--gradient-primary);
+}
+
+
+.capture-card__tab-copy {
+  min-width: 0;
+}
+
+
+.capture-card__tab-copy strong {
+  display: block;
+
+  margin-bottom: 2px;
+
+  color: inherit;
+
+  font-size: 13px;
+
+  font-weight: 700;
+}
+
+
+.capture-card__tab-copy small {
+  display: block;
+
+  color:
+    var(--color-text-muted);
+
+  font-size: 11px;
+
+  line-height: 1.4;
+}
+
+
+/* =========================================
+   ACTIVE PANEL
+========================================= */
+
+.capture-card__panel {
+  padding-top: 12px;
+
+  animation:
+    capture-fade-in
+    200ms ease;
+}
+
+
+@keyframes capture-fade-in {
+  from {
+    opacity: 0;
+
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform: none;
+  }
+}
+
+
+.capture-card__secure {
+  margin: 0;
+
+  padding:
+    13px
+    10px
+    3px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  color:
+    var(--color-text-muted);
+
+  font-size: 12px;
+
+  line-height: 1.6;
+
+  text-align: center;
+}
+
+
+.capture-card__secure svg {
+  flex: none;
+
+  color:
+    var(--color-success);
+
+  font-size: 15px;
+}
+
+
+/* =========================================
+   SHARED PANEL SHELL
+========================================= */
+
+.capture-panel {
+  min-height: 300px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-lg);
+
+  background:
+    linear-gradient(
+      145deg,
+      var(--color-surface),
+      color-mix(in srgb, var(--color-surface-soft) 60%, var(--color-surface))
+    );
+}
+
+
+.capture-panel__kicker {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color:
+    var(--color-primary);
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+
+.capture-panel h3 {
+  margin:
+    0
+    0
+    8px;
+
+  color:
+    var(--color-text-primary);
+
+  font-family:
+    var(--font-heading);
+
+  font-size: 20px;
+
+  font-weight: 700;
+
+  line-height: 1.3;
+}
+
+
+.capture-panel p {
+  margin: 0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 13px;
+
+  line-height: 1.7;
+}
+
+
+/* Inline "the account in use" chip. */
+
+.capture-panel__account {
+  margin-top: 14px;
+
+  padding:
+    8px
+    12px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-pill);
+
+  color:
+    var(--color-text-muted);
+
+  background:
+    var(--color-surface);
+
+  font-size: 12px;
+}
+
+
+.capture-panel__account svg {
+  color:
+    var(--color-primary);
+}
+
+
+.capture-panel__account b {
+  color:
+    var(--color-text-primary);
+}
+
+
+/* =========================================
+   SHARED PANEL BUTTONS
+========================================= */
+
+.capture-action {
+  min-height: 42px;
+
+  padding:
+    0
+    18px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  border: 0;
+
+  border-radius:
+    var(--radius-md);
+
+  color: #ffffff;
+
+  background:
+    var(--gradient-primary);
+
+  font: inherit;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+
+.capture-action:hover:not(:disabled) {
+  transform: translateY(-1px);
+
+  box-shadow:
+    var(--shadow-card);
+}
+
+
+.capture-action:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}
+
+
+.capture-action--soft {
+  color:
+    var(--color-text-primary);
+
+  background:
+    var(--color-surface);
+
+  border:
+    1px solid
+    var(--color-border);
+}
+
+
+.capture-action--block {
+  width: 100%;
+}
+
+
+/* =========================================
+   SHARED PANEL NOTICE
+   (voice / receipt: "not connected yet")
+========================================= */
+
+.capture-notice {
+  margin-top: 16px;
+
+  padding:
+    12px
+    14px;
+
+  display: grid;
+
+  gap: 10px;
+
+  justify-items: start;
+
+  border:
+    1px solid
+    color-mix(in srgb, var(--color-warning) 26%, transparent);
+
+  border-radius:
+    var(--radius-md);
+
+  color:
+    color-mix(in srgb, var(--color-warning) 88%, var(--color-text-primary));
+
+  background:
+    var(--warning-soft);
+
+  font-size: 12px;
+
+  line-height: 1.6;
+}
+
+
+.capture-notice p {
+  margin: 0;
+
+  color: inherit;
+
+  font-size: inherit;
+}
+
+
+.capture-notice button {
+  padding:
+    7px
+    14px;
+
+  border:
+    1px solid
+    currentColor;
+
+  border-radius:
+    var(--radius-pill);
+
+  color: inherit;
+
+  background: transparent;
+
+  font: inherit;
+
+  font-size: 12px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+:root[data-theme="dark"] .capture-notice {
+  color:
+    color-mix(in srgb, var(--color-warning) 70%, #ffffff);
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 1050px) {
+  .capture-card__tabs {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+@media (max-width: 640px) {
+  .capture-card {
+    padding: 8px;
+
+    border-radius:
+      var(--radius-lg);
+  }
+
+
+  .capture-card__tabs {
+    gap: 5px;
+
+    padding: 5px;
+  }
+
+
+  .capture-card__tab {
+    min-height: 62px;
+
+    padding: 8px;
+
+    gap: 8px;
+  }
+
+
+  .capture-card__tab-icon {
+    width: 34px;
+    height: 34px;
+
+    font-size: 16px;
+  }
+
+
+  .capture-card__tab-copy strong {
+    font-size: 12px;
+  }
+
+
+  .capture-card__tab-copy small {
+    display: none;
+  }
+
+
+  .capture-panel h3 {
+    font-size: 18px;
+  }
+}

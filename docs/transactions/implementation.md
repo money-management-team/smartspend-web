@@ -6,21 +6,50 @@
 - **List fetch.** One effect keyed by the query + a reload counter; the result is stored with its key, so "loading" is derived (no synchronous `setState` in the effect). Aborted on change/unmount.
 - **Options fetch.** Accounts (`accountsApi.list`) and categories (`categoriesApi.list`) load in a separate effect; the previous options stay visible while they reload. Errors show in the form with a retry.
 - **After a mutation** (create, reverse): both the list and the options are refetched; balances in the account selector come from the backend.
-- **Reverse from the list** opens `ReverseTransactionDialog`; a success notice appears above the layout.
-- `SmartCapture` is unchanged (placeholder actions, no transaction data).
+- **Reverse from the list** opens `ReverseTransactionDialog`; a success notice appears under the intro.
+- **Recording lives on the page, not in a form.** `recordOperation(operation)` builds the payload, owns the `Idempotency-Key` attempt and calls `createIncome` / `createExpense`; the review dialog only awaits it and shows the error if it throws. Keeping the attempt at page level means closing and reopening the review can't hand a retry a fresh key.
 
-## New operation form (`NewOperation`)
+## Guided layout
+
+The page is a three-step flow above the ledger, all inside `DashboardLayout`:
+
+| Section | Component | What it does |
+| --- | --- | --- |
+| Intro | `OperationsIntro` | Hero copy, the four-step flow strip (steps 2–4 light up once an account is chosen) and today's expense total |
+| Step 1 | `AccountStep` | The active accounts as selectable cards (icon, name, type · last 4, balance). The selection is **derived**, not stored: an account that leaves the active list falls back to none, and a single account is already chosen |
+| Step 2 | `CaptureStep` | Method tabs (voice / receipt / manual / statement) over one panel, plus the "nothing is recorded until you confirm" note |
+| Ledger | `Ledger` | The same list as before, now full width under a "Recent activity" heading |
+
+- **Today's total** is a separate `GET /transactions` for today (`type=expense`, `status=posted`, `per_page` 100 — the backend's documented maximum; anything higher is rejected with a 422). It follows the paginator for up to 5 pages, so a busy day is totalled in full instead of stopping at the first page. Amounts of different currencies are **never** added together: each currency is totalled with `sumMoney` on its own, the largest group is shown and the rest are counted.
+- **Every method needs an account first.** `requireAccount()` is passed down; without a selection it shows a toast and scrolls step 1 into view.
+
+## Input methods (step 2)
+
+| Method | Component | Backend |
+| --- | --- | --- |
+| Manual entry | `NewOperation` | Collects the operation and opens the review dialog — it does **not** post |
+| Voice | `VoiceCapture` | None yet: the recorder runs locally and stopping it says so, with a link to manual entry. No operation is invented |
+| Receipt | `ReceiptCapture` | None yet: the image is picked locally, "Analyze" says the service isn't connected, with a link to manual entry |
+| Statement | `StatementCapture` | Hands over to the import wizard (`PATH.USER.IMPORT`) instead of duplicating it |
+
+## Manual entry (`NewOperation`)
 
 - Type chips: Expense / Income; the initial type comes from `?new=`. Transfers are recorded in their own section, with a link under the form.
-- Fields: amount (text, `inputMode="decimal"`, validated as a string), category (income: "No category" default; expense: explicit "Select a category"), account (label shows the backend balance via `formatMoney`), note → `description`, reference number, date → `occurred_at` at `12:00:00`.
-- Client validation: amount required / valid / > 0 / ≤ 4 decimals, account required, expense category required.
-- Idempotency and duplicate protection: see [idempotency.md](idempotency.md).
-- Success: message per type, a "View transaction" link, amount/note/reference cleared, `onCreated` refreshes the page data.
-- Errors: 422 field errors under the inputs; backend message + insufficient-balance hint; unknown-outcome guidance (and a refresh) for network/timeout/5xx.
+- Fields: amount (text, `inputMode="decimal"`, validated as a string, currency label from the chosen account), note → `description`, category (income: "No category" default; expense: explicit "Select a category"), date → `occurred_at` at `12:00:00`, reference number. The **account is not a field**: it comes from step 1 and is shown read-only.
+- Client validation before the review opens: amount required / valid / > 0 / ≤ 4 decimals, expense category required. The account is enforced by `requireAccount()`.
+- On submit it calls `onReview(operation)` with an `onRecorded` callback that clears the form once the operation is actually recorded.
+
+## Review dialog (`ReviewOperationDialog`)
+
+- The last step of **every** method: a receipt showing total, description, category, account, input method, date and reference, then current balance → balance after (exact `sumMoney` / `subtractMoney` on the backend's decimal strings, never floats).
+- "Edit details" turns the amount, description, category and date into inputs in place, so a wrong value is fixed without going back.
+- A warning appears when an expense would take the account below zero; the ledger still decides.
+- Confirm: synchronous `pendingRef` guard, `aria-busy` while saving, then the page closes the dialog, shows the message with a "View transaction" link and refetches. Idempotency and duplicate protection: see [idempotency.md](idempotency.md).
+- Errors stay in the dialog: backend message, insufficient-balance hint, unknown-outcome guidance (and a refresh) for network/timeout/5xx, plus any 422 field messages.
 
 ## Transactions list (`Ledger` + `TransactionFilters`)
 
-- Header: "Transactions" + total from the paginator, type chips.
+- Header: "Recent activity" kicker, "Transactions" + total from the paginator, type chips.
 - Filters row: account, category (grouped by type), status, from/to dates, sort, "Clear filters".
 - Rows: type icon, title (description → category → type), meta (type · category · account · date), amount with +/− from the **type** (never computed), status badge for non-posted, chips (reversal entry / correction / transfer). The title is a `Link` stretched over the row (keyboard focus outlines it) and carries the list's query in router state for the back link. The reverse button (only when `canChangeTransaction`) sits above the link.
 - States: loading, error (+ retry, + clear filters when filtered), empty (no transactions / no match + clear / empty page + first page).

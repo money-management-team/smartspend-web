@@ -1,0 +1,99 @@
+.export-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.export-actions__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.export-actions__download,
+.export-actions__stop,
+.export-actions__danger {
+  height: 30px;
+  padding: 0 12px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  border-radius: 9px;
+
+  font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+.export-actions__download svg,
+.export-actions__stop svg {
+  width: 14px;
+  height: 14px;
+}
+
+.export-actions__download {
+  border: 1px solid var(--color-primary);
+  color: var(--navigation-active-text);
+  background: var(--color-primary);
+}
+
+.export-actions__download:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.export-actions__stop {
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+}
+
+.export-actions__stop:hover:not(:disabled) {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+
+.export-actions__danger {
+  border: 1px solid var(--color-danger);
+  color: #ffffff;
+  background: var(--color-danger);
+}
+
+.export-actions__danger:hover:not(:disabled) {
+  background: var(--danger-hover);
+}
+
+.export-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.export-actions__confirm {
+  padding: 10px 12px;
+
+  display: grid;
+  gap: 8px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--danger-soft);
+}
+
+.export-actions__confirm p,
+.export-actions__error {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: start;
+}
+
+.export-actions__confirm p {
+  color: var(--color-text-primary);
+}
+
+.export-actions__error {
+  color: var(--color-danger);
+}

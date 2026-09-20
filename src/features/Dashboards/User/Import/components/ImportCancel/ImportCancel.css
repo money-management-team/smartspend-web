@@ -1,0 +1,73 @@
+.import-cancel__open {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.5rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.import-cancel__open:hover {
+  color: var(--color-danger, #dc2626);
+  border-color: color-mix(in srgb, var(--color-danger, #dc2626) 45%, transparent);
+}
+
+.import-cancel {
+  flex-basis: 100%;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-muted, var(--color-surface));
+}
+
+.import-cancel p {
+  margin: 0 0 0.7rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.import-cancel__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.import-cancel__danger,
+.import-cancel__keep {
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.import-cancel__danger {
+  border: none;
+  background: var(--color-danger, #dc2626);
+  color: #fff;
+}
+
+.import-cancel__keep {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-strong);
+}
+
+.import-cancel__danger:disabled,
+.import-cancel__keep:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.import-cancel__error {
+  margin: 0.4rem 0 0;
+  color: var(--color-danger, #dc2626);
+  font-size: 0.85rem;
+}

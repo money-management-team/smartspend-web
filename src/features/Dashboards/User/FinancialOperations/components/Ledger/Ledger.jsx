@@ -54,10 +54,16 @@ export default function Ledger({
   return (
     <section className="ledger" aria-labelledby="ledger-title">
       <header className="ledger__header">
-        <h2 id="ledger-title">
-          {t("dashboard.transactions.title")}
-          {page && !isLoading && <span className="ledger__count">{page.total}</span>}
-        </h2>
+        <div className="ledger__title">
+          <span className="ledger__kicker">
+            {t("dashboard.financialOperations.ledger.kicker")}
+          </span>
+
+          <h2 id="ledger-title">
+            {t("dashboard.transactions.title")}
+            {page && !isLoading && <span className="ledger__count">{page.total}</span>}
+          </h2>
+        </div>
 
         <div className="ledger__filters" role="group" aria-label={t("dashboard.transactions.fields.type")}>
           {TYPE_FILTERS.map((item) => {

@@ -1,271 +1,260 @@
-import {
-  useRef,
-  useState,
-} from "react";
-
-import {
-  LuFileSpreadsheet,
-  LuUpload,
-  LuX,
-  LuFileText,
-} from "react-icons/lu";
-
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { LuFileSpreadsheet, LuFileText, LuUpload, LuX } from "react-icons/lu";
+
+import { getDisplayLocale } from "../../../Accounts/accountHelpers";
+import { resolveWorkspaceId } from "../../../api/dashboardApi";
+import { importsApi } from "../../../api/importsApi";
+import { ApiError } from "../../../api/apiClient";
+import { formatFileSize } from "../../../ReportExports/reportExportHelpers";
+import {
+  AUTO_OPTION,
+  DATE_ORDER_OPTIONS,
+  DECIMAL_SEPARATOR_OPTIONS,
+  IMPORT_ACCEPT,
+  getFieldMessages,
+  getFileExtension,
+  getImportErrorMessage,
+  parseUploadResponse,
+  validateImportFile,
+} from "../../importHelpers";
 
 import "./UploadStatement.css";
 
-const ALLOWED_EXTENSIONS = [
-  "pdf",
-  "xlsx",
-  "xls",
-  "csv",
-];
-
-export default function UploadStatement() {
-  const { t } = useTranslation();
-
+/*
+ * Step 1: POST /imports (multipart/form-data) with the workspace, the file
+ * and the parsing options. The backend stores and inspects the file and
+ * answers with the import (`mapping_required`), its column headers and a
+ * suggested mapping. Nothing is imported and no balance changes.
+ *
+ * Only CSV and XLSX can be picked; the backend still validates the content.
+ * A rejected file stays selected so it can be retried or replaced.
+ */
+export default function UploadStatement({ onUploaded }) {
+  const { t, i18n } = useTranslation();
+  const locale = getDisplayLocale(i18n.language);
   const fileInputRef = useRef(null);
+  const pendingRef = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [file, setFile] = useState(null);
+  const [fileError, setFileError] = useState(null);
+  const [hasHeader, setHasHeader] = useState(true);
+  /*
+   * Parsing hints. `auto` is the default and, for now, the only value the API
+   * contract confirms, so each select appears only once its list offers a real
+   * choice — the UI never invents an enum the backend would reject.
+   */
+  const [dateOrder, setDateOrder] = useState(AUTO_OPTION);
+  const [decimalSeparator, setDecimalSeparator] = useState(AUTO_OPTION);
+  const [upload, setUpload] = useState({ pending: false, error: null });
+  const parsingOptions = [
+    { name: "date_order", value: dateOrder, setValue: setDateOrder, options: DATE_ORDER_OPTIONS },
+    {
+      name: "decimal_separator",
+      value: decimalSeparator,
+      setValue: setDecimalSeparator,
+      options: DECIMAL_SEPARATOR_OPTIONS,
+    },
+  ].filter((option) => option.options.length > 1);
 
-  const [isDragging, setIsDragging] =
-    useState(false);
+  const selectFile = (candidate) => {
+    if (!candidate) return;
 
-  const [selectedFile, setSelectedFile] =
-    useState(null);
-
-  const [account, setAccount] =
-    useState("checking");
-
-  const isValidFile = (file) => {
-    if (!file) return false;
-
-    const extension =
-      file.name
-        .split(".")
-        .pop()
-        ?.toLowerCase();
-
-    return ALLOWED_EXTENSIONS.includes(
-      extension,
-    );
+    setFileError(validateImportFile(candidate));
+    setFile(candidate);
+    setUpload({ pending: false, error: null });
   };
 
-  const selectFile = (file) => {
-    if (!isValidFile(file)) {
-      return;
-    }
-
-    setSelectedFile(file);
+  const clearFile = () => {
+    setFile(null);
+    setFileError(null);
+    setUpload({ pending: false, error: null });
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const handleInputChange = (event) => {
-    const file =
-      event.target.files?.[0];
-
-    selectFile(file);
-  };
-
-  const handleBrowse = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleDragEnter = (event) => {
+  const handleDrag = (dragging) => (event) => {
     event.preventDefault();
-
-    setIsDragging(true);
-  };
-
-  const handleDragOver = (event) => {
-    event.preventDefault();
-
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (event) => {
-    event.preventDefault();
-
-    if (
-      event.currentTarget ===
-      event.target
-    ) {
-      setIsDragging(false);
-    }
+    if (upload.pending) return;
+    if (dragging || event.currentTarget === event.target) setIsDragging(dragging);
   };
 
   const handleDrop = (event) => {
     event.preventDefault();
-
     setIsDragging(false);
-
-    const file =
-      event.dataTransfer.files?.[0];
-
-    selectFile(file);
+    if (!upload.pending) selectFile(event.dataTransfer.files?.[0]);
   };
 
-  const handleRemoveFile = () => {
-    setSelectedFile(null);
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (pendingRef.current) return;
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+    const problem = validateImportFile(file);
+    if (problem) {
+      setFileError(problem);
+      return;
+    }
+
+    pendingRef.current = true;
+    setUpload({ pending: true, error: null });
+
+    try {
+      const workspaceId = await resolveWorkspaceId();
+      const response = await importsApi.upload({
+        workspace_id: workspaceId,
+        file,
+        has_header: hasHeader,
+        date_order: dateOrder,
+        decimal_separator: decimalSeparator,
+      });
+      const parsed = parseUploadResponse(response);
+      if (!parsed) throw new ApiError("", { code: "MALFORMED_RESPONSE" });
+
+      setUpload({ pending: false, error: null });
+      onUploaded(parsed);
+    } catch (error) {
+      setUpload({ pending: false, error });
+    } finally {
+      pendingRef.current = false;
     }
   };
 
+  const fieldMessages = getFieldMessages(upload.error);
+  const extension = file ? getFileExtension(file.name) : "";
+
   return (
-    <section className="upload-statement">
-      {/* ==========================
-          CARD HEADER
-      ========================== */}
-
+    <form className="upload-statement" onSubmit={handleSubmit} noValidate>
       <header className="upload-statement__header">
-        <h2>
-          {t(
-            "dashboard.importPage.upload.title",
-          )}
-        </h2>
-
-        <p>
-          {t(
-            "dashboard.importPage.upload.supported",
-          )}
-        </p>
+        <h2>{t("dashboard.importPage.upload.title")}</h2>
+        <p>{t("dashboard.importPage.upload.supported")}</p>
       </header>
-
-      {/* ==========================
-          BODY
-      ========================== */}
 
       <div className="upload-statement__body">
         <input
           ref={fileInputRef}
           className="upload-statement__input"
           type="file"
-          accept=".pdf,.xlsx,.xls,.csv"
-          onChange={handleInputChange}
+          accept={IMPORT_ACCEPT}
+          onChange={(event) => selectFile(event.target.files?.[0])}
+          disabled={upload.pending}
+          aria-label={t("dashboard.importPage.upload.browse")}
         />
 
-        {/* Drop Zone */}
-
         <div
-          className={`upload-drop-zone ${
-            isDragging
-              ? "upload-drop-zone--dragging"
-              : ""
-          }`}
-          onDragEnter={handleDragEnter}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
+          className={`upload-drop-zone ${isDragging ? "upload-drop-zone--dragging" : ""}`}
+          onDragEnter={handleDrag(true)}
+          onDragOver={handleDrag(true)}
+          onDragLeave={handleDrag(false)}
           onDrop={handleDrop}
         >
-          {!selectedFile ? (
+          {!file ? (
             <>
-              <LuFileSpreadsheet className="upload-drop-zone__main-icon" />
-
-              <strong>
-                {t(
-                  "dashboard.importPage.upload.dropTitle",
-                )}
-              </strong>
-
-              <span>
-                {t(
-                  "dashboard.importPage.upload.supported",
-                )}
-              </span>
-
-              <button
-                type="button"
-                className="upload-drop-zone__browse"
-                onClick={handleBrowse}
-              >
-                <LuUpload />
-
-                <span>
-                  {t(
-                    "dashboard.importPage.upload.browse",
-                  )}
-                </span>
+              <LuFileSpreadsheet className="upload-drop-zone__main-icon" aria-hidden="true" />
+              <strong>{t("dashboard.importPage.upload.dropTitle")}</strong>
+              <span>{t("dashboard.importPage.upload.supported")}</span>
+              <button type="button" className="upload-drop-zone__browse" onClick={() => fileInputRef.current?.click()}>
+                <LuUpload aria-hidden="true" />
+                <span>{t("dashboard.importPage.upload.browse")}</span>
               </button>
             </>
           ) : (
             <div className="upload-selected-file">
               <span className="upload-selected-file__icon">
-                <LuFileText />
+                <LuFileText aria-hidden="true" />
               </span>
 
               <div className="upload-selected-file__copy">
-                <strong>
-                  {selectedFile.name}
-                </strong>
-
+                <strong dir="auto">{file.name}</strong>
                 <span>
-                  {(
-                    selectedFile.size /
-                    1024 /
-                    1024
-                  ).toFixed(2)}{" "}
-                  MB
+                  <bdi dir="ltr">{formatFileSize(file.size, locale)}</bdi>
+                  {extension && (
+                    <>
+                      {" · "}
+                      <bdi dir="ltr">{extension.toUpperCase()}</bdi>
+                    </>
+                  )}
                 </span>
               </div>
 
               <button
                 type="button"
-                className="upload-selected-file__remove"
-                onClick={handleRemoveFile}
-                aria-label={t(
-                  "dashboard.importPage.upload.remove",
-                )}
+                className="upload-selected-file__change"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={upload.pending}
               >
-                <LuX />
+                {t("dashboard.importPage.upload.change")}
+              </button>
+              <button
+                type="button"
+                className="upload-selected-file__remove"
+                onClick={clearFile}
+                disabled={upload.pending}
+                aria-label={t("dashboard.importPage.upload.remove")}
+              >
+                <LuX aria-hidden="true" />
               </button>
             </div>
           )}
         </div>
 
-        {/* ==========================
-            DETECTED ACCOUNT
-        ========================== */}
+        {fileError && (
+          <p className="upload-statement__error" role="alert">
+            {t(`dashboard.importPage.upload.errors.${fileError}`)}
+          </p>
+        )}
 
-        <label className="detected-account">
+        <label className="upload-statement__option">
+          <input
+            type="checkbox"
+            checked={hasHeader}
+            onChange={(event) => setHasHeader(event.target.checked)}
+            disabled={upload.pending}
+          />
           <span>
-            {t(
-              "dashboard.importPage.account.label",
-            )}
+            <strong>{t("dashboard.importPage.upload.hasHeader")}</strong>
+            <small>{t("dashboard.importPage.upload.hasHeaderHint")}</small>
           </span>
-
-          <select
-            value={account}
-            onChange={(event) =>
-              setAccount(
-                event.target.value,
-              )
-            }
-          >
-            <option value="checking">
-              {t(
-                "dashboard.importPage.account.checking",
-              )}
-            </option>
-
-            <option value="savings">
-              {t(
-                "dashboard.importPage.account.savings",
-              )}
-            </option>
-
-            <option value="wallet">
-              {t(
-                "dashboard.importPage.account.wallet",
-              )}
-            </option>
-
-            <option value="cash">
-              {t(
-                "dashboard.importPage.account.cash",
-              )}
-            </option>
-          </select>
         </label>
+
+        {parsingOptions.length > 0 && (
+          <div className="upload-statement__parsing">
+            {parsingOptions.map(({ name, value, setValue, options }) => (
+              <label key={name} className="upload-statement__field">
+                <span>{t(`dashboard.importPage.upload.parsing.${name}`)}</span>
+                <select value={value} onChange={(event) => setValue(event.target.value)} disabled={upload.pending}>
+                  {options.map((option) => (
+                    <option key={option} value={option}>
+                      {t(`dashboard.importPage.upload.parsingValues.${name}.${option}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ))}
+          </div>
+        )}
+
+        <p className="upload-statement__note">{t("dashboard.importPage.upload.autoDetect")}</p>
+
+        {upload.error && (
+          <div className="upload-statement__alert" role="alert">
+            <p>{getImportErrorMessage(upload.error, t, "upload")}</p>
+            {fieldMessages.length > 0 && (
+              <ul>
+                {fieldMessages.map((message) => (
+                  <li key={message}>{message}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        <div className="upload-statement__actions">
+          <p>{t("dashboard.importPage.noMoneyMoved")}</p>
+          <button type="submit" className="upload-statement__submit" disabled={!file || Boolean(fileError) || upload.pending}>
+            <LuUpload aria-hidden="true" />
+            {upload.pending ? t("dashboard.importPage.upload.uploading") : t("dashboard.importPage.upload.submit")}
+          </button>
+        </div>
       </div>
-    </section>
+    </form>
   );
 }
