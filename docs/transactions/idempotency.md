@@ -8,7 +8,7 @@
 
 ## `createIdempotentAttempt(prefix)`
 
-In `FinancialOperations/transactionHelpers.js`. Each form keeps one instance (`useState(() => createIdempotentAttempt(...))`).
+In `FinancialOperations/transactionHelpers.js`. Each form keeps one instance (`useState(() => createIdempotentAttempt(...))`). For income and expense the instance lives on `FinancialOperations.jsx`, not in the review dialog, so closing and reopening the review can't hand a retry a fresh key.
 
 | Method | Behavior |
 | --- | --- |
@@ -20,14 +20,14 @@ After `NETWORK_ERROR`, `TIMEOUT`, `SERVER_ERROR`, `MALFORMED_RESPONSE`, `CONFLIC
 
 | Form | Prefix | Fingerprint |
 | --- | --- | --- |
-| New operation (income / expense) | `operation` | `{ type, ...payload }` |
+| New operation (income / expense), confirmed in the review dialog | `operation` | `{ type, ...payload }` |
 | New transfer | `transfer` | the transfer payload |
 | Correct transaction | `correction` | `{ id, reason, ...changes }` |
 
 ## Duplicate-click protection
 
-- Each form has a synchronous `pendingRef` guard: a double click fires `submit` twice before React re-renders, and the second call returns immediately.
-- Buttons and inputs are disabled while a request runs (`isSubmitting` / `isSaving`), and the new-operation button is also disabled while accounts/categories reload.
+- Each form (and the review dialog) has a synchronous `pendingRef` guard: a double click fires the handler twice before React re-renders, and the second call returns immediately.
+- Buttons and inputs are disabled while a request runs (`isSubmitting` / `isSaving`), and the manual-entry button is also disabled while accounts/categories reload.
 - Even without the guards, a repeated identical payload would reuse the same key.
 
 ## Verified behavior (local mock that enforces the rules)

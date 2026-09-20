@@ -1,0 +1,156 @@
+.export-tracker {
+  margin-top: 16px;
+  padding: 14px 18px;
+
+  display: grid;
+  gap: 10px;
+
+  border: 1px solid color-mix(in srgb, var(--primary) 30%, var(--color-border));
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.export-tracker__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.export-tracker__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.export-tracker__title strong {
+  color: var(--color-text-strong);
+  font-size: 14px;
+}
+
+.export-tracker__dismiss {
+  width: 28px;
+  height: 28px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  border: 0;
+  border-radius: 8px;
+
+  color: var(--color-text-secondary);
+  background: transparent;
+
+  cursor: pointer;
+}
+
+.export-tracker__dismiss:hover {
+  background: var(--color-surface-hover);
+}
+
+.export-tracker__hint,
+.export-tracker__failure {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  text-align: start;
+}
+
+.export-tracker__hint {
+  color: var(--color-text-secondary);
+}
+
+.export-tracker__failure {
+  color: var(--color-danger);
+}
+
+.export-tracker__meta {
+  margin: 0;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+
+  font-size: 12px;
+}
+
+.export-tracker__meta div {
+  display: flex;
+  gap: 5px;
+}
+
+.export-tracker__meta dt {
+  color: var(--color-text-muted);
+}
+
+.export-tracker__meta dd {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-weight: 600;
+}
+
+.export-tracker__warning {
+  margin: 0;
+  padding: 8px 12px;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+
+  border-radius: var(--radius-md);
+
+  color: var(--color-warning);
+  background: var(--warning-soft);
+
+  font-size: 12px;
+}
+
+.export-tracker__warning button {
+  height: 28px;
+  padding: 0 10px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 12px;
+
+  cursor: pointer;
+}
+
+.export-tracker__warning svg {
+  width: 13px;
+  height: 13px;
+}
+
+.export-tracker__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.export-tracker__footer a {
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.export-tracker__footer a:hover {
+  text-decoration: underline;
+}

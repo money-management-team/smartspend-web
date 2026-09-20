@@ -1,0 +1,333 @@
+/* =========================================
+   DISCARD CAPTURE
+   Rendered only for a discardable draft. Abandons the AI draft; it
+   deletes no transaction and reverses nothing.
+========================================= */
+
+.capture-discard {
+  padding:
+    18px
+    24px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 17px;
+
+  background:
+    var(--color-surface);
+}
+
+
+.capture-discard__header h2 {
+  margin:
+    0
+    0
+    4px;
+
+  color:
+    var(--color-text-primary);
+
+  font-family:
+    var(--font-heading);
+
+  font-size: 15px;
+
+  font-weight: 700;
+}
+
+
+.capture-discard__header p {
+  margin: 0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+/*
+ * Quiet by design: a secondary action, not a primary one. The destructive
+ * meaning is carried by its label and by the dialog, never by colour alone.
+ */
+.capture-discard__open,
+.capture-discard__cancel,
+.capture-discard__check {
+  margin-block-start: 14px;
+
+  padding:
+    9px
+    16px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-md);
+
+  color:
+    var(--color-text-primary);
+
+  background:
+    var(--color-surface);
+
+  font: inherit;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+.capture-discard__open:disabled,
+.capture-discard__cancel:disabled,
+.capture-discard__check:disabled,
+.capture-discard__submit:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================
+   DIALOG
+========================================= */
+
+.capture-discard__dialog {
+  max-width: 480px;
+}
+
+
+.capture-discard__body p {
+  margin:
+    0
+    0
+    10px;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 13px;
+
+  line-height: 1.7;
+}
+
+
+.capture-discard__body ul {
+  margin:
+    0
+    0
+    12px;
+
+  padding-inline-start: 20px;
+
+  display: grid;
+
+  gap: 4px;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 13px;
+
+  line-height: 1.7;
+}
+
+
+.capture-discard__note {
+  padding:
+    9px
+    12px;
+
+  border:
+    1px solid
+    color-mix(in srgb, var(--color-warning, #d97706) 32%, transparent);
+
+  border-radius:
+    var(--radius-md);
+
+  background:
+    color-mix(in srgb, var(--color-warning, #d97706) 9%, transparent);
+}
+
+
+/* =========================================
+   OUTCOMES
+========================================= */
+
+.capture-discard__error,
+.capture-discard__uncertain {
+  margin-block-start: 14px;
+
+  padding:
+    12px
+    14px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-md);
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+.capture-discard__error {
+  border-color:
+    var(--color-danger, #dc2626);
+
+  color:
+    var(--color-danger, #dc2626);
+
+  background:
+    color-mix(in srgb, var(--color-danger, #dc2626) 7%, transparent);
+}
+
+
+/* Unknown, not failed: a warning tone, never the failure tone. */
+.capture-discard__uncertain {
+  border-color:
+    var(--color-warning, #d97706);
+
+  color:
+    var(--color-text-primary);
+
+  background:
+    color-mix(in srgb, var(--color-warning, #d97706) 10%, transparent);
+}
+
+
+.capture-discard__error p,
+.capture-discard__uncertain p {
+  margin:
+    0
+    0
+    6px;
+}
+
+
+.capture-discard__error p:last-child,
+.capture-discard__uncertain p:last-child {
+  margin-block-end: 0;
+}
+
+
+.capture-discard__uncertain p:first-child {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================
+   DIALOG ACTIONS
+========================================= */
+
+.capture-discard__actions {
+  margin-block-start: 18px;
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+
+.capture-discard__submit {
+  margin-block-start: 14px;
+
+  padding:
+    9px
+    18px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  border:
+    1px solid
+    var(--color-danger, #dc2626);
+
+  border-radius:
+    var(--radius-md);
+
+  color:
+    var(--color-danger, #dc2626);
+
+  background:
+    color-mix(in srgb, var(--color-danger, #dc2626) 8%, transparent);
+
+  font: inherit;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+.capture-discard__status {
+  margin:
+    8px
+    0
+    0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 13px;
+}
+
+
+.capture-discard__status:empty {
+  display: none;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 640px) {
+  .capture-discard {
+    padding:
+      16px;
+  }
+
+
+  .capture-discard__open,
+  .capture-discard__submit,
+  .capture-discard__cancel,
+  .capture-discard__check {
+    width: 100%;
+
+    justify-content: center;
+  }
+}

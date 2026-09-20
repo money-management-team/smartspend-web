@@ -1,0 +1,192 @@
+.import-panel {
+  margin-top: 16px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.import-panel__header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+  text-align: start;
+}
+
+.import-panel__header h2 {
+  margin: 0;
+
+  color: var(--color-text-strong);
+
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.import-panel__header p {
+  margin: 4px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.import-panel__body {
+  padding: 16px 20px 20px;
+}
+
+/* Shared form controls of the wizard steps. */
+.import-panel__field {
+  min-width: 0;
+
+  display: grid;
+  gap: 5px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 11px;
+  text-align: start;
+}
+
+.import-panel__field select,
+.import-panel__field input {
+  width: 100%;
+  height: 36px;
+  padding-inline: 10px;
+
+  box-sizing: border-box;
+
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  outline: none;
+
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 12px;
+}
+
+.import-panel__field select:focus,
+.import-panel__field input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--input-focus-ring);
+}
+
+.import-panel__field [aria-invalid="true"] {
+  border-color: var(--color-danger);
+}
+
+:root[data-theme="dark"] .import-panel__field input {
+  color-scheme: dark;
+}
+
+.import-panel__label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.import-panel__field-error {
+  color: var(--color-danger);
+  font-size: 11px;
+}
+
+.import-panel__hint {
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+.import-panel__alert {
+  margin: 14px 0 0;
+  padding: 10px 14px;
+
+  border-radius: var(--radius-md);
+
+  color: var(--color-danger);
+  background: var(--danger-soft);
+
+  font-size: 12px;
+  text-align: start;
+}
+
+.import-panel__alert p {
+  margin: 0;
+}
+
+.import-panel__alert ul {
+  margin: 6px 0 0;
+  padding-inline-start: 18px;
+}
+
+.import-panel__actions {
+  margin-top: 18px;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.import-panel__primary,
+.import-panel__secondary {
+  height: 38px;
+  padding: 0 18px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  border-radius: 999px;
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.import-panel__primary svg,
+.import-panel__secondary svg {
+  width: 15px;
+  height: 15px;
+}
+
+.import-panel__primary {
+  border: 1px solid var(--color-primary);
+  color: var(--navigation-active-text);
+  background: var(--color-primary);
+}
+
+.import-panel__primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.import-panel__secondary {
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+}
+
+.import-panel__secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.import-panel__primary:disabled,
+.import-panel__secondary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .import-panel__header,
+  .import-panel__body {
+    padding-inline: 15px;
+  }
+}

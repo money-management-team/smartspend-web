@@ -18,18 +18,24 @@ Both routes are in the `userRoutes` group, behind `RequireAuth` + `DashboardLayo
 
 | Constant | URL | Page |
 | --- | --- | --- |
-| `PATH.USER.FINANCIAL_OPERATIONS` | `/dashboard/financial-operations` | `src/features/Dashboards/User/FinancialOperations/FinancialOperations.jsx` (new operation form + transactions list) |
+| `PATH.USER.FINANCIAL_OPERATIONS` | `/dashboard/financial-operations` | `src/features/Dashboards/User/FinancialOperations/FinancialOperations.jsx` (guided capture flow + transactions list) |
 | `PATH.USER.TRANSACTION_DETAILS` | `/dashboard/financial-operations/:transactionId` | `src/features/Dashboards/User/TransactionDetails/TransactionDetails.jsx` |
 
 - Build detail links with `getTransactionDetailsPath(id)`. The details route is nested under the list path, so the sidebar's "Financial operations" item stays highlighted.
-- `getNewOperationPath(type)` (`?new=income|expense`) opens the page with the form on that type; the Dashboard hero's Income / Expense buttons use it. `?new=transfer` redirects to the transfers form, so older links still work.
+- `getNewOperationPath(type)` (`?new=income|expense`) opens the page on the manual-entry tab with the form on that type; the Dashboard hero's Income / Expense buttons use it. `?new=transfer` redirects to the transfers form, so older links still work.
 - List filters, sort and page live in the URL query (`type`, `account_id`, `category_id`, `status`, `date_from`, `date_to`, `sort`, `page`), so the details page's back link and the browser's back button return to the same view.
 
 ## Flow
 
 ```
 Financial operations
- ├─ New operation: Expense | Income ── POST (Idempotency-Key) ──▶ list + balances refetched
+ ├─ Step 1: choose the account (GET /accounts)
+ ├─ Step 2: choose an input method
+ │   ├─ Manual entry: Expense | Income ─┐
+ │   ├─ Voice / Receipt (no backend yet) ┤ (both point at manual entry)
+ │   └─ Statement ──▶ import wizard      │
+ │                                       ▼
+ │                        Review (receipt) ── POST (Idempotency-Key) ──▶ list + balances refetched
  └─ Transactions list (GET /transactions, paginated, filtered)
      ├─ Reverse (row action, reason) ── POST …/reverse ──▶ list refetched
      └─ click a row ──▶ Transaction details (GET /transactions/{id})
@@ -53,7 +59,13 @@ Financial operations
 | --- | --- |
 | `src/features/Dashboards/User/api/transactionsApi.js` | `list`, `get`, `createIncome`, `createExpense`, `correct` (PATCH), `reverse` |
 | `src/features/Dashboards/User/FinancialOperations/transactionHelpers.js` | Eligibility rules, pagination parsing, URL filters, amount validation, idempotent attempts, error wording |
-| `…/FinancialOperations/components/NewOperation/` | Add income / expense / transfer form |
+| `…/FinancialOperations/components/OperationsIntro/` | Hero, flow strip, today's expense total |
+| `…/FinancialOperations/components/AccountStep/` | Step 1: the account every operation is booked on |
+| `…/FinancialOperations/components/CaptureStep/` | Step 2: method tabs + the shared panel/button styles |
+| `…/FinancialOperations/components/NewOperation/` | Manual entry panel (opens the review, does not post) |
+| `…/FinancialOperations/components/VoiceCapture/`, `…/ReceiptCapture/` | Input methods with no backend yet |
+| `…/FinancialOperations/components/StatementCapture/` | Hand-off to the import wizard |
+| `…/FinancialOperations/components/ReviewOperationDialog/` | Receipt confirmation; posts income / expense |
 | `…/FinancialOperations/components/Ledger/` | Paginated list with rows, badges, pagination |
 | `…/FinancialOperations/components/TransactionFilters/` | Account, category, status, date range, sort |
 | `…/FinancialOperations/components/TransactionStatusBadge/` | Status badge (list + details) |

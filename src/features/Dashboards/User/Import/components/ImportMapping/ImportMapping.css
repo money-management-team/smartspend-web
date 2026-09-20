@@ -1,0 +1,69 @@
+.import-mapping {
+  display: grid;
+  gap: 18px;
+}
+
+.import-mapping__group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+
+  display: grid;
+  gap: 10px;
+
+  border: 0;
+}
+
+.import-mapping__group legend {
+  margin-bottom: 4px;
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  color: var(--color-text-strong);
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.import-mapping__group legend svg {
+  width: 15px;
+  height: 15px;
+  color: var(--color-primary);
+}
+
+.import-mapping__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px 14px;
+}
+
+.import-mapping__suggested {
+  padding: 0 7px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+
+  border-radius: var(--radius-pill);
+
+  color: var(--color-insights);
+  background: var(--insights-soft);
+
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.import-mapping__suggested svg {
+  width: 11px;
+  height: 11px;
+}
+
+.import-mapping__empty {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: 13px;
+  text-align: start;
+}

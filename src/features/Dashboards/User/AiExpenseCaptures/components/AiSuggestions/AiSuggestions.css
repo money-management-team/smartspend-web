@@ -1,0 +1,172 @@
+/* =========================================
+   AI SUGGESTIONS PANEL
+========================================= */
+
+.ai-suggestions {
+  padding:
+    22px
+    24px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 17px;
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    var(--shadow-card);
+}
+
+
+.ai-suggestions__header h2 {
+  margin:
+    0
+    0
+    6px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color:
+    var(--color-text-primary);
+
+  font-family:
+    var(--font-heading);
+
+  font-size: 17px;
+
+  font-weight: 700;
+}
+
+
+.ai-suggestions__header h2 svg {
+  flex: none;
+
+  color:
+    var(--color-insights);
+}
+
+
+.ai-suggestions__header p {
+  margin: 0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+.ai-suggestions__empty {
+  margin:
+    16px
+    0
+    0;
+
+  color:
+    var(--color-text-muted);
+
+  font-size: 13px;
+}
+
+
+/* =========================================
+   SUGGESTION LIST
+========================================= */
+
+.ai-suggestions__list {
+  margin:
+    16px
+    0
+    0;
+
+  padding: 0;
+
+  list-style: none;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fit, minmax(230px, 1fr));
+
+  gap: 12px;
+}
+
+
+.ai-suggestions__item {
+  padding:
+    12px
+    14px;
+
+  display: grid;
+
+  gap: 4px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-md);
+
+  background:
+    var(--color-surface-soft);
+}
+
+
+.ai-suggestions__field {
+  color:
+    var(--color-text-muted);
+
+  font-size: 11px;
+
+  font-weight: 600;
+}
+
+
+.ai-suggestions__value {
+  overflow-wrap: anywhere;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 14px;
+
+  font-weight: 600;
+}
+
+
+/*
+ * Confidence is a hint about the model, not a verdict on the value, so it
+ * gets no success / warning tone of its own.
+ */
+.ai-suggestions__confidence {
+  color:
+    var(--color-text-muted);
+
+  font-size: 11px;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 640px) {
+  .ai-suggestions {
+    padding:
+      18px
+      16px;
+  }
+
+
+  .ai-suggestions__list {
+    grid-template-columns: 1fr;
+  }
+}

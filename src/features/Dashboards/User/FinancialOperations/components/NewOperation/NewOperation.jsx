@@ -1,71 +1,50 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
+import { LuArrowRight, LuWalletCards } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
-import {
-  getNewTransferPath,
-  getTransactionDetailsPath,
-} from "../../../../../../routes/Path";
+import { getNewTransferPath } from "../../../../../../routes/Path";
 import { getApiErrorMessage } from "../../../api/apiClient";
-import { transactionsApi } from "../../../api/transactionsApi";
-import { getDisplayLocale } from "../../../Accounts/accountHelpers";
-import { formatMoney } from "../../../utils/formatters";
-import {
-  createIdempotentAttempt,
-  getAmountError,
-  getTodayInputValue,
-  getTransactionErrorMessage,
-  isInsufficientBalanceError,
-  isTransactionEntity,
-  toOccurredAt,
-} from "../../transactionHelpers";
+import { getAmountError, getTodayInputValue } from "../../transactionHelpers";
 
 import "./NewOperation.css";
 
 const OPERATION_TYPES = ["expense", "income"];
 
-const UNKNOWN_OUTCOME = ["NETWORK_ERROR", "TIMEOUT", "SERVER_ERROR", "MALFORMED_RESPONSE"];
-
 const emptyForm = () => ({
   amount: "",
   category_id: "",
-  account_id: "",
   note: "",
   reference_number: "",
   date: getTodayInputValue(),
 });
 
 /*
- * Records income and expenses (POST /transactions/income|expense). Every write
- * carries an Idempotency-Key that stays the same while the user retries the
- * same payload, so a double click or a retry after a timeout can't record the
- * money twice.
+ * Manual entry panel of the capture card. It collects the operation and hands
+ * it to the review dialog, which is what actually posts it
+ * (POST /transactions/income|expense) — every input method ends at the same
+ * review step, so nothing is recorded straight from a form.
  *
  * Transfers are not recorded here: they move money between two accounts and
  * are neither income nor expense, so they live in the Transfers section.
  */
 export default function NewOperation({
-  accounts,
+  account,
   categories,
   initialType = "expense",
   isLoadingOptions = false,
   optionsError = null,
   onRetryOptions,
-  onCreated,
+  onRequireAccount,
+  onReview,
 }) {
-  const { t, i18n } = useTranslation();
-  const locale = getDisplayLocale(i18n.language);
+  const { t } = useTranslation();
 
   const [type, setType] = useState(() =>
     OPERATION_TYPES.includes(initialType) ? initialType : "expense",
   );
   const [form, setForm] = useState(emptyForm);
   const [errors, setErrors] = useState({});
-  // { tone: "success" | "error", text, hint?, transactionId? }
-  const [feedback, setFeedback] = useState(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const pendingRef = useRef(false);
-  const [attempt] = useState(() => createIdempotentAttempt("operation"));
 
   const isExpense = type === "expense";
 
@@ -74,12 +53,6 @@ export default function NewOperation({
     [categories, type],
   );
 
-  const sourceAccount =
-    accounts.find((account) => String(account.id) === String(form.account_id)) ??
-    accounts[0] ??
-    null;
-  const sourceAccountId = String(sourceAccount?.id ?? "");
-
   // Income: "" means no category (optional). Expense: must be chosen.
   const selectedCategoryId = availableCategories.some(
     (category) => String(category.id) === String(form.category_id),
@@ -87,67 +60,34 @@ export default function NewOperation({
     ? String(form.category_id)
     : "";
 
-  const isSubmitDisabled =
-    isSubmitting ||
-    isLoadingOptions ||
-    !sourceAccountId ||
-    (isExpense && availableCategories.length === 0);
-
-  const clearFeedback = () => {
-    setFeedback(null);
-  };
-
   const handleChange = (event) => {
     const { name, value } = event.target;
 
     setForm((previous) => ({ ...previous, [name]: value }));
     setErrors((current) => ({ ...current, [name]: undefined }));
-    clearFeedback();
   };
 
   const selectType = (item) => {
-    if (item === type || pendingRef.current) return;
+    if (item === type) return;
     setType(item);
     setErrors({});
-    clearFeedback();
   };
 
   const validate = () => {
     const nextErrors = {};
     const amountError = getAmountError(form.amount);
 
-    if (amountError) nextErrors.amount = [t(`dashboard.transactions.validation.${amountError}`)];
-    if (!sourceAccountId) nextErrors.account_id = [t("dashboard.transactions.validation.accountRequired")];
+    if (amountError) nextErrors.amount = t(`dashboard.transactions.validation.${amountError}`);
     if (isExpense && !selectedCategoryId) {
-      nextErrors.category_id = [t("dashboard.transactions.validation.categoryRequired")];
+      nextErrors.category_id = t("dashboard.transactions.validation.categoryRequired");
     }
 
     return nextErrors;
   };
 
-  const buildRequest = () => {
-    const payload = {
-      account_id: Number(sourceAccountId),
-      category_id: selectedCategoryId ? Number(selectedCategoryId) : undefined,
-      amount: form.amount.trim(),
-      description: form.note.trim() || undefined,
-      reference_number: form.reference_number.trim() || undefined,
-      occurred_at: toOccurredAt(form.date),
-    };
-
-    return {
-      payload,
-      send: (key) =>
-        type === "income"
-          ? transactionsApi.createIncome(payload, key)
-          : transactionsApi.createExpense(payload, key),
-    };
-  };
-
-  const handleSubmit = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
-    // Synchronous guard: a double click fires twice before React re-renders.
-    if (pendingRef.current) return;
+    if (!onRequireAccount()) return;
 
     const nextErrors = validate();
     if (Object.keys(nextErrors).length > 0) {
@@ -155,111 +95,66 @@ export default function NewOperation({
       return;
     }
 
-    const { payload, send } = buildRequest();
-    const idempotencyKey = attempt.keyFor({ type, ...payload });
-
-    pendingRef.current = true;
-    setIsSubmitting(true);
     setErrors({});
-    clearFeedback();
-
-    let response;
-
-    try {
-      response = await send(idempotencyKey);
-      attempt.settle(null);
-    } catch (error) {
-      attempt.settle(error);
-
-      if (error?.code === "VALIDATION_ERROR") setErrors(error.errors ?? {});
-      setFeedback({
-        tone: "error",
-        text:
-          error?.code === "UNAUTHENTICATED"
-            ? getApiErrorMessage(error, t)
-            : getTransactionErrorMessage(error, t, "create"),
-        hint: isInsufficientBalanceError(error)
-          ? t("dashboard.transactions.errors.insufficientBalanceHint")
-          : UNKNOWN_OUTCOME.includes(error?.code)
-            ? t("dashboard.transactions.errors.unknownOutcome")
-            : "",
-      });
-      pendingRef.current = false;
-      setIsSubmitting(false);
-
-      // The outcome is unknown: refresh so the list shows it if it was saved.
-      if (UNKNOWN_OUTCOME.includes(error?.code)) onCreated?.();
-      return;
-    }
-
-    const created = response?.data?.transaction;
-    setFeedback({
-      tone: "success",
-      text: t(
-        type === "income"
-          ? "dashboard.financialOperations.messages.incomeCreated"
-          : "dashboard.financialOperations.messages.expenseCreated",
-      ),
-      transactionId: isTransactionEntity(created) ? created.id : null,
+    onReview({
+      type,
+      method: "manual",
+      amount: form.amount.trim(),
+      category_id: selectedCategoryId,
+      description: form.note.trim(),
+      reference_number: form.reference_number.trim(),
+      date: form.date,
+      // Clears the panel once the operation is actually recorded.
+      onRecorded: () => setForm(emptyForm()),
     });
-    setForm((current) => ({
-      ...current,
-      amount: "",
-      note: "",
-      reference_number: "",
-    }));
-
-    pendingRef.current = false;
-    setIsSubmitting(false);
-    // Balances and the list come back from the backend; nothing is
-    // recalculated here.
-    onCreated?.();
   };
 
-  const fieldErrors = (name) =>
-    errors[name]?.map((error) => <small key={error}>{error}</small>);
-
   return (
-    <section className="new-operation" id="new-operation">
-      <header className="new-operation__header">
-        <h2>{t("dashboard.financialOperations.newOperation.title")}</h2>
-      </header>
+    <form className="capture-panel new-operation" onSubmit={handleSubmit} noValidate>
+      <div className="new-operation__heading">
+        <span className="capture-panel__kicker">
+          {t("dashboard.financialOperations.manual.kicker")}
+        </span>
 
-      <form className="new-operation__form" onSubmit={handleSubmit} noValidate>
-        <div
-          className="new-operation__types"
-          role="group"
-          aria-label={t("dashboard.transactions.fields.type")}
-        >
-          {OPERATION_TYPES.map((item) => (
-            <button
-              key={item}
-              type="button"
-              aria-pressed={type === item}
-              className={
-                type === item
-                  ? "new-operation__type new-operation__type--active"
-                  : "new-operation__type"
-              }
-              onClick={() => selectType(item)}
-              disabled={isSubmitting}
-            >
-              {t(`dashboard.financialOperations.newOperation.${item}`)}
-            </button>
-          ))}
-        </div>
+        <h3>{t("dashboard.financialOperations.manual.title")}</h3>
+        <p>{t("dashboard.financialOperations.manual.description")}</p>
+      </div>
 
-        {optionsError && (
-          <p className="new-operation__message new-operation__message--error" role="alert">
-            {getApiErrorMessage(optionsError, t)}{" "}
-            <button type="button" className="new-operation__link" onClick={onRetryOptions}>
-              {t("common.retry")}
-            </button>
-          </p>
-        )}
+      <div
+        className="new-operation__types"
+        role="group"
+        aria-label={t("dashboard.transactions.fields.type")}
+      >
+        {OPERATION_TYPES.map((item) => (
+          <button
+            key={item}
+            type="button"
+            aria-pressed={type === item}
+            className={
+              type === item
+                ? "new-operation__type new-operation__type--active"
+                : "new-operation__type"
+            }
+            onClick={() => selectType(item)}
+          >
+            {t(`dashboard.financialOperations.newOperation.${item}`)}
+          </button>
+        ))}
+      </div>
 
-        <label className="new-operation__field">
-          <span>{t("dashboard.transactions.fields.amount")}</span>
+      {optionsError && (
+        <p className="new-operation__error" role="alert">
+          {getApiErrorMessage(optionsError, t)}{" "}
+          <button type="button" className="new-operation__link" onClick={onRetryOptions}>
+            {t("common.retry")}
+          </button>
+        </p>
+      )}
+
+      <label className="new-operation__amount">
+        <span>{t("dashboard.transactions.fields.amount")}</span>
+
+        <div>
           <input
             name="amount"
             value={form.amount}
@@ -268,12 +163,27 @@ export default function NewOperation({
             inputMode="decimal"
             autoComplete="off"
             dir="ltr"
-            disabled={isSubmitting}
             aria-invalid={errors.amount ? true : undefined}
             required
           />
-          {fieldErrors("amount")}
-          {fieldErrors("currency_code")}
+          {account && <b>{account.currency_code}</b>}
+        </div>
+
+        {errors.amount && <small>{errors.amount}</small>}
+      </label>
+
+      <div className="new-operation__grid">
+        <label className="new-operation__field">
+          <span>{t("dashboard.financialOperations.form.note")}</span>
+          <input
+            type="text"
+            name="note"
+            value={form.note}
+            onChange={handleChange}
+            placeholder={t("dashboard.financialOperations.form.notePlaceholder")}
+            maxLength={255}
+            dir="auto"
+          />
         </label>
 
         <label className="new-operation__field">
@@ -286,7 +196,7 @@ export default function NewOperation({
             name="category_id"
             value={selectedCategoryId}
             onChange={handleChange}
-            disabled={isSubmitting || availableCategories.length === 0}
+            disabled={isLoadingOptions || availableCategories.length === 0}
             aria-invalid={errors.category_id ? true : undefined}
             required={isExpense}
           >
@@ -305,45 +215,19 @@ export default function NewOperation({
               <option value={category.id} key={category.id}>{category.name}</option>
             ))}
           </select>
-          {fieldErrors("category_id")}
+
+          {errors.category_id && <small>{errors.category_id}</small>}
         </label>
 
         <label className="new-operation__field">
-          <span>{t("dashboard.transactions.fields.account")}</span>
-
-          <select
-            name="account_id"
-            value={sourceAccountId}
-            onChange={handleChange}
-            disabled={isSubmitting || accounts.length === 0}
-            aria-invalid={errors.account_id ? true : undefined}
-            required
-          >
-            {accounts.length === 0 && (
-              <option value="">{t("dashboard.financialOperations.form.noAccounts")}</option>
-            )}
-            {accounts.map((account) => (
-              <option value={account.id} key={account.id}>
-                {account.name} ({formatMoney(account.current_balance, account.currency_code, locale)})
-              </option>
-            ))}
-          </select>
-          {fieldErrors("account_id")}
-        </label>
-
-        <label className="new-operation__field">
-          <span>{t("dashboard.financialOperations.form.note")}</span>
+          <span>{t("dashboard.transactions.fields.date")}</span>
           <input
-            type="text"
-            name="note"
-            value={form.note}
+            type="date"
+            name="date"
+            value={form.date}
             onChange={handleChange}
-            placeholder={t("dashboard.financialOperations.form.notePlaceholder")}
-            maxLength={255}
-            dir="auto"
-            disabled={isSubmitting}
+            required
           />
-          {fieldErrors("description")}
         </label>
 
         <label className="new-operation__field">
@@ -358,57 +242,29 @@ export default function NewOperation({
             onChange={handleChange}
             maxLength={100}
             dir="auto"
-            disabled={isSubmitting}
           />
-          {fieldErrors("reference_number")}
         </label>
 
-        <label className="new-operation__field">
-          <span>{t("dashboard.transactions.fields.date")}</span>
-          <input
-            type="date"
-            name="date"
-            value={form.date}
-            onChange={handleChange}
-            disabled={isSubmitting}
-            required
-          />
-          {fieldErrors("occurred_at")}
-        </label>
+        {/* The account comes from step 1, so it is shown, not chosen again. */}
+        <div className="new-operation__field new-operation__account">
+          <span>{t("dashboard.transactions.fields.account")}</span>
 
-        <button
-          type="submit"
-          className="new-operation__submit"
-          disabled={isSubmitDisabled}
-          aria-busy={isSubmitting || undefined}
-        >
-          {isSubmitting
-            ? t("common.saving")
-            : t(`dashboard.financialOperations.form.submit.${type}`)}
-        </button>
-
-        {feedback && (
-          <div
-            className={
-              feedback.tone === "error"
-                ? "new-operation__message new-operation__message--error"
-                : "new-operation__message"
-            }
-            role={feedback.tone === "error" ? "alert" : "status"}
-          >
-            <p dir="auto">{feedback.text}</p>
-            {feedback.hint && <p>{feedback.hint}</p>}
-            {errors.idempotency_key?.map((error) => <p key={error}>{error}</p>)}
-            {feedback.transactionId != null && (
-              <Link
-                className="new-operation__link"
-                to={getTransactionDetailsPath(feedback.transactionId)}
-              >
-                {t("dashboard.financialOperations.messages.viewTransaction")}
-              </Link>
-            )}
+          <div>
+            <LuWalletCards aria-hidden="true" />
+            <bdi>
+              {account
+                ? account.name
+                : t("dashboard.financialOperations.captureStep.chooseAccountAbove")}
+            </bdi>
           </div>
-        )}
+        </div>
+      </div>
+
+      <div className="new-operation__footer">
+        <button type="submit" className="capture-action" disabled={isLoadingOptions}>
+          {t(`dashboard.financialOperations.review.open.${type}`)}
+          <LuArrowRight aria-hidden="true" />
+        </button>
 
         {/* Transfers move money between two accounts, so they are recorded in
             their own section instead of being duplicated here. */}
@@ -418,7 +274,7 @@ export default function NewOperation({
             {t("dashboard.transfers.add")}
           </Link>
         </p>
-      </form>
-    </section>
+      </div>
+    </form>
   );
 }

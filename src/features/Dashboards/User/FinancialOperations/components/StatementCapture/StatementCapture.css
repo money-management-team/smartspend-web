@@ -1,0 +1,125 @@
+/* =========================================
+   STATEMENT UPLOAD PANEL
+   (shell / headings / buttons come from
+   CaptureStep.css)
+========================================= */
+
+.statement-capture {
+  padding:
+    30px
+    32px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+
+  gap: 18px;
+}
+
+
+.statement-capture__surface {
+  min-height: 182px;
+
+  padding: 26px;
+
+  display: grid;
+
+  grid-template-columns:
+    60px
+    minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 16px;
+
+  border:
+    1.5px dashed
+    var(--border-strong);
+
+  border-radius:
+    var(--radius-lg);
+
+  background:
+    color-mix(in srgb, var(--color-surface-soft) 55%, transparent);
+}
+
+
+.statement-capture__visual {
+  align-self: start;
+
+  width: 60px;
+  height: 60px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius:
+    var(--radius-lg);
+
+  color:
+    var(--color-primary);
+
+  background:
+    var(--primary-soft);
+
+  font-size: 27px;
+}
+
+
+.statement-capture__copy {
+  min-width: 0;
+}
+
+
+.statement-capture__actions {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  justify-content: center;
+
+  gap: 10px;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 640px) {
+  .statement-capture {
+    padding:
+      20px
+      14px;
+  }
+
+
+  .statement-capture__surface {
+    min-height: 0;
+
+    padding:
+      18px
+      14px;
+
+    grid-template-columns:
+      48px
+      minmax(0, 1fr);
+
+    gap: 12px;
+  }
+
+
+  .statement-capture__visual {
+    width: 48px;
+    height: 48px;
+
+    font-size: 22px;
+  }
+
+
+  .statement-capture__actions .capture-action {
+    width: 100%;
+  }
+}

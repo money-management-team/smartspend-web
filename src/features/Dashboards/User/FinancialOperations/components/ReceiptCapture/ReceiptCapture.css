@@ -1,0 +1,189 @@
+/* =========================================
+   RECEIPT CAPTURE PANEL
+   (shell / headings / buttons come from
+   CaptureStep.css)
+========================================= */
+
+.receipt-capture {
+  padding:
+    30px
+    32px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  justify-content: center;
+}
+
+
+.receipt-capture__surface {
+  min-height: 182px;
+
+  padding: 26px;
+
+  display: grid;
+
+  grid-template-columns:
+    60px
+    minmax(0, 1fr)
+    auto;
+
+  align-items: center;
+
+  gap: 16px;
+
+  border:
+    1.5px dashed
+    var(--border-strong);
+
+  border-radius:
+    var(--radius-lg);
+
+  background:
+    color-mix(in srgb, var(--color-surface-soft) 55%, transparent);
+
+  transition:
+    border-color var(--transition-normal),
+    background var(--transition-normal);
+}
+
+
+.receipt-capture__surface--filled,
+.receipt-capture__surface:hover {
+  border-color:
+    color-mix(in srgb, var(--color-primary) 45%, transparent);
+
+  background:
+    color-mix(in srgb, var(--primary-soft) 70%, var(--color-surface));
+}
+
+
+.receipt-capture__visual {
+  width: 60px;
+  height: 60px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius:
+    var(--radius-lg);
+
+  color:
+    var(--color-primary);
+
+  background:
+    var(--primary-soft);
+
+  font-size: 28px;
+}
+
+
+.receipt-capture__copy {
+  min-width: 0;
+}
+
+
+.receipt-capture__copy h3 {
+  overflow: hidden;
+
+  font-size: 17px;
+
+  white-space: nowrap;
+
+  text-overflow: ellipsis;
+}
+
+
+.receipt-capture__analyze {
+  margin:
+    16px
+    auto
+    0;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 640px) {
+  .receipt-capture {
+    padding:
+      20px
+      14px;
+  }
+
+
+  .receipt-capture__surface {
+    min-height: 0;
+
+    padding:
+      18px
+      14px;
+
+    grid-template-columns:
+      48px
+      minmax(0, 1fr);
+
+    gap: 12px;
+  }
+
+
+  .receipt-capture__visual {
+    width: 48px;
+    height: 48px;
+
+    font-size: 22px;
+  }
+
+
+  .receipt-capture__surface .capture-action {
+    grid-column: 1 / -1;
+
+    width: 100%;
+  }
+
+
+  .receipt-capture__analyze {
+    width: 100%;
+  }
+}
+
+
+/* =========================================
+   UPLOAD FEEDBACK
+========================================= */
+
+/* A local file problem, told apart from a failed request. */
+.receipt-capture__error {
+  margin:
+    12px
+    0
+    0;
+
+  color:
+    var(--color-danger, #dc2626);
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+.receipt-capture__status {
+  margin:
+    8px
+    0
+    0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 13px;
+}
+
+
+.receipt-capture__status:empty {
+  display: none;
+}

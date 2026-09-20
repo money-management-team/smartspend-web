@@ -410,73 +410,157 @@
 
 
 /* =========================================
-   DETECTED ACCOUNT
+   OPTIONS, ERRORS AND SUBMIT
 ========================================= */
 
-.detected-account {
-  width:
-    min(
-      100%,
-      384px
-    );
+.upload-selected-file__change {
+  height: 30px;
+  padding: 0 12px;
 
-  margin-top: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
 
-  display: grid;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
 
-  align-self: flex-start;
-
-  gap: 7px;
-
-  color:
-    var(--color-text-primary);
-
+  font: inherit;
   font-size: 11px;
 
+  cursor: pointer;
+}
+
+.upload-selected-file__change:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.upload-selected-file button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.upload-statement__error,
+.upload-statement__note {
+  margin: 10px 0 0;
+  font-size: 12px;
   text-align: start;
 }
 
-
-.detected-account select {
-  width: 100%;
-
-  height: 37px;
-
-  padding:
-    0
-    12px;
-
-  box-sizing: border-box;
-
-  border:
-    1px solid
-    var(--color-border);
-
-  border-radius:
-    11px;
-
-  outline: none;
-
-  color:
-    var(--color-text-primary);
-
-  background:
-    var(--color-surface);
-
-  font: inherit;
-
-  font-size: 11px;
-
-  box-shadow: var(--shadow-xs);
+.upload-statement__error {
+  color: var(--color-danger);
 }
 
+.upload-statement__note {
+  color: var(--color-text-muted);
+}
 
-.detected-account select:focus {
-  border-color:
-    var(--color-primary);
+.upload-statement__option {
+  margin-top: 18px;
 
-  box-shadow:
-    0 0 0 3px var(--input-focus-ring);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  color: var(--color-text-primary);
+
+  font-size: 12px;
+  text-align: start;
+
+  cursor: pointer;
+}
+
+.upload-statement__option input {
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+
+  accent-color: var(--color-primary);
+}
+
+.upload-statement__option span {
+  display: grid;
+  gap: 2px;
+}
+
+.upload-statement__option small {
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+.upload-statement__alert {
+  margin-top: 14px;
+  padding: 10px 14px;
+
+  border-radius: 12px;
+
+  color: var(--color-danger);
+  background: var(--danger-soft);
+
+  font-size: 12px;
+  text-align: start;
+}
+
+.upload-statement__alert p {
+  margin: 0;
+}
+
+.upload-statement__alert ul {
+  margin: 6px 0 0;
+  padding-inline-start: 18px;
+}
+
+.upload-statement__actions {
+  margin-top: 18px;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.upload-statement__actions p {
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  text-align: start;
+}
+
+.upload-statement__submit {
+  height: 38px;
+  padding: 0 18px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 0;
+  border-radius: 999px;
+
+  color: var(--navigation-active-text);
+  background: var(--color-primary);
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.upload-statement__submit svg {
+  width: 15px;
+  height: 15px;
+}
+
+.upload-statement__submit:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.upload-statement__submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 
@@ -492,14 +576,6 @@
 
 [dir="rtl"]
 .upload-statement__header {
-  text-align: right;
-}
-
-
-[dir="rtl"]
-.detected-account {
-  align-self: flex-start;
-
   text-align: right;
 }
 
@@ -539,9 +615,30 @@
 
     border-radius: 16px;
   }
+}
+/* Parsing hints; rendered only when a list offers a real choice. */
+.upload-statement__parsing {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+  margin-block-start: 0.9rem;
+}
 
+.upload-statement__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
 
-  .detected-account {
-    width: 100%;
-  }
+.upload-statement__field select {
+  min-inline-size: 180px;
+  padding: 0.5rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-strong);
+  font-family: inherit;
+  font-size: 0.92rem;
 }

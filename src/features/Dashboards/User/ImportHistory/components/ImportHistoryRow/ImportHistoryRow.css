@@ -1,0 +1,101 @@
+.import-history-row {
+  display: grid;
+  gap: 0.9rem;
+  padding: 1.1rem;
+  border-radius: 14px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-muted, var(--color-surface));
+}
+
+.import-history-row__main {
+  display: flex;
+  gap: 0.8rem;
+  align-items: flex-start;
+}
+
+.import-history-row__icon {
+  flex-shrink: 0;
+  inline-size: 1.6rem;
+  block-size: 1.6rem;
+  color: var(--color-primary);
+}
+
+.import-history-row__identity h2 {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-heading);
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--color-text-strong);
+  word-break: break-word;
+}
+
+.import-history-row__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  color: var(--color-text-muted);
+  font-size: 0.86rem;
+}
+
+.import-history-row__dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin: 0;
+}
+
+.import-history-row__dates dt {
+  margin-bottom: 0.2rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.import-history-row__dates dd {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-text-strong);
+}
+
+.import-history-row__counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.import-history-row__counts li {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: baseline;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.import-history-row__counts strong {
+  color: var(--color-text-strong);
+}
+
+.import-history-row__action {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  justify-self: start;
+  padding: 0.5rem 1.05rem;
+  border-radius: 10px;
+  background: var(--primary-soft);
+  color: var(--color-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.import-history-row__action:hover {
+  background: color-mix(in srgb, var(--color-primary) 18%, transparent);
+}

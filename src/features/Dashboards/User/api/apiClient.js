@@ -258,6 +258,65 @@ function createRequestSignal(callerSignal, timeoutMs) {
   };
 }
 
+const isFormData = (value) =>
+  typeof FormData !== "undefined" && value instanceof FormData;
+
+function createRequestHeaders(headers, auth) {
+  const token = auth ? getAuthToken() : null;
+  const localStorage = getBrowserStorage("localStorage");
+  const requestHeaders = {
+    Accept: "application/json",
+    "Accept-Language": readStorageValue(localStorage, "i18nextLng") ?? "ar",
+    ...headers,
+  };
+
+  if (token) requestHeaders.Authorization = `Bearer ${token}`;
+
+  return requestHeaders;
+}
+
+// fetch with the caller's signal and a timeout; network failures and
+// timeouts become ApiErrors, a caller abort is rethrown as is.
+async function sendRequest(url, init, { signal, timeoutMs }) {
+  const requestSignal = createRequestSignal(signal, timeoutMs);
+
+  try {
+    return await fetch(url, { ...init, signal: requestSignal.signal });
+  } catch (error) {
+    if (error.name === "AbortError" && signal?.aborted) throw error;
+
+    if (error.name === "AbortError" && requestSignal.didTimeOut()) {
+      throw new ApiError("", { code: "TIMEOUT", cause: error });
+    }
+
+    throw new ApiError("", { code: "NETWORK_ERROR", cause: error });
+  } finally {
+    requestSignal.cleanup();
+  }
+}
+
+// The ApiError for a failed response (non-OK status or `status: false`).
+// A 401 on an authenticated request also ends the session.
+function createResponseError(response, result, auth) {
+  if (response.status === 401 && auth) {
+    clearAuthSession();
+    notifySessionExpired();
+  }
+
+  return new ApiError(result?.message ?? "", {
+    status: response.status,
+    errors: result?.errors ?? {},
+    retryAfter: response.headers.get("Retry-After"),
+    code: getErrorCode(response.status),
+    payload: result,
+  });
+}
+
+/*
+ * JSON request. `body` is sent as JSON, except a FormData body (file
+ * uploads), which is passed to fetch untouched so the browser sets the
+ * multipart Content-Type with its boundary.
+ */
 export async function apiRequest(
   endpoint,
   {
@@ -270,38 +329,20 @@ export async function apiRequest(
     auth = true,
   } = {},
 ) {
-  const token = auth ? getAuthToken() : null;
-  const localStorage = getBrowserStorage("localStorage");
-  const requestHeaders = {
-    Accept: "application/json",
-    "Accept-Language": readStorageValue(localStorage, "i18nextLng") ?? "ar",
-    ...headers,
-  };
+  const requestHeaders = createRequestHeaders(headers, auth);
+  const isMultipart = isFormData(body);
 
-  if (token) requestHeaders.Authorization = `Bearer ${token}`;
-  if (body !== undefined) requestHeaders["Content-Type"] = "application/json";
+  if (body !== undefined && !isMultipart) requestHeaders["Content-Type"] = "application/json";
 
-  const requestSignal = createRequestSignal(signal, timeoutMs);
-  let response;
-
-  try {
-    response = await fetch(`${API_BASE_URL}${endpoint}${createQueryString(query)}`, {
+  const response = await sendRequest(
+    `${API_BASE_URL}${endpoint}${createQueryString(query)}`,
+    {
       method,
       headers: requestHeaders,
-      body: body === undefined ? undefined : JSON.stringify(body),
-      signal: requestSignal.signal,
-    });
-  } catch (error) {
-    if (error.name === "AbortError" && signal?.aborted) throw error;
-
-    if (error.name === "AbortError" && requestSignal.didTimeOut()) {
-      throw new ApiError("", { code: "TIMEOUT", cause: error });
-    }
-
-    throw new ApiError("", { code: "NETWORK_ERROR", cause: error });
-  } finally {
-    requestSignal.cleanup();
-  }
+      body: body === undefined ? undefined : isMultipart ? body : JSON.stringify(body),
+    },
+    { signal, timeoutMs },
+  );
 
   const responseText = await response.text();
   let result = null;
@@ -321,18 +362,7 @@ export async function apiRequest(
   }
 
   if (!response.ok || result?.status === false) {
-    if (response.status === 401 && auth) {
-      clearAuthSession();
-      notifySessionExpired();
-    }
-
-    throw new ApiError(result?.message ?? "", {
-      status: response.status,
-      errors: result?.errors ?? {},
-      retryAfter: response.headers.get("Retry-After"),
-      code: getErrorCode(response.status),
-      payload: result,
-    });
+    throw createResponseError(response, result, auth);
   }
 
   if (!result || typeof result !== "object" || result.status !== true) {
@@ -344,6 +374,144 @@ export async function apiRequest(
   }
 
   return result;
+}
+
+/*
+ * An absolute or relative backend URL as an `apiRequest` / `apiDownload`
+ * endpoint, with its query string kept byte for byte.
+ *
+ * This exists for **signed** URLs (`?expires=…&signature=…`), where the
+ * signature is computed over the exact query as the backend wrote it:
+ * re-encoding it, reordering it or round-tripping it through
+ * `createQueryString` would invalidate it. So the query is never parsed —
+ * everything after `?` is carried across untouched, the same way
+ * `authApi.verifyEmail` passes an emailed signed link through.
+ *
+ * Returns null when the URL points somewhere other than this API, so a
+ * foreign origin can never be sent the caller's bearer token.
+ */
+export function toApiRelativeUrl(url) {
+  const text = String(url ?? "").trim();
+  if (!text) return null;
+
+  /*
+   * "//host/path" and "/\host/path" are protocol-relative: standard URL
+   * resolution reads them as another origin, not as a path on this one. They
+   * are rejected rather than passed on as if they were API-relative.
+   */
+  if (/^[/\\]{2}/.test(text) || /^\/[\\]/.test(text)) return null;
+
+  // Already relative to the API root.
+  if (text.startsWith("/")) return text;
+
+  if (/^https?:\/\//i.test(text)) {
+    const base = `${API_BASE_URL}/`;
+    // Same API, including its `/api` prefix: keep only what follows it.
+    if (text.startsWith(base)) return text.slice(API_BASE_URL.length);
+    return null;
+  }
+
+  return null;
+}
+
+const DOWNLOAD_TIMEOUT_MS = 60_000;
+
+// File name from a Content-Disposition header (RFC 5987 `filename*` first).
+export function getContentDispositionFilename(header) {
+  if (!header) return null;
+
+  const encoded = header.match(/filename\*\s*=\s*([^']*)'[^']*'([^;]+)/i);
+  if (encoded) {
+    try {
+      return decodeURIComponent(encoded[2].trim().replace(/^"(.*)"$/, "$1"));
+    } catch {
+      // Malformed encoding: fall back to the plain parameter.
+    }
+  }
+
+  const plain = header.match(/filename\s*=\s*("([^"]*)"|[^;]+)/i);
+  const name = plain ? (plain[2] ?? plain[1]).trim() : "";
+  return name || null;
+}
+
+/*
+ * Authenticated binary download (e.g. an exported CSV). Same token,
+ * Accept-Language, timeout and 401 handling as apiRequest, but a successful
+ * body is returned as a Blob and never parsed as JSON. Error responses are
+ * still read as the JSON envelope, so their message reaches the user.
+ *
+ * Returns { blob, filename, contentType }; `filename` is null when the
+ * header is missing or not exposed by CORS.
+ */
+export async function apiDownload(
+  endpoint,
+  { query, signal, timeoutMs = DOWNLOAD_TIMEOUT_MS, auth = true } = {},
+) {
+  const headers = createRequestHeaders({ Accept: "*/*" }, auth);
+  const response = await sendRequest(
+    `${API_BASE_URL}${endpoint}${createQueryString(query)}`,
+    { method: "GET", headers },
+    { signal, timeoutMs },
+  );
+  const contentType = response.headers.get("Content-Type") ?? "";
+
+  if (!response.ok) {
+    let result = null;
+
+    try {
+      result = JSON.parse(await response.text());
+    } catch {
+      // Not the JSON envelope: the status code alone describes the error.
+    }
+
+    throw createResponseError(response, result, auth);
+  }
+
+  // A JSON envelope instead of a file means the backend refused it.
+  if (contentType.includes("application/json")) {
+    // No initialiser: the catch below throws, so it is always assigned here.
+    let result;
+
+    try {
+      result = JSON.parse(await response.text());
+    } catch (error) {
+      throw new ApiError("", { status: response.status, code: "MALFORMED_RESPONSE", cause: error });
+    }
+
+    throw result?.status === false
+      ? createResponseError(response, result, auth)
+      : new ApiError("", { status: response.status, code: "MALFORMED_RESPONSE", payload: result });
+  }
+
+  return {
+    blob: await response.blob(),
+    filename: getContentDispositionFilename(response.headers.get("Content-Disposition")),
+    contentType,
+  };
+}
+
+/*
+ * Hands a downloaded Blob to the browser as a file. The object URL exists
+ * only for this click and is revoked right after, so none are leaked.
+ */
+export function saveBlobAsFile(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = filename;
+  link.rel = "noopener";
+  link.style.display = "none";
+  document.body.appendChild(link);
+
+  try {
+    link.click();
+  } finally {
+    link.remove();
+    // Revoked shortly after: some browsers (Safari) start the download
+    // asynchronously after the click and fail if the URL is already gone.
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
 }
 
 export function getApiErrorMessage(error, t) {

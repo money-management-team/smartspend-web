@@ -1,0 +1,206 @@
+/* =========================================
+   VOICE ENTRY PANEL
+   (shell / headings come from CaptureStep.css)
+========================================= */
+
+.voice-capture {
+  padding:
+    32px
+    34px;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    240px;
+
+  align-items: center;
+
+  gap: 28px;
+}
+
+
+.voice-capture__copy {
+  max-width: 460px;
+}
+
+
+/* =========================================
+   RECORDER
+========================================= */
+
+.voice-capture__stage {
+  text-align: center;
+}
+
+
+.voice-capture__orb-wrap {
+  position: relative;
+
+  width: 158px;
+  height: 158px;
+
+  margin:
+    0
+    auto
+    10px;
+
+  display: grid;
+  place-items: center;
+}
+
+
+.voice-capture__pulse {
+  position: absolute;
+
+  width: 114px;
+  height: 114px;
+
+  border:
+    1px solid
+    color-mix(in srgb, var(--color-primary) 24%, transparent);
+
+  border-radius: 50%;
+}
+
+
+.voice-capture__pulse--wide {
+  width: 146px;
+  height: 146px;
+
+  opacity: 0.5;
+}
+
+
+.voice-capture__stage--live .voice-capture__pulse {
+  animation:
+    voice-pulse
+    1.3s ease-out infinite;
+}
+
+
+.voice-capture__stage--live .voice-capture__pulse--wide {
+  animation-delay: 0.42s;
+}
+
+
+@keyframes voice-pulse {
+  from {
+    transform: scale(0.72);
+
+    opacity: 0.65;
+  }
+
+  to {
+    transform: scale(1.08);
+
+    opacity: 0;
+  }
+}
+
+
+.voice-capture__orb {
+  position: relative;
+
+  z-index: 2;
+
+  width: 80px;
+  height: 80px;
+
+  display: grid;
+  place-items: center;
+
+  border: 0;
+
+  border-radius:
+    var(--radius-xl);
+
+  color: #ffffff;
+
+  background:
+    var(--gradient-primary);
+
+  box-shadow:
+    var(--shadow-lg);
+
+  font-size: 30px;
+
+  cursor: pointer;
+
+  transition:
+    transform var(--transition-fast);
+}
+
+
+.voice-capture__orb:hover {
+  transform: scale(1.03);
+}
+
+
+.voice-capture__orb:focus-visible {
+  outline:
+    2px solid
+    var(--color-primary);
+
+  outline-offset: 4px;
+}
+
+
+.voice-capture__stage strong {
+  display: block;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 14px;
+
+  font-weight: 700;
+}
+
+
+.voice-capture__stage small {
+  display: block;
+
+  margin-top: 4px;
+
+  color:
+    var(--color-text-muted);
+
+  font-size: 12px;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 900px) {
+  .voice-capture {
+    grid-template-columns: 1fr;
+
+    padding: 28px;
+
+    text-align: center;
+  }
+
+
+  .voice-capture__copy {
+    margin: 0 auto;
+  }
+
+
+  .voice-capture .capture-notice {
+    justify-items: center;
+
+    text-align: center;
+  }
+}
+
+
+@media (max-width: 640px) {
+  .voice-capture {
+    padding:
+      24px
+      16px;
+  }
+}

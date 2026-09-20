@@ -1,0 +1,511 @@
+/* =========================================
+   REVIEW VALUES PANEL
+========================================= */
+
+.review-values {
+  padding:
+    22px
+    24px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 17px;
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    var(--shadow-card);
+}
+
+
+.review-values__header h2 {
+  margin:
+    0
+    0
+    6px;
+
+  color:
+    var(--color-text-primary);
+
+  font-family:
+    var(--font-heading);
+
+  font-size: 17px;
+
+  font-weight: 700;
+}
+
+
+.review-values__header p {
+  margin: 0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+.review-values__empty {
+  margin:
+    16px
+    0
+    0;
+
+  color:
+    var(--color-text-muted);
+
+  font-size: 13px;
+}
+
+
+/* =========================================
+   VALUE LIST
+========================================= */
+
+.review-values__list {
+  margin:
+    16px
+    0
+    0;
+
+  display: grid;
+
+  gap: 0;
+}
+
+
+.review-values__row {
+  padding:
+    11px
+    0;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(140px, 220px)
+    minmax(0, 1fr);
+
+  align-items: baseline;
+
+  gap: 16px;
+
+  border-block-end:
+    1px solid
+    var(--color-border);
+}
+
+
+.review-values__row:last-child {
+  border-block-end: 0;
+}
+
+
+.review-values__row dt {
+  color:
+    var(--color-text-secondary);
+
+  font-size: 13px;
+}
+
+
+.review-values__row dd {
+  margin: 0;
+
+  overflow-wrap: anywhere;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 14px;
+
+  font-weight: 600;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 640px) {
+  .review-values {
+    padding:
+      18px
+      16px;
+  }
+
+
+  .review-values__row {
+    grid-template-columns: 1fr;
+
+    gap: 3px;
+  }
+}
+
+
+/* =========================================
+   EDITABLE DRAFT FORM
+   Rendered only for a `ready_for_review` capture.
+========================================= */
+
+.review-values__form {
+  margin-block-start: 18px;
+}
+
+
+.review-values__grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap:
+    14px
+    16px;
+}
+
+
+.review-values__field {
+  display: grid;
+
+  gap: 6px;
+
+  min-width: 0;
+}
+
+
+.review-values__field--wide {
+  grid-column: 1 / -1;
+}
+
+
+.review-values__field > span {
+  color:
+    var(--color-text-secondary);
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+
+.review-values__field input,
+.review-values__field select,
+.review-values__field textarea {
+  width: 100%;
+
+  padding:
+    9px
+    12px;
+
+  box-sizing: border-box;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-md);
+
+  color:
+    var(--color-text-primary);
+
+  background:
+    var(--color-surface);
+
+  font: inherit;
+
+  font-size: 14px;
+}
+
+
+.review-values__field textarea {
+  resize: vertical;
+
+  line-height: 1.6;
+}
+
+
+.review-values__field input:focus-visible,
+.review-values__field select:focus-visible,
+.review-values__field textarea:focus-visible {
+  outline:
+    2px solid
+    var(--color-primary);
+
+  outline-offset: 1px;
+}
+
+
+.review-values__field input:disabled,
+.review-values__field select:disabled,
+.review-values__field textarea:disabled {
+  opacity: 0.65;
+
+  cursor: not-allowed;
+}
+
+
+/* The invalid state is carried by the message below the control, not by the
+   border colour alone. */
+.review-values__field [aria-invalid="true"] {
+  border-color:
+    var(--color-danger, #dc2626);
+}
+
+
+.review-values__field-error {
+  display: grid;
+
+  gap: 2px;
+
+  color:
+    var(--color-danger, #dc2626);
+
+  font-size: 12px;
+
+  line-height: 1.5;
+}
+
+
+.review-values__hint {
+  color:
+    var(--color-text-muted);
+
+  font-size: 12px;
+}
+
+
+/* =========================================
+   MESSAGES
+========================================= */
+
+.review-values__options-error,
+.review-values__error,
+.review-values__conflict {
+  margin-block-start: 16px;
+
+  padding:
+    12px
+    14px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-md);
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+.review-values__options-error,
+.review-values__error {
+  border-color:
+    var(--color-danger, #dc2626);
+
+  color:
+    var(--color-danger, #dc2626);
+
+  background:
+    color-mix(in srgb, var(--color-danger, #dc2626) 7%, transparent);
+}
+
+
+.review-values__error p {
+  margin:
+    0
+    0
+    8px;
+}
+
+
+.review-values__error p:last-of-type {
+  margin-block-end: 0;
+}
+
+
+.review-values__conflict {
+  border-color:
+    var(--color-warning, #d97706);
+
+  color:
+    var(--color-text-primary);
+
+  background:
+    color-mix(in srgb, var(--color-warning, #d97706) 9%, transparent);
+}
+
+
+.review-values__conflict p {
+  margin:
+    0
+    0
+    6px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+
+.review-values__conflict-warning {
+  color:
+    var(--color-text-secondary);
+
+  font-size: 12px;
+}
+
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.review-values__actions {
+  margin-block-start: 18px;
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap:
+    10px
+    14px;
+}
+
+
+.review-values__save,
+.review-values__retry,
+.review-values__reload {
+  padding:
+    9px
+    18px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  border:
+    1px solid
+    var(--color-primary);
+
+  border-radius:
+    var(--radius-md);
+
+  color:
+    var(--navigation-active-text);
+
+  background:
+    var(--color-primary);
+
+  font: inherit;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+.review-values__retry,
+.review-values__reload {
+  margin-block-start: 6px;
+
+  padding:
+    7px
+    14px;
+
+  border-color:
+    var(--color-border);
+
+  color:
+    var(--color-text-primary);
+
+  background:
+    var(--color-surface);
+
+  font-size: 13px;
+}
+
+
+.review-values__save:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+
+.review-values__retry:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+
+.review-values__link {
+  padding: 0;
+
+  border: 0;
+
+  color:
+    var(--color-primary);
+
+  background: none;
+
+  font: inherit;
+
+  font-weight: 600;
+
+  text-decoration: underline;
+
+  cursor: pointer;
+}
+
+
+.review-values__status {
+  margin: 0;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 13px;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 720px) {
+  .review-values__grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .review-values__save {
+    width: 100%;
+
+    justify-content: center;
+  }
+}

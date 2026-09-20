@@ -1,0 +1,105 @@
+.import-reverse__open {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.6rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--color-danger, #dc2626) 45%, transparent);
+  background: transparent;
+  color: var(--color-danger, #dc2626);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.import-reverse__open:hover {
+  background: color-mix(in srgb, var(--color-danger, #dc2626) 10%, transparent);
+}
+
+.import-reverse {
+  margin-block-start: 1rem;
+  padding: 1.15rem;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--color-danger, #dc2626) 35%, transparent);
+  background: color-mix(in srgb, var(--color-danger, #dc2626) 7%, var(--color-surface));
+}
+
+.import-reverse__title {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-heading);
+  font-size: 1.05rem;
+  color: var(--color-text-strong);
+}
+
+.import-reverse__body {
+  margin: 0 0 0.6rem;
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+
+.import-reverse__points {
+  margin: 0 0 1rem;
+  padding-inline-start: 1.2rem;
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+.import-reverse__field {
+  display: block;
+}
+
+.import-reverse__field span {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-strong);
+}
+
+.import-reverse__field textarea {
+  inline-size: 100%;
+  padding: 0.65rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-strong);
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+}
+
+.import-reverse__field textarea:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.import-reverse__error {
+  margin: 0.4rem 0 0;
+  color: var(--color-danger, #dc2626);
+  font-size: 0.88rem;
+}
+
+.import-reverse__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.import-reverse__submit {
+  padding: 0.65rem 1.3rem;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-danger, #dc2626);
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.import-reverse__submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
