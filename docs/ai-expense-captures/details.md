@@ -104,6 +104,12 @@ All four writes share **one** action lock on the page: whichever is in flight di
 
 While the backend is still working the note is a live region, and the page polls for the change — see [retry.md](retry.md), which also covers the per-status wording for `uploaded`, `queued` and `processing`.
 
+### Analyzing state (in-flight statuses)
+
+For `uploaded`, `queued` and `processing` (`isCaptureProcessing(status)`), the AI suggestions and review values sections are **not** rendered — there is nothing in either yet, and showing their empty copy ("The AI didn't suggest any values", "no review values yet") reads like the AI came back empty-handed rather than that it is still working. Instead the page shows a `Loading` indicator (`dashboard.aiCaptures.details.analyzing`) in their place, so the user never sees that blank/incomplete screen before the analysis finishes.
+
+The receipt summary panel, the status note, the original-receipt preview (`CaptureSource`, when a signed URL is present) and Discard (where the status allows it) still render as usual — only the sections that depend on an AI result are swapped for the loading indicator.
+
 ## Route and navigation
 
 | Constant | URL |

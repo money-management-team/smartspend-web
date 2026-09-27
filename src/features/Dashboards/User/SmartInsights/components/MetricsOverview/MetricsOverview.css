@@ -1,0 +1,216 @@
+.insights-metrics-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+  margin-bottom: 28px;
+}
+
+@media (max-width: 1100px) {
+  .insights-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .insights-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================
+   KPI CARDS
+========================================= */
+
+.insights-kpi-card {
+  box-sizing: border-box;
+  padding: 20px 22px;
+  border-radius: var(--radius-lg, 16px);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.05));
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.insights-kpi-card--interactive {
+  cursor: pointer;
+}
+
+.insights-kpi-card--interactive:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-primary, #2563eb);
+  box-shadow: var(--shadow-md, 0 4px 6px -1px rgba(0, 0, 0, 0.1));
+}
+
+.insights-kpi-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.insights-kpi-card__sub-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.insights-kpi-card__value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-text-strong);
+  font-family: var(--font-heading, "Tajawal", sans-serif);
+  line-height: 1.15;
+}
+
+.insights-kpi-card__value--orange {
+  color: #ea580c;
+}
+
+.insights-kpi-card__unit {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.insights-kpi-card__desc {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+/* =========================================
+   WELLNESS SCORE CARD (Circular Ring)
+========================================= */
+
+.insights-kpi-card--wellness {
+  flex-direction: row;
+  align-items: center;
+  gap: 18px;
+}
+
+.insights-wellness-circle {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.insights-wellness-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.insights-wellness-bg {
+  fill: none;
+  stroke: var(--color-surface-soft, rgba(0, 0, 0, 0.06));
+  stroke-width: 6;
+}
+
+[data-theme="dark"] .insights-wellness-bg {
+  stroke: rgba(255, 255, 255, 0.1);
+}
+
+.insights-wellness-progress {
+  fill: none;
+  stroke: #10b981;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 800ms ease;
+}
+
+.insights-wellness-score {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.insights-wellness-number {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-text-strong);
+  line-height: 1;
+  font-family: var(--font-heading, "Tajawal", sans-serif);
+}
+
+.insights-wellness-rating {
+  font-size: 10px;
+  font-weight: 700;
+  color: #10b981;
+  margin-top: 1px;
+}
+
+.insights-wellness-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+.insights-wellness-info .insights-kpi-card__title {
+  margin: 0;
+  font-size: 14.5px;
+  font-weight: 750;
+  color: var(--color-text-strong);
+  font-family: var(--font-heading, "Tajawal", sans-serif);
+}
+
+.insights-wellness-pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background-color: var(--color-surface-soft, rgba(0, 0, 0, 0.04));
+  color: var(--color-text-secondary);
+  width: fit-content;
+}
+
+.insights-wellness-timestamp {
+  font-size: 10.5px;
+  color: var(--color-text-muted);
+}
+
+/* =========================================
+   PILL BADGES
+========================================= */
+
+.insights-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.insights-badge--green {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.insights-badge--blue {
+  background-color: var(--primary-soft, rgba(37, 99, 235, 0.08));
+  color: var(--color-primary, #2563eb);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.insights-badge--orange {
+  background-color: rgba(234, 88, 12, 0.1);
+  color: #ea580c;
+  border: 1px solid rgba(234, 88, 12, 0.25);
+}

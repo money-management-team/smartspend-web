@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -17,6 +17,7 @@ import {
   LuTarget,
   LuHandCoins,
   LuChartNoAxesCombined,
+  LuMessageSquare,
   LuSparkles,
   LuBell,
   LuSettings,
@@ -38,7 +39,9 @@ export default function DashboardSidebar({
   onClose,
 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t, i18n } = useTranslation();
+  const isArabic = (i18n.resolvedLanguage || i18n.language)?.toLowerCase().startsWith("ar");
   const { logout } = useAuthContext();
   // Shared with the header bell (GET /notifications/unread-count).
   const { count: unreadCount } = useUnreadNotifications();
@@ -204,7 +207,23 @@ export default function DashboardSidebar({
             "dashboard.sidebar.aiAssistant",
           ),
           path: PATH.USER.AI_ASSISTANT,
+          icon: LuMessageSquare,
+        },
+
+        {
+          label: t(
+            "dashboard.sidebar.smartInsights",
+          ),
+          path: PATH.USER.SMART_INSIGHTS,
           icon: LuSparkles,
+          subItems: [
+            {
+              label: isArabic
+                ? "التوقع المالي لـ 30 يوماً"
+                : "30-Day Financial Forecast",
+              path: PATH.USER.SMART_INSIGHTS_FORECAST,
+            },
+          ],
         },
 
         {
@@ -282,44 +301,69 @@ export default function DashboardSidebar({
             <div className="dashboard-sidebar__links">
               {group.items.map((item) => {
                 const Icon = item.icon;
+                const isParentActive =
+                  Boolean(item.subItems) &&
+                  (location.pathname.startsWith(item.path) ||
+                    item.subItems.some((s) => s.path === location.pathname));
 
                 return (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    end={item.end}
-                    onClick={onClose}
-                    className={({
-                      isActive,
-                    }) =>
-                      `dashboard-sidebar__link ${
-                        isActive
-                          ? "dashboard-sidebar__link--active"
-                          : ""
-                      }`
-                    }
-                  >
-                    <Icon />
+                  <div key={item.path} className="dashboard-sidebar__item-wrapper">
+                    <NavLink
+                      to={item.path}
+                      end={item.end}
+                      onClick={onClose}
+                      className={({
+                        isActive,
+                      }) =>
+                        `dashboard-sidebar__link ${
+                          isActive || isParentActive
+                            ? "dashboard-sidebar__link--active"
+                            : ""
+                        }`
+                      }
+                    >
+                      <Icon />
 
-                    <span>
-                      {item.label}
-                    </span>
+                      <span>
+                        {item.label}
+                      </span>
 
-                    {item.badge && (
-                      <>
-                        <span
-                          className="dashboard-sidebar__badge"
-                          aria-hidden="true"
-                        >
-                          {item.badge}
-                        </span>
+                      {item.badge && (
+                        <>
+                          <span
+                            className="dashboard-sidebar__badge"
+                            aria-hidden="true"
+                          >
+                            {item.badge}
+                          </span>
 
-                        <span className="dashboard-sidebar__sr-only">
-                          {item.badgeLabel}
-                        </span>
-                      </>
+                          <span className="dashboard-sidebar__sr-only">
+                            {item.badgeLabel}
+                          </span>
+                        </>
+                      )}
+                    </NavLink>
+
+                    {item.subItems && isParentActive && (
+                      <div className="dashboard-sidebar__sublinks">
+                        {item.subItems.map((sub) => (
+                          <NavLink
+                            key={sub.path}
+                            to={sub.path}
+                            onClick={onClose}
+                            className={({ isActive }) =>
+                              `dashboard-sidebar__sublink ${
+                                isActive ? "dashboard-sidebar__sublink--active" : ""
+                              }`
+                            }
+                          >
+                            <span className="dashboard-sidebar__sublink-bullet">•</span>
+                            <span>{sub.label}</span>
+                          </NavLink>
+                        ))}
+                      </div>
                     )}
-                  </NavLink>
+                  </div>
                 );
               })}
             </div>

@@ -2,7 +2,6 @@ import { useTranslation } from "react-i18next";
 import {
   LuBell,
   LuBrainCircuit,
-  LuChartNoAxesCombined,
   LuCreditCard,
   LuHouse,
   LuPiggyBank,

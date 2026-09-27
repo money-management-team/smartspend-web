@@ -1,319 +1,283 @@
 .profile-settings {
   width: 100%;
-
-  margin-top: 24px;
-
-  overflow: hidden;
-
-  border:
-    1px solid
-    var(--color-border);
-
-  border-radius:
-    var(--radius-lg);
-
-  background:
-    var(--color-surface);
-
-  box-shadow:
-    var(--shadow-card);
+  box-sizing: border-box;
+  margin-top: 22px;
+  padding: 30px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  animation: settingsFadeIn 200ms ease-out;
 }
 
+@keyframes settingsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 /* =========================================
    HEADER
 ========================================= */
 
 .profile-settings__header {
-  min-height: 57px;
-
-  padding:
-    0
-    20px;
-
   display: flex;
-
   align-items: center;
-
-  box-sizing: border-box;
-
-  border-bottom:
-    1px solid
-    var(--color-border);
-
-  /*
-   * حسب التصميم:
-   * عنوان الكارد يبقى في اليسار
-   * في العربية والإنجليزية.
-   */
-  direction: ltr;
-
-  text-align: left;
+  gap: 14px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--color-border-soft);
 }
 
+.profile-settings__header-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background-color: var(--primary-soft);
+  color: var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
 
-.profile-settings__header h2 {
+.profile-settings__header-icon-box svg {
+  width: 20px;
+  height: 20px;
+}
+
+.profile-settings__header-text h2 {
   margin: 0;
-
-  color:
-    var(--color-text-primary);
-
-  font-size: 14px;
-
-  font-weight: 700;
-
+  font-size: 17px;
+  font-weight: 750;
+  color: var(--color-text-strong);
+  font-family: var(--font-heading);
   line-height: 1.3;
 }
 
-
-[dir="rtl"]
-.profile-settings__header h2 {
-  direction: rtl;
+.profile-settings__header-text p {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
 }
 
+/* =========================================
+   USER CARD
+========================================= */
+
+.profile-settings__user-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 24px 0;
+}
+
+.profile-settings__avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+  flex-shrink: 0;
+}
+
+.profile-settings__user-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.profile-settings__user-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text-strong);
+}
+
+.profile-settings__user-role {
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+}
 
 /* =========================================
-   FORM
+   GRID & FIELDS
 ========================================= */
 
 .profile-settings__form {
-  padding:
-    28px
-    20px
-    22px;
-
-  /*
-   * نحافظ على أماكن الأعمدة:
-   *
-   * Full name | Email
-   * Phone     | Currency
-   *
-   * في العربية والإنجليزية
-   * مثل التصميم المرفق.
-   */
-  direction: ltr;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
-
-
-/* =========================================
-   GRID
-========================================= */
 
 .profile-settings__grid {
   display: grid;
-
-  grid-template-columns:
-    repeat(
-      2,
-      minmax(0, 1fr)
-    );
-
-  column-gap: 18px;
-
-  row-gap: 20px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px 24px;
 }
-
-
-/* =========================================
-   FIELD
-========================================= */
 
 .settings-field {
-  min-width: 0;
-
-  display: grid;
-
+  display: flex;
+  flex-direction: column;
   gap: 7px;
-
-  color:
-    var(--color-text-primary);
-
-  font-size: 11px;
+  text-align: start;
 }
 
-
-.settings-field > span {
-  text-align: left;
+.settings-field span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-primary);
 }
-
-
-/*
- * في العربية فقط نحول Label إلى RTL
- * مع بقاء مكان الحقل نفسه ثابتاً.
- */
-
-[dir="rtl"]
-.settings-field > span {
-  direction: rtl;
-
-  text-align: right;
-}
-
-
-/* =========================================
-   INPUT / SELECT
-========================================= */
 
 .settings-field input,
 .settings-field select {
-  width: 100%;
-
-  height: 38px;
-
-  padding:
-    0
-    13px;
-
+  height: 42px;
   box-sizing: border-box;
-
-  border:
-    1px solid
-    var(--color-border);
-
-  border-radius: 11px;
-
-  outline: none;
-
-  color:
-    var(--color-text-primary);
-
-  background:
-    var(--color-surface);
-
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
   font: inherit;
-
-  font-size: 11px;
-
-  direction: ltr;
-
-  text-align: left;
-
-  box-shadow:
-    var(--shadow-xs);
-
-  transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease;
+  font-size: 12.5px;
+  outline: none;
+  box-shadow: var(--shadow-xs);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
 }
-
 
 .settings-field input:focus,
 .settings-field select:focus {
-  border-color:
-    var(--color-primary);
-
-  box-shadow:
-    0 0 0 3px var(--input-focus-ring);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--input-focus-ring);
 }
 
+.settings-field small {
+  color: var(--color-danger);
+  font-size: 11px;
+}
 
 /* =========================================
-   SAVE
+   MESSAGE
 ========================================= */
 
-.profile-settings__save {
-  min-width: 60px;
-
-  height: 37px;
-
-  margin-top: 20px;
-
-  padding:
-    0
-    17px;
-
-  display: inline-flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  border: 0;
-
-  border-radius: 999px;
-
-  color: var(--navigation-active-text);
-
-  background:
-    var(--color-primary);
-
-  font: inherit;
-
-  font-size: 11px;
-
-  cursor: pointer;
-
-  box-shadow:
-    0 3px 8px
-    color-mix(in srgb, var(--primary) 16%, transparent);
-
-  transition:
-    background-color 160ms ease,
-    opacity 160ms ease;
+.profile-settings__message {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--color-success);
 }
 
+.profile-settings__message--error {
+  color: var(--color-danger);
+}
+
+/* =========================================
+   FOOTER ACTIONS
+========================================= */
+
+.profile-settings__footer {
+  margin-top: 10px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.profile-settings__synced-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+}
+
+.profile-settings__synced-icon {
+  width: 14px;
+  height: 14px;
+  color: #10b981;
+}
+
+.profile-settings__btn-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-settings__save {
+  height: 40px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 10px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+  transition: all 150ms ease;
+}
 
 .profile-settings__save:hover:not(:disabled) {
-  background:
-    var(--color-primary-hover);
+  background-color: var(--color-primary-hover);
+  transform: translateY(-1px);
 }
 
-
 .profile-settings__save:disabled {
-  opacity: 0.6;
-
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
+.profile-settings__cancel {
+  height: 40px;
+  padding: 0 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
 
-/*
- * مهم:
- * زر الحفظ يبقى على اليسار
- * في اللغتين كما في الصور.
- */
+.profile-settings__cancel:hover {
+  background-color: var(--surface-soft);
+  color: var(--color-text-primary);
+}
 
+@media (max-width: 768px) {
+  .profile-settings {
+    padding: 20px;
+  }
 
-/* =========================================
-   TABLET / MOBILE
-========================================= */
-
-@media (max-width: 760px) {
   .profile-settings__grid {
     grid-template-columns: 1fr;
-
-    gap: 16px;
-  }
-}
-
-
-@media (max-width: 520px) {
-  .profile-settings__header {
-    padding-inline: 16px;
   }
 
-
-  .profile-settings__form {
-    padding:
-      20px
-      16px;
+  .profile-settings__footer {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-
-  .profile-settings__save {
+  .profile-settings__btn-group {
     width: 100%;
   }
-}
 
-.settings-field small,
-.profile-settings__message--error {
-  color: var(--color-danger, #dc2626);
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-.profile-settings__message {
-  margin: 18px 0 0;
-  color: var(--chart-green, #16a34a);
-  font-size: 13px;
-  line-height: 1.5;
+  .profile-settings__save,
+  .profile-settings__cancel {
+    flex: 1;
+  }
 }

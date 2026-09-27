@@ -1,118 +1,78 @@
 .settings-tabs {
-  /*
-   * مهم:
-   * التصميم العربي والإنجليزي
-   * يضع التبويبات في نفس المكان.
-   */
-
   width: max-content;
-
   max-width: 100%;
-
   margin-top: 25px;
-
-  padding: 3px;
-
+  padding: 4px;
   display: flex;
-
   align-items: center;
-
-  gap: 2px;
-
-  /*
-   * نبقي ترتيب الأزرار الفيزيائي ثابتاً
-   * حتى في RTL مثل التصميم.
-   */
-  direction: ltr;
-
-  border-radius: 12px;
-
-  background:
-    var(--surface-soft);
+  gap: 4px;
+  border-radius: 999px;
+  background-color: var(--surface-soft);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xs);
+  overflow-x: auto;
 }
 
+[dir="rtl"] .settings-tabs {
+  direction: rtl;
+}
+
+[dir="ltr"] .settings-tabs {
+  direction: ltr;
+}
 
 /* =========================================
    TAB
 ========================================= */
 
 .settings-tab {
-  min-height: 31px;
-
-  padding:
-    0
-    15px;
-
-  border: 0;
-
-  border-radius: 9px;
-
-  color:
-    var(--color-text-secondary);
-
-  background:
-    transparent;
-
+  min-height: 32px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--color-text-secondary);
+  background: transparent;
   font: inherit;
-
-  font-size: 11px;
-
+  font-size: 12px;
+  font-weight: 500;
   white-space: nowrap;
-
   cursor: pointer;
-
-  transition:
-    color 160ms ease,
-    background-color 160ms ease,
-    box-shadow 160ms ease;
+  transition: all 160ms ease;
 }
-
 
 .settings-tab:hover {
-  color:
-    var(--color-text-primary);
+  color: var(--color-text-primary);
 }
-
 
 /* =========================================
    ACTIVE
 ========================================= */
 
 .settings-tab--active {
-  color:
-    var(--color-text-primary);
-
-  background:
-    var(--color-surface);
-
-  box-shadow:
-    var(--shadow-sm);
+  color: var(--color-primary);
+  background-color: var(--color-surface);
+  border-color: rgba(37, 99, 235, 0.2);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
 }
 
-
-/* =========================================
-   RTL TEXT
-========================================= */
-
-[dir="rtl"]
-.settings-tab bdi {
-  direction: rtl;
+:root[data-theme="dark"] .settings-tab--active {
+  color: #60a5fa;
+  border-color: rgba(37, 99, 235, 0.4);
 }
-
 
 /* =========================================
    MOBILE
 ========================================= */
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .settings-tabs {
     width: 100%;
+    justify-content: flex-start;
   }
 
-
   .settings-tab {
-    flex: 1;
-
-    padding-inline: 9px;
+    padding-inline: 12px;
+    font-size: 11.5px;
   }
 }

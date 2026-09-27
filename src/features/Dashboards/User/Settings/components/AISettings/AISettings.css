@@ -1,0 +1,339 @@
+.ai-settings {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 22px;
+  padding: 30px;
+  border-radius: var(--radius-lg, 16px);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.05));
+  animation: settingsFadeIn 200ms ease-out;
+}
+
+@keyframes settingsFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.ai-settings__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--color-border-soft, rgba(0, 0, 0, 0.06));
+}
+
+.ai-settings__header-icon-box {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background-color: var(--primary-soft, rgba(37, 99, 235, 0.08));
+  color: var(--color-primary, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ai-settings__header-icon-box svg {
+  width: 20px;
+  height: 20px;
+}
+
+.ai-settings__header-text h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 750;
+  color: var(--color-text-strong);
+  font-family: var(--font-heading, "Tajawal", sans-serif);
+  line-height: 1.3;
+}
+
+.ai-settings__header-text p {
+  margin: 4px 0 0;
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+}
+
+.ai-settings__form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+/* =========================================
+   CARDS LIST
+========================================= */
+
+.ai-settings__cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ai-setting-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  transition: border-color 150ms ease;
+}
+
+.ai-setting-card:hover {
+  border-color: var(--color-border-hover, #cbd5e1);
+}
+
+[data-theme="dark"] .ai-setting-card:hover {
+  border-color: #475569;
+}
+
+.ai-setting-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.ai-setting-card__title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ai-setting-card__title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--color-text-strong);
+}
+
+.ai-setting-card__badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  line-height: 1.4;
+}
+
+.ai-setting-card__desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
+/* =========================================
+   SWITCH TOGGLE (Emerald / Green)
+========================================= */
+
+.ai-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.ai-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.ai-switch__slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background-color: #cbd5e1;
+  transition: all 200ms ease;
+}
+
+[data-theme="dark"] .ai-switch__slider {
+  background-color: #475569;
+}
+
+.ai-switch__slider::before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: all 200ms ease;
+}
+
+[dir="rtl"] .ai-switch__slider::before {
+  left: auto;
+  right: 3px;
+}
+
+.ai-switch input:checked + .ai-switch__slider {
+  background-color: #10b981;
+}
+
+.ai-switch input:checked + .ai-switch__slider::before {
+  transform: translateX(20px);
+}
+
+[dir="rtl"] .ai-switch input:checked + .ai-switch__slider::before {
+  transform: translateX(-20px);
+}
+
+/* =========================================
+   PURGE CHAT HISTORY BUTTON
+========================================= */
+
+.ai-setting-card__clear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background-color: rgba(239, 68, 68, 0.04);
+  color: #ef4444;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 180ms ease;
+}
+
+.ai-setting-card__clear-btn:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  transform: translateY(-1px);
+}
+
+.ai-setting-card__clear-icon {
+  width: 14px;
+  height: 14px;
+}
+
+@media (max-width: 640px) {
+  .ai-setting-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ai-setting-card__clear-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* =========================================
+   MESSAGES & FOOTER
+========================================= */
+
+.ai-settings__message {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  animation: settingsFadeIn 150ms ease-out;
+}
+
+.ai-settings__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 22px;
+  margin-top: 10px;
+  border-top: 1px solid var(--color-border-soft, rgba(0, 0, 0, 0.06));
+  flex-wrap: wrap;
+}
+
+.ai-settings__synced-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.ai-settings__synced-icon {
+  width: 15px;
+  height: 15px;
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.ai-settings__btn-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-settings__save {
+  padding: 9px 24px;
+  border-radius: 9px;
+  border: 0;
+  background-color: #10b981;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.25);
+  transition: all 180ms ease;
+}
+
+.ai-settings__save:hover:not(:disabled) {
+  background-color: #059669;
+  box-shadow: 0 3px 8px rgba(16, 185, 129, 0.35);
+  transform: translateY(-1px);
+}
+
+.ai-settings__save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ai-settings__cancel {
+  padding: 9px 20px;
+  border-radius: 9px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.ai-settings__cancel:hover:not(:disabled) {
+  background-color: var(--color-surface-hover, rgba(0, 0, 0, 0.03));
+  color: var(--color-text-strong);
+}

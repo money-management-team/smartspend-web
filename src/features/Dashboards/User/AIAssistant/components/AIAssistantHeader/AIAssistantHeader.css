@@ -1,57 +1,99 @@
 .ai-assistant-header {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
   text-align: start;
 }
 
-
-.ai-assistant-header h1 {
-  margin: 0;
-
-  color:
-    var(--color-text-primary);
-
-  font-size: 28px;
-
-  font-weight: 750;
-
-  line-height: 1.2;
+.ai-assistant-header__text {
+  flex: 1;
 }
 
+.ai-assistant-header__title {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-size: 26px;
+  font-weight: 750;
+  line-height: 1.25;
+  font-family: var(--font-heading);
+}
 
-.ai-assistant-header p {
-  margin:
-    11px
-    0
-    0;
-
-  color:
-    var(--color-text-secondary);
-
-  font-size: 14px;
-
+.ai-assistant-header__subtitle {
+  margin: 8px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 13.5px;
   line-height: 1.5;
 }
 
+/* =========================================
+   SMART INSIGHTS CENTER BUTTON
+========================================= */
+
+.ai-assistant-header__insights-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 16px;
+  border: 1px solid rgba(37, 99, 235, 0.4);
+  border-radius: 999px;
+  background-color: rgba(37, 99, 235, 0.05);
+  color: #2563eb;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 160ms ease;
+}
+
+:root[data-theme="dark"] .ai-assistant-header__insights-btn {
+  background-color: rgba(37, 99, 235, 0.12);
+  border-color: rgba(37, 99, 235, 0.35);
+  color: #60a5fa;
+}
+
+.ai-assistant-header__insights-btn:hover {
+  background-color: rgba(37, 99, 235, 0.12);
+  border-color: #2563eb;
+  transform: translateY(-1px);
+}
+
+.ai-assistant-header__insights-icon {
+  width: 15px;
+  height: 15px;
+}
 
 /* =========================================
    RTL
 ========================================= */
 
-[dir="rtl"]
-.ai-assistant-header {
+[dir="rtl"] .ai-assistant-header {
   text-align: right;
 }
-
 
 /* =========================================
    MOBILE
 ========================================= */
 
 @media (max-width: 720px) {
-  .ai-assistant-header h1 {
-    font-size: 25px;
+  .ai-assistant-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
 
-  .ai-assistant-header p {
-    font-size: 13px;
+  .ai-assistant-header__title {
+    font-size: 22px;
+  }
+
+  .ai-assistant-header__subtitle {
+    font-size: 12.5px;
+  }
+
+  .ai-assistant-header__insights-btn {
+    align-self: flex-start;
   }
 }

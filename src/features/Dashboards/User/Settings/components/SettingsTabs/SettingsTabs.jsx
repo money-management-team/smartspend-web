@@ -6,6 +6,7 @@ const tabs = [
   "profile",
   "security",
   "preferences",
+  "ai",
 ];
 
 export default function SettingsTabs({

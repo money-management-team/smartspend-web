@@ -32,6 +32,8 @@ import Reports from "../features/Dashboards/User/Reports/Reports";
 import SavingsGoalDetails from "../features/Dashboards/User/SavingsGoalDetails/SavingsGoalDetails";
 import SavingsGoals from "../features/Dashboards/User/SavingsGoals/SavingsGoals";
 import Settings from "../features/Dashboards/User/Settings/Settings";
+import SmartInsights from "../features/Dashboards/User/SmartInsights/SmartInsights";
+import FinancialForecast from "../features/Dashboards/User/SmartInsights/FinancialForecast/FinancialForecast";
 import TransactionDetails from "../features/Dashboards/User/TransactionDetails/TransactionDetails";
 import TransferDetails from "../features/Dashboards/User/TransferDetails/TransferDetails";
 import Transfers from "../features/Dashboards/User/Transfers/Transfers";
@@ -250,6 +252,14 @@ const userRoutes = [
       {
         path: PATH.USER.AI_ASSISTANT,
         element: <AIAssistant />,
+      },
+      {
+        path: PATH.USER.SMART_INSIGHTS,
+        element: <SmartInsights />,
+      },
+      {
+        path: PATH.USER.SMART_INSIGHTS_FORECAST,
+        element: <FinancialForecast />,
       },
       {
         path: PATH.USER.NOTIFICATIONS,

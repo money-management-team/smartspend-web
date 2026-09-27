@@ -1,20 +1,11 @@
 .ai-assistant-page {
   width: 100%;
   max-width: 1240px;
-
   margin: 0 auto;
-
-  padding:
-    28px
-    32px
-    50px;
-
+  padding: 24px 28px 48px;
   box-sizing: border-box;
-
-  color:
-    var(--color-text-primary);
+  color: var(--color-text-primary);
 }
-
 
 /* =========================================
    MAIN LAYOUT
@@ -22,69 +13,42 @@
 
 .ai-assistant-page__layout {
   width: 100%;
-
-  margin-top: 25px;
-
+  margin-top: 22px;
   display: flex;
-
   align-items: stretch;
-
   gap: 20px;
 }
-
-
-/*
- * نضع ChatPanel أول عنصر في JSX.
- *
- * LTR:
- * Chat          Conversations
- *
- * RTL:
- * Conversations          Chat
- *
- * لأن flex-direction: row
- * يتأثر بـ direction.
- */
-
 
 /* =========================================
    RTL
 ========================================= */
 
-[dir="rtl"]
-.ai-assistant-page {
+[dir="rtl"] .ai-assistant-page {
   direction: rtl;
 }
 
-
 /* =========================================
-   TABLET
+   TABLET & MOBILE
 ========================================= */
 
-@media (max-width: 1000px) {
-  .ai-assistant-page__layout {
-    align-items: stretch;
+@media (max-width: 1024px) {
+  .ai-assistant-page {
+    padding: 20px 20px 40px;
+  }
 
+  .ai-assistant-page__layout {
     flex-direction: column;
+    gap: 18px;
   }
 }
 
-
-/* =========================================
-   MOBILE
-========================================= */
-
-@media (max-width: 720px) {
+@media (max-width: 640px) {
   .ai-assistant-page {
-    padding:
-      22px
-      16px
-      40px;
+    padding: 16px 14px 32px;
   }
 
   .ai-assistant-page__layout {
-    margin-top: 20px;
-
-    gap: 15px;
+    margin-top: 16px;
+    gap: 14px;
   }
 }

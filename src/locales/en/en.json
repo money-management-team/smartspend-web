@@ -368,6 +368,7 @@
       "debts": "Debts",
       "reports": "Reports",
       "aiAssistant": "AI Assistant",
+      "smartInsights": "Smart Insights",
       "notifications": "Notifications",
       "settings": "Settings",
       "logout": "Log out",
@@ -2698,13 +2699,31 @@
     "aiAssistant": {
       "title": "AI Financial Assistant",
       "subtitle": "Ask anything about your money.",
+      "subtitles": {
+        "default": "Ask anything about your money.",
+        "investments": "Ask anything about your money and investment budget.",
+        "forecast": "Ask anything about your money and cash flow forecasts.",
+        "expenses": "Ask anything about your money, expenses, and investments easily.",
+        "smartAndEasy": "Ask anything about your money and expenses smartly and easily."
+      },
+      "welcomeScreen": {
+        "title": "Welcome to the AI Financial Assistant",
+        "description": "Start your first conversation with your AI assistant to get personalized financial insights, savings tips, and precise expense analysis.",
+        "orTrySuggestions": "Or try one of the suggested questions:",
+        "startNewChat": "Start a new conversation",
+        "securedBadge": "Your data is encrypted and bank-secured (AES-256)"
+      },
+      "smartInsightsCenter": "Smart Insights Center",
       "initialMessage": "Your July net cash flow was +$4,450. Dining is your fastest-growing category at +24%. Want a plan to bring it back in line?",
+      "initialMessageAr": "Net cash flow for July is positive at +$4,450. We noticed \"Dining & Entertainment\" is fastest-growing (+24%). Want a plan to bring it back in line?",
       "conversations": {
         "title": "Conversations",
         "newChat": "New chat",
         "monthlyAnalysis": "Monthly analysis",
         "savingsTips": "Savings tips",
-        "budgetSuggestions": "Budget suggestions"
+        "budgetSuggestions": "Budget suggestions",
+        "subscriptionsAnalysis": "Subscription expense analysis",
+        "forecastAndLiquidity": "Financial forecast & liquidity"
       },
       "suggestions": {
         "safeSavings": "How much can I safely save this month?",
@@ -2714,8 +2733,49 @@
       },
       "input": {
         "placeholder": "Ask Smart Spend...",
+        "placeholderDisabled": "Ask Smart Spend... (Current analysis in progress)",
         "send": "Send",
-        "sending": "Sending..."
+        "sending": "Sending...",
+        "clear": "Clear text"
+      },
+      "errorState": {
+        "title": "Sorry, server connection failed. Please try again.",
+        "code": "Error code: ERR_503_TIMEOUT",
+        "description": "We were temporarily unable to reach the cloud financial analytics engine due to a momentary network interruption. Rest assured all your data and financial records are completely safe and preserved.",
+        "retry": "Retry",
+        "checkConnection": "Check connection status",
+        "copyError": "Copy error message",
+        "copied": "Error message copied!",
+        "connectionStable": "Connection checked: Servers are operating stably and normally."
+      },
+      "loadingState": {
+        "title": "Analyzing data and formulating smart financial forecast...",
+        "liveUpdate": "Live update"
+      },
+      "progressState": {
+        "title": "Analyzing transactions and comparing budgets...",
+        "details": "Currently inspecting and categorizing 142 bank transactions recorded during July with average calculation...",
+        "disclaimer": "The assistant analyzes financial data based on recorded transactions. Complex operations may take a few seconds"
+      },
+      "tips": {
+        "continuousLearning": "The smart assistant continuously learns from your cash flow pattern to deliver more accurate guidance.",
+        "smartInfoTitle": "Smart Insight",
+        "smartInfoText": "AI analyses are based on direct bank transactions and connected savings accounts."
+      },
+      "privacyModal": {
+        "title": "AI Data Privacy & Security",
+        "badge": "Bank-grade high-level encryption (AES-256)",
+        "intro": "To provide the best smart financial experience and accurate insights, the financial assistant analyzes your transaction data securely and encrypted without sharing it with any third party.",
+        "point1": "Full encryption of all financial data via certified banking protocols.",
+        "point2": "Never selling or sharing your data with third parties or advertisers.",
+        "point3": "Ability to revoke consent or delete the entire history at any time from Settings.",
+        "consentAnalysisTitle": "I agree to the analysis of my historical and current financial data",
+        "consentAnalysisDesc": "To enable cash forecasts, smart spending alerts, and identify savings opportunities.",
+        "consentHistoryTitle": "I agree to saving conversation history and queries for performance improvement",
+        "consentHistoryDesc": "To customize assistant responses and recommendations to suit your financial lifestyle.",
+        "acceptAndContinue": "Agree & Continue",
+        "declineLater": "Decline / Later",
+        "close": "Close"
       }
     },
     "notifications": {
@@ -2928,33 +2988,78 @@
     },
     "settings": {
       "title": "Settings",
-      "subtitle": "Profile, security and preferences.",
+      "subtitle": "Profile, security, preferences and AI settings.",
       "tabs": {
         "label": "Settings sections",
         "profile": "Profile",
         "security": "Security",
-        "preferences": "Preferences"
+        "preferences": "Preferences",
+        "ai": "AI Settings"
       },
       "profile": {
         "title": "Profile",
+        "headerSubtitle": "Update personal data, account details, and core communication settings.",
+        "activeAccount": "Active Personal Account",
         "fields": {
           "fullName": "Full name",
           "email": "Email",
-          "phone": "Phone",
-          "currency": "Currency"
+          "phone": "Phone number",
+          "currency": "Preferred currency"
         },
-        "save": "Save",
+        "currencies": {
+          "usd": "US Dollar - USD ($)",
+          "ils": "Israeli Shekel - ILS (₪)",
+          "eur": "Euro - EUR (€)",
+          "sar": "Saudi Riyal - SAR (SAR)",
+          "aed": "UAE Dirham - AED (AED)",
+          "jod": "Jordanian Dinar - JOD (JOD)"
+        },
+        "syncedBadge": "All encrypted data synchronized securely",
+        "save": "Save Changes",
+        "cancel": "Cancel",
         "saving": "Saving...",
         "saved": "Profile saved successfully."
       },
       "security": {
+        "title": "Security & Protection Settings",
+        "headerSubtitle": "Manage password, two-factor authentication, and monitor connected devices.",
         "changePassword": "Change password",
-        "subtitle": "Use at least 8 characters with letters and numbers. You'll stay signed in on this device; your other sessions will be signed out.",
+        "changePasswordSubtitle": "Recommended to use a strong password containing letters, numbers, and unique symbols.",
+        "lastChanged": "Last changed: 45 days ago",
+        "strength": {
+          "label": "Password strength",
+          "strong": "Strong",
+          "medium": "Medium",
+          "weak": "Weak"
+        },
         "fields": {
           "currentPassword": "Current password",
           "newPassword": "New password",
           "confirmPassword": "Confirm new password"
         },
+        "twoFactor": {
+          "title": "Two-Factor Authentication (2FA)",
+          "recommended": "Recommended",
+          "enabledGoogle": "Enabled via Google Authenticator app",
+          "subtitle": "Add an extra security layer to your account by requiring an authenticator code or SMS on each sign-in."
+        },
+        "devices": {
+          "title": "Active Devices & Sessions",
+          "subtitle": "Review devices logged into your account and terminate any unrecognized session.",
+          "logoutAll": "Log out from all other devices",
+          "currentSession": "Current session",
+          "activeNow": "Active now",
+          "logout": "Log out",
+          "device1Title": "MacBook Pro - Chrome Browser (This Device)",
+          "device1Desc": "Riyadh, Saudi Arabia • IP: 192.168.1.45",
+          "device2Title": "iPhone 15 Pro - SmartSpend iOS App",
+          "device2Desc": "Riyadh, Saudi Arabia • Last activity: 2 hours ago",
+          "device3Title": "Windows PC - Edge Browser",
+          "device3Desc": "Jeddah, Saudi Arabia • Last activity: 3 days ago"
+        },
+        "securityBadge": "Your account is protected with encryption and multi-factor authentication",
+        "updateSecurity": "Update Security",
+        "cancel": "Cancel",
         "requirements": {
           "label": "Password requirements",
           "length": "At least {{min}} characters",
@@ -2974,22 +3079,408 @@
         },
         "submit": "Change password",
         "submitting": "Changing password...",
-        "success": "Password changed successfully. You're still signed in on this device, and your other sessions were signed out.",
+        "success": "Password changed successfully.",
         "errors": {
           "checkFields": "Please check the highlighted fields.",
-          "currentRejected": "Your current password wasn't accepted. If you signed up with Google, your account may not have a password yet: use the link below to set one."
-        },
-        "reset": {
-          "title": "Signed up with Google, or forgot your current password?",
-          "body": "Accounts created with Google may not have a password yet. We can email you a link to set a new one. Setting it through the link signs you out on every device.",
-          "noEmail": "Add an email address to your profile to receive a link for setting a new password.",
-          "action": "Email me a link",
-          "sending": "Sending...",
-          "sent": "If this email is registered, a link to set a new password is on its way to:"
+          "currentRejected": "Your current password wasn't accepted."
         }
       },
       "preferences": {
-        "title": "Preferences"
+        "title": "App Preferences",
+        "headerSubtitle": "Customize display language, general appearance, and notification preferences.",
+        "language": {
+          "title": "Display Language",
+          "subtitle": "The chosen language will be applied across all platform elements and reports.",
+          "arabic": "Arabic",
+          "arabicSub": "Platform Default (RTL)",
+          "english": "English",
+          "englishSub": "Left to Right (LTR)"
+        },
+        "theme": {
+          "title": "Appearance & Theme",
+          "subtitle": "Choose your preferred color theme and visual style during browsing.",
+          "light": "Light Mode",
+          "lightSub": "Clear and comfortable lighting",
+          "dark": "Dark Mode",
+          "darkSub": "Low contrast for low-light environments",
+          "system": "Automatic (System)",
+          "systemSub": "Matches your device preferences"
+        },
+        "notifications": {
+          "title": "General Notifications",
+          "badge": "Enabled",
+          "subtitle": "Receive periodic alerts, financial updates, and weekly activity summary."
+        },
+        "formatting": {
+          "title": "Date & Currency Format",
+          "subtitle": "Format display of numbers, dates, and currency symbol positions.",
+          "dateFormat": "Date Display Format",
+          "dateFormatOption": "DD/MM/YYYY (e.g., 24/10/2024)",
+          "currencyPos": "Currency Symbol Position",
+          "currencyAfter": "After amount (e.g., 1,250 $)",
+          "currencyBefore": "Before amount (e.g., $ 1,250)"
+        },
+        "syncedBadge": "All preferences synchronized automatically in the encrypted cloud",
+        "save": "Save Preferences",
+        "cancel": "Cancel",
+        "saved": "Preferences saved successfully."
+      },
+      "ai": {
+        "title": "AI Settings",
+        "headerSubtitle": "Customize AI model behavior, privacy, and financial analysis history.",
+        "proactiveAlerts": {
+          "title": "Proactive Spending Alerts",
+          "subtitle": "Notify you upon detecting unusual spending spikes or approaching budget limits before month-end."
+        },
+        "autoSavings": {
+          "title": "Automatic Savings Suggestions",
+          "subtitle": "Generate periodic smart savings opportunities and audit unused subscriptions to boost goals."
+        },
+        "privacy": {
+          "title": "Privacy & Transaction Analysis",
+          "badge": "256-bit encrypted",
+          "subtitle": "Allow AI to analyze historical transactions to provide protected, personalized cash flow insights."
+        },
+        "manageHistory": {
+          "title": "Manage Chat History & Temporary Data",
+          "subtitle": "Delete all stored questions and past conversations with the AI assistant to reset dialogue context.",
+          "clearBtn": "Purge & Delete Past Chat History"
+        },
+        "syncedBadge": "Last changes saved automatically in the encrypted cloud",
+        "save": "Save Changes",
+        "cancel": "Cancel",
+        "saved": "AI settings saved successfully.",
+        "modal": {
+          "title": "Confirm Delete Chat History",
+          "subtitle": "Are you sure you want to delete all past messages and conversations with the AI assistant? This action cannot be undone.",
+          "warning": "Temporary memory will be wiped and the assistant context reset immediately.",
+          "confirm": "Yes, Delete History",
+          "cancel": "Cancel",
+          "deletedSuccess": "Chat history was deleted and temporary memory reset successfully."
+        }
+      }
+    },
+    "smartInsights": {
+      "title": "Smart Insights Center",
+      "badge": "Predictive analytics and personalized financial guidance",
+      "subtitle": "Targeted analytics and precise recommendations designed to help you make sound financial decisions and stabilize your cash flows.",
+      "refreshBtn": "Refresh Analytics",
+      "refreshing": "Refreshing...",
+      "refreshedMsg": "All insights and analytics have been updated successfully.",
+      "periods": {
+        "july2024": "Period: July 2024",
+        "june2024": "Period: June 2024",
+        "may2024": "Period: May 2024",
+        "q2_2024": "Period: Q2 2024"
+      },
+      "kpi": {
+        "wellnessTitle": "Financial Wellness Score",
+        "wellnessRating": "Excellent",
+        "wellnessCompare": "Outperforming 78% of similar profiles",
+        "wellnessLast": "Last assessment: Today, 10:30 AM",
+        "liquidityTitle": "Safe Available Liquidity",
+        "liquidityBadge": "+12%",
+        "liquidityAmount": "28,450 SAR",
+        "liquidityDesc": "Covers 4.5 months of essential expenses",
+        "savingsTitle": "Promising Savings Opportunities",
+        "savingsBadge": "3 suggestions",
+        "savingsAmount": "1,820",
+        "savingsUnit": "SAR / mo",
+        "savingsDesc": "Transferable to investment portfolio",
+        "velocityTitle": "Spending Velocity Deviation",
+        "velocityBadge": "Immediate Notice",
+        "velocityAmount": "+24% above normal pace",
+        "velocityDesc": "Concentrated in: Dining and cafes"
+      },
+      "section": {
+        "title": "Extracted Insights & Recommendations",
+        "count4": "4 recommendations require your review",
+        "count5": "5 smart recommendations & forecasts",
+        "filterPriority": "Filter by priority",
+        "filterAll": "All recommendations",
+        "filterUrgent": "Urgent alerts",
+        "filterSavings": "Savings opportunities",
+        "filterInvest": "Investments"
+      },
+      "forecast": {
+        "badge": "Smart Forecast",
+        "autoUpdate": "Auto-updated through end of August",
+        "accuracy": "Forecast accuracy: 94%",
+        "title": "30-Day Financial Forecast",
+        "netFlowTitle": "Expected Net Cash Flow Summary",
+        "netFlowValue": "+6,250",
+        "currency": "SAR",
+        "surplus": "expected surplus",
+        "netFlowDesc": "Expected income stability with an 8% slight decrease in obligations.",
+        "expectedIncome": "Expected Income: 18,500 SAR",
+        "estimatedExpenses": "Estimated Expenses: 12,250 SAR",
+        "day1": "Day 1",
+        "day30": "Day 30",
+        "pathLabel": "30-day liquidity trajectory",
+        "viewDetails": "View Financial Forecast Details →",
+        "footnote": "Forecast model powered by spending patterns and cyclical financial seasons"
+      },
+      "cards": {
+        "dining": {
+          "tag": "Spending pattern impact",
+          "alertRibbon": "Unusual smart alert - spending acceleration",
+          "time": "3 hours ago",
+          "title": "Dining expenses rose 24% in July",
+          "desc": "Your dining and cafe spending reached 3,450 SAR vs a 2,780 SAR average over the past 3 months. This pace may delay your 'Summer Vacation Savings' goal by ~2 weeks.",
+          "avgLabel": "Normal monthly average: 2,780 SAR",
+          "currentLabel": "Current: 3,450 SAR (+670 SAR)",
+          "currentBadge": "+24%",
+          "safeLimit": "Safe target limit: 2,780 SAR",
+          "excess": "Exceeded baseline cap by 24%",
+          "applyBtn": "Apply Recommendation (Set 500 SAR cap)",
+          "viewDetailsBtn": "View Details",
+          "applied": "Recommendation applied and weekly cap set successfully."
+        },
+        "surplus": {
+          "tag": "Smart savings opportunity",
+          "accuracy": "Estimate accuracy: 96%",
+          "title": "Transfer cash surplus to high-yield deposit",
+          "desc": "The algorithm projects a +4,450 SAR cash surplus by month-end after scheduled obligations. Transferring 2,000 SAR to savings earns an additional 5.2% annual yield.",
+          "highlight": "Estimated 1st-year yield: +104 SAR projected profit",
+          "enableAutoBtn": "Enable Auto-Transfer",
+          "editAmountBtn": "Adjust Amount",
+          "enabled": "Auto-transfer to high-yield deposit enabled successfully."
+        },
+        "subscriptions": {
+          "tag": "Upcoming obligations & subscriptions",
+          "dateRange": "July 25 - 28",
+          "title": "4 recurring subscriptions due in 5 days",
+          "desc": "A total of 680 SAR will be debited for digital and gym memberships; current account balance is sufficient and matches scheduled outflow needs.",
+          "item1": "Amazon AWS Cloud",
+          "item1Cost": "320 SAR",
+          "item2": "Gym Membership",
+          "item2Cost": "250 SAR",
+          "item3": "Netflix & Cinema",
+          "item3Cost": "65 SAR",
+          "item4": "Apple iCloud Storage",
+          "item4Cost": "45 SAR",
+          "reviewBtn": "Review & Cancel Unused",
+          "scheduleBtn": "Schedule Reminder",
+          "scheduled": "Reminder scheduled 2 days before debit."
+        },
+        "portfolio": {
+          "tag": "Portfolio management",
+          "time": "Yesterday",
+          "title": "Protective investment portfolio rebalancing",
+          "desc": "Weight of defensive assets and sukuk decreased to 18% vs the preset 25% target. We recommend redirecting periodic returns into sukuk to maintain a balanced risk profile.",
+          "distTitle": "Current vs Target Asset Allocation",
+          "diffBadge": "7% gap",
+          "applyRebalanceBtn": "Apply Auto-Rebalancing",
+          "viewAssetsBtn": "View Asset Details",
+          "rebalanced": "Portfolio rebalancing order placed successfully."
+        }
+      },
+      "spendingModal": {
+        "title": "Spending Pattern Alert: Unusual Surge in Dining",
+        "badge": "Unusual smart alert - Detected today",
+        "subtitle": "An unusual acceleration in spending was detected compared to previous months' average, which may impact your monthly budget.",
+        "avgLabel": "Normal monthly average: 2,780 SAR",
+        "currentLabel": "Current for July: 3,450 SAR (+670 SAR / +24%)",
+        "safeLimit": "Safe target limit: 2,780 SAR",
+        "excess": "Exceeded baseline cap by 24%",
+        "reason": "Analytics indicate this surge stems from summer vacation outings and weekend dine-outs, which may impact seasonal savings goals.",
+        "recentTitle": "Recent transactions causing the surge (last 8 days)",
+        "tx1Name": "Riyadh Bistro Restaurant",
+        "tx1Meta": "July 28 • Family Dinner",
+        "tx1Amount": "285 SAR",
+        "tx2Name": "Cheddar Burger House",
+        "tx2Meta": "July 25 • Weekend Dinner",
+        "tx2Amount": "190 SAR",
+        "tx3Name": "Rose & Donuts Cafe",
+        "tx3Meta": "July 23 • Cafe & Business Meet",
+        "tx3Amount": "115 SAR",
+        "tx4Name": "Shawarma Express & Drinks",
+        "tx4Meta": "July 21 • Quick Order",
+        "tx4Amount": "80 SAR",
+        "recommendation": "Recommendation: Set a 500 SAR weekly dining cap for the remainder of the month to protect your savings goal.",
+        "applyBtn": "Apply Recommendation (Set 500 SAR cap)",
+        "editBtn": "Adjust Amount",
+        "dismissBtn": "Dismiss Alert"
+      },
+      "savingsModal": {
+        "title": "Smart Savings Suggestions",
+        "badge": "Total Expected Savings: 780 SAR / mo",
+        "subtitle": "Suggestions analyzed by AI based on your activity to boost your financial targets without disrupting your lifestyle.",
+        "card1": {
+          "badgePriority": "Quick priority",
+          "badgeCategory": "Category: Living essentials",
+          "badgeSaving": "Expected savings: +350 SAR / mo",
+          "title": "Rationalize dining and cafe expenses",
+          "desc": "Smart suggestion: reduce restaurant orders by 15% (~2 meals out per week), and set weekly cafe allowance at 120 SAR.",
+          "impact": "Goal impact: Accelerates 'Summer Vacation Savings' completion 12 days ahead of schedule",
+          "successRate": "94% success rate",
+          "applyBtn": "Apply Suggestion",
+          "editBtn": "Adjust Amount",
+          "skipBtn": "Skip"
+        },
+        "card2": {
+          "badgeDigital": "Digital subscriptions",
+          "badgeRenewal": "Auto-renew",
+          "badgeSaving": "Expected savings: +180 SAR / mo",
+          "title": "Reschedule unused digital subscriptions",
+          "desc": "Smart suggestion: Cancel or consolidate duplicate streaming plans and inactive cloud storage over the last 60 days.",
+          "details": "Identified subs: Netflix plan (+65 SAR) + duplicate cloud storage (45 SAR) + podcast plan (70 SAR)",
+          "idleBadge": "3 idle services",
+          "applyBtn": "Apply Suggestion",
+          "editBtn": "Adjust Amount",
+          "skipBtn": "Skip"
+        },
+        "progress": {
+          "title": "Progress toward July savings target: (Target: 2,500 SAR) | Achieved: 1,540 SAR (52%)",
+          "boost": "+530 SAR (10%) after applying"
+        },
+        "applyAllBtn": "Apply All Suggestions (+530 SAR)",
+        "closeBtn": "Close",
+        "revertNote": "You can revert or adjust any step at any time from the budgets section."
+      },
+      "bottomBar": {
+        "title": "Smart Savings Suggestions - Save up to 780 SAR/mo",
+        "desc": "Restructure unused subscriptions and daily spending to improve monthly liquidity",
+        "chipDining": "Dining: +350 SAR",
+        "chipSubs": "Subscriptions: +180 SAR",
+        "viewDetailsBtn": "View Details"
+      },
+      "disclaimer": {
+        "text": "These insights are based on historical spending patterns and automatically categorized banking operations. You can inquire in detail at any time via",
+        "link": "AI Financial Assistant.",
+        "encrypted": "Data encrypted and updated"
+      },
+      "detailedForecast": {
+        "breadcrumb": {
+          "insightsCenter": "Smart Insights Center",
+          "forecastTitle": "Financial Forecast & Cash Flows (30 Days)",
+          "backBtn": "Back to Insights Center"
+        },
+        "header": {
+          "title": "30-Day Financial Forecast",
+          "badge": "Auto-updated • Model accuracy 94%",
+          "subtitle": "Precise liquidity and cash flow predictions powered by AI based on actual spending habits and due dates.",
+          "exportBtn": "Export Financial Report",
+          "periodLabel": "August 2024 (Next 30 Days)"
+        },
+        "tabs": {
+          "all": "All Flows",
+          "income": "Expected Income Only",
+          "expenses": "Expenses & Obligations",
+          "scenarioStandard": "Standard Model (Realistic)",
+          "scenarioConservative": "Conservative (+10% Contingency)"
+        },
+        "kpi": {
+          "income": "Total Expected Income",
+          "incomeChange": "+4.2% vs previous month",
+          "salaryDate": "Aug 27 salary: 16,000 SAR",
+          "expenses": "Estimated Expenses & Obligations",
+          "expensesBreakdown": "Fixed: 7,800 SAR • Flexible: 4,450 SAR",
+          "expensesSafeCap": "Safe consumption cap: Within bounds (66%)",
+          "netFlow": "Net Cash Flow",
+          "netFlowSurplus": "+6,250 SAR",
+          "netFlowDesc": "Positive surplus expected by month-end",
+          "savingsOpp": "Savings & investment opportunity: 2,000 SAR",
+          "confirmedDeposits": "Confirmed Deposits",
+          "depositsCount": "2 deposits",
+          "depositsMeta": "Aug 10 yields + monthly salary",
+          "depositsStatus": "Scheduled and bank-confirmed",
+          "certaintyScore": "Forecast Certainty Score",
+          "certaintyValue": "99.2%",
+          "certaintyLabel": "AI reliability score",
+          "confirmedExpenses": "Confirmed Obligations & Bills",
+          "obligationsCount": "6 scheduled obligations",
+          "obligationsTotal": "Total mandatory obligations: 7,800 SAR",
+          "autoDebitCoverage": "100% via checking",
+          "coverageLabel": "Auto-debit coverage",
+          "peakExpenses": "Payment Due Peak",
+          "peakDates": "August 21 - 24, 2024",
+          "peakDetails": "5 bills and loan installments coincide, value: 3,690 SAR",
+          "liquidityStressStatus": "Liquidity stress status: Proactive alert active"
+        },
+        "banners": {
+          "allTitle": "Proactive liquidity note: 3 recurring bills due between Aug 21 and 24",
+          "allDesc": "The system expects a temporary dip in checking balance to 9,420 SAR due to the auto loan (1,850 SAR) and telecoms bill prior to salary deposit. The balance remains safe, and postponing the investment auto-debit to August 28 is recommended to maintain comfortable flexibility.",
+          "allBtnTransfer": "Transfer Funds to Cover Gap",
+          "allBtnAdjust": "Adjust Auto-Debit Dates",
+          "incomeTitle": "Liquidity boost opportunity: Expected net cash surplus of +6,250 SAR by month-end",
+          "incomeDesc": "The model anticipates total deposits reaching 18,500 SAR with peak flow on August 27. We recommend allocating 2,500 SAR automatically to your investment portfolio or emergency reserve immediately upon salary deposit to maximize returns and hit annual targets.",
+          "incomeBtnAuto": "Enable Auto-Deduction",
+          "incomeBtnPlan": "Review Savings Plan",
+          "expensesTitle": "AI Alert: Concurrent obligations stress between Aug 21 and 24 (3,690 SAR)",
+          "expensesDesc": "Utility bills coincide with financing installments 4 days before salary deposit. Maintaining a precautionary balance or delaying discretionary expenses is advised to safeguard the 5,000 SAR minimum buffer in your checking account.",
+          "expensesBtnReschedule": "Reschedule / Split Payment",
+          "expensesBtnFund": "Schedule Buffer Transfer"
+        },
+        "charts": {
+          "allTitle": "Daily Balance Trajectory & Cash Flow Activity (Aug 1 - 31, 2024)",
+          "allSubtitle": "AI projection of account activity incorporating daily spend variance and confidence bounds",
+          "incomeTitle": "Cumulative Income & Positive Flows Trajectory (Aug 1 - 31, 2024)",
+          "incomeSubtitle": "Track income growth curve, salary deposits, and confirmed investment returns through the month",
+          "expensesTitle": "Cumulative Expenses & Obligations Acceleration Path (Aug 1 - 31, 2024)",
+          "expensesSubtitle": "Track buildup of recurring debits, utilities, and discretionary expenses through month-end",
+          "viewCumulative": "Show Cumulative Balance",
+          "viewNetDaily": "Daily Net Flow",
+          "viewAverageCompare": "Compare with 6-Mo Average",
+          "viewExpenseCumul": "Show Cumulative Obligations",
+          "viewDailyExpenses": "Daily Expenses",
+          "viewBudgetCeiling": "Compare with Budget Cap",
+          "legendExpectedBal": "Expected Cumulative Balance",
+          "legendConfidence": "Statistical Confidence Band (95%)",
+          "legendMainIncome": "Major Income Inflow",
+          "legendMainExpense": "Major Obligation Debit",
+          "legendBudgetCap": "Budgeted Spending Cap: 13,000 SAR",
+          "safeLine": "Safety Threshold: 5,000 SAR",
+          "lowPointDate": "Sat Aug 24, 2024 - Lowest Point",
+          "lowPointBal": "9,420 SAR expected balance",
+          "lowPointSpend": "Daily spend debit: 320 SAR",
+          "lowPointBuffer": "Extra safety: +4,420 SAR above risk line",
+          "salaryJump": "Aug 27 Salary Deposit: +16,000 SAR",
+          "aug10Return": "Aug 10: Investment Return +2,500 SAR",
+          "dipCallout": "Aug 24 (Dip)"
+        },
+        "tables": {
+          "milestonesTitle": "Top Milestones & Confirmed Flows in 30 Days",
+          "milestonesSub": "Scheduled operations and recurring patterns automatically discovered by the system",
+          "upcomingExpensesTitle": "Upcoming Scheduled Obligations & Expenses Schedule",
+          "upcomingExpensesSub": "Actual debit dates and billing due dates for August",
+          "viewAll": "View all expected operations (18)",
+          "colDate": "Date",
+          "colDescription": "Description & Entity",
+          "colCategory": "Category",
+          "colAmount": "Estimated Amount",
+          "colConfidence": "Certainty",
+          "colStatus": "Payment Status"
+        },
+        "simulators": {
+          "optimizerTitle": "Financial Scenario Simulator",
+          "optimizerSub": "Experiment adjusting unpredictable spending variance to test account resilience before month-end:",
+          "flexibleLabel": "Discretionary spend variance: +15%",
+          "chipMinus20": "Reduce (-20%)",
+          "chipCurrent": "Current Status",
+          "chipPlus40": "Increase (+40%)",
+          "resultTitle": "Expected Scenario Result:",
+          "newSurplus": "New net surplus: 5,582 SAR",
+          "lowestPoint": "Lowest balance point: 8,752 SAR (Safe)",
+          "saveScenarioBtn": "Save this Scenario as Alternate Budget",
+          "expensesOptimizerTitle": "Expense Rationalization & Compression Simulator",
+          "expensesOptimizerSub": "Choose reduction in discretionary non-mandatory expenses during peak obligation window to prevent dipping below safe buffer",
+          "fixedObligations": "Fixed obligations & installments (Non-adjustable): 64% (7,800 SAR)",
+          "recurringBills": "Recurring bills & utilities: 18% (2,200 SAR)",
+          "flexibleExpenses": "Flexible expenses eligible for rationalization: 18% (2,250 SAR)",
+          "flexibleReductionLabel": "Flexible expenses reduction ratio",
+          "reductionSavings": "Realized financial buffer savings: +337.50 SAR",
+          "applyPlanBtn": "Apply Expense Rationalization Plan",
+          "rule503020Title": "Financial Scenario Simulator (50/30/20 Rule)",
+          "need50": "50% Basic Needs & Obligations: 9,250 SAR",
+          "save30": "30% Automated Savings & Investing: 5,550 SAR",
+          "wants20": "20% Personal & Discretionary: 3,700 SAR",
+          "adjustSavingsRatio": "Adjust Target Savings Ratio:",
+          "chip10": "10% (Flexible)",
+          "chip20": "20% (Balanced)",
+          "chip30": "30% (Recommended)",
+          "chip50": "50% (Ambitious)"
+        }
       }
     },
     "reportExports": {
@@ -3132,6 +3623,7 @@
         "notFoundMessage": "This receipt isn't available. It may not exist, or it isn't one of yours.",
         "forbiddenTitle": "Access denied",
         "forbiddenMessage": "You don't have access to this receipt.",
+        "analyzing": "Analyzing your receipt with AI. This won't take long.",
         "notes": {
           "processing": "AI processing is in progress. Nothing has been recorded.",
           "failed": "The AI couldn't read this receipt. Nothing has been recorded.",

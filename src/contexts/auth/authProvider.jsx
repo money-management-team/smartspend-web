@@ -23,7 +23,9 @@ const emptySession = {
 
 export default function AuthProvider({ children }) {
   const [session, setSession] = useState(() => getStoredAuthSession());
-  const [initializing, setInitializing] = useState(true);
+  const [initializing, setInitializing] = useState(
+    () => Boolean(getStoredAuthSession().token),
+  );
   const [initializationError, setInitializationError] = useState(null);
   // Token whose user/workspace just came from login or register, so the
   // restore effect doesn't fetch GET /user again for it.
@@ -33,6 +35,7 @@ export default function AuthProvider({ children }) {
     freshTokenRef.current = null;
     clearAuthSession();
     setSession(emptySession);
+    setInitializing(false);
   }, []);
 
   const applyAuthData = useCallback((authData, options) => {
@@ -148,7 +151,6 @@ export default function AuthProvider({ children }) {
 
   useEffect(() => {
     if (!session.token) {
-      setInitializing(false);
       return undefined;
     }
 

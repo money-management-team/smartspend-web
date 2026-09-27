@@ -39,6 +39,8 @@ export const PATH = {
     REPORTS: "/dashboard/reports",
     REPORT_EXPORTS: "/dashboard/reports/exports",
     AI_ASSISTANT: "/dashboard/ai-assistant",
+    SMART_INSIGHTS: "/dashboard/smart-insights",
+    SMART_INSIGHTS_FORECAST: "/dashboard/smart-insights/forecast",
     NOTIFICATIONS: "/dashboard/notifications",
     SETTING: "/dashboard/settings",
   },

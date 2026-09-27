@@ -1,0 +1,311 @@
+.forecast-simulator-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  width: 340px;
+  min-width: 320px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 1080px) {
+  .forecast-simulator-card {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+.forecast-sim-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.forecast-sim-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.forecast-sim-badge--purple {
+  background-color: #faf5ff;
+  color: #6b21a8;
+  border-color: #e9d5ff;
+}
+
+:root[data-theme="dark"] .forecast-sim-badge {
+  background-color: rgba(37, 99, 235, 0.2);
+  color: #93c5fd;
+  border-color: rgba(37, 99, 235, 0.35);
+}
+
+:root[data-theme="dark"] .forecast-sim-badge--purple {
+  background-color: rgba(124, 58, 237, 0.2);
+  color: #d8b4fe;
+  border-color: rgba(124, 58, 237, 0.35);
+}
+
+.forecast-sim-desc {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* =========================================
+   CONTROLS & CHIPS
+========================================= */
+
+.forecast-sim-control {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.forecast-sim-control__label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.forecast-sim-control__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-strong);
+}
+
+.forecast-sim-control__value-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background-color: var(--primary-soft);
+  color: var(--color-primary);
+}
+
+.forecast-sim-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.forecast-sim-chip {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+
+.forecast-sim-chip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.forecast-sim-chip--active {
+  background-color: var(--primary-soft);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* =========================================
+   RESULT BOX
+========================================= */
+
+.forecast-sim-result-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-hover);
+  border: 1px solid var(--color-border);
+}
+
+.forecast-sim-result-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.forecast-sim-result-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.forecast-sim-result-label {
+  color: var(--color-text-secondary);
+}
+
+.forecast-sim-result-val {
+  font-weight: 700;
+  color: var(--color-text-strong);
+}
+
+.forecast-sim-result-val--green {
+  color: #059669;
+}
+
+:root[data-theme="dark"] .forecast-sim-result-val--green {
+  color: #34d399;
+}
+
+/* =========================================
+   BARS GROUP (50/30/20 & Expenses)
+========================================= */
+
+.forecast-sim-bars-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.forecast-sim-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.forecast-sim-bar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: var(--color-text-secondary);
+}
+
+.forecast-sim-bar-label--highlight {
+  font-weight: 700;
+  color: #059669;
+}
+
+:root[data-theme="dark"] .forecast-sim-bar-label--highlight {
+  color: #34d399;
+}
+
+.forecast-sim-bar-num {
+  font-weight: 700;
+  color: var(--color-text-strong);
+}
+
+.forecast-sim-bar-num--green {
+  color: #059669;
+}
+
+.forecast-sim-bar-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background-color: var(--color-border);
+  overflow: hidden;
+}
+
+.forecast-sim-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 200ms ease;
+}
+
+.forecast-sim-bar-fill--blue {
+  background-color: #2563eb;
+}
+
+.forecast-sim-bar-fill--green {
+  background-color: #10b981;
+}
+
+.forecast-sim-bar-fill--orange {
+  background-color: #f97316;
+}
+
+.forecast-sim-bar-fill--rose {
+  background-color: #f43f5e;
+}
+
+.forecast-sim-bar-fill--amber {
+  background-color: #f59e0b;
+}
+
+.forecast-sim-bar-fill--cyan {
+  background-color: #06b6d4;
+}
+
+/* Impact Savings Pill */
+.forecast-sim-savings-pill {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  text-align: center;
+}
+
+:root[data-theme="dark"] .forecast-sim-savings-pill {
+  background-color: rgba(5, 150, 105, 0.2);
+  border-color: rgba(5, 150, 105, 0.35);
+}
+
+.forecast-sim-savings-text {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #065f46;
+}
+
+:root[data-theme="dark"] .forecast-sim-savings-text {
+  color: #6ee7b7;
+}
+
+/* Save Button */
+.forecast-sim-save-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 11px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid #0f172a;
+  background-color: #0f172a;
+  color: #ffffff;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+  transition: all 140ms ease;
+  margin-top: auto;
+}
+
+.forecast-sim-save-btn:hover {
+  background-color: #1e293b;
+}
+
+:root[data-theme="dark"] .forecast-sim-save-btn {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+:root[data-theme="dark"] .forecast-sim-save-btn:hover {
+  background-color: #1d4ed8;
+}

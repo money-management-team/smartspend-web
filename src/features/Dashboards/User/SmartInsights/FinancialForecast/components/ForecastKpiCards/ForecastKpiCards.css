@@ -1,0 +1,202 @@
+.forecast-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+@media (max-width: 960px) {
+  .forecast-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.forecast-kpi-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.forecast-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.forecast-kpi-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.forecast-kpi-card__title {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.forecast-kpi-card__icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.forecast-kpi-card__icon-badge--green {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.forecast-kpi-card__icon-badge--rose {
+  background-color: #fff1f2;
+  color: #e11d48;
+}
+
+.forecast-kpi-card__icon-badge--blue {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.forecast-kpi-card__icon-badge--purple {
+  background-color: #f5f3ff;
+  color: #7c3aed;
+}
+
+.forecast-kpi-card__icon-badge--amber {
+  background-color: #fffbeb;
+  color: #d97706;
+}
+
+:root[data-theme="dark"] .forecast-kpi-card__icon-badge--green {
+  background-color: rgba(5, 150, 105, 0.18);
+  color: #34d399;
+}
+:root[data-theme="dark"] .forecast-kpi-card__icon-badge--rose {
+  background-color: rgba(225, 29, 72, 0.18);
+  color: #fb7185;
+}
+:root[data-theme="dark"] .forecast-kpi-card__icon-badge--blue {
+  background-color: rgba(37, 99, 235, 0.18);
+  color: #60a5fa;
+}
+:root[data-theme="dark"] .forecast-kpi-card__icon-badge--purple {
+  background-color: rgba(124, 58, 237, 0.18);
+  color: #a78bfa;
+}
+:root[data-theme="dark"] .forecast-kpi-card__icon-badge--amber {
+  background-color: rgba(217, 119, 6, 0.18);
+  color: #fcd34d;
+}
+
+.forecast-kpi-card__amount-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.forecast-kpi-card__amount {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--color-text-strong);
+  line-height: 1.1;
+  letter-spacing: -0.5px;
+}
+
+.forecast-kpi-card__amount--surplus {
+  color: #059669;
+}
+
+:root[data-theme="dark"] .forecast-kpi-card__amount--surplus {
+  color: #34d399;
+}
+
+.forecast-kpi-card__currency {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.forecast-kpi-card__sub-label {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.forecast-kpi-card__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px dashed var(--color-border);
+}
+
+.forecast-kpi-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  width: fit-content;
+}
+
+.forecast-kpi-pill--green {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.forecast-kpi-pill--blue {
+  background-color: #eff6ff;
+  color: #2563eb;
+}
+
+.forecast-kpi-pill--gray {
+  background-color: var(--color-surface-hover);
+  color: var(--color-text-secondary);
+}
+
+.forecast-kpi-pill--purple {
+  background-color: #f5f3ff;
+  color: #7c3aed;
+}
+
+.forecast-kpi-pill--amber {
+  background-color: #fffbeb;
+  color: #d97706;
+}
+
+:root[data-theme="dark"] .forecast-kpi-pill--green {
+  background-color: rgba(5, 150, 105, 0.2);
+  color: #6ee7b7;
+}
+:root[data-theme="dark"] .forecast-kpi-pill--blue {
+  background-color: rgba(37, 99, 235, 0.2);
+  color: #93c5fd;
+}
+:root[data-theme="dark"] .forecast-kpi-pill--amber {
+  background-color: rgba(217, 119, 6, 0.2);
+  color: #fde68a;
+}
+:root[data-theme="dark"] .forecast-kpi-pill--purple {
+  background-color: rgba(124, 58, 237, 0.2);
+  color: #c4b5fd;
+}
+
+.forecast-kpi-card__subtext {
+  font-size: 11.5px;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}

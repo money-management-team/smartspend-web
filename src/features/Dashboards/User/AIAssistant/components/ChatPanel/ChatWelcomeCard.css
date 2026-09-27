@@ -1,0 +1,289 @@
+.ai-chat-welcome-card {
+  width: 100%;
+  max-width: 550px;
+  margin: auto;
+  box-sizing: border-box;
+  padding: 38px 28px 28px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: aiWelcomeScaleUp 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes aiWelcomeScaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* =========================================
+   CENTER BADGE
+========================================= */
+
+.ai-welcome-badge {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-welcome-badge__glow {
+  position: absolute;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(37, 99, 235, 0.16) 0%,
+    rgba(37, 99, 235, 0) 70%
+  );
+  pointer-events: none;
+}
+
+.ai-welcome-badge__square {
+  width: 58px;
+  height: 58px;
+  border-radius: 17px;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+  position: relative;
+  z-index: 1;
+}
+
+.ai-welcome-badge__icon {
+  width: 25px;
+  height: 25px;
+}
+
+.ai-welcome-badge__star {
+  position: absolute;
+  top: -4px;
+  inset-inline-end: -4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #eab308;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(234, 179, 8, 0.4);
+  z-index: 2;
+}
+
+.ai-welcome-badge__star svg {
+  width: 11px;
+  height: 11px;
+  fill: #ffffff;
+}
+
+.ai-welcome-badge__dollar {
+  position: absolute;
+  bottom: -4px;
+  inset-inline-start: -4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #10b981;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+  z-index: 2;
+}
+
+.ai-welcome-badge__dollar svg {
+  width: 11px;
+  height: 11px;
+  stroke-width: 2.5;
+}
+
+/* =========================================
+   TEXT
+========================================= */
+
+.ai-welcome-card__title {
+  margin: 18px 0 0;
+  font-size: 21px;
+  font-weight: 750;
+  color: var(--color-text-strong);
+  font-family: var(--font-heading);
+  line-height: 1.3;
+}
+
+.ai-welcome-card__desc {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--color-text-secondary);
+  max-width: 420px;
+}
+
+.ai-welcome-card__suggestions-label {
+  display: block;
+  margin: 22px 0 10px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+/* =========================================
+   CHIPS
+========================================= */
+
+.ai-welcome-card__chips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
+}
+
+.ai-welcome-card__chips-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ai-welcome-chip {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: 11.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 150ms ease;
+}
+
+.ai-welcome-chip:hover {
+  border-color: #2563eb;
+  color: #2563eb;
+  background-color: var(--primary-soft);
+  transform: translateY(-1px);
+}
+
+.ai-welcome-chip__icon {
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-muted);
+}
+
+.ai-welcome-chip:hover .ai-welcome-chip__icon {
+  color: #2563eb;
+}
+
+.ai-welcome-chip__icon--help {
+  color: #3b82f6;
+}
+
+.ai-welcome-chip__emoji {
+  font-size: 13px;
+  line-height: 1;
+}
+
+/* =========================================
+   ACTION BUTTON
+========================================= */
+
+.ai-welcome-card__start-btn {
+  min-width: 190px;
+  height: 42px;
+  padding: 0 22px;
+  margin-top: 22px;
+  border: 0;
+  border-radius: 12px;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28);
+  transition: all 150ms ease;
+}
+
+.ai-welcome-card__start-btn:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.38);
+}
+
+.ai-welcome-card__start-btn:active {
+  transform: translateY(0);
+}
+
+.ai-welcome-card__start-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* =========================================
+   SECURITY FOOTER
+========================================= */
+
+.ai-welcome-card__security {
+  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.ai-welcome-card__security-icon {
+  width: 13px;
+  height: 13px;
+  color: #10b981;
+}
+
+@media (max-width: 580px) {
+  .ai-chat-welcome-card {
+    padding: 26px 18px 22px;
+  }
+
+  .ai-welcome-card__title {
+    font-size: 19px;
+  }
+
+  .ai-welcome-card__chips-row {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .ai-welcome-chip {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .ai-welcome-card__start-btn {
+    width: 100%;
+  }
+}

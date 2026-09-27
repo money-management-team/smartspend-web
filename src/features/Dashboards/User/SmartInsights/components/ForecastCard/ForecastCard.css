@@ -1,0 +1,279 @@
+.forecast-card {
+  box-sizing: border-box;
+  padding: 24px 26px;
+  border-radius: var(--radius-lg, 16px);
+  border: 1px solid var(--color-border);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-card, 0 1px 3px rgba(0, 0, 0, 0.05));
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.forecast-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.forecast-card__header-right {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.forecast-card__badges-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.forecast-card__badge-smart {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background-color: var(--primary-soft, rgba(37, 99, 235, 0.08));
+  color: var(--color-primary, #2563eb);
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+.forecast-card__trend-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.forecast-card__auto-update {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.forecast-card__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--color-text-strong);
+  font-family: var(--font-heading, "Tajawal", sans-serif);
+}
+
+.forecast-card__accuracy-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background-color: rgba(37, 99, 235, 0.07);
+  color: var(--color-primary, #2563eb);
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+}
+
+/* =========================================
+   CONTENT (2 COLUMNS)
+========================================= */
+
+.forecast-card__content {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 28px;
+  align-items: center;
+}
+
+@media (max-width: 860px) {
+  .forecast-card__content {
+    grid-template-columns: 1fr;
+  }
+}
+
+.forecast-card__stats-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.forecast-card__net-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.forecast-card__net-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.forecast-card__net-amount {
+  font-size: 26px;
+  font-weight: 850;
+  color: #10b981;
+  font-family: var(--font-heading, "Tajawal", sans-serif);
+}
+
+.forecast-card__net-surplus {
+  font-size: 13px;
+  font-weight: 600;
+  color: #10b981;
+}
+
+.forecast-card__net-desc {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+}
+
+/* =========================================
+   MINI BARS
+========================================= */
+
+.forecast-card__bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.forecast-mini-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.forecast-mini-bar__labels {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.forecast-mini-bar__track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background-color: var(--color-surface-soft, rgba(0, 0, 0, 0.05));
+  overflow: hidden;
+}
+
+[data-theme="dark"] .forecast-mini-bar__track {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.forecast-mini-bar__fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 600ms ease;
+}
+
+.forecast-mini-bar__fill--income {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.forecast-mini-bar__fill--expenses {
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+}
+
+/* =========================================
+   CHART COLUMN
+========================================= */
+
+.forecast-card__chart-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: var(--color-surface-soft, rgba(0, 0, 0, 0.02));
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+}
+
+.forecast-chart-labels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.forecast-chart-labels__mid {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  font-weight: 700;
+}
+
+.forecast-svg-container {
+  width: 100%;
+  height: 90px;
+}
+
+.forecast-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.forecast-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border-soft, rgba(0, 0, 0, 0.06));
+  flex-wrap: wrap;
+}
+
+.forecast-card__view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 0;
+  background-color: var(--color-primary, #2563eb);
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+  transition: all 180ms ease;
+}
+
+.forecast-card__view-btn:hover {
+  background-color: var(--color-primary-hover, #1d4ed8);
+  transform: translateY(-1px);
+}
+
+.forecast-card__view-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.forecast-card__footnote {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  color: var(--color-text-muted);
+}
+
+.forecast-card__footnote-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-primary, #2563eb);
+}

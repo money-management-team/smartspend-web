@@ -1,0 +1,234 @@
+.ai-chat-error-card {
+  width: 100%;
+  max-width: 680px;
+  box-sizing: border-box;
+  padding: 20px 22px;
+  border-radius: 16px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.05);
+  animation: aiErrorSlideIn 200ms ease-out;
+}
+
+:root[data-theme="dark"] .ai-chat-error-card {
+  background-color: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.25);
+}
+
+@keyframes aiErrorSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ai-chat-error-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ai-chat-error-card__icon-box {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+:root[data-theme="dark"] .ai-chat-error-card__icon-box {
+  background-color: rgba(220, 38, 38, 0.2);
+  color: #f87171;
+}
+
+.ai-chat-error-card__icon {
+  width: 20px;
+  height: 20px;
+}
+
+.ai-chat-error-card__title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ai-chat-error-card__title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #991b1b;
+  line-height: 1.35;
+}
+
+:root[data-theme="dark"] .ai-chat-error-card__title {
+  color: #fca5a5;
+}
+
+.ai-chat-error-card__code-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background-color: #fee2e2;
+  color: #b91c1c;
+  font-family: monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+:root[data-theme="dark"] .ai-chat-error-card__code-badge {
+  background-color: rgba(220, 38, 38, 0.2);
+  color: #fca5a5;
+}
+
+.ai-chat-error-card__description {
+  margin: 12px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #7f1d1d;
+}
+
+:root[data-theme="dark"] .ai-chat-error-card__description {
+  color: #f87171;
+}
+
+.ai-chat-error-card__feedback {
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background-color: #ecfdf5;
+  color: #059669;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+:root[data-theme="dark"] .ai-chat-error-card__feedback {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.ai-chat-error-card__actions {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ai-chat-error-card__retry-btn {
+  height: 34px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 8px;
+  background-color: #dc2626;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.ai-chat-error-card__retry-btn:hover {
+  background-color: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.ai-chat-error-card__retry-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ai-chat-error-card__check-btn {
+  height: 34px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.ai-chat-error-card__check-btn:hover:not(:disabled) {
+  background-color: var(--surface-soft);
+  border-color: var(--color-border-strong);
+}
+
+.ai-chat-error-card__check-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.ai-chat-error-card__check-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.ai-chat-error-card__copy-btn {
+  padding: 6px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.ai-chat-error-card__copy-btn:hover {
+  color: var(--color-text-strong);
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+:root[data-theme="dark"] .ai-chat-error-card__copy-btn:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.ai-chat-error-card__copy-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+.ai-spin {
+  animation: aiSpin 1s linear infinite;
+}
+
+@keyframes aiSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

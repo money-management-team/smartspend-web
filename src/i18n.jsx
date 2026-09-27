@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 

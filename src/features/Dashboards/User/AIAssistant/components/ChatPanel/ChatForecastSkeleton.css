@@ -1,0 +1,316 @@
+.ai-forecast-skeleton-card {
+  width: 100%;
+  max-width: 680px;
+  box-sizing: border-box;
+  padding: 20px 22px;
+  border-radius: 18px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+  animation: aiSkeletonFadeIn 250ms ease-out;
+}
+
+@keyframes aiSkeletonFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.ai-forecast-skeleton__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border-soft);
+  flex-wrap: wrap;
+}
+
+.ai-forecast-skeleton__status {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.ai-forecast-skeleton__pulse-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: #2563eb;
+  animation: aiBluePulse 1.8s ease-in-out infinite;
+  box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
+}
+
+@keyframes aiBluePulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.6);
+  }
+  70% {
+    transform: scale(1.15);
+    box-shadow: 0 0 0 7px rgba(37, 99, 235, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
+  }
+}
+
+.ai-forecast-skeleton__status-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-strong);
+  line-height: 1.4;
+}
+
+.ai-forecast-skeleton__live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background-color: var(--surface-soft);
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.ai-forecast-skeleton__live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10b981;
+}
+
+.ai-forecast-skeleton__live-icon {
+  width: 12px;
+  height: 12px;
+  animation: aiSpin 3s linear infinite;
+}
+
+/* =========================================
+   BODY
+========================================= */
+
+.ai-forecast-skeleton__body {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* =========================================
+   SHIMMER SKELETON PRIMITIVES
+========================================= */
+
+.ai-skeleton-bar,
+.ai-skeleton-box {
+  background: linear-gradient(
+    90deg,
+    var(--surface-soft) 25%,
+    rgba(226, 232, 240, 0.8) 50%,
+    var(--surface-soft) 75%
+  );
+  background-size: 200% 100%;
+  animation: aiShimmer 1.8s infinite;
+  border-radius: 6px;
+}
+
+:root[data-theme="dark"] .ai-skeleton-bar,
+:root[data-theme="dark"] .ai-skeleton-box {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.05) 75%
+  );
+  background-size: 200% 100%;
+}
+
+@keyframes aiShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.ai-skeleton-bar--headline {
+  width: 220px;
+  height: 14px;
+}
+
+.ai-skeleton-bar--short {
+  width: 70px;
+  height: 10px;
+}
+
+.ai-skeleton-bar--medium {
+  width: 120px;
+  height: 11px;
+}
+
+.ai-skeleton-bar--pill {
+  width: 55px;
+  height: 20px;
+  border-radius: 999px;
+}
+
+.ai-skeleton-bar--pill-sm {
+  width: 45px;
+  height: 20px;
+  border-radius: 999px;
+}
+
+.ai-skeleton-bar--tick {
+  width: 38px;
+  height: 7px;
+  border-radius: 4px;
+}
+
+.ai-skeleton-box--icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.ai-skeleton-box--item-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* =========================================
+   METRIC CARDS GRID
+========================================= */
+
+.ai-forecast-skeleton__metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.ai-forecast-skeleton__metric-card {
+  padding: 12px 14px;
+  box-sizing: border-box;
+  background-color: var(--surface-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ai-forecast-skeleton__metric-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+/* =========================================
+   CHART CARD
+========================================= */
+
+.ai-forecast-skeleton__chart-card {
+  padding: 14px 16px 12px;
+  box-sizing: border-box;
+  background-color: var(--surface-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ai-forecast-skeleton__chart-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-forecast-skeleton__chart-spacer {
+  flex: 1;
+}
+
+.ai-forecast-skeleton__chart-visual {
+  width: 100%;
+  height: 80px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ai-forecast-skeleton__svg {
+  width: 100%;
+  height: 100%;
+}
+
+.ai-forecast-skeleton__curve {
+  animation: aiDash 2.5s linear infinite;
+}
+
+@keyframes aiDash {
+  to {
+    stroke-dashoffset: -32;
+  }
+}
+
+.ai-forecast-skeleton__chart-ticks {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+}
+
+/* =========================================
+   LIST CARD
+========================================= */
+
+.ai-forecast-skeleton__list-card {
+  padding: 14px 16px;
+  box-sizing: border-box;
+  background-color: var(--surface-soft);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ai-forecast-skeleton__list-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ai-forecast-skeleton__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ai-forecast-skeleton__row-spacer {
+  flex: 1;
+}
+
+@media (max-width: 650px) {
+  .ai-forecast-skeleton__metrics-grid {
+    grid-template-columns: 1fr;
+  }
+}
