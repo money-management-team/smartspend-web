@@ -2,10 +2,17 @@ import { useTranslation } from "react-i18next";
 import { LuRefreshCw } from "react-icons/lu";
 
 import { getDisplayLocale } from "../../../Accounts/accountHelpers";
-import { formatDateTime } from "../../../utils/formatters";
-import { canDownloadExport, formatFileSize, getExportErrorMessage, getReportName } from "../../reportExportHelpers";
+import { formatDate, formatDateTime } from "../../../utils/formatters";
+import {
+  canDownloadExport,
+  formatFileSize,
+  getExportErrorMessage,
+  getExportPeriod,
+  getReportName,
+} from "../../reportExportHelpers";
 import { useReportExport } from "../../useReportExport";
 import ExportActions from "../ExportActions/ExportActions";
+import ExportFormatBadge from "../ExportFormatBadge/ExportFormatBadge";
 import ExportStatusBadge from "../ExportStatusBadge/ExportStatusBadge";
 
 import "./ExportHistoryRow.css";
@@ -17,6 +24,8 @@ export default function ExportHistoryRow({ initialRecord }) {
   const locale = getDisplayLocale(i18n.language);
   const { record, replace, pollError, gaveUp, checkAgain } = useReportExport(initialRecord);
   const date = (value) => (value ? formatDateTime(value, locale) : "—");
+  const period = getExportPeriod(record);
+  const day = (value) => (value ? formatDate(value, locale) : "…");
 
   return (
     <tr className="export-history-row">
@@ -25,7 +34,14 @@ export default function ExportHistoryRow({ initialRecord }) {
         {record.file_name && <small dir="ltr">{record.file_name}</small>}
       </th>
       <td>
-        <bdi dir="ltr">{String(record.format ?? "—").toUpperCase()}</bdi>
+        <ExportFormatBadge format={record.format} />
+      </td>
+      <td>
+        {period ? (
+          <bdi>{t("dashboard.reports.period.range", { from: day(period.from), to: day(period.to) })}</bdi>
+        ) : (
+          "—"
+        )}
       </td>
       <td>
         <ExportStatusBadge record={record} />

@@ -9,6 +9,8 @@ import {
   getExportErrorMessage,
   getExportFilename,
   getExportStopAction,
+  getFormatName,
+  isExportFormat,
   parseExport,
 } from "../../reportExportHelpers";
 
@@ -19,7 +21,8 @@ import "./ExportActions.css";
  * state and error.
  *
  * - Download is enabled only when the backend says `download_available`.
- *   The file is fetched as a Blob and handed to the browser once.
+ *   The file (CSV, XLSX or PDF) is fetched as a Blob through the
+ *   authenticated apiDownload and handed to the browser once.
  * - DELETE is labelled by what it does: "Cancel export" while queued or
  *   processing, "Revoke export" once completed (the file is removed and the
  *   export becomes expired). It asks for confirmation inline first.
@@ -80,7 +83,11 @@ export default function ExportActions({ record, onChange }) {
         >
           <LuDownload aria-hidden="true" />
           <span>
-            {download.pending ? t("dashboard.reportExports.actions.downloading") : t("dashboard.reportExports.actions.download")}
+            {download.pending
+              ? t("dashboard.reportExports.actions.downloading")
+              : isExportFormat(record?.format)
+                ? t("dashboard.reportExports.actions.downloadFormat", { format: getFormatName(record.format) })
+                : t("dashboard.reportExports.actions.download")}
           </span>
         </button>
 

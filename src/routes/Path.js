@@ -26,8 +26,6 @@ export const PATH = {
     RECURRING: "/dashboard/recurring",
     RECURRING_DETAILS: "/dashboard/recurring/:recurringTransactionId",
     CALENDAR: "/dashboard/calendar",
-    IMPORT: "/dashboard/import",
-    IMPORT_HISTORY: "/dashboard/import/history",
     AI_EXPENSE_CAPTURES: "/dashboard/ai-expense-captures",
     AI_EXPENSE_CAPTURE_DETAILS: "/dashboard/ai-expense-captures/:captureId",
     BUDGETS: "/dashboard/budgets",
@@ -52,13 +50,6 @@ export const AUTH_INTENT = {
 
 export const getAccountTypePath = (intent = AUTH_INTENT.REGISTER) =>
   `${PATH.AUTH.ACCOUNT_TYPE}?intent=${intent}`;
-
-/*
- * The import wizard resumes an existing import from `?import=`, so a link
- * from the history opens the same page at whatever step its status implies.
- */
-export const getImportPath = (importId) =>
-  `${PATH.USER.IMPORT}?import=${encodeURIComponent(importId)}`;
 
 export const getAccountDetailsPath = (accountId) =>
   PATH.USER.ACCOUNT_DETAILS.replace(

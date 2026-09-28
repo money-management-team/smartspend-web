@@ -17,7 +17,7 @@ The page is a three-step flow above the ledger, all inside `DashboardLayout`:
 | --- | --- | --- |
 | Intro | `OperationsIntro` | Hero copy, the four-step flow strip (steps 2–4 light up once an account is chosen) and today's expense total |
 | Step 1 | `AccountStep` | The active accounts as selectable cards (icon, name, type · last 4, balance). The selection is **derived**, not stored: an account that leaves the active list falls back to none, and a single account is already chosen |
-| Step 2 | `CaptureStep` | Method tabs (voice / receipt / manual / statement) over one panel, plus the "nothing is recorded until you confirm" note |
+| Step 2 | `CaptureStep` | Method tabs (voice / receipt / manual) over one panel, plus the "nothing is recorded until you confirm" note |
 | Ledger | `Ledger` | The same list as before, now full width under a "Recent activity" heading |
 
 - **Today's total** is a separate `GET /transactions` for today (`type=expense`, `status=posted`, `per_page` 100 — the backend's documented maximum; anything higher is rejected with a 422). It follows the paginator for up to 5 pages, so a busy day is totalled in full instead of stopping at the first page. Amounts of different currencies are **never** added together: each currency is totalled with `sumMoney` on its own, the largest group is shown and the rest are counted.
@@ -30,7 +30,6 @@ The page is a three-step flow above the ledger, all inside `DashboardLayout`:
 | Manual entry | `NewOperation` | Collects the operation and opens the review dialog — it does **not** post |
 | Voice | `VoiceCapture` | None yet: the recorder runs locally and stopping it says so, with a link to manual entry. No operation is invented |
 | Receipt | `ReceiptCapture` | None yet: the image is picked locally, "Analyze" says the service isn't connected, with a link to manual entry |
-| Statement | `StatementCapture` | Hands over to the import wizard (`PATH.USER.IMPORT`) instead of duplicating it |
 
 ## Manual entry (`NewOperation`)
 

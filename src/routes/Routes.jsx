@@ -22,8 +22,6 @@ import Dashboard from "../features/Dashboards/User/Dashboard/Dashboard";
 import DebtDetails from "../features/Dashboards/User/DebtDetails/DebtDetails";
 import Debts from "../features/Dashboards/User/Debts/Debts";
 import FinancialOperations from "../features/Dashboards/User/FinancialOperations/FinancialOperations";
-import Import from "../features/Dashboards/User/Import/Import";
-import ImportHistory from "../features/Dashboards/User/ImportHistory/ImportHistory";
 import Notifications from "../features/Dashboards/User/Notifications/Notifications";
 import Recurring from "../features/Dashboards/User/Recurring/Recurring";
 import RecurringDetails from "../features/Dashboards/User/RecurringDetails/RecurringDetails";
@@ -189,14 +187,6 @@ const userRoutes = [
       {
         path: PATH.USER.CALENDAR,
         element: <Calendar />,
-      },
-      {
-        path: PATH.USER.IMPORT,
-        element: <Import />,
-      },
-      {
-        path: PATH.USER.IMPORT_HISTORY,
-        element: <ImportHistory />,
       },
       {
         path: PATH.USER.AI_EXPENSE_CAPTURES,

@@ -2,7 +2,7 @@
 
 The Reports page (`/dashboard/reports`, `PATH.USER.REPORTS`) shows the Sprint 6 read-only financial reports. Every figure is calculated by the backend; the frontend only displays it. The page sits under `RequireAuth` → `DashboardLayout` and the sidebar already links to it.
 
-The old placeholder "Export PDF / Export Excel" buttons, which only logged to the console, were removed. The header now carries a real **Export CSV** button and a link to the export history — see [../report-exports/overview.md](../report-exports/overview.md). Statement imports are a separate feature: [../imports/overview.md](../imports/overview.md).
+The old placeholder "Export PDF / Export Excel" buttons, which only logged to the console, were removed. The header now carries a real **Export report** button (CSV, Excel or PDF) and a link to the export history — see [../report-exports/overview.md](../report-exports/overview.md). PDF is built in the browser with the Smart Spend document design — see [pdf-export.md](pdf-export.md).
 
 ## Reports
 

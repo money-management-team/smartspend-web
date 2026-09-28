@@ -361,7 +361,6 @@
       "transfers": "Transfers",
       "recurring": "Recurring",
       "calendar": "Calendar",
-      "import": "Import",
       "categories": "Categories",
       "budgets": "Budgets",
       "savingsGoals": "Savings Goals",
@@ -371,8 +370,13 @@
       "notifications": "Notifications",
       "settings": "Settings",
       "logout": "Log out",
-      "importHistory": "Import history",
-      "aiCaptures": "AI Receipts"
+      "aiCaptures": "AI Receipts",
+      "groups": {
+        "transactions": "Transactions",
+        "planning": "Planning"
+      },
+      "financialReports": "Financial reports",
+      "reportExports": "Export history"
     },
     "user": {
       "common": {
@@ -744,7 +748,7 @@
       },
       "captureStep": {
         "title": "How would you like to record it?",
-        "description": "Four input methods, all ending with the same review step before anything is saved.",
+        "description": "Three input methods, all ending with the same review step before anything is saved.",
         "secure": "Nothing is recorded until you review the details and confirm.",
         "accountRequired": "Choose the account to use first.",
         "useAccount": "Use account",
@@ -762,10 +766,6 @@
         "manual": {
           "label": "Manual entry",
           "hint": "Fast for everyday operations"
-        },
-        "upload": {
-          "label": "Upload statement",
-          "hint": "PDF, CSV or Excel transactions"
         }
       },
       "voice": {
@@ -797,13 +797,6 @@
         "kicker": "Quick entry",
         "title": "Only the details that matter.",
         "description": "The account selected above is used for this operation."
-      },
-      "statement": {
-        "kicker": "Bank statement or transaction file",
-        "title": "Import a file into your ledger",
-        "description": "PDF, CSV or XLSX. The import wizard maps the columns and lets you review every row before it is recorded.",
-        "action": "Open the import wizard",
-        "history": "Import history"
       },
       "review": {
         "open": {
@@ -1397,308 +1390,6 @@
         "completedNote": "This rule has completed its schedule (end date or maximum occurrences reached). It is read-only.",
         "automaticNote": "Automatic: the server posts each occurrence on its due date. You can still confirm or skip the next one yourself.",
         "manualNote": "Manual: nothing is posted until you confirm an occurrence."
-      }
-    },
-    "importPage": {
-      "title": "Import bank statement",
-      "subtitle": "PDF, Excel or CSV — extracted, reviewed and matched before import.",
-      "steps": {
-        "label": "Import steps",
-        "upload": "Upload",
-        "map": "Map columns",
-        "validate": "Validate",
-        "review": "Review",
-        "confirm": "Confirm"
-      },
-      "upload": {
-        "title": "Upload file",
-        "supported": "Supported: PDF, XLSX, CSV",
-        "dropTitle": "Drag & drop your file here",
-        "browse": "Browse files",
-        "remove": "Remove file",
-        "change": "Change file",
-        "submit": "Upload statement",
-        "uploading": "Uploading…",
-        "hasHeader": "The first row contains column titles",
-        "hasHeaderHint": "Turn this off if the file starts straight with transactions.",
-        "autoDetect": "Date and number formats are detected automatically. Nothing is imported yet.",
-        "errors": {
-          "required": "Choose a file to upload.",
-          "type": "Only CSV and XLSX files can be imported.",
-          "empty": "That file is empty."
-        },
-        "parsing": {
-          "date_order": "Date order",
-          "decimal_separator": "Decimal separator"
-        },
-        "parsingValues": {
-          "date_order": {
-            "auto": "Detect automatically"
-          },
-          "decimal_separator": {
-            "auto": "Detect automatically"
-          }
-        }
-      },
-      "account": {
-        "label": "Detected account",
-        "checking": "Main Checking",
-        "savings": "Business Savings",
-        "wallet": "Apple Wallet",
-        "cash": "Cash on hand"
-      },
-      "actions": {
-        "startOver": "Start over",
-        "changeMapping": "Change mapping",
-        "newImport": "New import"
-      },
-      "notices": {
-        "uploaded": "File uploaded. Match its columns to the transaction fields below.",
-        "mappingSaved": "Mapping saved. Validate the rows to continue.",
-        "validated": "Rows validated. Review them before confirming.",
-        "confirmed": "Import confirmed. The transactions are being created.",
-        "cancelled": "Import cancelled. No transactions were created."
-      },
-      "resume": {
-        "loading": "Loading this import…"
-      },
-      "noMoneyMoved": "Nothing is imported and no balance changes until you confirm.",
-      "errors": {
-        "tooLarge": "That file is too large to upload.",
-        "unsupported": "Only CSV and XLSX files can be imported.",
-        "forbidden": "You do not have access to this import.",
-        "notFound": "The requested resource was not found.",
-        "conflict": "This import has already moved on. Reload it to see its current state.",
-        "alreadyConfirmed": "This import has already been confirmed.",
-        "alreadyReversed": "This import has already been reversed.",
-        "invalid": {
-          "file": "That file could not be imported. Check the format and try again.",
-          "data": "Some of the values could not be accepted. Check the highlighted fields."
-        }
-      },
-      "fields": {
-        "account": "Account",
-        "status": "Status",
-        "created_at": "Uploaded",
-        "completed_at": "Completed",
-        "mappedAt": "Mapped",
-        "validatedAt": "Validated",
-        "directionStrategy": "Amount direction",
-        "defaultExpenseCategory": "Default expense category",
-        "defaultIncomeCategory": "Default income category"
-      },
-      "summary": {
-        "untitled": "Untitled file",
-        "locked": "This import can no longer be edited.",
-        "fileUnavailable": "The uploaded file is no longer stored."
-      },
-      "mapping": {
-        "title": "Match the columns",
-        "hint": "Tell us which column of your file holds each transaction field.",
-        "columnsTitle": "Columns",
-        "destinationTitle": "Where the transactions go",
-        "column": "Column {{number}} — {{name}}",
-        "unnamed": "Unnamed column",
-        "noHeaders": "This file has no column titles to match.",
-        "notMapped": "Not mapped",
-        "suggested": "Suggested",
-        "amountHint": "Use one signed amount column, or a separate debit and credit column.",
-        "chooseAccount": "Choose an account",
-        "noAccounts": "No account is available for this workspace.",
-        "noDefault": "No default",
-        "loadingOptions": "Loading accounts and categories…",
-        "save": "Save mapping",
-        "saving": "Saving…",
-        "errors": {
-          "dateRequired": "A date column is required.",
-          "amountRequired": "An amount column, or a debit and credit column, is required.",
-          "accountRequired": "Choose the account these transactions belong to."
-        }
-      },
-      "mappingFields": {
-        "date": "Date",
-        "description": "Description",
-        "amount": "Amount",
-        "type": "Type",
-        "debit": "Debit",
-        "credit": "Credit"
-      },
-      "validate": {
-        "title": "Validate the rows",
-        "hint": "We check every row against your mapping. Nothing is imported yet.",
-        "submit": "Validate rows",
-        "validating": "Validating…"
-      },
-      "review": {
-        "title": "Review the rows",
-        "hint": "Fix what is wrong and leave out what you do not want. Nothing is imported yet.",
-        "loading": "Loading rows…",
-        "empty": "This import has no rows to review.",
-        "emptyPage": "There is nothing on this page.",
-        "readyHint": "When these rows look right, continue to confirm the import.",
-        "continue": "Continue to confirm",
-        "nothingToImport": "No row can be imported yet. Fix the invalid rows first."
-      },
-      "rows": {
-        "rowNumber": "Row {{number}}",
-        "line": "line {{line}}",
-        "edit": "Edit",
-        "fix": "Fix",
-        "ignore": "Ignore",
-        "ignoring": "Ignoring…",
-        "ignoreHint": "Keep this row in the import but do not create a transaction for it.",
-        "ignoredNote": "This row will be left out of the import. It stays here for the record.",
-        "parsedValue": "Parsed values",
-        "originalValue": "Original file values",
-        "validationErrors": "Problems with this row",
-        "duplicateOf": "Looks like a duplicate of",
-        "transactionNumber": "transaction #{{id}}"
-      },
-      "rowFields": {
-        "transaction_date": "Date",
-        "transaction_type": "Type",
-        "amount": "Amount",
-        "description": "Description",
-        "category_id": "Category",
-        "reference_number": "Reference"
-      },
-      "rowEditor": {
-        "title": "Correct this row",
-        "chooseType": "Choose a type",
-        "noCategory": "No category",
-        "save": "Save row",
-        "unchanged": "Nothing changed yet.",
-        "errors": {
-          "dateInvalid": "Enter a valid date."
-        }
-      },
-      "transactionTypes": {
-        "expense": "Expense",
-        "income": "Income"
-      },
-      "directionStrategies": {
-        "signed_amount": "Signed amount column",
-        "debit_credit": "Separate debit and credit columns",
-        "type_column": "Type column"
-      },
-      "counts": {
-        "total": "Total rows",
-        "valid": "Valid",
-        "invalid": "Invalid",
-        "duplicate": "Duplicates",
-        "ignored": "Ignored",
-        "imported": "Imported",
-        "failed": "Failed"
-      },
-      "statuses": {
-        "uploaded": "Uploaded",
-        "mapping_required": "Mapping required",
-        "validating": "Validating",
-        "ready_for_review": "Ready for review",
-        "partially_valid": "Partially valid",
-        "confirmed": "Confirmed",
-        "processing": "Processing",
-        "completed": "Completed",
-        "failed": "Failed",
-        "cancelled": "Cancelled",
-        "reversed": "Reversed",
-        "valid": "Valid",
-        "invalid": "Invalid",
-        "duplicate": "Duplicate",
-        "ignored": "Ignored",
-        "imported": "Imported",
-        "mapped": "Mapped",
-        "pending": "Pending"
-      },
-      "confirm": {
-        "title": "Confirm the import",
-        "hint": "This is the step that turns the reviewed rows into real transactions.",
-        "moneyTitle": "This creates real transactions",
-        "moneyBody": "The valid rows are posted to the chosen account exactly like transactions you add by hand, and your balances change. If you need to undo it afterwards, use Reverse import — it posts the opposing entries and keeps the originals.",
-        "willImport": "Rows to import",
-        "willSkip": {
-          "invalid": "Invalid, skipped",
-          "duplicate": "Duplicates, skipped",
-          "ignored": "Ignored, skipped"
-        },
-        "skipNote": "Only valid rows are posted. The others stay in the import for the record.",
-        "acknowledge_one": "I understand this will create {{count}} transaction.",
-        "acknowledge_other": "I understand this will create {{count}} transactions.",
-        "submit": "Confirm import",
-        "submitting": "Confirming…",
-        "backToReview": "Back to review",
-        "conflictHint": "We reloaded this import so you can see what it actually did."
-      },
-      "outcome": {
-        "processing": {
-          "title": "Creating the transactions",
-          "hint": "The backend is importing the rows.",
-          "note": "This can take a moment. The status updates by itself."
-        },
-        "completed": {
-          "title": "Import completed",
-          "hint": "The transactions have been created."
-        },
-        "failed": {
-          "title": "Import failed",
-          "hint": "The backend could not finish this import."
-        },
-        "cancelled": {
-          "title": "Import cancelled",
-          "hint": "No transactions were created."
-        },
-        "reversed": {
-          "title": "Import reversed",
-          "hint": "Opposing transactions have undone this import."
-        },
-        "stillWorking": "This import is still being processed.",
-        "checkAgain": "Check again"
-      },
-      "cancel": {
-        "action": "Cancel import",
-        "confirm": "Cancel this import? The uploaded file is dropped. No transactions were created, so there is nothing to undo.",
-        "confirmAction": "Yes, cancel it",
-        "cancelling": "Cancelling…",
-        "keep": "Keep it"
-      },
-      "reverse": {
-        "action": "Reverse import",
-        "title": "Reverse this import",
-        "explain": "Reversing undoes the financial effect of this import without erasing what happened.",
-        "keepsOriginals": "The imported transactions stay in your ledger and remain auditable.",
-        "postsOpposing": "An opposing transaction is created for each of them, cancelling out their effect.",
-        "reasonLabel": "Why are you reversing this import?",
-        "reasonPlaceholder": "e.g. imported the wrong statement",
-        "reasonGiven": "Reason: {{reason}}",
-        "reasonErrors": {
-          "required": "Give a reason for the reversal.",
-          "tooLong": "Keep the reason under {{max}} characters."
-        },
-        "submit": "Reverse import",
-        "submitting": "Reversing…",
-        "keep": "Keep the import"
-      },
-      "history": {
-        "title": "Import history",
-        "subtitle": "Every statement you have imported into this workspace.",
-        "back": "Back to import",
-        "refresh": "Refresh",
-        "all": "All",
-        "clearFilters": "Clear filters",
-        "loading": "Loading imports…",
-        "empty": "You have not imported a statement yet.",
-        "emptyFiltered": "No import matches these filters.",
-        "emptyPage": "There is nothing on this page.",
-        "startImport": "Import a statement",
-        "untitled": "Untitled file",
-        "actions": {
-          "continue": "Continue",
-          "validate": "Validate",
-          "review": "Review",
-          "viewStatus": "View status",
-          "reverse": "View details",
-          "view": "View details"
-        }
       }
     },
     "budgets": {
@@ -2693,6 +2384,16 @@
         "posted_occurrences": "Posted occurrences",
         "yes": "Yes",
         "no": "No"
+      },
+      "pdf": {
+        "brand": "Smart Spend",
+        "tagline": "Financial report",
+        "generated": "Generated",
+        "footer": "Smart Spend · Report generated on {{date}}",
+        "page": "Page {{page}} of {{total}}",
+        "trendHint": "Grouped by {{unit}}; each currency is shown separately.",
+        "truncated": "Showing the first {{shown}} of {{total}} rows. Export CSV or Excel for the complete list.",
+        "emptyTitle": "No data available for the selected filters."
       }
     },
     "aiAssistant": {
@@ -2994,14 +2695,18 @@
     },
     "reportExports": {
       "actions": {
-        "exportCsv": "Export CSV",
         "queueing": "Queueing…",
         "download": "Download",
         "downloading": "Downloading…",
         "cancel": "Cancel export",
         "revoke": "Revoke export",
         "working": "Working…",
-        "checkAgain": "Check again"
+        "checkAgain": "Check again",
+        "exportReport": "Export report",
+        "exportFormat": "Export {{format}}",
+        "preparing": "Preparing your {{format}} report…",
+        "downloadFormat": "Download {{format}}",
+        "retry": "Try again"
       },
       "confirm": {
         "cancel": "Cancel this export? The file will not be created.",
@@ -3019,10 +2724,10 @@
         "cancelled": "Cancelled"
       },
       "hints": {
-        "queued": "Waiting to be built.",
-        "processing": "Being built now.",
-        "completed": "Ready to download.",
-        "failed": "This export could not be built.",
+        "queued": "Your report is waiting to be processed.",
+        "processing": "Generating your {{format}} report…",
+        "completed": "Your {{format}} report is ready.",
+        "failed": "Report generation failed. Please try again.",
         "expired": "The file is no longer available.",
         "cancelled": "This export was cancelled.",
         "unknown": "Status unknown."
@@ -3036,7 +2741,8 @@
         "expires_at": "Expires",
         "file_size": "Size",
         "download": "File",
-        "actions": "Actions"
+        "actions": "Actions",
+        "period": "Period"
       },
       "errors": {
         "notFound": "That export no longer exists.",
@@ -3045,12 +2751,20 @@
         "notReady": "This export is not ready to download yet.",
         "expired": "This export has expired and its file was removed.",
         "cannotStop": "This export can no longer be cancelled.",
-        "invalid": "That report cannot be exported with these filters."
+        "invalid": "That report cannot be exported with these filters.",
+        "downloadFailed": "The report was generated, but the download could not be completed. Please try again.",
+        "pdfFailed": "The PDF could not be created. Please try again."
       },
       "tracker": {
-        "title": "Your export",
-        "pollError": "We could not check this export's status.",
-        "stillWorking": "This export is still being built."
+        "title": "Exporting {{report}}",
+        "pollError": "We are having trouble checking this export. Still trying…",
+        "stillWorking": "The report is taking longer than expected. You can check again, or follow it later in the export history.",
+        "progress": "Export progress",
+        "steps": {
+          "queued": "Waiting to start",
+          "processing": "Generating",
+          "completed": "Ready"
+        }
       },
       "history": {
         "title": "Export history",
@@ -3066,6 +2780,28 @@
         "open": "Open report",
         "downloadAvailable": "Ready",
         "downloadUnavailable": "Not ready"
+      },
+      "formats": {
+        "csv": {
+          "label": "CSV",
+          "description": "Best for raw data and importing into other tools."
+        },
+        "xlsx": {
+          "label": "Excel (.xlsx)",
+          "description": "Best for spreadsheet analysis and formatting."
+        },
+        "pdf": {
+          "label": "PDF",
+          "description": "Best for sharing, printing and archiving."
+        }
+      },
+      "dialog": {
+        "title": "Export report",
+        "chooseFormat": "Choose a format",
+        "note": "The file is prepared in the background. You can keep working and download it when it is ready.",
+        "preparing": "Preparing your {{format}} report and adding it to the queue…",
+        "notePdf": "The PDF is built on this device from the report data and downloads as soon as it is ready.",
+        "building": "Building your PDF…"
       }
     },
     "aiCaptures": {
@@ -3132,6 +2868,7 @@
         "notFoundMessage": "This receipt isn't available. It may not exist, or it isn't one of yours.",
         "forbiddenTitle": "Access denied",
         "forbiddenMessage": "You don't have access to this receipt.",
+        "analyzing": "Analyzing your receipt with AI. This won't take long.",
         "notes": {
           "processing": "AI processing is in progress. Nothing has been recorded.",
           "failed": "The AI couldn't read this receipt. Nothing has been recorded.",

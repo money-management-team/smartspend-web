@@ -4,31 +4,28 @@ import {
   LuMic,
   LuPencil,
   LuShieldCheck,
-  LuUpload,
   LuWalletCards,
 } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 
 import NewOperation from "../NewOperation/NewOperation";
 import ReceiptCapture from "../ReceiptCapture/ReceiptCapture";
-import StatementCapture from "../StatementCapture/StatementCapture";
 import VoiceCapture from "../VoiceCapture/VoiceCapture";
 
 import "./CaptureStep.css";
 
-const METHODS = ["voice", "scan", "manual", "upload"];
+const METHODS = ["voice", "scan", "manual"];
 
 const METHOD_ICONS = {
   voice: LuMic,
   scan: LuCamera,
   manual: LuPencil,
-  upload: LuUpload,
 };
 
 /*
- * Step 2: the four input methods. Manual entry is the one that records money
+ * Step 2: the three input methods. Manual entry is the one that records money
  * (through the review dialog); voice and receipt capture have no backend yet
- * and say so, and statement upload hands over to the import wizard.
+ * and say so.
  */
 export default function CaptureStep({
   account,
@@ -138,8 +135,6 @@ export default function CaptureStep({
               onReview={onReview}
             />
           )}
-
-          {method === "upload" && <StatementCapture account={account} />}
         </div>
 
         <p className="capture-card__secure">

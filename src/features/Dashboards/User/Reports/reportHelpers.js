@@ -773,3 +773,55 @@ export function parseDistribution(value) {
   const flat = entriesFromMap(value);
   return flat ? [{ currency: value.currency_code ?? "", entries: flat }] : [];
 }
+
+/* ---------- Items table columns ---------- */
+
+const MAX_AUTO_COLUMNS = 10;
+
+// First present scalar among `keys`: an object (e.g. a nested next
+// occurrence without a date) is never printed.
+export function pickScalar(row, keys = []) {
+  for (const key of keys) {
+    const value = pickValue(row, [key]);
+    if (value != null && typeof value !== "object") return value;
+  }
+
+  return null;
+}
+
+function hasColumnValue(column, row) {
+  // The name column also carries the link to the row's details page.
+  if (column.primary && column.link?.(row)) return true;
+  if (column.type === "occurrences") return isObject(pickValue(row, column.keys));
+  if (column.type === "progress") return pickScalar(row, [...column.keys, ...(column.statusKeys ?? [])]) != null;
+  if (column.type === "range") return pickScalar(row, [...column.keys, ...(column.endKeys ?? [])]) != null;
+  return pickScalar(row, column.keys) != null;
+}
+
+export const getRowCurrency = (row, fallback) => {
+  const currency = pickValue(row, ["currency_code", "account.currency_code"]);
+  return isCurrencyCode(currency) ? currency : fallback;
+};
+
+/*
+ * The report's columns that at least one row has a value for. If none of the
+ * documented columns match, the rows' own scalar fields become the columns
+ * (up to MAX_AUTO_COLUMNS) instead of showing nothing.
+ */
+export function getVisibleColumns(columns, rows) {
+  const visible = columns.filter((column) => rows.some((row) => hasColumnValue(column, row)));
+  if (visible.length > 0) return visible;
+
+  const keys = [];
+  rows.forEach((row) => {
+    getExtraScalarKeys(row, new Set()).forEach((key) => {
+      if (!keys.includes(key) && keys.length < MAX_AUTO_COLUMNS) keys.push(key);
+    });
+  });
+
+  return keys.map((key) => ({
+    id: key,
+    keys: [key],
+    type: key === "currency_code" ? "currency" : getValueType(key, rows.find((row) => row[key] != null)?.[key]),
+  }));
+}

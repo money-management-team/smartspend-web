@@ -5,6 +5,7 @@ import { reportExportsApi } from "../api/reportExportsApi";
 import {
   FATAL_POLL_CODES,
   MAX_POLLS,
+  POLL_ERROR_THRESHOLD,
   getPollDelay,
   isActiveExport,
   parseExport,
@@ -17,6 +18,10 @@ import {
  * on a final status (completed / failed / expired / cancelled), on a fatal
  * error (404 / 403 / 401), after MAX_POLLS checks, and on unmount.
  *
+ * A failed check is retried on the same schedule. `pollError` is only
+ * reported once POLL_ERROR_THRESHOLD checks in a row have failed (or the
+ * error is fatal), so one dropped request does not alarm the user.
+ *
  * Mount one instance per export (key it by id) so an export never has two
  * timers.
  *
@@ -24,7 +29,7 @@ import {
  */
 export function useReportExport(initialRecord) {
   const [record, setRecord] = useState(initialRecord);
-  const [poll, setPoll] = useState({ count: 0, error: null, stopped: false });
+  const [poll, setPoll] = useState({ count: 0, error: null, failures: 0, stopped: false });
   const exportId = record?.id ?? null;
   const shouldPoll = exportId != null && isActiveExport(record) && !poll.stopped;
 
@@ -40,7 +45,12 @@ export function useReportExport(initialRecord) {
           if (!next) throw new ApiError("", { code: "MALFORMED_RESPONSE" });
 
           setRecord(next);
-          setPoll((current) => ({ count: current.count + 1, error: null, stopped: current.count + 1 >= MAX_POLLS }));
+          setPoll((current) => ({
+            count: current.count + 1,
+            error: null,
+            failures: 0,
+            stopped: current.count + 1 >= MAX_POLLS,
+          }));
         })
         .catch((error) => {
           if (error.name === "AbortError" || controller.signal.aborted) return;
@@ -48,6 +58,7 @@ export function useReportExport(initialRecord) {
           setPoll((current) => ({
             count: current.count + 1,
             error,
+            failures: current.failures + 1,
             stopped: FATAL_POLL_CODES.includes(error.code) || current.count + 1 >= MAX_POLLS,
           }));
         });
@@ -66,9 +77,10 @@ export function useReportExport(initialRecord) {
       if (next) setRecord(next);
     },
     isPolling: shouldPoll,
-    pollError: poll.error,
+    pollError:
+      poll.error && (poll.stopped || poll.failures >= POLL_ERROR_THRESHOLD) ? poll.error : null,
     gaveUp: poll.stopped && isActiveExport(record),
     // Restarts the checks after they stopped (limit or error).
-    checkAgain: () => setPoll({ count: 0, error: null, stopped: false }),
+    checkAgain: () => setPoll({ count: 0, error: null, failures: 0, stopped: false }),
   };
 }

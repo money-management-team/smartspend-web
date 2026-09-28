@@ -193,12 +193,14 @@
 .dashboard-sidebar__links {
   display: grid;
 
-  gap: 2px;
+  gap: 3px;
 }
 
-.dashboard-sidebar__link {
+/* Direct links and group toggles share one row style. */
+.dashboard-sidebar__link,
+.dashboard-sidebar__toggle {
   width: 100%;
-  height: 33px;
+  height: 35px;
 
   padding:
     0
@@ -212,23 +214,30 @@
 
   box-sizing: border-box;
 
+  border: 0;
   border-radius: 17px;
 
   color: var(--text-muted);
+  background: transparent;
 
-  font-size: 11px;
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
 
   line-height: 1;
 
+  text-align: start;
   text-decoration: none;
+
+  cursor: pointer;
 
   transition:
     color 160ms ease,
-    background-color 160ms ease,
-    transform 160ms ease;
+    background-color 160ms ease;
 }
 
-.dashboard-sidebar__link svg {
+.dashboard-sidebar__link svg,
+.dashboard-sidebar__toggle svg {
   width: 15px;
   height: 15px;
 
@@ -237,15 +246,29 @@
   stroke-width: 1.8;
 }
 
-.dashboard-sidebar__link:hover {
+/* No overflow clipping: Arabic letters such as a final "ي" draw past their
+   box and would be cut off. The labels are short enough to fit. */
+.dashboard-sidebar__label {
+  white-space: nowrap;
+}
+
+.dashboard-sidebar__link:hover,
+.dashboard-sidebar__toggle:hover {
   color:
     var(--color-primary);
 
   background: var(--primary-soft);
 }
 
+.dashboard-sidebar__link:focus-visible,
+.dashboard-sidebar__toggle:focus-visible,
+.dashboard-sidebar__child:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
 
-/* Active */
+
+/* Active direct link */
 
 .dashboard-sidebar__link--active {
   color: var(--navigation-active-text);
@@ -262,6 +285,158 @@
 
   background:
     var(--color-primary-hover);
+}
+
+
+/* ================================
+   COLLAPSIBLE GROUPS
+================================ */
+
+.dashboard-sidebar__chevron {
+  margin-inline-start: auto;
+
+  transition: transform 200ms ease;
+}
+
+.dashboard-sidebar__toggle .dashboard-sidebar__chevron {
+  width: 14px;
+  height: 14px;
+
+  flex-basis: 14px;
+}
+
+.dashboard-sidebar__tree--open .dashboard-sidebar__chevron {
+  transform: rotate(180deg);
+}
+
+/* A group holding the current page: stronger label and a primary icon,
+   without the solid background reserved for the page itself. */
+.dashboard-sidebar__tree--active .dashboard-sidebar__toggle {
+  color: var(--color-text-primary);
+
+  font-weight: 600;
+}
+
+.dashboard-sidebar__tree--active .dashboard-sidebar__toggle > svg:first-child {
+  color: var(--color-primary);
+}
+
+/* Height animation: the row track goes 0fr → 1fr, so no fixed max-height
+   is needed and the content never jumps. */
+.dashboard-sidebar__panel {
+  display: grid;
+
+  grid-template-rows: 0fr;
+
+  transition: grid-template-rows 220ms ease;
+}
+
+.dashboard-sidebar__tree--open .dashboard-sidebar__panel {
+  grid-template-rows: 1fr;
+}
+
+/* The tree: a light rule under the parent icon, children indented past it. */
+.dashboard-sidebar__children {
+  position: relative;
+
+  min-height: 0;
+
+  margin-block: 0;
+  margin-inline: 18px 0;
+
+  padding: 0;
+  padding-inline-start: 11px;
+
+  overflow: hidden;
+
+  border-inline-start:
+    1px solid var(--color-border);
+
+  list-style: none;
+
+  opacity: 0;
+
+  transition:
+    opacity 180ms ease,
+    margin 220ms ease;
+}
+
+.dashboard-sidebar__tree--open .dashboard-sidebar__children {
+  margin-block: 3px 6px;
+
+  opacity: 1;
+}
+
+.dashboard-sidebar__child {
+  position: relative;
+
+  height: 30px;
+
+  padding:
+    0
+    10px;
+
+  display: flex;
+
+  align-items: center;
+
+  box-sizing: border-box;
+
+  border-radius: 10px;
+
+  color: var(--text-muted);
+
+  font-size: 11px;
+  font-weight: 400;
+
+  line-height: 1.2;
+
+  text-decoration: none;
+
+  white-space: nowrap;
+
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+.dashboard-sidebar__child:hover {
+  color: var(--color-text-primary);
+
+  background: var(--color-surface-hover);
+}
+
+/* The current page: tinted, primary text and an accent on the tree rule. */
+.dashboard-sidebar__child--active,
+.dashboard-sidebar__child--active:hover {
+  color: var(--color-primary);
+
+  background: var(--primary-soft);
+
+  font-weight: 600;
+}
+
+.dashboard-sidebar__child--active::before {
+  content: "";
+
+  position: absolute;
+
+  inset-block: 7px;
+  inset-inline-start: -12px;
+
+  width: 2px;
+
+  border-radius: 2px;
+
+  background: var(--color-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-sidebar__chevron,
+  .dashboard-sidebar__panel,
+  .dashboard-sidebar__children {
+    transition: none;
+  }
 }
 
 
