@@ -1,26 +1,19 @@
 import { useState } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, matchPath, useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import {
   LuLayoutDashboard,
   LuWalletCards,
   LuCircleDollarSign,
-  LuArrowRightLeft,
-  LuRepeat2,
   LuCalendarDays,
-  LuFileUp,
-  LuHistory,
-  LuReceiptText,
-  LuChartPie,
-  LuTags,
   LuTarget,
-  LuHandCoins,
   LuChartNoAxesCombined,
   LuSparkles,
   LuBell,
   LuSettings,
   LuLogOut,
+  LuChevronDown,
   LuX,
 } from "react-icons/lu";
 
@@ -33,16 +26,278 @@ import { getDisplayLocale } from "../../../../features/Dashboards/User/Accounts/
 import { formatUnreadBadge } from "../../../../features/Dashboards/User/Notifications/notificationHelpers";
 import { PATH } from "../../../../routes/Path";
 
+/* ================================
+   NAVIGATION MODEL
+================================ */
+
+/*
+ * The whole menu as data. A section holds direct links (`type: "item"`) and
+ * collapsible groups (`type: "group"`) of related pages. Groups exist only
+ * where several pages belong together; a single page stays a direct link.
+ * Paths always come from PATH.
+ *
+ * `end: true` makes a link active on its exact path only (Reports must not
+ * also light up on /dashboard/reports/exports). Otherwise a link is active on
+ * its path and everything below it, so a budget's details page keeps Budgets
+ * (and the Planning group) active.
+ */
+function getNavigation(t, notificationsBadge) {
+  return [
+    {
+      id: "overview",
+      title: t("dashboard.sidebar.sections.overview"),
+      entries: [
+        {
+          type: "item",
+          label: t("dashboard.sidebar.dashboard"),
+          path: PATH.USER.DASHBOARD,
+          icon: LuLayoutDashboard,
+          end: true,
+        },
+        {
+          type: "item",
+          label: t("dashboard.sidebar.accounts"),
+          path: PATH.USER.ACCOUNTS,
+          icon: LuWalletCards,
+        },
+        {
+          type: "group",
+          id: "transactions",
+          label: t("dashboard.sidebar.groups.transactions"),
+          icon: LuCircleDollarSign,
+          children: [
+            { label: t("dashboard.sidebar.financialOperations"), path: PATH.USER.FINANCIAL_OPERATIONS },
+            { label: t("dashboard.sidebar.transfers"), path: PATH.USER.TRANSFERS },
+            { label: t("dashboard.sidebar.recurring"), path: PATH.USER.RECURRING },
+            { label: t("dashboard.sidebar.aiCaptures"), path: PATH.USER.AI_EXPENSE_CAPTURES },
+          ],
+        },
+        {
+          type: "item",
+          label: t("dashboard.sidebar.calendar"),
+          path: PATH.USER.CALENDAR,
+          icon: LuCalendarDays,
+        },
+      ],
+    },
+    {
+      id: "manage",
+      title: t("dashboard.sidebar.sections.manage"),
+      entries: [
+        {
+          type: "group",
+          id: "planning",
+          label: t("dashboard.sidebar.groups.planning"),
+          icon: LuTarget,
+          children: [
+            { label: t("dashboard.sidebar.categories"), path: PATH.USER.CATEGORIES },
+            { label: t("dashboard.sidebar.budgets"), path: PATH.USER.BUDGETS },
+            { label: t("dashboard.sidebar.savingsGoals"), path: PATH.USER.SAVINGS_GOALS },
+            { label: t("dashboard.sidebar.debts"), path: PATH.USER.DEBTS },
+          ],
+        },
+        {
+          type: "group",
+          id: "reports",
+          label: t("dashboard.sidebar.reports"),
+          icon: LuChartNoAxesCombined,
+          children: [
+            { label: t("dashboard.sidebar.financialReports"), path: PATH.USER.REPORTS, end: true },
+            { label: t("dashboard.sidebar.reportExports"), path: PATH.USER.REPORT_EXPORTS },
+          ],
+        },
+      ],
+    },
+    {
+      id: "more",
+      title: t("dashboard.sidebar.sections.more"),
+      entries: [
+        {
+          type: "item",
+          label: t("dashboard.sidebar.aiAssistant"),
+          path: PATH.USER.AI_ASSISTANT,
+          icon: LuSparkles,
+        },
+        {
+          type: "item",
+          label: t("dashboard.sidebar.notifications"),
+          path: PATH.USER.NOTIFICATIONS,
+          icon: LuBell,
+          badge: notificationsBadge,
+        },
+        {
+          type: "item",
+          label: t("dashboard.sidebar.settings"),
+          path: PATH.USER.SETTING,
+          icon: LuSettings,
+        },
+      ],
+    },
+  ];
+}
+
+const isLinkActive = (link, pathname) =>
+  matchPath({ path: link.path, end: Boolean(link.end) }, pathname) != null;
+
+/* ================================
+   OPEN GROUPS (session)
+================================ */
+
+// Open / closed choices survive a reload within the tab, nothing more.
+const OPEN_GROUPS_KEY = "smartspend:sidebar-groups";
+
+function readStoredGroups() {
+  try {
+    const stored = JSON.parse(window.sessionStorage.getItem(OPEN_GROUPS_KEY) ?? "{}");
+    return stored && typeof stored === "object" ? stored : {};
+  } catch {
+    return {};
+  }
+}
+
+function storeGroups(choices) {
+  try {
+    const open = Object.fromEntries(Object.entries(choices).map(([id, choice]) => [id, choice.open]));
+    window.sessionStorage.setItem(OPEN_GROUPS_KEY, JSON.stringify(open));
+  } catch {
+    // Storage unavailable (private mode): the choice lasts for this page only.
+  }
+}
+
+/*
+ * The user's open / closed choice per group: { [id]: { open, path } }, where
+ * `path` is the page it was made on. The group holding the current page is
+ * open unless the user closed it on this very page, so navigating into a
+ * group — or reloading — always reveals the active link. Other groups keep
+ * whatever the user chose (closed by default). Several can be open at once.
+ */
+function useGroupChoices(pathname) {
+  const [choices, setChoices] = useState(() =>
+    Object.fromEntries(
+      Object.entries(readStoredGroups()).map(([id, open]) => [id, { open: open === true, path: null }]),
+    ),
+  );
+
+  const isOpen = (group, containsActive) => {
+    const choice = choices[group.id];
+    if (containsActive) return choice?.path === pathname ? choice.open : true;
+    return choice?.open ?? false;
+  };
+
+  const toggle = (group, containsActive) => {
+    const next = { ...choices, [group.id]: { open: !isOpen(group, containsActive), path: pathname } };
+    setChoices(next);
+    storeGroups(next);
+  };
+
+  return { isOpen, toggle };
+}
+
+/* ================================
+   ITEMS
+================================ */
+
+function SidebarItem({ item, onNavigate }) {
+  const Icon = item.icon;
+
+  return (
+    <NavLink
+      to={item.path}
+      end={item.end}
+      onClick={onNavigate}
+      className={({ isActive }) =>
+        `dashboard-sidebar__link ${isActive ? "dashboard-sidebar__link--active" : ""}`
+      }
+    >
+      <Icon aria-hidden="true" />
+
+      <span className="dashboard-sidebar__label">{item.label}</span>
+
+      {item.badge && (
+        <>
+          <span className="dashboard-sidebar__badge" aria-hidden="true">
+            {item.badge.text}
+          </span>
+
+          <span className="dashboard-sidebar__sr-only">{item.badge.label}</span>
+        </>
+      )}
+    </NavLink>
+  );
+}
+
+/*
+ * A parent row that shows / hides related pages. The row is a real button
+ * (Enter / Space toggle it); it never navigates by itself. The children stay
+ * in the DOM so the height can animate, and are `inert` while collapsed so
+ * they are skipped by Tab and screen readers.
+ */
+function SidebarGroup({ group, isOpen, isActive, onToggle, onNavigate }) {
+  const Icon = group.icon;
+  const panelId = `dashboard-sidebar-group-${group.id}`;
+
+  return (
+    <div
+      className={[
+        "dashboard-sidebar__tree",
+        isOpen ? "dashboard-sidebar__tree--open" : "",
+        isActive ? "dashboard-sidebar__tree--active" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      <button
+        type="button"
+        className="dashboard-sidebar__toggle"
+        aria-expanded={isOpen}
+        aria-controls={panelId}
+        onClick={onToggle}
+      >
+        <Icon aria-hidden="true" />
+
+        <span className="dashboard-sidebar__label">{group.label}</span>
+
+        <LuChevronDown className="dashboard-sidebar__chevron" aria-hidden="true" />
+      </button>
+
+      <div className="dashboard-sidebar__panel" id={panelId} inert={!isOpen}>
+        <ul className="dashboard-sidebar__children">
+          {group.children.map((child) => (
+            <li key={child.path}>
+              <NavLink
+                to={child.path}
+                end={child.end}
+                onClick={onNavigate}
+                className={({ isActive: isChildActive }) =>
+                  `dashboard-sidebar__child ${isChildActive ? "dashboard-sidebar__child--active" : ""}`
+                }
+              >
+                {child.label}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+}
+
+/* ================================
+   SIDEBAR
+================================ */
+
 export default function DashboardSidebar({
   isOpen,
   onClose,
 }) {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { t, i18n } = useTranslation();
   const { logout } = useAuthContext();
   // Shared with the header bell (GET /notifications/unread-count).
   const { count: unreadCount } = useUnreadNotifications();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const groups = useGroupChoices(pathname);
 
   const handleLogout = async () => {
     if (isLoggingOut) return;
@@ -63,176 +318,15 @@ export default function DashboardSidebar({
     }
   };
 
-  const menuGroups = [
-    {
-      title: t(
-        "dashboard.sidebar.sections.overview",
-      ),
-
-      items: [
-        {
-          label: t(
-            "dashboard.sidebar.dashboard",
-          ),
-          path: PATH.USER.DASHBOARD,
-          icon: LuLayoutDashboard,
-          end: true,
-        },
-        
-        {
-          label: t(
-            "dashboard.sidebar.accounts",
-          ),
-          path: PATH.USER.ACCOUNTS,
-          icon: LuWalletCards,
-        },
-        
-        {
-          label: t(
-            "dashboard.sidebar.financialOperations",
-          ),
-          path: PATH.USER.FINANCIAL_OPERATIONS,
-          icon: LuCircleDollarSign,
-        },
-
-        {
-          label: t(
-            "dashboard.sidebar.transfers",
-          ),
-          path: PATH.USER.TRANSFERS,
-          icon: LuArrowRightLeft,
-        },
-
-        {
-          label: t(
-            "dashboard.sidebar.recurring",
-          ),
-          path: PATH.USER.RECURRING,
-          icon: LuRepeat2,
-        },
-
-        {
-          label: t(
-            "dashboard.sidebar.calendar",
-          ),
-          path: PATH.USER.CALENDAR,
-          icon: LuCalendarDays,
-        },
-
-        {
-          label: t(
-            "dashboard.sidebar.import",
-          ),
-          path: PATH.USER.IMPORT,
-          icon: LuFileUp,
-        },
-
-        {
-          label: t(
-            "dashboard.sidebar.importHistory",
-          ),
-          path: PATH.USER.IMPORT_HISTORY,
-          icon: LuHistory,
-        },
-
-        {
-          label: t(
-            "dashboard.sidebar.aiCaptures",
-          ),
-          path: PATH.USER.AI_EXPENSE_CAPTURES,
-          icon: LuReceiptText,
-        },
-      ],
-    },
-
-    {
-      title: t(
-        "dashboard.sidebar.sections.manage",
-      ),
-
-      items: [
-        {
-          label: t(
-            "dashboard.sidebar.categories",
-          ),
-          path: PATH.USER.CATEGORIES,
-          icon: LuTags,
-        },
-
-        {
-          label: t(
-            "dashboard.sidebar.budgets",
-          ),
-          path: PATH.USER.BUDGETS,
-          icon: LuChartPie,
-        },
-
-        {
-          label: t(
-            "dashboard.sidebar.savingsGoals",
-          ),
-          path: PATH.USER.SAVINGS_GOALS,
-          icon: LuTarget,
-        },
-
-        {
-          label: t(
-            "dashboard.sidebar.debts",
-          ),
-          path: PATH.USER.DEBTS,
-          icon: LuHandCoins,
-        },
-
-        {
-          label: t(
-            "dashboard.sidebar.reports",
-          ),
-          path: PATH.USER.REPORTS,
-          icon: LuChartNoAxesCombined,
-        },
-      ],
-    },
-
-    {
-      title: t(
-        "dashboard.sidebar.sections.more",
-      ),
-
-      items: [
-        {
-          label: t(
-            "dashboard.sidebar.aiAssistant",
-          ),
-          path: PATH.USER.AI_ASSISTANT,
-          icon: LuSparkles,
-        },
-
-        {
-          label: t(
-            "dashboard.sidebar.notifications",
-          ),
-          path: PATH.USER.NOTIFICATIONS,
-          icon: LuBell,
-          badge:
-            unreadCount > 0
-              ? formatUnreadBadge(unreadCount, getDisplayLocale(i18n.language))
-              : null,
-          badgeLabel:
-            unreadCount > 0
-              ? t("dashboard.notifications.bell.unread", { count: unreadCount })
-              : undefined,
-        },
-
-        {
-          label: t(
-            "dashboard.sidebar.settings",
-          ),
-          path: PATH.USER.SETTING,
-          icon: LuSettings,
-        },
-      ],
-    },
-  ];
+  const navigation = getNavigation(
+    t,
+    unreadCount > 0
+      ? {
+          text: formatUnreadBadge(unreadCount, getDisplayLocale(i18n.language)),
+          label: t("dashboard.notifications.bell.unread", { count: unreadCount }),
+        }
+      : null,
+  );
 
   return (
     <aside
@@ -270,56 +364,27 @@ export default function DashboardSidebar({
       </Link>
 
       <nav className="dashboard-sidebar__nav">
-        {menuGroups.map((group) => (
-          <div
-            className="dashboard-sidebar__group"
-            key={group.title}
-          >
-            <p className="dashboard-sidebar__group-title">
-              {group.title}
-            </p>
+        {navigation.map((section) => (
+          <div className="dashboard-sidebar__group" key={section.id}>
+            <p className="dashboard-sidebar__group-title">{section.title}</p>
 
             <div className="dashboard-sidebar__links">
-              {group.items.map((item) => {
-                const Icon = item.icon;
+              {section.entries.map((entry) => {
+                if (entry.type === "item") {
+                  return <SidebarItem key={entry.path} item={entry} onNavigate={onClose} />;
+                }
+
+                const containsActive = entry.children.some((child) => isLinkActive(child, pathname));
 
                 return (
-                  <NavLink
-                    key={item.path}
-                    to={item.path}
-                    end={item.end}
-                    onClick={onClose}
-                    className={({
-                      isActive,
-                    }) =>
-                      `dashboard-sidebar__link ${
-                        isActive
-                          ? "dashboard-sidebar__link--active"
-                          : ""
-                      }`
-                    }
-                  >
-                    <Icon />
-
-                    <span>
-                      {item.label}
-                    </span>
-
-                    {item.badge && (
-                      <>
-                        <span
-                          className="dashboard-sidebar__badge"
-                          aria-hidden="true"
-                        >
-                          {item.badge}
-                        </span>
-
-                        <span className="dashboard-sidebar__sr-only">
-                          {item.badgeLabel}
-                        </span>
-                      </>
-                    )}
-                  </NavLink>
+                  <SidebarGroup
+                    key={entry.id}
+                    group={entry}
+                    isActive={containsActive}
+                    isOpen={groups.isOpen(entry, containsActive)}
+                    onToggle={() => groups.toggle(entry, containsActive)}
+                    onNavigate={onClose}
+                  />
                 );
               })}
             </div>

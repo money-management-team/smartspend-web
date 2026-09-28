@@ -70,7 +70,7 @@ Dashboard pages (e.g. `Budgets.jsx`) follow the same shape:
 - errors are shown via `getApiErrorMessage`;
 - `components/Loading/Loading` is shown while loading.
 
-Not every dashboard page is wired to the backend yet. `Import` and `AIAssistant` are static UI with no API module. `Settings` uses `authApi` for Profile (`PUT /profile`) and Security (`PATCH /profile/password`, see `docs/auth/change-password/implementation.md`), but its Preferences tab is still a placeholder. Check a page for an `*Api` import before assuming it has backend support.
+Not every dashboard page is wired to the backend yet. `AIAssistant` is static UI with no API module. `Settings` uses `authApi` for Profile (`PUT /profile`) and Security (`PATCH /profile/password`, see `docs/auth/change-password/implementation.md`), but its Preferences tab is still a placeholder. Check a page for an `*Api` import before assuming it has backend support.
 
 ### i18n and RTL
 - `src/i18n.jsx` sets up i18next with a single `translation` namespace. Resources are one file per language, `src/locales/en/en.json` and `src/locales/ar/ar.json`, with top-level sections `common`, `api`, `auth`, `dashboard`, and `home`. `fallbackLng` is `en`.
@@ -98,6 +98,11 @@ Not every dashboard page is wired to the backend yet. `Import` and `AIAssistant`
 - `src/features/PublicPage/Home/Home.css` is large and layered: later "FINAL …" sections override earlier rules for the same selectors, so search the whole file before changing a property.
 - `Home.jsx` adds `home-reveal*` classes to section selectors at runtime (IntersectionObserver) and drives the parallax CSS variables.
 - Honor `prefers-reduced-motion`; `Home.css` has a global reduced-motion block.
+
+### Report PDFs
+- PDF report exports are built in the browser with `@react-pdf/renderer` (`features/Dashboards/User/Reports/pdf/`, lazy-loaded from `Reports.jsx`); CSV / Excel stay on the backend export queue. See `docs/reports/pdf-export.md`.
+- PDF colours, fonts and page geometry live only in `pdf/pdfTheme.js`; Cairo / Tajawal TTFs are bundled in `src/assets/fonts`.
+- Use `PdfText` for any text in the PDF (it fixes Arabic paragraph direction), and call `registerPdfFonts` before each document.
 
 ## Documentation
 

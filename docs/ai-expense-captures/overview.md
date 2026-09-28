@@ -109,7 +109,7 @@ Both routes are in the `user` group, behind `RequireAuth` + `DashboardLayout`, l
 
 ## Sidebar
 
-`dashboard.sidebar.aiCaptures` — **AI Receipts** / **الفواتير الذكية** — in the **Overview** group, after Import history, with `LuReceiptText`. It is the same kind of "bring money in from a document" work as the import wizard.
+`dashboard.sidebar.aiCaptures` — **AI Receipts** / **الفواتير الذكية** — the last child of the sidebar's **Transactions** group (see [../dashboard-sidebar/overview.md](../dashboard-sidebar/overview.md)).
 
 The Arabic follows terminology the product already uses: **فاتورة / فواتير** for a receipt (as in the financial operations scan panel) and **الذكية** for AI, matching **المساعد الذكي**. "إيصالات" appears nowhere else in the product and was not introduced.
 

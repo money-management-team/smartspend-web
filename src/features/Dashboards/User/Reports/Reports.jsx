@@ -5,12 +5,20 @@ import { LuFileDown, LuHistory } from "react-icons/lu";
 
 import Loading from "../../../../components/Loading/Loading";
 import { PATH } from "../../../../routes/Path";
-import { ApiError } from "../api/apiClient";
+import { ApiError, saveBlobAsFile } from "../api/apiClient";
 import { resolveWorkspaceId } from "../api/dashboardApi";
 import { reportExportsApi } from "../api/reportExportsApi";
 import { getReport } from "../api/reportsApi";
+import { getDisplayLocale } from "../Accounts/accountHelpers";
+import ExportFormatDialog from "../ReportExports/components/ExportFormatDialog/ExportFormatDialog";
 import ExportTracker from "../ReportExports/components/ExportTracker/ExportTracker";
-import { DEFAULT_EXPORT_FORMAT, getExportErrorMessage, parseExport } from "../ReportExports/reportExportHelpers";
+import {
+  DEFAULT_EXPORT_FORMAT,
+  getExportErrorMessage,
+  getReportName,
+  parseExport,
+} from "../ReportExports/reportExportHelpers";
+import { formatDate } from "../utils/formatters";
 import ReportAnalytics from "./components/ReportAnalytics/ReportAnalytics";
 import ReportFilters from "./components/ReportFilters/ReportFilters";
 import ReportItemsTable from "./components/ReportItemsTable/ReportItemsTable";
@@ -54,7 +62,7 @@ const hasAnalytics = (analytics) =>
  * request is aborted.
  */
 export default function Reports() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const timeZone = getWorkspaceTimezone();
   const filters = readReportFilters(searchParams, timeZone);
@@ -114,42 +122,144 @@ export default function Reports() {
   // The export being followed on this page; its tracker polls the status.
   const [trackedExport, setTrackedExport] = useState(null);
   const [exportRequest, setExportRequest] = useState({ pending: false, error: null });
+  const [isFormatDialogOpen, setIsFormatDialogOpen] = useState(false);
+  // The last format chosen, preselected the next time the dialog opens.
+  const [exportFormat, setExportFormat] = useState(DEFAULT_EXPORT_FORMAT);
   const exportPendingRef = useRef(false);
+  const exportButtonRef = useRef(null);
 
-  // Queues an export of the report with the applied filters. The file is not
-  // ready yet: the tracker shows `queued` and enables Download only when the
-  // backend reports `download_available`.
-  const handleExport = async () => {
-    if (exportPendingRef.current) return;
+  /*
+   * POST /report-exports. One request at a time (the ref survives a double
+   * click before React re-renders). The response is a queued export, not a
+   * file: the tracker follows it and enables Download only once the backend
+   * reports `download_available`. Resolves to whether it was queued.
+   */
+  const createExport = async ({ report: reportName, format, exportFilters }) => {
+    if (exportPendingRef.current) return false;
 
     exportPendingRef.current = true;
     setExportRequest({ pending: true, error: null });
 
     try {
-      const workspaceId = await resolveWorkspaceId();
+      const workspaceId = exportFilters.workspace_id ?? (await resolveWorkspaceId());
       const response = await reportExportsApi.create({
-        report: filters.report,
-        format: DEFAULT_EXPORT_FORMAT,
-        filters: {
-          workspace_id: workspaceId,
-          from: filters.from,
-          to: filters.to,
-          currency: filters.currency || undefined,
-          group_by: filters.group_by,
-          timezone: report?.period?.timezone ?? timeZone ?? undefined,
-        },
+        report: reportName,
+        format,
+        filters: { ...exportFilters, workspace_id: workspaceId },
       });
       const created = parseExport(response);
       if (!created) throw new ApiError("", { code: "MALFORMED_RESPONSE" });
 
       setTrackedExport(created);
       setExportRequest({ pending: false, error: null });
+      return true;
     } catch (exportError) {
       setExportRequest({ pending: false, error: exportError });
+      return false;
     } finally {
       exportPendingRef.current = false;
     }
   };
+
+  const openFormatDialog = () => {
+    setExportRequest({ pending: false, error: null });
+    setIsFormatDialogOpen(true);
+  };
+
+  const closeFormatDialog = () => {
+    // A create error belongs to the dialog; it is not carried onto the page.
+    setExportRequest((current) => (current.pending ? current : { pending: false, error: null }));
+    setIsFormatDialogOpen(false);
+    exportButtonRef.current?.focus();
+  };
+
+  // Aborts a PDF still being built when the user leaves the page.
+  const pdfControllerRef = useRef(null);
+  useEffect(() => () => pdfControllerRef.current?.abort(), []);
+
+  /*
+   * PDF: built here, not queued. The report is read again with every page of
+   * its rows (same GET /reports/* call and filters as on screen), laid out
+   * with the Smart Spend PDF design and downloaded at once. The PDF library
+   * is loaded only now, so it never weighs on the page itself. Resolves to
+   * whether the file was saved.
+   */
+  const downloadPdf = async () => {
+    if (exportPendingRef.current) return false;
+
+    exportPendingRef.current = true;
+    setExportRequest({ pending: true, error: null });
+    const controller = new AbortController();
+    pdfControllerRef.current = controller;
+
+    try {
+      const { generateReportPdf } = await import("./pdf/generateReportPdf");
+      const { blob, filename } = await generateReportPdf({ filters, t, i18n, signal: controller.signal });
+
+      saveBlobAsFile(blob, filename);
+      setExportRequest({ pending: false, error: null });
+      return true;
+    } catch (pdfError) {
+      if (pdfError.name === "AbortError" || controller.signal.aborted) return false;
+
+      // API errors keep their own wording; a layout or rendering failure
+      // gets a plain "could not be created".
+      setExportRequest({
+        pending: false,
+        error:
+          pdfError instanceof ApiError
+            ? pdfError
+            : new ApiError(t("dashboard.reportExports.errors.pdfFailed"), { code: "PDF_FAILED", cause: pdfError }),
+      });
+      return false;
+    } finally {
+      exportPendingRef.current = false;
+      pdfControllerRef.current = null;
+    }
+  };
+
+  // The report with the filters applied on screen: the export covers the
+  // same period the user is looking at, read from the same URL state.
+  const exportCurrentReport = async (format) => {
+    setExportFormat(format);
+
+    if (format === "pdf") {
+      if (await downloadPdf()) closeFormatDialog();
+      return;
+    }
+
+    const queued = await createExport({
+      report: filters.report,
+      format,
+      exportFilters: {
+        from: filters.from,
+        to: filters.to,
+        currency: filters.currency || undefined,
+        group_by: filters.group_by,
+        timezone: report?.period?.timezone ?? timeZone ?? undefined,
+      },
+    });
+
+    if (queued) closeFormatDialog();
+  };
+
+  // A failed export is retried as a new export of the same report, format
+  // and filters it was created with, not whatever is on screen now.
+  const retryExport = (failed) =>
+    createExport({
+      report: failed.report ?? filters.report,
+      format: failed.format ?? DEFAULT_EXPORT_FORMAT,
+      exportFilters: failed.filters ?? { from: filters.from, to: filters.to },
+    });
+
+  const locale = getDisplayLocale(i18n.language);
+  const exportPeriod =
+    filters.from && filters.to
+      ? t("dashboard.reports.period.range", {
+          from: formatDate(filters.from, locale),
+          to: formatDate(filters.to, locale),
+        })
+      : null;
 
   return (
     <div className="reports-page">
@@ -161,24 +271,38 @@ export default function Reports() {
               <span>{t("dashboard.reportExports.history.title")}</span>
             </Link>
             <button
+              ref={exportButtonRef}
               type="button"
               className="reports-page__export"
-              onClick={handleExport}
+              onClick={openFormatDialog}
               disabled={exportRequest.pending}
               aria-busy={exportRequest.pending}
+              aria-haspopup="dialog"
             >
               <LuFileDown aria-hidden="true" />
               <span>
                 {exportRequest.pending
                   ? t("dashboard.reportExports.actions.queueing")
-                  : t("dashboard.reportExports.actions.exportCsv")}
+                  : t("dashboard.reportExports.actions.exportReport")}
               </span>
             </button>
           </>
         }
       />
 
-      {exportRequest.error && (
+      {isFormatDialogOpen && (
+        <ExportFormatDialog
+          reportName={getReportName(filters.report, t)}
+          period={exportPeriod}
+          initialFormat={exportFormat}
+          pending={exportRequest.pending}
+          error={exportRequest.error}
+          onSubmit={exportCurrentReport}
+          onClose={closeFormatDialog}
+        />
+      )}
+
+      {exportRequest.error && !isFormatDialogOpen && (
         <p className="reports-page__export-error" role="alert">
           {getExportErrorMessage(exportRequest.error, t, "create")}
         </p>
@@ -189,6 +313,8 @@ export default function Reports() {
           key={trackedExport.id}
           initialRecord={trackedExport}
           onDismiss={() => setTrackedExport(null)}
+          onRetry={retryExport}
+          isRetrying={exportRequest.pending}
         />
       )}
 

@@ -37,7 +37,7 @@ The backend exposes `GET /calendar` and `GET /financial-calendar`. They are alia
 | --- | --- | --- |
 | `PATH.USER.CALENDAR` | `/dashboard/calendar` | `src/features/Dashboards/User/Calendar/Calendar.jsx` |
 
-It is in the `userRoutes` group (`RequireAuth` + `DashboardLayout`) and has a "Calendar" entry in the sidebar's Overview group, after Recurring.
+It is in the `userRoutes` group (`RequireAuth` + `DashboardLayout`) and has a "Calendar" direct link in the sidebar's Overview section, after the Transactions group (see [../dashboard-sidebar/overview.md](../dashboard-sidebar/overview.md)).
 
 ## Flow
 

@@ -29,10 +29,12 @@ All in `src/features/Dashboards/User/api/reportExportsApi.js`.
 | `ReportExports/ReportExports.jsx` | History page: filters, paginator, rows |
 | `ReportExports/reportExportHelpers.js` | Statuses, poll timing, filename, size, error wording |
 | `ReportExports/useReportExport.js` | Status polling for one export |
+| `ReportExports/components/ExportFormatDialog/` | Format picker opened by the Reports page's Export button |
 | `ReportExports/components/ExportTracker/` | The export just queued from the Reports page |
 | `ReportExports/components/ExportHistoryRow/` | One row of the history |
 | `ReportExports/components/ExportActions/` | Download and cancel / revoke |
 | `ReportExports/components/ExportStatusBadge/` | Status pill |
+| `ReportExports/components/ExportFormatBadge/` | CSV / XLSX / PDF pill |
 
 See [lifecycle.md](lifecycle.md) for statuses and polling, and [download.md](download.md) for the binary download.
 
@@ -43,17 +45,39 @@ See [lifecycle.md](lifecycle.md) for statuses and polling, and [download.md](dow
 ```json
 {
   "report": "income-expense",
-  "format": "csv",
+  "format": "pdf",
   "filters": { "workspace_id": 1, "from": "…", "to": "…", "currency": "ILS", "group_by": "month", "timezone": "…" }
 }
 ```
 
 Only the keys in `EXPORT_FILTER_KEYS` are sent, and empty ones (for example "all currencies") are dropped rather than sent as `""`. `per_page` and `page` never belong to an export — an export is the whole report, not a page of it.
 
-The response is a queued export, which the Reports page hands to `ExportTracker`. The Export button is disabled while the request is in flight, guarded by a ref so a double click cannot queue two jobs.
+The response is a queued export, which the Reports page hands to `ExportTracker`. It is **not** a file: nothing is downloadable until the backend reports `download_available`.
 
-`csv` is the only documented format (`EXPORT_FORMATS`), so it is the only one offered.
+## Formats
+
+`EXPORT_FORMATS` in `reportExportHelpers.js` is `["csv", "xlsx", "pdf"]`, and these exact strings are sent as `format`. Never `excel`, `xls`, uppercase values or `docx` — Word is not a supported format and is offered nowhere.
+
+| Choice | `format` sent | Downloaded file |
+|---|---|---|
+| CSV | `csv` | `.csv` |
+| Excel (.xlsx) | `xlsx` | `.xlsx` |
+| PDF | `pdf` | `.pdf` |
+
+CSV and Excel follow the queued lifecycle below: the backend builds the file. **PDF is the exception**: choosing it in the dialog builds the document in the browser from the report data, with the Smart Spend PDF design, and downloads it directly — see [../reports/pdf-export.md](../reports/pdf-export.md). `"pdf"` stays in `EXPORT_FORMATS` so the history can filter and download PDF exports queued earlier, and a failed queued PDF can still be retried through the queue.
+
+## Choosing a format — `ExportFormatDialog`
+
+The Reports header's **Export report** button (`aria-haspopup="dialog"`) opens a modal with the three formats as native radio buttons (arrow keys move between them), each with an icon and a one-line "best for" hint, plus Cancel / **Export {format}**.
+
+- The subtitle shows the report name and the period on screen. The export is built from the page's own URL filters (`from`, `to`, `currency`, `group_by`, plus `workspace_id` from `resolveWorkspaceId()` and the report's time zone); there is no second copy of the filter state.
+- While `POST /report-exports` is in flight (or the PDF is being built) the dialog cannot be closed or resubmitted, and a live region reads "Preparing your Excel report…" / "Building your PDF…". The note under the formats changes with the choice: queued in the background for CSV / Excel, built on this device for PDF. `createExport` and `downloadPdf` in `Reports.jsx` share one ref guard, so a double click cannot start two exports.
+- A create failure stays inside the dialog (`getExportErrorMessage(…, "create")`) so the user can retry without choosing again. On success the dialog closes, focus returns to the Export button, and the tracker appears.
+- The last chosen format is preselected the next time the dialog opens (page state only, not persisted).
+- Escape or a backdrop click closes it (except while the request is pending). On narrow screens (≤ 560 px) it becomes a bottom sheet with full-width buttons.
 
 ## History
 
 `GET /report-exports` with `status`, `report`, `format`, `per_page`, `page`. The filters and the page live in the URL, so a filtered history can be linked and survives a reload. `data.report_exports.data` holds the rows and paging is the backend's.
+
+Each row shows the report, a format badge, the period it was exported for (`filters.from` – `filters.to` from the export record, via `getExportPeriod`), status, requested / completed / expiry times, file size and the Download / cancel actions. The format filter offers all three formats.

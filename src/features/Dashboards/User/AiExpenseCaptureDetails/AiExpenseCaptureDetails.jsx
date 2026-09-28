@@ -803,49 +803,69 @@ export default function AiExpenseCaptureDetails() {
         />
       )}
 
-      <AiSuggestions capture={capture} />
+      {/*
+        * While the AI still owes a result there are no suggestions and no
+        * review values to show yet — `AiSuggestions` and `ReviewValues` would
+        * only render their "empty" copy, which reads like the AI came back
+        * with nothing rather than that it is still working. A loading
+        * indicator replaces them instead, so the user never sees that
+        * blank/incomplete screen before the analysis finishes.
+        */}
+      {isInFlight ? (
+        <Loading
+          variant="page"
+          size="large"
+          className="capture-details__analyzing"
+          message={t("dashboard.aiCaptures.details.analyzing")}
+        />
+      ) : (
+        <>
+          <AiSuggestions capture={capture} />
 
-      {/* Renders only for a `ready_for_review` capture; the rule lives in
-          the component's own `canConfirmCapture` check. */}
-      <CaptureConfirm
-        capture={capture}
-        /* The reviewed draft, which is what will be recorded — never the AI's
-           suggestions. */
-        values={draft}
-        accounts={options.accounts}
-        categories={options.categories}
-        blockers={confirmBlockers}
-        isDraftDirty={isDraftDirty}
-        onConfirm={handleConfirm}
-        onCheckStatus={handleCheckStatus}
-        onReloadLatest={() => setReloadKey((key) => key + 1)}
-        isBusy={isActionBusy}
-        onBusyChange={setIsActionBusy}
-      />
+          {/* Renders only for a `ready_for_review` capture; the rule lives in
+              the component's own `canConfirmCapture` check. */}
+          <CaptureConfirm
+            capture={capture}
+            /* The reviewed draft, which is what will be recorded — never the
+               AI's suggestions. */
+            values={draft}
+            accounts={options.accounts}
+            categories={options.categories}
+            blockers={confirmBlockers}
+            isDraftDirty={isDraftDirty}
+            onConfirm={handleConfirm}
+            onCheckStatus={handleCheckStatus}
+            onReloadLatest={() => setReloadKey((key) => key + 1)}
+            isBusy={isActionBusy}
+            onBusyChange={setIsActionBusy}
+          />
 
-      <ReviewValues
-        /* A reloaded capture is a new draft: remount so the form's own state
-           (touched fields, save errors) starts clean too. */
-        key={requestKey}
-        capture={capture}
-        form={draft}
-        onFormChange={handleDraftChange}
-        externalErrors={confirmErrors}
-        isLocked={isActionBusy}
-        onBusyChange={setIsActionBusy}
-        accounts={options.accounts}
-        categories={options.categories}
-        /* Only a capture the AI has finished with may be edited, and the rule
-           comes from the shared helper rather than a status compared here. */
-        isEditable={canReviewCapture(status)}
-        isLoadingOptions={options.key !== optionsKey}
-        optionsError={options.error}
-        onRetryOptions={() => setOptionsKey((key) => key + 1)}
-        onSave={handleSave}
-        /* An explicit reload: the page refetches and the form is rebuilt from
-           the server's draft, discarding unsaved edits. */
-        onReloadLatest={() => setReloadKey((key) => key + 1)}
-      />
+          <ReviewValues
+            /* A reloaded capture is a new draft: remount so the form's own
+               state (touched fields, save errors) starts clean too. */
+            key={requestKey}
+            capture={capture}
+            form={draft}
+            onFormChange={handleDraftChange}
+            externalErrors={confirmErrors}
+            isLocked={isActionBusy}
+            onBusyChange={setIsActionBusy}
+            accounts={options.accounts}
+            categories={options.categories}
+            /* Only a capture the AI has finished with may be edited, and the
+               rule comes from the shared helper rather than a status compared
+               here. */
+            isEditable={canReviewCapture(status)}
+            isLoadingOptions={options.key !== optionsKey}
+            optionsError={options.error}
+            onRetryOptions={() => setOptionsKey((key) => key + 1)}
+            onSave={handleSave}
+            /* An explicit reload: the page refetches and the form is rebuilt
+               from the server's draft, discarding unsaved edits. */
+            onReloadLatest={() => setReloadKey((key) => key + 1)}
+          />
+        </>
+      )}
 
       {/* Renders only for a discardable draft; the rule lives in the
           component's own `canDiscardCapture` check. Never for `confirmed`,
