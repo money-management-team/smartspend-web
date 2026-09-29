@@ -1,0 +1,465 @@
+/* =========================================
+   TRANSFERS PAGE
+   Same container, card and row language as the other dashboard lists.
+========================================= */
+
+.transfers-page {
+  width: 100%;
+  max-width: 1240px;
+
+  margin: 0 auto;
+  padding: 28px 32px 50px;
+
+  box-sizing: border-box;
+
+  color: var(--color-text-primary);
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.transfers-page__header {
+  margin-bottom: 24px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+
+  text-align: start;
+}
+
+.transfers-page__copy h1 {
+  margin: 0;
+
+  color: var(--color-text-primary);
+  font-size: 28px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.transfers-page__copy p {
+  margin: 11px 0 0;
+
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.transfers-page__add {
+  height: 40px;
+  padding: 0 18px;
+
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 0;
+  border-radius: 999px;
+
+  color: #ffffff;
+  background: var(--gradient-primary);
+  box-shadow: var(--shadow-xs);
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.transfers-page__add svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* =========================================
+   NOTICE (one-time success message)
+========================================= */
+
+.transfers-page__notice {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border: 1px solid color-mix(in srgb, var(--color-success) 28%, transparent);
+  border-radius: var(--radius-md);
+
+  color: color-mix(in srgb, var(--color-success) 85%, var(--color-text-primary));
+  background: var(--success-soft);
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* `color: inherit` beats the global `p` color from index.css. */
+.transfers-page__notice p {
+  margin: 0;
+  flex: 1;
+  color: inherit;
+}
+
+.transfers-page__notice a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.transfers-page__notice button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+
+  flex: none;
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: 50%;
+
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.transfers-page__notice button:hover {
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
+}
+
+:root[data-theme="dark"] .transfers-page__notice {
+  color: color-mix(in srgb, var(--color-success) 62%, #ffffff);
+}
+
+/* =========================================
+   PANEL
+========================================= */
+
+.transfers-page__panel {
+  overflow: hidden;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.transfers-page__panel-head {
+  min-height: 60px;
+  padding: 16px 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+
+  box-sizing: border-box;
+
+  border-bottom: 1px solid var(--color-border);
+}
+
+.transfers-page__panel-head h2 {
+  margin: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.transfers-page__count {
+  min-width: 22px;
+  padding: 3px 7px;
+
+  box-sizing: border-box;
+
+  border-radius: 999px;
+
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+}
+
+.transfers-page__list {
+  padding: 8px 20px 12px;
+}
+
+.transfers-page__list > .loading {
+  margin-block: 18px;
+}
+
+/* =========================================
+   ROW
+========================================= */
+
+.transfer-row {
+  position: relative;
+
+  min-height: 64px;
+  padding-block: 10px;
+
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+
+  border-bottom: 1px solid var(--color-border);
+}
+
+.transfer-row:last-child {
+  border-bottom: 0;
+}
+
+.transfer-row:hover {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--surface-soft) 70%, transparent) 12%,
+    color-mix(in srgb, var(--surface-soft) 70%, transparent) 88%,
+    transparent
+  );
+}
+
+.transfer-row__icon {
+  width: 34px;
+  height: 34px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+.transfer-row__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.transfer-row__copy {
+  min-width: 0;
+
+  display: grid;
+  gap: 5px;
+
+  text-align: start;
+}
+
+.transfer-row__link {
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.transfer-row__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.transfer-row__link:focus-visible {
+  outline: none;
+}
+
+.transfer-row:has(.transfer-row__link:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+
+.transfer-row__copy strong {
+  display: block;
+  overflow: hidden;
+
+  color: var(--color-text-primary);
+  font-size: 12px;
+  font-weight: 600;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.transfer-row__copy small {
+  overflow: hidden;
+
+  color: var(--color-text-secondary);
+  font-size: 10px;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.transfer-row__side {
+  display: grid;
+  justify-items: end;
+  gap: 5px;
+}
+
+.transfer-row__amount {
+  color: var(--color-text-primary);
+  font-size: 12px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+/* Reversed transfers stay listed as history, visibly inactive. */
+
+.transfer-row--reversed .transfer-row__amount {
+  color: var(--color-text-secondary);
+  text-decoration: line-through;
+}
+
+.transfer-row--reversed .transfer-row__icon {
+  opacity: 0.6;
+}
+
+/* =========================================
+   STATES
+========================================= */
+
+.transfers-page__state {
+  margin: 0;
+  padding: 28px 16px;
+
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.transfers-page__state p {
+  margin: 0;
+  color: inherit;
+}
+
+.transfers-page__state--error {
+  color: var(--color-danger, #dc2626);
+}
+
+.transfers-page__state button {
+  margin-top: 10px;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Retry + Clear filters side by side */
+.transfers-page__state-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 16px;
+}
+
+/* =========================================
+   PAGINATION
+========================================= */
+
+.transfers-page__pagination {
+  padding: 12px 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  border-top: 1px solid var(--color-border);
+
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.transfers-page__pages {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.transfers-page__pages button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  cursor: pointer;
+}
+
+.transfers-page__pages button:hover:not(:disabled) {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.transfers-page__pages button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.transfers-page__pages svg {
+  width: 15px;
+  height: 15px;
+}
+
+[dir="rtl"] .transfers-page__pages svg {
+  transform: scaleX(-1);
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 760px) {
+  .transfers-page {
+    padding: 22px 16px 40px;
+  }
+
+  .transfers-page__header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .transfers-page__add {
+    justify-content: center;
+  }
+
+  .transfers-page__copy h1 {
+    font-size: 25px;
+  }
+
+  .transfers-page__list {
+    padding-inline: 14px;
+  }
+
+  .transfer-row__copy small {
+    white-space: normal;
+    line-height: 1.4;
+  }
+
+  .transfers-page__pagination {
+    padding-inline: 14px;
+  }
+}

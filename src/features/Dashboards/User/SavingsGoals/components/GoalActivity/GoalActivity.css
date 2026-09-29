@@ -1,0 +1,357 @@
+/* =========================================
+   GOAL ACTIVITY (contributions + withdrawals)
+   Same panel and row language as the transfers list.
+========================================= */
+
+.goal-activity {
+  overflow: hidden;
+
+  border: 1px solid var(--color-border);
+  border-radius: 17px;
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.goal-activity__head {
+  padding: 18px 22px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+
+  border-bottom: 1px solid var(--color-border);
+
+  text-align: start;
+}
+
+.goal-activity__head h2 {
+  margin: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color: var(--color-text-strong);
+  font-size: 16px;
+}
+
+.goal-activity__head p {
+  margin: 6px 0 0;
+
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.goal-activity__count {
+  min-width: 22px;
+  padding: 3px 7px;
+
+  box-sizing: border-box;
+
+  border-radius: 999px;
+
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+}
+
+/* Tabs */
+
+.goal-activity__tabs {
+  padding: 3px;
+
+  display: inline-flex;
+  gap: 2px;
+
+  border-radius: 999px;
+
+  background: var(--surface-soft);
+}
+
+.goal-activity__tab {
+  height: 30px;
+  padding: 0 13px;
+
+  border: 0;
+  border-radius: 999px;
+
+  color: var(--color-text-secondary);
+  background: transparent;
+
+  font: inherit;
+  font-size: 12px;
+
+  cursor: pointer;
+}
+
+.goal-activity__tab:hover {
+  color: var(--color-text-primary);
+}
+
+.goal-activity__tab--active {
+  color: var(--color-primary);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+  font-weight: 600;
+}
+
+.goal-activity__list {
+  padding: 6px 22px 10px;
+}
+
+.goal-activity__list > .loading {
+  margin-block: 16px;
+}
+
+/* =========================================
+   ROW
+========================================= */
+
+.goal-activity-row {
+  position: relative;
+
+  min-height: 62px;
+  padding-block: 10px;
+
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+
+  border-bottom: 1px solid var(--color-border);
+}
+
+.goal-activity-row:last-child {
+  border-bottom: 0;
+}
+
+.goal-activity-row:has(.goal-activity-row__link:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+
+.goal-activity-row__icon {
+  width: 34px;
+  height: 34px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+.goal-activity-row--contribution .goal-activity-row__icon {
+  color: color-mix(in srgb, var(--color-success) 85%, var(--color-text-primary));
+  background: var(--success-soft);
+}
+
+.goal-activity-row--withdrawal .goal-activity-row__icon {
+  color: color-mix(in srgb, var(--color-warning) 85%, var(--color-text-primary));
+  background: var(--warning-soft);
+}
+
+.goal-activity-row__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.goal-activity-row__copy {
+  min-width: 0;
+
+  display: grid;
+  gap: 5px;
+
+  text-align: start;
+}
+
+.goal-activity-row__link {
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.goal-activity-row__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.goal-activity-row__link:focus-visible {
+  outline: none;
+}
+
+.goal-activity-row__link:hover strong {
+  color: var(--color-primary);
+}
+
+.goal-activity-row__copy strong {
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.goal-activity-row__copy small {
+  overflow: hidden;
+
+  color: var(--color-text-secondary);
+  font-size: 11px;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.goal-activity-row__side {
+  display: grid;
+  justify-items: end;
+  gap: 5px;
+}
+
+.goal-activity-row__amount {
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.goal-activity-row--contribution .goal-activity-row__amount {
+  color: color-mix(in srgb, var(--color-success) 85%, var(--color-text-primary));
+}
+
+/* Reversed movements stay listed as history, visibly inactive. */
+
+.goal-activity-row--reversed .goal-activity-row__amount {
+  color: var(--color-text-secondary);
+  text-decoration: line-through;
+}
+
+.goal-activity-row--reversed .goal-activity-row__icon {
+  opacity: 0.6;
+}
+
+/* =========================================
+   STATES + PAGINATION
+========================================= */
+
+.goal-activity__state {
+  margin: 0;
+  padding: 24px 16px;
+
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  text-align: center;
+}
+
+.goal-activity__state p {
+  margin: 0;
+  color: inherit;
+}
+
+.goal-activity__state--error {
+  color: var(--color-danger);
+}
+
+.goal-activity__state button {
+  margin-top: 10px;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  cursor: pointer;
+}
+
+.goal-activity__pagination {
+  padding: 12px 22px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  border-top: 1px solid var(--color-border);
+
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.goal-activity__pages {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.goal-activity__pages button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  cursor: pointer;
+}
+
+.goal-activity__pages button:hover:not(:disabled) {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.goal-activity__pages button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.goal-activity__pages svg {
+  width: 15px;
+  height: 15px;
+}
+
+[dir="rtl"] .goal-activity__pages svg {
+  transform: scaleX(-1);
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 720px) {
+  .goal-activity__head,
+  .goal-activity__list,
+  .goal-activity__pagination {
+    padding-inline: 16px;
+  }
+
+  .goal-activity__tabs {
+    width: 100%;
+  }
+
+  .goal-activity__tab {
+    flex: 1;
+  }
+
+  .goal-activity-row__copy small {
+    white-space: normal;
+    line-height: 1.4;
+  }
+}

@@ -1,0 +1,57 @@
+.report-distribution {
+  display: grid;
+  gap: 14px;
+}
+
+.report-distribution__group h3 {
+  margin: 0 0 8px;
+
+  color: var(--color-primary);
+
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: start;
+}
+
+.report-distribution__group ul {
+  margin: 0;
+  padding: 0;
+
+  display: grid;
+  gap: 10px;
+
+  list-style: none;
+}
+
+.report-distribution__row {
+  display: grid;
+  grid-template-columns: minmax(90px, max-content) 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.report-distribution__track {
+  height: 8px;
+  overflow: hidden;
+
+  border-radius: var(--radius-pill);
+  background: var(--surface-soft);
+}
+
+.report-distribution__track span {
+  display: block;
+  height: 100%;
+
+  border-radius: inherit;
+  background: var(--gradient-primary);
+}
+
+.report-distribution__row strong {
+  min-width: 24px;
+
+  color: var(--color-text-strong);
+
+  font-size: 13px;
+  text-align: end;
+}

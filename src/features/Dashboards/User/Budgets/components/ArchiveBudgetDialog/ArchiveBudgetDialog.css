@@ -1,0 +1,33 @@
+/* =========================================
+   ARCHIVE BUDGET DIALOG
+   (shell and buttons come from AccountForm.css)
+========================================= */
+
+.archive-budget-dialog__body {
+  margin: 16px 0 18px;
+
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.archive-budget-dialog__body p {
+  margin: 0;
+}
+
+.archive-budget-dialog__body ul {
+  margin: 12px 0 0;
+  padding-inline-start: 20px;
+
+  display: grid;
+  gap: 6px;
+}
+
+.archive-budget-dialog .account-form-modal__error {
+  margin-bottom: 14px;
+}
+
+.archive-budget-dialog header button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

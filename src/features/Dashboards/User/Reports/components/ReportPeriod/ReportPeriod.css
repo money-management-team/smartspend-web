@@ -1,0 +1,79 @@
+/* =========================================
+   REPORT PERIOD (context bar)
+   What the backend actually used, as one quiet line of facts.
+========================================= */
+
+.report-period {
+  display: grid;
+  gap: 10px;
+}
+
+.report-period__facts {
+  margin: 0;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 18px;
+}
+
+.report-period__fact {
+  min-width: 0;
+
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+
+  font-size: 12px;
+}
+
+.report-period__fact dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  color: var(--color-text-muted);
+}
+
+.report-period__fact dt svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+.report-period__fact dd {
+  margin: 0;
+
+  color: var(--color-text-strong);
+
+  font-weight: 700;
+}
+
+.report-period__note {
+  margin: 0;
+  padding: 10px 12px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  border: 1px solid color-mix(in srgb, var(--color-primary) 16%, transparent);
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-secondary);
+  background: color-mix(in srgb, var(--primary-soft) 60%, transparent);
+
+  font-size: 12px;
+  line-height: 1.6;
+  text-align: start;
+}
+
+.report-period__note svg {
+  width: 15px;
+  height: 15px;
+  margin-top: 2px;
+  flex-shrink: 0;
+
+  color: var(--color-primary);
+}

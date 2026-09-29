@@ -1,0 +1,82 @@
+/* =========================================
+   DEBT BADGE
+   One tone per backend value, from the theme tokens.
+========================================= */
+
+.debt-badge {
+  --debt-tone: var(--color-text-secondary);
+
+  padding: 5px 10px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  border-radius: 999px;
+
+  color: color-mix(in srgb, var(--debt-tone) 85%, var(--color-text-primary));
+  background: color-mix(in srgb, var(--debt-tone) 13%, transparent);
+
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.debt-badge svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+[dir="rtl"] .debt-badge--direction-payable svg,
+[dir="rtl"] .debt-badge--direction-receivable svg {
+  transform: scaleX(-1);
+}
+
+/* Direction */
+
+.debt-badge--direction-payable {
+  --debt-tone: var(--color-warning);
+}
+
+.debt-badge--direction-receivable {
+  --debt-tone: var(--color-success);
+}
+
+/* Status (effective_status) */
+
+.debt-badge--status-active {
+  --debt-tone: var(--color-primary);
+}
+
+.debt-badge--status-partially_paid {
+  --debt-tone: color-mix(in srgb, var(--color-success) 55%, var(--color-primary));
+}
+
+.debt-badge--status-paid {
+  --debt-tone: var(--color-success);
+}
+
+.debt-badge--status-overdue {
+  --debt-tone: var(--color-danger);
+}
+
+.debt-badge--status-archived {
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+}
+
+/* Payment status */
+
+.debt-badge--payment-posted {
+  --debt-tone: var(--color-success);
+}
+
+.debt-badge--payment-reversed {
+  --debt-tone: var(--color-warning);
+}
+
+:root[data-theme="dark"] .debt-badge:not(.debt-badge--status-archived) {
+  color: color-mix(in srgb, var(--debt-tone) 62%, #ffffff);
+}

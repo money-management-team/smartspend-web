@@ -1,0 +1,834 @@
+/* =========================================
+   REVIEW DIALOG (receipt confirmation)
+   Buttons come from CaptureStep.css
+   (.capture-action).
+========================================= */
+
+.review-dialog {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 100;
+
+  padding: 22px;
+
+  display: grid;
+  place-items: center;
+
+  background:
+    color-mix(in srgb, #060c18 55%, transparent);
+
+  backdrop-filter: blur(6px);
+}
+
+
+.review-dialog__panel {
+  position: relative;
+
+  width: min(580px, 100%);
+
+  max-height: 94vh;
+
+  padding: 22px;
+
+  overflow: auto;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-xl);
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    var(--shadow-lg);
+
+  animation:
+    review-pop
+    200ms ease;
+}
+
+
+@keyframes review-pop {
+  from {
+    opacity: 0;
+
+    transform:
+      scale(0.975)
+      translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform: none;
+  }
+}
+
+
+.review-dialog__close {
+  position: absolute;
+
+  top: 16px;
+
+  inset-inline-end: 16px;
+
+  width: 36px;
+  height: 36px;
+
+  display: grid;
+  place-items: center;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-md);
+
+  color:
+    var(--color-text-muted);
+
+  background:
+    var(--color-surface-soft);
+
+  font-size: 16px;
+
+  cursor: pointer;
+}
+
+
+.review-dialog__close:disabled {
+  opacity: 0.6;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.review-dialog__header {
+  margin-bottom: 18px;
+
+  padding-inline-end: 44px;
+
+  display: grid;
+
+  grid-template-columns:
+    48px
+    minmax(0, 1fr);
+
+  align-items: start;
+
+  gap: 12px;
+}
+
+
+.review-dialog__header-icon {
+  width: 48px;
+  height: 48px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius:
+    var(--radius-lg);
+
+  color: #ffffff;
+
+  background:
+    var(--gradient-primary);
+
+  font-size: 22px;
+}
+
+
+.review-dialog__badge {
+  display: block;
+
+  margin-bottom: 4px;
+
+  color:
+    var(--color-primary);
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+
+.review-dialog__header h2 {
+  margin:
+    0
+    0
+    5px;
+
+  color:
+    var(--color-text-primary);
+
+  font-family:
+    var(--font-heading);
+
+  font-size: 20px;
+
+  font-weight: 700;
+}
+
+
+.review-dialog__header p {
+  margin: 0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+/* =========================================
+   RECEIPT
+========================================= */
+
+.receipt {
+  padding: 18px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-lg);
+
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-surface-soft) 60%, var(--color-surface)),
+      var(--color-surface)
+    );
+}
+
+
+.receipt__brand {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+
+.receipt__brand > div {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+
+.receipt__brand img {
+  width: 38px;
+  height: 38px;
+
+  object-fit: contain;
+}
+
+
+.receipt__brand strong {
+  display: block;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 14px;
+}
+
+
+.receipt__brand span {
+  display: block;
+
+  color:
+    var(--color-text-muted);
+
+  font-size: 11px;
+}
+
+
+.receipt__status {
+  height: 28px;
+
+  padding:
+    0
+    10px;
+
+  display: flex !important;
+
+  align-items: center;
+
+  gap: 5px;
+
+  border-radius:
+    var(--radius-pill);
+
+  color:
+    var(--color-warning) !important;
+
+  background:
+    var(--warning-soft);
+
+  font-size: 11px !important;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+.receipt__dots {
+  margin:
+    14px
+    0;
+
+  border-top:
+    1px dashed
+    var(--border-strong);
+}
+
+
+/* =========================================
+   TOTAL
+========================================= */
+
+.receipt__total {
+  padding:
+    6px
+    0
+    16px;
+
+  text-align: center;
+}
+
+
+.receipt__total > span {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color:
+    var(--color-text-muted);
+
+  font-size: 12px;
+}
+
+
+.receipt__total strong {
+  display: block;
+
+  color:
+    var(--color-text-primary);
+
+  font-family:
+    var(--font-heading);
+
+  font-size: 32px;
+
+  font-weight: 800;
+
+  letter-spacing: -0.02em;
+}
+
+
+.receipt__total small {
+  display: block;
+
+  margin-top: 6px;
+
+  color:
+    var(--color-danger);
+
+  font-size: 11px;
+}
+
+
+.receipt__total-edit {
+  max-width: 230px;
+
+  height: 54px;
+
+  margin:
+    0
+    auto;
+
+  padding:
+    0
+    12px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  border:
+    1px solid
+    var(--border-strong);
+
+  border-radius:
+    var(--radius-md);
+
+  background:
+    var(--input-background);
+}
+
+
+.receipt__total-edit input {
+  width: 100%;
+
+  border: 0;
+
+  outline: 0;
+
+  color:
+    var(--input-text);
+
+  background: transparent;
+
+  font: inherit;
+
+  font-family:
+    var(--font-heading);
+
+  font-size: 24px;
+
+  font-weight: 800;
+}
+
+
+.receipt__total-edit b {
+  flex: none;
+
+  color:
+    var(--color-text-muted);
+
+  font-size: 13px;
+}
+
+
+/* =========================================
+   LINES
+========================================= */
+
+.receipt__lines {
+  display: grid;
+
+  border-top:
+    1px solid
+    var(--color-border);
+
+  border-bottom:
+    1px solid
+    var(--color-border);
+}
+
+
+.receipt__line {
+  min-height: 46px;
+
+  padding:
+    8px
+    0;
+
+  display: grid;
+
+  grid-template-columns:
+    130px
+    minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 12px;
+
+  border-bottom:
+    1px solid
+    var(--color-border);
+}
+
+
+.receipt__line:last-child {
+  border-bottom: 0;
+}
+
+
+.receipt__line > span {
+  color:
+    var(--color-text-muted);
+
+  font-size: 12px;
+}
+
+
+.receipt__line > b {
+  overflow-wrap: anywhere;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  text-align: end;
+}
+
+
+.receipt__line--error > b {
+  color:
+    var(--color-danger);
+
+  font-weight: 500;
+}
+
+
+.receipt__line input,
+.receipt__line select {
+  width: 100%;
+
+  height: 38px;
+
+  padding:
+    0
+    10px;
+
+  box-sizing: border-box;
+
+  border:
+    1px solid
+    var(--input-border);
+
+  border-radius:
+    var(--radius-sm);
+
+  color:
+    var(--input-text);
+
+  background:
+    var(--input-background);
+
+  font: inherit;
+
+  font-size: 13px;
+}
+
+
+.receipt__line input:focus,
+.receipt__line select:focus {
+  outline: 0;
+
+  border-color:
+    var(--input-focus);
+
+  box-shadow:
+    0 0 0 3px
+    var(--input-focus-ring);
+}
+
+
+/* =========================================
+   BALANCE
+========================================= */
+
+.receipt__divider {
+  margin:
+    14px
+    0;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  color:
+    var(--color-text-muted);
+}
+
+
+.receipt__divider i {
+  height: 1px;
+
+  flex: 1;
+
+  background:
+    var(--color-border);
+}
+
+
+.receipt__balance {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+
+.receipt__balance > div {
+  padding:
+    10px
+    12px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-md);
+
+  background:
+    var(--color-surface);
+}
+
+
+.receipt__balance span {
+  display: block;
+
+  margin-bottom: 3px;
+
+  color:
+    var(--color-text-muted);
+
+  font-size: 11px;
+}
+
+
+.receipt__balance b {
+  display: block;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 14px;
+
+  font-weight: 700;
+}
+
+
+.receipt__balance-arrow {
+  flex: none;
+
+  color:
+    var(--color-primary);
+
+  font-size: 18px;
+}
+
+
+[dir="rtl"] .receipt__balance-arrow {
+  transform: scaleX(-1);
+}
+
+
+.receipt__warning {
+  margin:
+    12px
+    0
+    0;
+
+  padding:
+    10px
+    12px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  border:
+    1px solid
+    color-mix(in srgb, var(--color-danger) 25%, var(--color-border));
+
+  border-radius:
+    var(--radius-md);
+
+  color:
+    var(--color-danger) !important;
+
+  background:
+    var(--danger-soft);
+
+  font-size: 12px !important;
+
+  font-weight: 600;
+
+  line-height: 1.5;
+}
+
+
+.receipt__warning svg {
+  flex: none;
+
+  font-size: 15px;
+}
+
+
+/* =========================================
+   ERROR + ACTIONS
+========================================= */
+
+.review-dialog__error {
+  margin-top: 14px;
+
+  padding:
+    11px
+    13px;
+
+  display: grid;
+
+  gap: 5px;
+
+  border:
+    1px solid
+    color-mix(in srgb, var(--color-danger) 28%, transparent);
+
+  border-radius:
+    var(--radius-md);
+
+  color:
+    color-mix(in srgb, var(--color-danger) 85%, var(--color-text-primary));
+
+  background:
+    var(--danger-soft);
+
+  font-size: 12px;
+
+  line-height: 1.5;
+}
+
+
+.review-dialog__error p {
+  margin: 0;
+
+  color: inherit;
+
+  font-size: inherit;
+}
+
+
+.review-dialog__actions {
+  margin-top: 16px;
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  justify-content: flex-end;
+
+  gap: 9px;
+}
+
+
+.review-dialog__actions .capture-action {
+  min-width: 170px;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 640px) {
+  .review-dialog {
+    padding: 0;
+
+    align-items: end;
+  }
+
+
+  .review-dialog__panel {
+    max-height: 95vh;
+
+    padding:
+      18px
+      14px
+      16px;
+
+    border-radius:
+      var(--radius-xl)
+      var(--radius-xl)
+      0
+      0;
+  }
+
+
+  .review-dialog__header {
+    grid-template-columns:
+      42px
+      minmax(0, 1fr);
+
+    padding-inline-end: 38px;
+  }
+
+
+  .review-dialog__header-icon {
+    width: 42px;
+    height: 42px;
+  }
+
+
+  .receipt {
+    padding: 14px;
+  }
+
+
+  .receipt__status {
+    display: none !important;
+  }
+
+
+  .receipt__total strong {
+    font-size: 27px;
+  }
+
+
+  .receipt__line {
+    grid-template-columns:
+      100px
+      minmax(0, 1fr);
+
+    gap: 8px;
+  }
+
+
+  .receipt__balance {
+    gap: 7px;
+  }
+
+
+  .review-dialog__actions {
+    display: grid;
+
+    grid-template-columns:
+      1fr
+      1.3fr;
+  }
+
+
+  .review-dialog__actions .capture-action {
+    min-width: 0;
+  }
+}

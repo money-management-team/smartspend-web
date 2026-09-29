@@ -1,0 +1,191 @@
+/* =========================================
+   AUTH SOCIAL
+========================================= */
+
+.auth-social {
+  margin-top: 28px;
+}
+
+
+/* Divider: lines fade toward the outer edges */
+
+.auth-social__divider {
+  margin-bottom: 18px;
+
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 14px;
+
+  color: var(--auth-muted);
+}
+
+.auth-social__divider span {
+  height: 1px;
+}
+
+.auth-social__divider span:first-child {
+  background: linear-gradient(to right, transparent, var(--color-border));
+}
+
+.auth-social__divider span:last-child {
+  background: linear-gradient(to left, transparent, var(--color-border));
+}
+
+[dir="rtl"] .auth-social__divider span:first-child {
+  background: linear-gradient(to left, transparent, var(--color-border));
+}
+
+[dir="rtl"] .auth-social__divider span:last-child {
+  background: linear-gradient(to right, transparent, var(--color-border));
+}
+
+.auth-social__divider small {
+  color: inherit;
+
+  font-size: 12px;
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+
+/* Buttons */
+
+.auth-social__buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.auth-social__button {
+  height: 44px;
+  padding-inline: 12px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  border: 1px solid var(--auth-control-border);
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: var(--auth-control-bg);
+
+  font: inherit;
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+
+  cursor: pointer;
+
+  box-shadow: var(--shadow-xs);
+
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.auth-social__button:hover:not(:disabled),
+.auth-social__google:hover .auth-social__button:not(:disabled) {
+  border-color: var(--auth-control-border-hover);
+  background: var(--auth-control-bg-hover);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.auth-social__button:active {
+  transform: translateY(0);
+}
+
+.auth-social__button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+/* Keyboard focus on Google's invisible button shows on ours */
+.auth-social__google:has(.auth-social__google-slot :focus-visible) .auth-social__button {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.auth-social__button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+
+/*
+ * Google: the GIS button is rendered invisibly over ours (see AuthSocial.jsx).
+ * The slot itself lets clicks through to our button (e.g. before Google has
+ * rendered, or when it is unavailable); only Google's button catches them.
+ * It is centered and scaled (--auth-google-scale-*) to cover all of ours.
+ */
+
+.auth-social__google {
+  position: relative;
+
+  display: grid;
+}
+
+.auth-social__google-slot {
+  position: absolute;
+  inset: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  border-radius: var(--radius-md);
+
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* `display: flex` above would otherwise beat the UA's [hidden] rule */
+.auth-social__google-slot[hidden] {
+  display: none;
+}
+
+.auth-social__google-slot > * {
+  flex: none;
+
+  transform: scale(
+    var(--auth-google-scale-x, 1),
+    var(--auth-google-scale-y, 1)
+  );
+
+  pointer-events: auto;
+}
+
+.auth-social__button svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+}
+
+
+@media (max-width: 560px) {
+  .auth-social {
+    margin-top: 24px;
+  }
+}
+
+@media (max-width: 360px) {
+  .auth-social__buttons {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-social__button,
+  .auth-social__button:hover:not(:disabled),
+  .auth-social__google:hover .auth-social__button:not(:disabled) {
+    transform: none;
+    transition: none;
+  }
+}

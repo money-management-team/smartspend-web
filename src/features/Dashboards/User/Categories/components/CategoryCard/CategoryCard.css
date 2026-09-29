@@ -1,0 +1,230 @@
+/* =========================================
+   CATEGORY CARD
+   Same card language as the account cards.
+========================================= */
+
+.category-card {
+  --category-color: var(--color-primary);
+
+  position: relative;
+
+  min-width: 0;
+  min-height: 148px;
+  padding: 18px 18px 16px;
+
+  display: flex;
+  flex-direction: column;
+
+  box-sizing: border-box;
+
+  border: 1px solid var(--color-border);
+  border-radius: 17px;
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.category-card:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+}
+
+/* Header */
+
+.category-card__header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+}
+
+.category-card__icon {
+  width: 42px;
+  height: 42px;
+
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+.category-card--colored .category-card__icon {
+  color: var(--category-color);
+  background: color-mix(in srgb, var(--category-color) 14%, transparent);
+}
+
+.category-card__icon svg {
+  width: 19px;
+  height: 19px;
+  stroke-width: 1.8;
+}
+
+.category-card__identity {
+  min-width: 0;
+  padding-top: 3px;
+
+  display: grid;
+  gap: 5px;
+
+  text-align: start;
+}
+
+.category-card__identity strong {
+  display: block;
+  overflow: hidden;
+
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.category-card__identity small {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+/* Link (stretched over the whole card) */
+
+.category-card__link {
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.category-card__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.category-card__link:focus-visible {
+  outline: none;
+}
+
+.category-card:has(.category-card__link:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Type chip */
+
+.category-card__type {
+  padding: 5px 10px;
+
+  border-radius: 999px;
+
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.category-card__type--income {
+  color: color-mix(in srgb, var(--color-success) 85%, var(--color-text-primary));
+  background: var(--success-soft);
+}
+
+.category-card__type--expense {
+  color: color-mix(in srgb, var(--color-danger) 80%, var(--color-text-primary));
+  background: var(--danger-soft);
+}
+
+/* Actions (sit above the stretched link) */
+
+.category-card__actions {
+  margin-top: auto;
+  padding-top: 18px;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.category-card__actions button {
+  position: relative;
+  z-index: 1;
+}
+
+.category-card__edit,
+.category-card__archive {
+  height: 34px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+
+  font: inherit;
+  font-size: 12px;
+
+  cursor: pointer;
+
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.category-card__edit {
+  flex: 1;
+}
+
+.category-card__edit:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* Archive, not delete: neutral rather than danger red. */
+.category-card__archive {
+  width: 38px;
+  flex: 0 0 38px;
+  padding: 0;
+}
+
+.category-card__archive:hover {
+  color: var(--color-text-strong);
+  border-color: var(--border-strong);
+  background: var(--surface-soft);
+}
+
+.category-card__edit svg,
+.category-card__archive svg {
+  width: 15px;
+  height: 15px;
+}
+
+.category-card__readonly {
+  min-height: 34px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.category-card__readonly svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}

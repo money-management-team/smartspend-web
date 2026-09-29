@@ -1,0 +1,111 @@
+/* =========================================
+   FEEDBACK DIALOG
+========================================= */
+
+.ai-feedback-backdrop {
+  position: fixed;
+  z-index: 1200;
+  inset: 0;
+
+  padding: 16px;
+
+  display: grid;
+  place-items: center;
+
+  overflow-y: auto;
+
+  background: color-mix(in srgb, #0c1625 60%, transparent);
+}
+
+.ai-feedback-dialog {
+  width: min(100%, 460px);
+  max-height: calc(100dvh - 32px);
+  padding: 22px;
+
+  overflow-y: auto;
+
+  border: 1px solid var(--ai-line, var(--color-border));
+  border-radius: 18px;
+
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.ai-feedback-dialog__head {
+  margin-bottom: 18px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  text-align: start;
+}
+
+.ai-feedback-dialog__head > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.ai-feedback-dialog__head h2 {
+  margin: 0;
+
+  color: var(--color-text-strong);
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.ai-feedback-dialog__head p {
+  margin: 3px 0 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 13px;
+}
+
+.ai-feedback-dialog__rating {
+  width: 40px;
+  height: 40px;
+  flex: none;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 12px;
+
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+.ai-feedback-dialog__rating--inaccurate {
+  color: var(--color-danger);
+  background: var(--danger-soft);
+}
+
+.ai-feedback-dialog__rating svg {
+  width: 19px;
+  height: 19px;
+}
+
+.ai-feedback-dialog form {
+  display: grid;
+  gap: 16px;
+}
+
+.ai-feedback-dialog textarea {
+  resize: vertical;
+}
+
+.ai-feedback-dialog__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .ai-feedback-dialog__actions .ai-button {
+    flex: 1 1 140px;
+  }
+}

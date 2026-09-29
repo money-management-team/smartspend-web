@@ -1,0 +1,167 @@
+/* =========================================
+   REPORTS HEADER
+   Same dark identity band as the other finance pages, kept compact.
+   The band is dark in both themes, so its text colors are fixed.
+========================================= */
+
+.reports-header {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  padding: clamp(20px, 2.6vw, 30px) clamp(20px, 2.8vw, 34px);
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px 24px;
+
+  border: 1px solid var(--report-hero-border);
+  border-radius: 22px;
+
+  color: #ffffff;
+  background: var(--report-hero-background);
+  box-shadow: var(--report-hero-shadow);
+}
+
+/* Quiet decorative ring, as on the sibling pages. */
+.reports-header::after {
+  content: "";
+
+  position: absolute;
+  z-index: -1;
+  inset-block-end: -170px;
+  inset-inline-end: -40px;
+
+  width: 250px;
+  height: 250px;
+
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+
+  box-shadow: 0 0 0 40px rgba(255, 255, 255, 0.03);
+  pointer-events: none;
+}
+
+.reports-header__main {
+  min-width: 0;
+  flex: 1 1 420px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.reports-header__icon {
+  width: 52px;
+  height: 52px;
+  flex: none;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 15px;
+
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.reports-header__icon svg {
+  width: 25px;
+  height: 25px;
+}
+
+.reports-header__copy {
+  min-width: 0;
+  text-align: start;
+}
+
+.reports-header__eyebrow {
+  margin: 0 0 6px;
+
+  color: #b6d7ff;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.reports-header__copy h1 {
+  margin: 0;
+
+  color: #ffffff;
+
+  font-family: var(--font-heading);
+  font-size: clamp(22px, 2.6vw, 30px);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.reports-header__description {
+  max-width: 64ch;
+  margin: 8px 0 0;
+
+  color: #d1e1ff;
+
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.reports-header__period {
+  width: fit-content;
+  max-width: 100%;
+  margin: 14px 0 0;
+  padding: 6px 12px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-pill);
+
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.reports-header__period svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+.reports-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .reports-header {
+    border-radius: 18px;
+  }
+
+  .reports-header__icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+  }
+
+  .reports-header__icon svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .reports-header__actions {
+    width: 100%;
+  }
+
+  .reports-header__actions > * {
+    flex: 1 1 150px;
+  }
+}

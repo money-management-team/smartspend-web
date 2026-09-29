@@ -1,0 +1,217 @@
+/* =========================================
+   RETRY AI PROCESSING
+   Rendered only for a `failed` capture.
+========================================= */
+
+.capture-retry {
+  padding:
+    22px
+    24px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius: 17px;
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    var(--shadow-card);
+}
+
+
+.capture-retry__header h2 {
+  margin:
+    0
+    0
+    6px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  color:
+    var(--color-text-primary);
+
+  font-family:
+    var(--font-heading);
+
+  font-size: 17px;
+
+  font-weight: 700;
+}
+
+
+.capture-retry__header h2 svg {
+  color:
+    var(--color-danger, #dc2626);
+
+  flex-shrink: 0;
+}
+
+
+.capture-retry__header p {
+  margin: 0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+/* =========================================
+   ERROR
+========================================= */
+
+.capture-retry__error {
+  margin-block-start: 16px;
+
+  padding:
+    12px
+    14px;
+
+  border:
+    1px solid
+    var(--color-danger, #dc2626);
+
+  border-radius:
+    var(--radius-md);
+
+  color:
+    var(--color-danger, #dc2626);
+
+  background:
+    color-mix(in srgb, var(--color-danger, #dc2626) 7%, transparent);
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+.capture-retry__error p {
+  margin:
+    0
+    0
+    8px;
+}
+
+
+.capture-retry__error p:last-of-type {
+  margin-block-end: 0;
+}
+
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.capture-retry__action,
+.capture-retry__refresh {
+  margin-block-start: 16px;
+
+  padding:
+    9px
+    18px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  border:
+    1px solid
+    var(--color-primary);
+
+  border-radius:
+    var(--radius-md);
+
+  color:
+    var(--navigation-active-text);
+
+  background:
+    var(--color-primary);
+
+  font: inherit;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+.capture-retry__refresh {
+  margin-block-start: 6px;
+
+  padding:
+    7px
+    14px;
+
+  border-color:
+    var(--color-border);
+
+  color:
+    var(--color-text-primary);
+
+  background:
+    var(--color-surface);
+
+  font-size: 13px;
+}
+
+
+.capture-retry__action:disabled {
+  opacity: 0.6;
+
+  cursor: progress;
+}
+
+
+/* The retrying state is announced, not drawn: the button already carries the
+   visible label. */
+.capture-retry__status:empty {
+  display: none;
+}
+
+
+.capture-retry__status {
+  margin:
+    8px
+    0
+    0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 13px;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 640px) {
+  .capture-retry {
+    padding:
+      18px
+      16px;
+  }
+
+
+  .capture-retry__action {
+    width: 100%;
+
+    justify-content: center;
+  }
+}

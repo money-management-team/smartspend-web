@@ -1,0 +1,59 @@
+.recurring-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 9px;
+  border-radius: var(--radius-pill);
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+/* Rule status */
+
+.recurring-badge--status-active {
+  color: var(--success);
+  background: var(--success-soft);
+}
+
+.recurring-badge--status-paused {
+  color: var(--warning);
+  background: var(--warning-soft);
+}
+
+.recurring-badge--status-completed {
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+/* Processing mode */
+
+.recurring-badge--mode-automatic {
+  color: var(--insights);
+  background: var(--insights-soft);
+}
+
+/* Occurrence status */
+
+.recurring-badge--occurrence-due {
+  color: var(--warning);
+  background: var(--warning-soft);
+}
+
+.recurring-badge--occurrence-scheduled {
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+.recurring-badge--occurrence-posted {
+  color: var(--success);
+  background: var(--success-soft);
+}
+
+.recurring-badge--occurrence-failed,
+.recurring-badge--overdue {
+  color: var(--danger);
+  background: var(--danger-soft);
+}

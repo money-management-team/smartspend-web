@@ -1,0 +1,265 @@
+/* =========================================
+   AI EXPENSE CAPTURES - LIST PAGE
+========================================= */
+
+.ai-captures-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+
+  padding-block-end: 2rem;
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.ai-captures-page__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ai-captures-page__header h1 {
+  margin: 0 0 0.25rem;
+
+  color: var(--color-text-strong);
+
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+}
+
+.ai-captures-page__header p {
+  margin: 0;
+  max-inline-size: 60ch;
+
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.ai-captures-page__refresh,
+.ai-captures-page__clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  padding: 0.55rem 1rem;
+
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+
+  color: var(--color-text-strong);
+  background: var(--color-surface);
+
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.ai-captures-page__refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+/* =========================================
+   FILTERS
+========================================= */
+
+.ai-captures-page__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.9rem;
+
+  padding: 1rem;
+
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+
+  background: var(--color-surface);
+}
+
+.ai-captures-page__filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.ai-captures-page__filters select {
+  min-inline-size: 180px;
+  padding: 0.5rem 0.7rem;
+
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+
+  color: var(--color-text-strong);
+  background: var(--color-surface);
+
+  font-family: inherit;
+  font-size: 0.92rem;
+}
+
+.ai-captures-page__filters select:disabled {
+  opacity: 0.7;
+}
+
+/* The page-size select holds two digits; a filter width would dwarf it. */
+.ai-captures-page__filters label:last-of-type select {
+  min-inline-size: 96px;
+}
+
+.ai-captures-page__clear {
+  margin-inline-start: auto;
+}
+
+
+/* =========================================
+   PANEL
+========================================= */
+
+.ai-captures-page__panel {
+  padding: 1rem;
+
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+
+  background: var(--color-surface);
+}
+
+.ai-captures-page__rows {
+  display: grid;
+  gap: 0.75rem;
+}
+
+
+/* =========================================
+   STATES
+========================================= */
+
+.ai-captures-page__state {
+  padding: 2rem 1rem;
+
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.ai-captures-page__state p {
+  margin: 0;
+
+  color: inherit;
+  line-height: 1.6;
+}
+
+.ai-captures-page__state button {
+  margin-block-start: 0.75rem;
+  padding: 0.5rem 1.1rem;
+
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+
+  color: var(--color-text-strong);
+  background: transparent;
+
+  font-family: inherit;
+  font-size: 0.9rem;
+
+  cursor: pointer;
+}
+
+.ai-captures-page__state--error {
+  color: var(--color-danger);
+}
+
+
+/* =========================================
+   PAGINATION
+========================================= */
+
+.ai-captures-page__pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+
+  margin-block-start: 1rem;
+  padding-block-start: 1rem;
+
+  border-block-start: 1px solid var(--color-border);
+
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+.ai-captures-page__pages {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ai-captures-page__pages button {
+  inline-size: 2rem;
+  block-size: 2rem;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+
+  color: var(--color-text-strong);
+  background: var(--color-surface);
+
+  cursor: pointer;
+}
+
+.ai-captures-page__pages button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* The chevrons point the other way in Arabic. */
+[dir="rtl"] .ai-captures-page__pages svg {
+  transform: scaleX(-1);
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 720px) {
+  .ai-captures-page__filters {
+    gap: 0.75rem;
+  }
+
+  .ai-captures-page__filters label,
+  .ai-captures-page__filters select {
+    inline-size: 100%;
+    min-inline-size: 0;
+  }
+
+  .ai-captures-page__clear {
+    margin-inline-start: 0;
+    inline-size: 100%;
+    justify-content: center;
+  }
+
+  .ai-captures-page__header h1 {
+    font-size: 1.4rem;
+  }
+
+  .ai-captures-page__panel {
+    padding: 0.75rem;
+  }
+}

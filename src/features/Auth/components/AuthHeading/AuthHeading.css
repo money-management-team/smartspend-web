@@ -1,0 +1,144 @@
+/* =========================================
+   AUTH HEADING
+========================================= */
+
+.auth-heading {
+  text-align: center;
+}
+
+.auth-heading__title {
+  margin: 0;
+
+  color: var(--color-text-strong);
+
+  font-size: 30px;
+  font-weight: var(--font-weight-extrabold);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+
+  text-wrap: balance;
+}
+
+.auth-heading__subtitle {
+  max-width: 340px;
+  margin: 10px auto 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 14.5px;
+  line-height: 1.6;
+
+  text-wrap: pretty;
+}
+
+
+/* =========================================
+   ICON BADGE
+========================================= */
+
+.auth-heading__icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 20px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 18px;
+
+  color: var(--auth-link);
+  background: var(--primary-soft);
+
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 16%, transparent),
+    0 0 0 6px color-mix(in srgb, var(--color-primary) 5%, transparent);
+}
+
+.auth-heading__icon svg {
+  width: 28px;
+  height: 28px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Success state (e.g. password changed) */
+
+.auth-heading--success .auth-heading__icon {
+  width: 68px;
+  height: 68px;
+  margin-bottom: 24px;
+
+  border-radius: 50%;
+
+  color: var(--navigation-active-text);
+  background: var(--gradient-success);
+
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--navigation-active-text) 22%, transparent),
+    0 0 0 8px var(--success-soft),
+    0 0 0 16px color-mix(in srgb, var(--color-success) 5%, transparent),
+    0 12px 24px -10px color-mix(in srgb, var(--color-success) 60%, transparent);
+
+  animation: auth-heading-pop 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+/* The check glyph only fills ~45% of its viewBox, so draw it larger */
+
+.auth-heading--success .auth-heading__icon svg {
+  width: 48px;
+  height: 48px;
+
+  stroke-width: 2;
+}
+
+@keyframes auth-heading-pop {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+
+/* =========================================
+   RTL
+========================================= */
+
+[dir="rtl"] .auth-heading__title {
+  letter-spacing: 0;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 560px) {
+  .auth-heading__title {
+    font-size: 25px;
+  }
+
+  .auth-heading__subtitle {
+    font-size: 14px;
+  }
+
+  .auth-heading__icon {
+    width: 52px;
+    height: 52px;
+    margin-bottom: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-heading--success .auth-heading__icon {
+    animation: none;
+  }
+}

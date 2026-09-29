@@ -1,0 +1,144 @@
+/* =========================================
+   DASHBOARD PRIMITIVES
+
+   Shared responsive behaviour for the signed-in area. It fills the gaps the
+   individual pages leave (form controls that overflow, modals taller than the
+   screen, tap targets, scroll containers) without restyling them.
+
+   - Rules under `.dashboard-layout` only touch dashboard pages.
+   - Dialog rules target the shared modal classes, which render inside the
+     dashboard tree, so they are scoped the same way.
+   - Zero-specificity `:where()` rules are defaults a page can still override.
+   - Breakpoints follow the scale documented in DashboardLayout.css.
+========================================= */
+
+/* ---------- Form controls never outgrow their container ---------- */
+
+:where(.dashboard-layout__content) :where(input, select, textarea) {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+:where(.dashboard-layout__content) :where(img, video, canvas) {
+  max-width: 100%;
+}
+
+/* Wide tables scroll inside their own container, never the page. */
+.dashboard-layout__content :is(
+  .currency-summary__scroll,
+  .report-exports-page__scroll,
+  .report-metrics__scroll,
+  .ai-assistant-page__scroll
+) {
+  max-width: 100%;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Action rows, pagination and section heads wrap instead of pushing the page
+   wider. `flex-wrap` has no effect on grid or block containers. */
+.dashboard-layout__content :is(
+  [class*="__actions"],
+  [class*="__pages"],
+  [class*="__panel-head"],
+  [class*="__section-head"],
+  [class*="__head"]
+) {
+  flex-wrap: wrap;
+}
+
+/* Headings holding user data (names, categories, files) may break anywhere. */
+.dashboard-layout__content :is(h1, h2, h3, h4) {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Modals and dialogs stay inside the viewport ---------- */
+
+.dashboard-layout :is(.account-form-modal, .export-format-dialog, .review-dialog, .ai-feedback-backdrop) {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.dashboard-layout :is(
+  .account-form-modal__dialog,
+  .export-format-dialog__panel,
+  .review-dialog__panel,
+  .ai-feedback-dialog
+) {
+  box-sizing: border-box;
+  max-width: 100%;
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* ---------- Focus visibility for every interactive dashboard element ---------- */
+
+.dashboard-layout__content :is(button, a, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ---------- Touch devices: comfortable targets ---------- */
+
+@media (pointer: coarse) {
+  .dashboard-layout__content :is(
+    button:not([class*="icon"]):not([class*="close"]):not([class*="chip"]):not([class*="tag"]),
+    select,
+    input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="hidden"])
+  ) {
+    min-height: 40px;
+  }
+}
+
+
+/* ================================
+   MOBILE (<= 640px)
+================================ */
+
+@media (max-width: 640px) {
+  .dashboard-layout :is(.account-form-modal, .export-format-dialog, .ai-feedback-backdrop) {
+    padding: 10px;
+  }
+
+  .dashboard-layout :is(
+    .account-form-modal__dialog,
+    .export-format-dialog__panel,
+    .ai-feedback-dialog
+  ) {
+    max-height: calc(100vh - 20px);
+    max-height: calc(100dvh - 20px);
+    padding: 18px 16px;
+  }
+
+  /* The receipt review dialog keeps its own bottom-sheet layout (ReviewOperationDialog.css). */
+
+  /* Dialog actions: full-width, thumb friendly, wrap instead of overflow. */
+  .dashboard-layout .account-form-modal__dialog footer,
+  .dashboard-layout .ai-feedback-dialog__actions {
+    flex-wrap: wrap;
+  }
+
+  .dashboard-layout .account-form-modal__dialog footer > button,
+  .dashboard-layout .ai-feedback-dialog__actions > button {
+    flex: 1 1 140px;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  /* Hero "add / create" buttons take the row on phones. */
+  .dashboard-layout :is(
+    .accounts-header__add,
+    .transfers-page__add,
+    .savings-goals-header__button,
+    .debts-header__button,
+    .ai-captures-page__refresh,
+    .reports-page__export
+  ) {
+    width: 100%;
+    justify-content: center;
+  }
+}

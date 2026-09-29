@@ -1,0 +1,54 @@
+/* =========================================
+   BUDGET PROGRESS BAR
+   The fill starts at the inline start, so it grows right-to-left in RTL.
+========================================= */
+
+.budget-progress-bar {
+  --budget-bar-fill: var(--gradient-primary);
+
+  width: 100%;
+  height: 7px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: var(--surface-soft);
+}
+
+.budget-progress-bar--lg {
+  height: 12px;
+}
+
+.budget-progress-bar span {
+  display: block;
+  block-size: 100%;
+
+  border-radius: inherit;
+
+  background: var(--budget-bar-fill);
+
+  transition: inline-size 250ms ease;
+}
+
+.budget-progress-bar--safe {
+  --budget-bar-fill: var(--color-success);
+}
+
+.budget-progress-bar--warning {
+  --budget-bar-fill: var(--color-warning);
+}
+
+.budget-progress-bar--near_limit {
+  --budget-bar-fill: color-mix(in srgb, var(--color-warning) 45%, var(--color-danger));
+}
+
+.budget-progress-bar--exceeded {
+  --budget-bar-fill: var(--color-danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .budget-progress-bar span {
+    transition: none;
+  }
+}

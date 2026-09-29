@@ -1,0 +1,72 @@
+/* =========================================
+   AUTH BACK LINK
+========================================= */
+
+.auth-back-link {
+  width: fit-content;
+  min-height: 40px;
+  margin: 24px auto 0;
+  padding-inline: 14px 16px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  border-radius: var(--radius-pill);
+
+  color: var(--color-text-secondary);
+
+  font-size: 13.5px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  text-decoration: none;
+
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+.auth-back-link:hover {
+  color: var(--color-text-strong);
+  background: var(--auth-control-bg-hover);
+}
+
+.auth-back-link svg {
+  width: 17px;
+  height: 17px;
+  flex: 0 0 17px;
+
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+
+  transition: translate 160ms ease;
+}
+
+.auth-back-link:hover svg {
+  translate: -2px 0;
+}
+
+/* The arrow points toward inline-start, so mirror it in RTL */
+
+[dir="rtl"] .auth-back-link svg {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .auth-back-link:hover svg {
+  translate: 2px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-back-link,
+  .auth-back-link svg {
+    transition: none;
+  }
+
+  .auth-back-link:hover svg,
+  [dir="rtl"] .auth-back-link:hover svg {
+    translate: none;
+  }
+}

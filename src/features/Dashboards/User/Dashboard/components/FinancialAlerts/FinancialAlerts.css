@@ -1,0 +1,231 @@
+.financial-alerts__body {
+  padding: 14px 18px 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.financial-alerts__state {
+  margin: 0;
+  padding: 14px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  text-align: center;
+}
+
+.financial-alerts__state p {
+  margin: 0 0 8px;
+}
+
+.financial-alerts__state--error {
+  color: var(--danger);
+}
+
+.financial-alerts__state button {
+  border: 0;
+  color: var(--color-primary);
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.financial-alerts__refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.financial-alerts__refresh:disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.financial-alerts__refresh svg {
+  width: 14px;
+  height: 14px;
+}
+
+.financial-alerts__summary {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+}
+
+.financial-alerts__count {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+  font-size: 11px;
+}
+
+.financial-alerts__count strong {
+  color: var(--color-text-primary);
+  font-size: 12px;
+}
+
+.financial-alerts__count--exceeded strong {
+  color: var(--danger);
+}
+
+.financial-alerts__count--near_limit strong,
+.financial-alerts__count--warning strong {
+  color: var(--warning);
+}
+
+.financial-alerts__count--safe strong {
+  color: var(--success);
+}
+
+.financial-alerts__list {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  list-style: none;
+}
+
+.financial-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-inline-start-width: 3px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.financial-alert--critical {
+  border-inline-start-color: var(--danger);
+}
+
+.financial-alert--warning {
+  border-inline-start-color: var(--warning);
+}
+
+.financial-alert--info {
+  border-inline-start-color: var(--color-primary);
+}
+
+.financial-alert__icon {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.financial-alert--critical .financial-alert__icon {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.financial-alert--warning .financial-alert__icon {
+  color: var(--warning);
+  background: var(--warning-soft);
+}
+
+.financial-alert--info .financial-alert__icon {
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+.financial-alert__icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.financial-alert__copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.financial-alert__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.financial-alert__heading strong {
+  color: var(--color-text-primary);
+  font-size: 12px;
+}
+
+.financial-alert__badge {
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.financial-alert__badge--critical {
+  color: var(--danger);
+  background: var(--danger-soft);
+}
+
+.financial-alert__badge--warning {
+  color: var(--warning);
+  background: var(--warning-soft);
+}
+
+.financial-alert__badge--info {
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+.financial-alert__copy p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.financial-alert__link,
+.financial-alerts__more a {
+  color: var(--color-primary);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.financial-alert__link:hover,
+.financial-alerts__more a:hover {
+  text-decoration: underline;
+}
+
+.financial-alerts__more,
+.financial-alerts__generated {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+.financial-alerts--full .financial-alerts__body {
+  padding: 18px 20px 20px;
+}
+
+.financial-alerts--full .financial-alert__copy p,
+.financial-alerts--full .financial-alert__heading strong {
+  font-size: 13px;
+}

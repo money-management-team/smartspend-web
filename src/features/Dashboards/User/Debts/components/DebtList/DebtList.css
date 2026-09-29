@@ -1,0 +1,145 @@
+/* =========================================
+   DEBT LIST (table, scrolls sideways on small screens)
+========================================= */
+
+.debt-list {
+  margin-top: 16px;
+  overflow-x: auto;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.debt-list__table {
+  width: 100%;
+  min-width: 860px;
+
+  border-collapse: collapse;
+
+  font-size: 12px;
+}
+
+.debt-list__caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.debt-list__table th,
+.debt-list__table td {
+  padding: 12px 14px;
+
+  border-bottom: 1px solid var(--color-border);
+
+  text-align: start;
+  vertical-align: middle;
+}
+
+.debt-list__table thead th {
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.debt-list__table tbody tr:last-child th,
+.debt-list__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.debt-list__table tbody tr:hover {
+  background: color-mix(in srgb, var(--color-primary) 4%, transparent);
+}
+
+.debt-list__table .debt-list__amount {
+  text-align: end;
+  white-space: nowrap;
+}
+
+.debt-list__table td.debt-list__amount {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.debt-list__row--overdue {
+  box-shadow: inset 3px 0 0 var(--color-danger);
+}
+
+[dir="rtl"] .debt-list__row--overdue {
+  box-shadow: inset -3px 0 0 var(--color-danger);
+}
+
+.debt-list__party {
+  max-width: 220px;
+
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.debt-list__link {
+  display: block;
+  overflow: hidden;
+
+  color: var(--color-text-primary);
+
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.debt-list__link:hover,
+.debt-list__link:focus-visible {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+.debt-list__movement {
+  margin-top: 4px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.debt-list__movement--posted {
+  color: var(--color-primary);
+}
+
+.debt-list__movement svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.debt-list__muted {
+  color: var(--color-text-secondary);
+}
+
+.debt-list__countdown {
+  color: var(--color-text-primary);
+  white-space: nowrap;
+}
+
+.debt-list__countdown--dueToday {
+  color: var(--color-warning);
+  font-weight: 600;
+}
+
+.debt-list__countdown--overdueBy,
+.debt-list__countdown--overdueByOne {
+  color: var(--color-danger);
+  font-weight: 600;
+}

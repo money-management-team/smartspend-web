@@ -1,0 +1,77 @@
+/* =========================================
+   AI CAPTURE STATUS BADGE
+   Sprint 7 only. The imports badge
+   (.import-status) is a separate domain.
+========================================= */
+
+.capture-status {
+  padding:
+    3px
+    10px;
+
+  display: inline-flex;
+  align-items: center;
+
+  border-radius:
+    var(--radius-pill);
+
+  color:
+    var(--color-text-secondary);
+
+  background:
+    var(--surface-soft);
+
+  font-size: 11px;
+
+  font-weight: 600;
+
+  line-height: 1.6;
+
+  white-space: nowrap;
+}
+
+
+/* The capture is waiting for the user: the one status that asks for action. */
+
+.capture-status--action {
+  color:
+    var(--color-primary);
+
+  background:
+    var(--primary-soft);
+}
+
+
+/* A transaction exists. */
+
+.capture-status--success {
+  color:
+    var(--color-success);
+
+  background:
+    var(--success-soft);
+}
+
+
+.capture-status--info {
+  color:
+    var(--color-insights);
+
+  background:
+    var(--insights-soft);
+}
+
+
+.capture-status--danger {
+  color:
+    var(--color-danger);
+
+  background:
+    var(--danger-soft);
+}
+
+
+.capture-status--muted {
+  color:
+    var(--color-text-muted);
+}

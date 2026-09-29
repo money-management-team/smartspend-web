@@ -1,0 +1,56 @@
+/* =========================================
+   CHAT WORKSPACE
+   Fixed-height surface: the page never scrolls to follow the chat; only
+   the message log and the conversation list scroll inside it.
+   --ai-chrome is everything above and below the workspace (dashboard
+   header, page padding, topbar, gaps), set per breakpoint on the page.
+   Not ".ai-workspace": the home page already uses that global class.
+========================================= */
+
+.ai-chat-workspace {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+
+  height: max(480px, calc(100dvh - var(--ai-chrome, 220px)));
+
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+
+  border: 1px solid var(--ai-line);
+  border-radius: 20px;
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.ai-chat-workspace__backdrop {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .ai-chat-workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .ai-chat-workspace__backdrop {
+    position: absolute;
+    z-index: 4;
+    inset: 0;
+
+    display: block;
+
+    padding: 0;
+    border: 0;
+
+    background: color-mix(in srgb, black 35%, transparent);
+
+    cursor: pointer;
+  }
+}
+
+@media (max-width: 640px) {
+  .ai-chat-workspace {
+    border-radius: 16px;
+  }
+}
