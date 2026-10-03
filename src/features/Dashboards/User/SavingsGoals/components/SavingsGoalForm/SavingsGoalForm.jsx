@@ -1,3 +1,4 @@
+import { useUnsavedChanges } from "../../../../../../hooks/useUnsavedChanges";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuInfo, LuLock } from "react-icons/lu";
@@ -88,6 +89,12 @@ export default function SavingsGoalForm({ goal, onSave, onClose }) {
   const { t } = useTranslation();
   const isEditing = Boolean(goal);
   const [form, setForm] = useState(() => toFormValues(goal));
+
+  // Unsaved edits are guarded against closing, leaving the page and reloading.
+  const [initialSnapshot] = useState(() => JSON.stringify(form));
+  const { confirmDiscard, markSaved } = useUnsavedChanges(
+    JSON.stringify(form) !== initialSnapshot,
+  );
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -96,7 +103,7 @@ export default function SavingsGoalForm({ goal, onSave, onClose }) {
   const [today] = useState(getTodayInputValue);
 
   const close = () => {
-    if (!pendingRef.current) onClose();
+    if (!pendingRef.current && confirmDiscard()) onClose();
   };
 
   const handleChange = (event) => {
@@ -131,6 +138,7 @@ export default function SavingsGoalForm({ goal, onSave, onClose }) {
 
     try {
       await onSave(payload);
+      markSaved();
     } catch (error) {
       // 401 is handled by apiClient's session-expired flow.
       if (error?.code !== "UNAUTHENTICATED") {

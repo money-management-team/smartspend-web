@@ -6,7 +6,17 @@
     "save": "Save",
     "saving": "Saving...",
     "loading": "Loading...",
-    "notAvailable": "Not available"
+    "notAvailable": "Not available",
+    "errorBoundary": {
+      "title": "Something went wrong",
+      "description": "An unexpected error stopped this screen from loading. Your data is safe. Try again, or reload the page.",
+      "reload": "Reload page",
+      "home": "Go to home",
+      "dashboard": "Back to dashboard"
+    },
+    "unsavedChanges": {
+      "message": "You have unsaved changes. If you leave now, they will be lost. Leave anyway?"
+    }
   },
   "api": {
     "errors": {
@@ -133,23 +143,6 @@
       "promo": {
         "title": "Regain access safely",
         "subtitle": "We'll email you a secure link to reset your password quickly."
-      }
-    },
-    "verifyCode": {
-      "title": "Verify the code",
-      "subtitle": "A 4-digit code was sent to your registered phone. Enter it to continue.",
-      "codeSent": "Code sent to",
-      "digitLabel": "Digit {{index}} of {{total}}",
-      "resend": {
-        "prefix": "Didn't get the code?",
-        "link": "Resend"
-      },
-      "submit": "Confirm",
-      "editPhone": "Edit phone number",
-      "promo": {
-        "title": "Unmatched financial safety",
-        "subtitle": "We use the latest encryption to fully protect your data and transactions.",
-        "users": "Join 500K+ active users"
       }
     },
     "resetPassword": {
@@ -354,12 +347,20 @@
   },
   "dashboard": {
     "header": {
-      "searchPlaceholder": "Search transactions, accounts...",
+      "searchPlaceholder": "Search pages...",
       "userProfile": "User profile",
       "openMenu": "Open navigation menu",
       "lightMode": "Switch to light mode",
       "darkMode": "Switch to dark mode",
-      "switchLanguage": "Switch language"
+      "switchLanguage": "Switch language",
+      "search": {
+        "label": "Search pages",
+        "open": "Open search",
+        "close": "Close search",
+        "results": "Matching pages",
+        "noResults": "No page matches \"{{query}}\".",
+        "count": "{{total}} pages found"
+      }
     },
     "sidebar": {
       "tagline": "AI money management",
@@ -3731,6 +3732,34 @@
         "privacy": "Privacy Policy"
       },
       "rights": "All rights reserved."
+    },
+    "sample": {
+      "label": "Sample data",
+      "badge": "Sample",
+      "send": "Send (example)",
+      "months": "6 months",
+      "net": "net",
+      "used": "used",
+      "left": "left",
+      "spent": "spent",
+      "ofTotal": "of",
+      "budgetAlert": "Budget alert",
+      "diningAt": "Dining is at 82%",
+      "bank": "Bank",
+      "wallet": "Wallet",
+      "categories": {
+        "dining": "Dining",
+        "transport": "Transport",
+        "home": "Home",
+        "travel": "Travel",
+        "groceries": "Groceries",
+        "subscription": "Subscription",
+        "income": "Income"
+      },
+      "tx": {
+        "salary": "Salary",
+        "metro": "Metro Card"
+      }
     }
   }
 }

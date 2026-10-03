@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Outlet } from "react-router-dom";
 
+import PageBoundary from "../../components/PageBoundary/PageBoundary";
+
 import UnreadNotificationsProvider from "../../contexts/notifications/unreadNotificationsProvider";
 import DashboardHeader from "./components/DashboardHeader/DashboardHeader";
 import DashboardSidebar from "./components/DashboardSidebar/DashboardSidebar";
@@ -63,7 +65,9 @@ export default function DashboardLayout() {
 
             <main className="dashboard-layout__content">
               <EmailVerificationBanner />
-              <Outlet />
+              <PageBoundary homePath="/dashboard">
+          <Outlet />
+        </PageBoundary>
             </main>
           </div>
         </div>

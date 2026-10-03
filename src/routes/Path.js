@@ -16,7 +16,6 @@ export const PATH = {
     COMPANY_REGISTER: "/register/company",
     FORGOT_PASSWORD: "/forgot-password",
     RESET_PASSWORD: "/reset-password",
-    VERIFY_CODE: "/verify-code",
     PASSWORD_CHANGED: "/password-changed",
     // Followed by /:id/:hash?expires=…&signature=… (the emailed signed link).
     VERIFY_EMAIL: "/verify-email",
@@ -55,6 +54,9 @@ export const PATH = {
     SETTING: "/dashboard/settings",
   },
 };
+
+/* Removed prototype OTP page. Old bookmarks are redirected to sign-in. */
+export const LEGACY_VERIFY_CODE_PATH = "/verify-code";
 
 /* What the guest came to do; the account type page reads it from `?intent=`. */
 export const AUTH_INTENT = {

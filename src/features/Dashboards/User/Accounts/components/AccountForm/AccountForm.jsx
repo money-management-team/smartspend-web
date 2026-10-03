@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useUnsavedChanges } from "../../../../../../hooks/useUnsavedChanges";
 import {
   getApiErrorMessage,
   toMoneyString,
@@ -60,8 +61,14 @@ export default function AccountForm({ account, onSave, onClose }) {
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
+  // Unsaved edits are guarded against closing, leaving the page and reloading.
+  const initialValues = toFormValues(account);
+  const { confirmDiscard, markSaved } = useUnsavedChanges(
+    Object.keys(initialValues).some((key) => form[key] !== initialValues[key]),
+  );
+
   const close = () => {
-    if (!isSaving) onClose();
+    if (!isSaving && confirmDiscard()) onClose();
   };
 
   const handleChange = (event) => {
@@ -91,6 +98,7 @@ export default function AccountForm({ account, onSave, onClose }) {
 
     try {
       await onSave(payload);
+      markSaved();
     } catch (error) {
       if (error?.code === "VALIDATION_ERROR") setErrors(error.errors ?? {});
 

@@ -4,7 +4,7 @@
 
 ## Structure
 
-The menu is one config, `getNavigation(t, notificationsBadge)`: sections (the existing Overview / Manage / More titles) holding **direct links** and **collapsible groups**. A group exists only where several related pages belong together; a single page stays a direct link.
+The menu is one config, `getNavigation(t, notificationsBadge)` in `layouts/DashboardLayout/navigation.js` (also used by the header search): sections (the existing Overview / Manage / More titles) holding **direct links** and **collapsible groups**. A group exists only where several related pages belong together; a single page stays a direct link.
 
 | Section | Entry | Type | Children |
 |---|---|---|---|

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import PageBoundary from "../../components/PageBoundary/PageBoundary";
 import PublicFooter from "../../features/PublicPage/components/PublicFooter";
 import PublicNavbar from "../../features/PublicPage/components/PublicNavbar";
 
@@ -32,7 +33,9 @@ export default function PublicLayout() {
   return (
     <div className="public-layout">
       <PublicNavbar />
-      <Outlet />
+      <PageBoundary>
+          <Outlet />
+        </PageBoundary>
       <PublicFooter />
     </div>
   );

@@ -80,7 +80,7 @@ The backend flow is link-based:
 3. Reset Password reads `token` and `identifier` from that link and sends `POST /auth/reset-password`.
 4. On success the app goes to Password Changed, and the user signs in with the new password.
 
-Verify Code (step 2) isn't part of this flow and stays UI-only.
+The old Verify Code (step 2) prototype page was removed.
 
 | Step | Page | Submit behavior | Links |
 | --- | --- | --- | --- |

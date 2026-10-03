@@ -1,6 +1,6 @@
 # Email Verification — Implementation
 
-Confirming a user's email address. This is **not** the password-recovery Verify Code page (`/verify-code`), which is an unrelated, UI-only OTP screen.
+Confirming a user's email address. This is the only verification flow. The old UI-only `/verify-code` OTP prototype was removed and now redirects to `/signin`.
 
 It has three parts:
 

@@ -1,3 +1,4 @@
+import { useUnsavedChanges } from "../../../../../../hooks/useUnsavedChanges";
 import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -96,6 +97,12 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
   const { t, i18n } = useTranslation();
   const locale = getDisplayLocale(i18n.language);
   const [form, setForm] = useState(emptyForm);
+
+  // Unsaved edits are guarded against closing, leaving the page and reloading.
+  const [initialSnapshot] = useState(() => JSON.stringify(form));
+  const { confirmDiscard, markSaved } = useUnsavedChanges(
+    JSON.stringify(form) !== initialSnapshot,
+  );
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [hint, setHint] = useState("");
@@ -161,7 +168,7 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
   /* ---------- Handlers ---------- */
 
   const close = () => {
-    if (!pendingRef.current) onClose();
+    if (!pendingRef.current && confirmDiscard()) onClose();
   };
 
   const resetFeedback = (...fields) => {
@@ -212,6 +219,7 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
 
     try {
       await onSave(buildCreatePayload(values), { account: selectedAccount });
+      markSaved();
     } catch (error) {
       // 401 is handled by apiClient's session-expired flow.
       if (error?.code !== "UNAUTHENTICATED") {

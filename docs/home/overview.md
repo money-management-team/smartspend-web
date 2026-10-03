@@ -9,6 +9,8 @@ The public landing page at `/` (`PATH.HOME`), rendered inside `PublicLayout`. It
 | [overview.md](overview.md) | Page composition, runtime behavior, CSS structure (this file) |
 | [hero/implementation.md](hero/implementation.md) | Hero section: markup, styling, responsive, RTL, dark mode |
 
+| [cta-and-sample-data.md](cta-and-sample-data.md) | What the demo / AI buttons do, and how sample data is localized and labeled |
+
 The other sections (Features, AI, Steps, Security, Dashboard preview, FAQ, Ready) are not documented yet. Add a subfolder here for a section the next time it changes.
 
 ## Composition

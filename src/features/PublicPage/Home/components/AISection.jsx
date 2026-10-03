@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   LuBrainCircuit,
@@ -6,6 +7,9 @@ import {
   LuSparkles,
   LuTrendingDown,
 } from "react-icons/lu";
+
+import { PATH } from "../../../../routes/Path";
+import { scrollToSection } from "./scrollToSection";
 
 export default function AISection() {
   const { t } = useTranslation();
@@ -27,11 +31,16 @@ export default function AISection() {
             <p>{t("home.ai.description")}</p>
 
             <div className="ai-home-section__buttons">
-              <button type="button" className="ai-primary-button">
+              {/* RequireAuth sends a guest to sign-in and back to the assistant. */}
+              <Link to={PATH.USER.AI_ASSISTANT} className="ai-primary-button">
                 {t("home.ai.primary")}
                 <span aria-hidden="true">↗</span>
-              </button>
-              <button type="button" className="home-secondary-button home-secondary-button--dark">
+              </Link>
+              <button
+                type="button"
+                className="home-secondary-button home-secondary-button--dark"
+                onClick={() => scrollToSection("home-ai-example")}
+              >
                 {t("home.ai.secondary")}
               </button>
             </div>
@@ -43,7 +52,7 @@ export default function AISection() {
             </div>
           </div>
 
-          <div className="ai-workspace">
+          <div className="ai-workspace" id="home-ai-example" tabIndex={-1}>
             <div className="ai-workspace__topbar">
               <div><span className="ai-workspace__dot" /> Smart Spend AI</div>
               <small>{t("home.ai.live")}</small>
@@ -64,11 +73,11 @@ export default function AISection() {
             <div className="ai-workspace__insights">
               <article>
                 <span><LuTrendingDown /></span>
-                <div><small>Dining</small><strong>-18%</strong></div>
+                <div><small>{t("home.sample.categories.dining")}</small><strong>-18%</strong></div>
               </article>
               <article>
                 <span><LuChartPie /></span>
-                <div><small>Transport</small><strong>-4%</strong></div>
+                <div><small>{t("home.sample.categories.transport")}</small><strong>-4%</strong></div>
               </article>
               <article>
                 <span><LuSparkles /></span>
@@ -78,7 +87,7 @@ export default function AISection() {
 
             <div className="ai-workspace__composer">
               <span>{t("home.ai.askAnything")}</span>
-              <button type="button" aria-label="Send">↗</button>
+              <span className="ai-workspace__send" role="img" aria-label={t("home.sample.send")}>↗</span>
             </div>
           </div>
         </div>

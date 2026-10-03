@@ -27,7 +27,7 @@ ESLint uses the flat config with `eslint-plugin-react-hooks` v7 (recommended), w
 ## Architecture
 
 ### Bootstrapping and routing
-- `src/main.jsx` imports `./i18n` first (side-effect init), then wraps `<App/>` in `BrowserRouter > ThemeProvider > LanguageProvider > AuthProvider > EmailVerificationProvider`.
+- `src/main.jsx` imports `./i18n` first (side-effect init), then renders a data router (`createBrowserRouter` with one splat route, needed for `useBlocker`) whose element is `ErrorBoundary > ThemeProvider > LanguageProvider > AuthProvider > EmailVerificationProvider > <App/>`. Pages are lazy (`routes/lazyPage.js`) and each layout wraps its `<Outlet/>` in `PageBoundary`; see `docs/app-shell/implementation.md`.
 - `src/routes/Routes.jsx` defines four route groups, all mounted at `/`, which `Router.jsx` merges via `useRoutes`:
   - **public**: `PublicLayout`, with `Home` and the catch-all `NotFound`.
   - **guest**: `GuestOnly` + `AuthLayout`, for signin, register, and the password flows.
@@ -35,6 +35,7 @@ ESLint uses the flat config with `eslint-plugin-react-hooks` v7 (recommended), w
   - **user**: `RequireAuth` + `DashboardLayout`, for everything under `/dashboard/*`.
 - Always reference URLs through the `PATH` constants in `src/routes/Path.js`.
 - The guards in `RouteGuards.jsx` render `<Loading/>` while `AuthContext.initializing` is true.
+- `RequireAuth` sends guests to `/signin?redirect=<path+query>`; login, register and Google sign-in return there. Only `/dashboard...` paths are accepted (`routes/returnTo.js`); see `docs/auth/overview.md`.
 
 ### API layer (important)
 - The real HTTP client is `src/features/Dashboards/User/api/apiClient.js`: a fetch-based `apiRequest(endpoint, { method, query, body, headers, signal, auth, timeoutMs })`. The same file also exports the session-storage helpers, `toMoneyString`, and `createIdempotencyKey`.

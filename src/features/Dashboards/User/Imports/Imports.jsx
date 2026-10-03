@@ -1,4 +1,5 @@
 import PrivateMoney from "../Experience/PrivateMoney";
+import Loading from "../../../../components/Loading/Loading";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -76,6 +77,10 @@ export default function Imports() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(true);
+  // The first load (workspace, accounts, categories, batch) failed: show a
+  // retry instead of a half-empty page.
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const busyRef = useRef(false);
   const keys = useRef({});
 
@@ -166,14 +171,22 @@ export default function Imports() {
         },
       )
       .catch((failure) => {
-        if (failure.name !== "AbortError")
-          setError(getApiErrorMessage(failure, t));
+        if (failure.name === "AbortError") return;
+        setError(getApiErrorMessage(failure, t));
+        setLoadFailed(true);
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [importId, t]);
+  }, [importId, t, reloadKey]);
+
+  const retryLoad = () => {
+    setError("");
+    setLoadFailed(false);
+    setLoading(true);
+    setReloadKey((current) => current + 1);
+  };
 
   useEffect(() => {
     if (importId || loading) return;
@@ -303,9 +316,18 @@ export default function Imports() {
         </p>
       )}
       {notice && <p role="status">{notice}</p>}
+      {loadFailed && !loading && (
+        <button
+          type="button"
+          className="imports-page__retry"
+          onClick={retryLoad}
+        >
+          {t("common.retry")}
+        </button>
+      )}
       {loading ? (
-        <p role="status">{t(`${x}.loading`)}</p>
-      ) : !importId ? (
+        <Loading message={t(`${x}.loading`)} />
+      ) : loadFailed ? null : !importId ? (
         <>
           <form
             onSubmit={upload}

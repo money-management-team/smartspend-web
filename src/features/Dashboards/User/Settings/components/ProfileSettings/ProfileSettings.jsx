@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ApiError, getApiErrorMessage } from "../../../api/apiClient";
 import { authApi } from "../../../api/authApi";
+import { useUnsavedChanges } from "../../../../../../hooks/useUnsavedChanges";
 import { useAuthContext } from "../../../../../../contexts/auth/useAuthContext";
 import { useEmailVerification } from "../../../../../../contexts/emailVerification/useEmailVerification";
 
@@ -24,6 +25,14 @@ export default function ProfileSettings() {
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [hasError, setHasError] = useState(false);
+
+  // Dirty = differs from what is saved (the session's user), so it clears by
+  // itself once a save updates it. The currency field is read-only.
+  const isDirty =
+    form.name !== (user?.name ?? "") ||
+    form.email !== (user?.email ?? "") ||
+    form.phone !== (user?.phone ?? "");
+  useUnsavedChanges(isDirty);
 
   const handleChange = (event) => {
     const {

@@ -1,3 +1,4 @@
+import { useUnsavedChanges } from "../../../../../../hooks/useUnsavedChanges";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuInfo } from "react-icons/lu";
@@ -60,6 +61,12 @@ export default function TransferForm({ onCreated, onClose }) {
   const locale = getDisplayLocale(i18n.language);
 
   const [form, setForm] = useState(emptyForm);
+
+  // Unsaved edits are guarded against closing, leaving the page and reloading.
+  const [initialSnapshot] = useState(() => JSON.stringify(form));
+  const { confirmDiscard, markSaved } = useUnsavedChanges(
+    JSON.stringify(form) !== initialSnapshot,
+  );
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [hint, setHint] = useState("");
@@ -134,7 +141,7 @@ export default function TransferForm({ onCreated, onClose }) {
     Boolean(form.to_account_id);
 
   const close = () => {
-    if (!pendingRef.current) onClose();
+    if (!pendingRef.current && confirmDiscard()) onClose();
   };
 
   const handleChange = (event) => {
@@ -258,6 +265,7 @@ export default function TransferForm({ onCreated, onClose }) {
     pendingRef.current = false;
     setIsSubmitting(false);
     // Balances come back from the backend; nothing is adjusted here.
+    markSaved();
     onCreated(isTransferEntity(transfer) ? transfer : null);
   };
 

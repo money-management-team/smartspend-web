@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuthContext } from "../../../contexts/auth/useAuthContext";
 import { PATH } from "../../../routes/Path";
+import { withReturnTo } from "../../../routes/returnTo";
+import { useReturnPath } from "../../../routes/useReturnPath";
 import { getApiErrorMessage } from "../../Dashboards/User/api/apiClient";
 
 import AuthAlert from "../components/AuthAlert/AuthAlert";
@@ -30,6 +32,8 @@ const PROMO_CHIPS = [0, 1, 2];
 export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { search } = useLocation();
+  const returnPath = useReturnPath();
   const { login } = useAuthContext();
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
@@ -76,7 +80,7 @@ export default function Login() {
         { remember: form.remember },
       );
 
-      navigate(PATH.USER.DASHBOARD, { replace: true });
+      navigate(returnPath, { replace: true });
     } catch (error) {
       if (error?.code === "VALIDATION_ERROR") setErrors(error.errors);
       setGeneralError(getApiErrorMessage(error, t));
@@ -182,7 +186,7 @@ export default function Login() {
         <AuthSwitchPrompt
           prefix={t("auth.login.register.prefix")}
           linkLabel={t("auth.login.register.link")}
-          to={PATH.AUTH.REGISTER}
+          to={withReturnTo(PATH.AUTH.REGISTER, search)}
         />
       </section>
     </>

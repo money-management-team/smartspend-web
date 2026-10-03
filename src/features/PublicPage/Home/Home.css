@@ -5213,3 +5213,76 @@
     font-size: 11.5px;
   }
 }
+
+/* =========================================
+   HOME CTAs, SAMPLE-DATA TAGS (final)
+========================================= */
+
+/* The AI "View insights" action is a link, the demo/recommendation actions
+   scroll to a section; all of them get a visible keyboard focus ring. */
+.ai-primary-button:focus-visible,
+.home-secondary-button--dark:focus-visible {
+  outline: 2px solid #c4b5fd;
+  outline-offset: 3px;
+}
+
+/* Sections that receive focus after a scroll button; no ring on the section
+   itself. */
+#product-preview:focus,
+#home-ai-example:focus {
+  outline: none;
+}
+
+#product-preview,
+#home-ai-example {
+  scroll-margin-top: 90px;
+}
+
+.ai-workspace__send {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 9px;
+  color: #fff;
+  background: linear-gradient(135deg, #9333ea, #7e22ce);
+}
+
+/* Small pill that marks illustrative numbers as sample data. */
+.home-sample-tag {
+  margin-inline-start: auto;
+  padding: 2px 9px;
+
+  border: 1px solid color-mix(in srgb, var(--color-text-muted) 30%, transparent);
+  border-radius: 999px;
+
+  color: var(--color-text-muted);
+  background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+/* Pinned to the end of the fake browser bar so the existing grid / pseudo
+   layouts of both previews are untouched. */
+.dashboard-mock__top,
+.dashboard-browser__chrome {
+  position: relative;
+}
+
+.dashboard-mock__top .home-sample-tag,
+.dashboard-browser__chrome .home-sample-tag {
+  position: absolute;
+  inset-inline-end: 0;
+  top: 50%;
+  margin: 0;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.dashboard-browser__chrome .home-sample-tag {
+  inset-inline-end: 44px;
+}

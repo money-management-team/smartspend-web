@@ -11,6 +11,7 @@ import {
 } from "react-icons/lu";
 
 import { AUTH_INTENT, getAccountTypePath } from "../../../../routes/Path";
+import { scrollToSection } from "./scrollToSection";
 
 export default function HeroSection() {
   const { t } = useTranslation();
@@ -48,6 +49,7 @@ export default function HeroSection() {
               <button
                 type="button"
                 className="home-secondary-button"
+                onClick={() => scrollToSection("product-preview")}
               >
                 <FiPlayCircle aria-hidden="true" />
 
@@ -148,6 +150,7 @@ function DashboardMock() {
         <span />
         <span />
         <span />
+        <em className="home-sample-tag">{t("home.sample.label")}</em>
       </div>
 
       <div className="dashboard-mock__balance">
@@ -208,7 +211,7 @@ function DashboardMock() {
           </strong>
 
           <p className="dashboard-mock__tx-row is-positive">
-            <span>Salary</span>
+            <span>{t("home.sample.tx.salary")}</span>
             <b><bdi>+$4,200</bdi></b>
           </p>
 
@@ -218,7 +221,7 @@ function DashboardMock() {
           </p>
 
           <p className="dashboard-mock__tx-row">
-            <span>Metro Card</span>
+            <span>{t("home.sample.tx.metro")}</span>
             <b><bdi>-$24</bdi></b>
           </p>
         </div>

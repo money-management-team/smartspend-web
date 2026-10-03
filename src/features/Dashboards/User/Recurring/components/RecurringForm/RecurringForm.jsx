@@ -1,3 +1,4 @@
+import { useUnsavedChanges } from "../../../../../../hooks/useUnsavedChanges";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuInfo, LuLock } from "react-icons/lu";
@@ -83,6 +84,12 @@ export default function RecurringForm({ rule, presetType, onSave, onClose }) {
   const locale = getDisplayLocale(i18n.language);
   const isEditing = Boolean(rule);
   const [form, setForm] = useState(() => toFormValues(rule, presetType));
+
+  // Unsaved edits are guarded against closing, leaving the page and reloading.
+  const [initialSnapshot] = useState(() => JSON.stringify(form));
+  const { confirmDiscard, markSaved } = useUnsavedChanges(
+    JSON.stringify(form) !== initialSnapshot,
+  );
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -153,7 +160,7 @@ export default function RecurringForm({ rule, presetType, onSave, onClose }) {
   /* ---------- Changes ---------- */
 
   const close = () => {
-    if (!pendingRef.current) onClose();
+    if (!pendingRef.current && confirmDiscard()) onClose();
   };
 
   const update = (changes) => {
@@ -200,6 +207,7 @@ export default function RecurringForm({ rule, presetType, onSave, onClose }) {
 
     try {
       await onSave(payload);
+      markSaved();
     } catch (error) {
       // 401 is handled by apiClient's session-expired flow.
       if (error?.code !== "UNAUTHENTICATED") {

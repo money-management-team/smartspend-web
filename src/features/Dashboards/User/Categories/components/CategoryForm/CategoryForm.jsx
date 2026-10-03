@@ -1,3 +1,4 @@
+import { useUnsavedChanges } from "../../../../../../hooks/useUnsavedChanges";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuBan, LuTriangleAlert } from "react-icons/lu";
@@ -54,6 +55,12 @@ export default function CategoryForm({ category, defaultType, onSave, onClose })
   const { t } = useTranslation();
   const isEditing = Boolean(category);
   const [form, setForm] = useState(() => toFormValues(category, defaultType));
+
+  // Unsaved edits are guarded against closing, leaving the page and reloading.
+  const [initialSnapshot] = useState(() => JSON.stringify(form));
+  const { confirmDiscard, markSaved } = useUnsavedChanges(
+    JSON.stringify(form) !== initialSnapshot,
+  );
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -74,7 +81,7 @@ export default function CategoryForm({ category, defaultType, onSave, onClose })
   const needsTypeConfirmation = isChangingType && !typeChangeConfirmed;
 
   const close = () => {
-    if (!pendingRef.current) onClose();
+    if (!pendingRef.current && confirmDiscard()) onClose();
   };
 
   const updateField = (name, value) => {
@@ -118,6 +125,7 @@ export default function CategoryForm({ category, defaultType, onSave, onClose })
 
     try {
       await onSave(payload);
+      markSaved();
     } catch (error) {
       // 401 is handled by apiClient's session-expired flow.
       if (error?.code !== "UNAUTHENTICATED") {
