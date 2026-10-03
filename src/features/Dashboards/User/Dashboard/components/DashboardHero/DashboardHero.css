@@ -1,7 +1,18 @@
+/*
+ * The dashboard's own identity: a deep emerald-teal card with an asymmetric
+ * shape (large rounded corners, one tight corner at the bottom start), unlike
+ * the blue, evenly rounded header cards of the other pages. The card is dark
+ * in both themes, so the text color is fixed to white for everything inside.
+ */
 .dashboard-hero-card {
-  min-height: 215px;
+  --navigation-active-text: #ffffff;
 
-  padding: 30px 34px;
+  position: relative;
+  isolation: isolate;
+
+  min-height: 230px;
+
+  padding: 32px 38px;
 
   display: flex;
 
@@ -13,26 +24,50 @@
 
   overflow: hidden;
 
-  border-radius: 20px;
+  /* Logical corners, so the tight one flips with the language direction. */
+  border-start-start-radius: 40px;
+  border-start-end-radius: 40px;
+  border-end-end-radius: 40px;
+  border-end-start-radius: 10px;
 
-  color: var(--navigation-active-text);
+  border: 1px solid rgba(167, 243, 208, 0.22);
 
   background:
     radial-gradient(
-      circle at 78% 18%,
-      color-mix(in srgb, var(--navigation-active-text) 7%, transparent),
-      transparent 38%
+      circle at 88% 12%,
+      rgba(110, 231, 183, 0.32),
+      transparent 36%
     ),
-    linear-gradient(
-      135deg,
-      var(--primary) 0%,
-      var(--color-primary) 58%,
-      var(--primary-hover) 100%
-    );
+    radial-gradient(
+      circle at 8% 110%,
+      rgba(45, 212, 191, 0.26),
+      transparent 42%
+    ),
+    linear-gradient(135deg, #052e2b 0%, #0b6b5d 58%, #0f8f78 100%);
+
+  box-shadow: 0 18px 44px rgba(6, 78, 59, 0.24);
+}
+
+/* Soft ring, on the opposite side from the other pages' rings. */
+.dashboard-hero-card::after {
+  content: "";
+
+  position: absolute;
+  z-index: -1;
+  inset-block-start: -150px;
+  inset-inline-end: 24%;
+
+  width: 300px;
+  height: 300px;
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
 
   box-shadow:
-    0 6px 18px
-    color-mix(in srgb, var(--primary) 12%, transparent);
+    0 0 0 44px rgba(255, 255, 255, 0.03),
+    0 0 0 92px rgba(255, 255, 255, 0.02);
+
+  pointer-events: none;
 }
 
 
@@ -211,7 +246,7 @@
     1px solid
     color-mix(in srgb, var(--navigation-active-text) 18%, transparent);
 
-  border-radius: 15px;
+  border-radius: 22px 22px 22px 8px;
 
   color: var(--navigation-active-text);
 
