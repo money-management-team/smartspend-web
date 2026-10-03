@@ -1,8 +1,9 @@
 /*
- * The dashboard's own identity: a deep emerald-teal card with an asymmetric
- * shape (large rounded corners, one tight corner at the bottom start), unlike
- * the blue, evenly rounded header cards of the other pages. The card is dark
- * in both themes, so the text color is fixed to white for everything inside.
+ * The dashboard keeps the brand identity (primary blue, with the brand's
+ * purple "insights" accent) and sets itself apart by shape: large rounded
+ * corners with one tight corner at the bottom start, unlike the evenly
+ * rounded header cards of the other pages. The card is dark in both themes,
+ * so the text color is fixed to white for everything inside.
  */
 .dashboard-hero-card {
   --navigation-active-text: #ffffff;
@@ -30,22 +31,27 @@
   border-end-end-radius: 40px;
   border-end-start-radius: 10px;
 
-  border: 1px solid rgba(167, 243, 208, 0.22);
+  border: 1px solid color-mix(in srgb, #ffffff 20%, var(--primary));
 
   background:
     radial-gradient(
       circle at 88% 12%,
-      rgba(110, 231, 183, 0.32),
-      transparent 36%
+      color-mix(in srgb, var(--insights) 45%, transparent),
+      transparent 38%
     ),
     radial-gradient(
       circle at 8% 110%,
-      rgba(45, 212, 191, 0.26),
+      color-mix(in srgb, #ffffff 14%, transparent),
       transparent 42%
     ),
-    linear-gradient(135deg, #052e2b 0%, #0b6b5d 58%, #0f8f78 100%);
+    linear-gradient(
+      135deg,
+      var(--primary-hover) 0%,
+      var(--primary) 62%,
+      color-mix(in srgb, var(--insights) 55%, var(--primary)) 100%
+    );
 
-  box-shadow: 0 18px 44px rgba(6, 78, 59, 0.24);
+  box-shadow: 0 18px 44px color-mix(in srgb, var(--primary) 26%, transparent);
 }
 
 /* Soft ring, on the opposite side from the other pages' rings. */
