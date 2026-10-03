@@ -1,10 +1,12 @@
 import { useTranslation } from "react-i18next";
 
+import logo from "../../assets/smart-spend-logo-pdf.png";
+
 import "./Loading.css";
 
 /**
- * Reusable loading indicator: a brand-gradient comet ring with a soft glow
- * and a pulsing core. It fades in after a short delay, so quick loads don't
+ * Reusable loading indicator: the Smart Spend logo breathing inside a
+ * brand-gradient comet ring with a soft glow (the small size is the ring alone). It fades in after a short delay, so quick loads don't
  * flash a spinner.
  *
  * @param {object} props
@@ -47,7 +49,13 @@ export default function Loading({
           <span className="loading__arc" />
           <span className="loading__head" />
         </span>
-        <span className="loading__core" />
+        <img
+          className="loading__logo"
+          src={logo}
+          alt=""
+          decoding="async"
+          draggable="false"
+        />
       </span>
 
       {text ? (

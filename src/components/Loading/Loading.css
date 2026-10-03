@@ -6,7 +6,7 @@
 ========================================= */
 
 .loading {
-  --loading-size: 48px;
+  --loading-size: 60px;
   --loading-ring: max(3px, calc(var(--loading-size) * 0.09));
   --loading-from: var(--primary);
   --loading-to: var(--insights);
@@ -51,6 +51,8 @@
 }
 
 .loading--page {
+  --loading-size: 76px;
+
   min-height: min(70vh, 720px);
   padding: 48px 24px;
 }
@@ -68,7 +70,7 @@
 }
 
 .loading--large {
-  --loading-size: 72px;
+  --loading-size: 92px;
 
   gap: 20px;
   font-size: var(--font-size-h3);
@@ -76,7 +78,7 @@
 
 /* Small indicators sit inside forms and rows: the ring alone reads best. */
 .loading--small .loading__halo,
-.loading--small .loading__core {
+.loading--small .loading__logo {
   display: none;
 }
 
@@ -96,8 +98,7 @@
 .loading__halo,
 .loading__track,
 .loading__spinner,
-.loading__arc,
-.loading__core {
+.loading__arc {
   position: absolute;
   border-radius: 50%;
 }
@@ -169,13 +170,23 @@
   transform: translateX(-50%);
 }
 
-.loading__core {
-  inset: 37%;
+/* The logo sits inside the ring with a little air around it. */
+.loading__logo {
+  position: absolute;
+  inset: 17%;
 
-  background: linear-gradient(135deg, var(--loading-from), var(--loading-to));
-  box-shadow: 0 0 0 calc(var(--loading-size) * 0.06) color-mix(in srgb, var(--loading-from) 14%, transparent);
+  width: 66%;
+  height: 66%;
 
-  animation: loading-pulse 1.1s ease-in-out infinite alternate;
+  object-fit: contain;
+  user-select: none;
+
+  filter: drop-shadow(
+    0 2px calc(var(--loading-size) * 0.08)
+      color-mix(in srgb, var(--loading-from) 38%, transparent)
+  );
+
+  animation: loading-logo 1.8s ease-in-out infinite;
 }
 
 /* =========================================
@@ -261,13 +272,17 @@
   }
 }
 
-@keyframes loading-pulse {
-  from {
-    transform: scale(0.82);
+/* A slow breath: the logo swells slightly and brightens, then settles. */
+@keyframes loading-logo {
+  0%,
+  100% {
+    opacity: 0.9;
+    transform: scale(0.94);
   }
 
-  to {
-    transform: scale(1);
+  50% {
+    opacity: 1;
+    transform: scale(1.03);
   }
 }
 
@@ -292,7 +307,7 @@
   }
 
   .loading__halo,
-  .loading__core,
+  .loading__logo,
   .loading__message {
     animation: none;
   }
