@@ -1,0 +1,105 @@
+.recurring-commitments__body {
+  padding: 14px 18px 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.recurring-commitments__counts {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+}
+
+.recurring-commitments__counts li {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 4px 9px;
+  border-radius: var(--radius-pill);
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+  font-size: 10px;
+}
+
+.recurring-commitments__counts strong {
+  color: var(--color-text-primary);
+  font-size: 12px;
+}
+
+.recurring-commitments__list {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  list-style: none;
+}
+
+.recurring-commitments__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.recurring-commitments__item:last-child {
+  border-bottom: 0;
+}
+
+.recurring-commitments__copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.recurring-commitments__copy a,
+.recurring-commitments__copy span {
+  overflow: hidden;
+  color: var(--color-text-primary);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recurring-commitments__copy a:hover {
+  color: var(--color-primary);
+}
+
+.recurring-commitments__copy small {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-secondary);
+  font-size: 10px;
+}
+
+.recurring-commitments__copy .recurring-commitments__overdue {
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  color: var(--danger);
+  background: var(--danger-soft);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.recurring-commitments__amount {
+  direction: ltr;
+  unicode-bidi: isolate;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.recurring-commitments__amount--income {
+  color: var(--success);
+}
+
+.recurring-commitments__empty {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}

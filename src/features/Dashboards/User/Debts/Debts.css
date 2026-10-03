@@ -1,0 +1,198 @@
+/* =========================================
+   DEBTS PAGE
+   Same container, notice, state and pagination language as the other lists.
+========================================= */
+
+.debts-page {
+  width: 100%;
+  max-width: 1240px;
+
+  margin: 0 auto;
+  padding: 28px 32px 50px;
+
+  box-sizing: border-box;
+
+  color: var(--color-text-primary);
+}
+
+.debts-page .loading {
+  margin-block: 24px;
+}
+
+/* Notice (one-time success message) */
+
+.debts-page__notice {
+  margin-top: 22px;
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  border: 1px solid color-mix(in srgb, var(--color-success) 28%, transparent);
+  border-radius: var(--radius-md);
+
+  color: color-mix(in srgb, var(--color-success) 85%, var(--color-text-primary));
+  background: var(--success-soft);
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* `color: inherit` beats the global `p` color from index.css. */
+.debts-page__notice p {
+  margin: 0;
+  flex: 1;
+  color: inherit;
+}
+
+.debts-page__notice a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.debts-page__notice button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+
+  flex: none;
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: 50%;
+
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.debts-page__notice button:hover {
+  background: color-mix(in srgb, var(--color-success) 14%, transparent);
+}
+
+:root[data-theme="dark"] .debts-page__notice {
+  color: color-mix(in srgb, var(--color-success) 62%, #ffffff);
+}
+
+/* List section */
+
+.debts-page__list {
+  margin-top: 28px;
+}
+
+.debts-page__list-title {
+  margin: 0 0 14px;
+
+  color: var(--color-text-primary);
+
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* States */
+
+.debts-page__state {
+  margin-top: 16px;
+  padding: 28px 16px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  text-align: center;
+}
+
+.debts-page__state p {
+  margin: 0;
+  color: inherit;
+}
+
+.debts-page__state--error {
+  color: var(--color-danger);
+}
+
+.debts-page__state button {
+  margin-top: 10px;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Pagination */
+
+.debts-page__pagination {
+  margin-top: 16px;
+  padding: 12px 18px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  font-size: 11px;
+}
+
+.debts-page__pages {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.debts-page__pages button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  cursor: pointer;
+}
+
+.debts-page__pages button:hover:not(:disabled) {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.debts-page__pages button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.debts-page__pages svg {
+  width: 15px;
+  height: 15px;
+}
+
+[dir="rtl"] .debts-page__pages svg {
+  transform: scaleX(-1);
+}
+
+@media (max-width: 720px) {
+  .debts-page {
+    padding: 22px 16px 40px;
+  }
+}

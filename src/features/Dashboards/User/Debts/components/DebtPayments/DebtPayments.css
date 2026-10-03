@@ -1,0 +1,314 @@
+/* =========================================
+   DEBT PAYMENTS (history table, scrolls sideways on small screens)
+========================================= */
+
+.debt-payments {
+  padding: 22px 24px;
+
+  display: grid;
+  gap: 16px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 17px;
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.debt-payments__head h2 {
+  margin: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color: var(--color-text-strong);
+  font-size: 16px;
+}
+
+.debt-payments__head p {
+  margin: 4px 0 0;
+
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.debt-payments__count {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+
+  display: inline-grid;
+  place-items: center;
+
+  border-radius: 999px;
+
+  color: var(--color-primary);
+  background: var(--primary-soft);
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.debt-payments .loading {
+  margin: 0;
+}
+
+/* States */
+
+.debt-payments__state {
+  padding: 22px 16px;
+
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-secondary);
+
+  text-align: center;
+}
+
+.debt-payments__state p {
+  margin: 0;
+  color: inherit;
+  font-size: 13px;
+}
+
+.debt-payments__state--error {
+  color: var(--color-danger);
+}
+
+.debt-payments__state button {
+  margin-top: 8px;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Table */
+
+.debt-payments__table-wrap {
+  overflow-x: auto;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.debt-payments__table {
+  width: 100%;
+  min-width: 920px;
+
+  border-collapse: collapse;
+
+  font-size: 12px;
+}
+
+.debt-payments__caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.debt-payments__table th,
+.debt-payments__table td {
+  padding: 11px 12px;
+
+  border-bottom: 1px solid var(--color-border);
+
+  text-align: start;
+  vertical-align: top;
+}
+
+.debt-payments__table thead th {
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.debt-payments__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.debt-payments__table a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.debt-payments__table a:hover,
+.debt-payments__table a:focus-visible {
+  text-decoration: underline;
+}
+
+.debt-payments__table .debt-payments__amount {
+  text-align: end;
+  white-space: nowrap;
+}
+
+.debt-payments__value {
+  font-weight: 700;
+}
+
+.debt-payments__value--payable {
+  color: var(--color-danger);
+}
+
+.debt-payments__value--receivable {
+  color: var(--color-success);
+}
+
+/* A reversed payment stays listed: dimmed, amount struck through. */
+
+.debt-payments__row--reversed td {
+  color: var(--color-text-secondary);
+}
+
+.debt-payments__row--reversed .debt-payments__value {
+  color: var(--color-text-secondary);
+  text-decoration: line-through;
+}
+
+.debt-payments__links {
+  display: grid;
+  gap: 4px;
+}
+
+.debt-payments__meta {
+  margin-top: 4px;
+
+  display: block;
+
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.debt-payments__notes {
+  max-width: 220px;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.debt-payments__muted {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.debt-payments__actions {
+  white-space: nowrap;
+}
+
+.debt-payments__reverse {
+  height: 30px;
+  padding: 0 12px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 11px;
+
+  cursor: pointer;
+
+  transition:
+    color 160ms ease,
+    border-color 160ms ease;
+}
+
+.debt-payments__reverse:hover {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.debt-payments__reverse svg {
+  width: 13px;
+  height: 13px;
+}
+
+[dir="rtl"] .debt-payments__reverse svg {
+  transform: scaleX(-1);
+}
+
+/* Pagination */
+
+.debt-payments__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 11px;
+}
+
+.debt-payments__pages {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.debt-payments__pages button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  cursor: pointer;
+}
+
+.debt-payments__pages button:hover:not(:disabled) {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.debt-payments__pages button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.debt-payments__pages svg {
+  width: 15px;
+  height: 15px;
+}
+
+[dir="rtl"] .debt-payments__pages svg {
+  transform: scaleX(-1);
+}
+
+@media (max-width: 720px) {
+  .debt-payments {
+    padding: 18px 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .debt-payments__reverse {
+    transition: none;
+  }
+}

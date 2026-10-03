@@ -1,0 +1,156 @@
+.savings-goals-header {
+  width: 100%;
+
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 24px;
+}
+
+
+/* =========================================
+   COPY
+========================================= */
+
+.savings-goals-header__copy {
+  min-width: 0;
+
+  text-align: start;
+}
+
+
+.savings-goals-header__copy h1 {
+  margin: 0;
+
+  color:
+    var(--color-text-primary);
+
+  font-size: 28px;
+
+  font-weight: 750;
+
+  line-height: 1.2;
+}
+
+
+.savings-goals-header__copy p {
+  margin:
+    11px
+    0
+    0;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 14px;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================
+   BUTTON
+========================================= */
+
+.savings-goals-header__button {
+  min-width: 112px;
+
+  height: 38px;
+
+  margin-top: 11px;
+
+  padding:
+    0
+    18px;
+
+  flex-shrink: 0;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 8px;
+
+  border: 0;
+
+  border-radius: 999px;
+
+  color: var(--navigation-active-text);
+
+  background:
+    var(--color-primary);
+
+  font: inherit;
+
+  font-size: 12px;
+
+  cursor: pointer;
+
+  box-shadow:
+    var(--shadow-sm);
+
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+
+.savings-goals-header__button:hover {
+  background:
+    var(--color-primary-hover);
+}
+
+
+.savings-goals-header__button:active {
+  transform:
+    translateY(1px);
+}
+
+
+.savings-goals-header__button svg {
+  width: 16px;
+
+  height: 16px;
+}
+
+
+/* =========================================
+   RTL
+========================================= */
+
+[dir="rtl"]
+.savings-goals-header__copy {
+  text-align: right;
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 620px) {
+  .savings-goals-header {
+    flex-direction: column;
+
+    align-items: stretch;
+
+    gap: 18px;
+  }
+
+
+  .savings-goals-header__copy h1 {
+    font-size: 25px;
+  }
+
+
+  .savings-goals-header__button {
+    width: max-content;
+
+    margin-top: 0;
+  }
+}

@@ -1,0 +1,72 @@
+/* =========================================
+   GOAL STATUS BADGE
+   One tone per backend status, from the theme tokens.
+========================================= */
+
+.goal-status-badge {
+  --goal-tone: var(--color-text-secondary);
+
+  padding: 5px 10px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  border-radius: 999px;
+
+  color: color-mix(in srgb, var(--goal-tone) 85%, var(--color-text-primary));
+  background: color-mix(in srgb, var(--goal-tone) 13%, transparent);
+
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.goal-status-badge svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* Lifecycle */
+
+.goal-status-badge--lifecycle-active {
+  --goal-tone: var(--color-primary);
+}
+
+.goal-status-badge--lifecycle-paused {
+  --goal-tone: var(--color-warning);
+}
+
+.goal-status-badge--lifecycle-achieved {
+  --goal-tone: var(--color-success);
+}
+
+.goal-status-badge--lifecycle-archived {
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+}
+
+/* Progress */
+
+.goal-status-badge--progress-not_started {
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+}
+
+.goal-status-badge--progress-in_progress {
+  --goal-tone: var(--color-primary);
+}
+
+.goal-status-badge--progress-almost_there {
+  --goal-tone: color-mix(in srgb, var(--color-success) 55%, var(--color-primary));
+}
+
+.goal-status-badge--progress-achieved {
+  --goal-tone: var(--color-success);
+}
+
+:root[data-theme="dark"]
+  .goal-status-badge:not(.goal-status-badge--lifecycle-archived, .goal-status-badge--progress-not_started) {
+  color: color-mix(in srgb, var(--goal-tone) 62%, #ffffff);
+}

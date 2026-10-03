@@ -1,0 +1,99 @@
+.calendar-summary {
+  padding: 14px 18px;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 14px 26px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.calendar-summary__total {
+  margin: 0;
+
+  display: grid;
+  gap: 2px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+}
+
+.calendar-summary__total strong {
+  color: var(--color-text-primary);
+
+  font-family: var(--font-heading);
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.calendar-summary__group {
+  min-width: 0;
+
+  display: grid;
+  gap: 6px;
+}
+
+.calendar-summary__group h3 {
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.calendar-summary__group ul {
+  margin: 0;
+  padding: 0;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  list-style: none;
+}
+
+.calendar-summary__count {
+  padding: 5px 10px;
+
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+
+  border-radius: var(--radius-pill);
+
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+
+  font-size: 11px;
+}
+
+.calendar-summary__count strong {
+  color: var(--color-text-primary);
+  font-size: 12px;
+}
+
+.calendar-summary__count--recurring_occurrence strong {
+  color: var(--calendar-recurring);
+}
+
+.calendar-summary__count--debt_due strong,
+.calendar-summary__count--critical strong,
+.calendar-summary__count--overdue strong {
+  color: var(--color-danger);
+}
+
+.calendar-summary__count--budget_period_end strong,
+.calendar-summary__count--warning strong {
+  color: var(--color-warning);
+}
+
+.calendar-summary__count--savings_goal_target strong {
+  color: var(--calendar-goal);
+}

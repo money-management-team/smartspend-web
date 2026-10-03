@@ -1,0 +1,55 @@
+/* =========================================
+   COMPANY REGISTER - FORM
+   Six fields + consent: same tighter rhythm
+   as the personal Register form.
+========================================= */
+
+.auth-form.company-register-form {
+  gap: 16px;
+}
+
+/* Company name + team size share a row on wider cards */
+
+.company-register-form__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+
+/* =========================================
+   TEAM SIZE SELECT
+   Reuses .auth-field__input; only the native
+   arrow is replaced by the chevron icon.
+========================================= */
+
+.company-register-form__select {
+  cursor: pointer;
+
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.company-register-form__select:disabled {
+  cursor: not-allowed;
+}
+
+/* Native option popups ignore most styling; keep them readable in dark mode */
+
+.company-register-form__select option {
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 560px) {
+  .company-register-form__row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}

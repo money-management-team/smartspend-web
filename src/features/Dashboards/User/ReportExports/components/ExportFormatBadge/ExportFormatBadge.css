@@ -1,0 +1,33 @@
+.export-format-badge {
+  padding: 1px 8px;
+
+  display: inline-flex;
+  align-items: center;
+
+  border: 1px solid transparent;
+  border-radius: 6px;
+
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.export-format-badge--csv {
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+.export-format-badge--xlsx {
+  color: var(--color-success);
+  background: var(--success-soft);
+}
+
+.export-format-badge--pdf {
+  color: var(--color-warning);
+  background: var(--warning-soft);
+}

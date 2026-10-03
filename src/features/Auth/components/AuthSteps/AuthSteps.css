@@ -1,0 +1,60 @@
+/* =========================================
+   AUTH STEPS
+   Fills from inline-start, so it mirrors
+   naturally in RTL.
+========================================= */
+
+.auth-steps {
+  margin-bottom: 28px;
+
+  display: flex;
+  justify-content: center;
+}
+
+/* Screen-reader text ("Step 1 of 4") */
+
+.auth-steps__label {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.auth-steps__track {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.auth-steps__item {
+  width: 28px;
+  height: 5px;
+
+  border-radius: var(--radius-pill);
+
+  background: var(--auth-control-border);
+
+  transition:
+    width 240ms ease,
+    background-color 240ms ease;
+}
+
+.auth-steps__item--done {
+  background: color-mix(in srgb, var(--color-primary) 55%, var(--auth-control-border));
+}
+
+.auth-steps__item--current {
+  width: 40px;
+
+  background: var(--gradient-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-steps__item {
+    transition: none;
+  }
+}

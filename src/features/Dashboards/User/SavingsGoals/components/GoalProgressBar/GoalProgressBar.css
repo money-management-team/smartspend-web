@@ -1,0 +1,46 @@
+/* =========================================
+   GOAL PROGRESS BAR
+   The fill starts at the inline start, so it grows right-to-left in RTL.
+========================================= */
+
+.goal-progress-bar {
+  --goal-bar-fill: var(--gradient-primary);
+
+  width: 100%;
+  height: 7px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: var(--surface-soft);
+}
+
+.goal-progress-bar--lg {
+  height: 12px;
+}
+
+.goal-progress-bar span {
+  display: block;
+  block-size: 100%;
+
+  border-radius: inherit;
+
+  background: var(--goal-bar-fill);
+
+  transition: inline-size 250ms ease;
+}
+
+.goal-progress-bar--almost_there {
+  --goal-bar-fill: color-mix(in srgb, var(--color-success) 55%, var(--color-primary));
+}
+
+.goal-progress-bar--achieved {
+  --goal-bar-fill: var(--color-success);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .goal-progress-bar span {
+    transition: none;
+  }
+}

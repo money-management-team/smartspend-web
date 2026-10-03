@@ -1,0 +1,12 @@
+.report-value {
+  font-variant-numeric: tabular-nums;
+  unicode-bidi: isolate;
+}
+
+.report-value--positive {
+  color: var(--color-success);
+}
+
+.report-value--negative {
+  color: var(--color-danger);
+}

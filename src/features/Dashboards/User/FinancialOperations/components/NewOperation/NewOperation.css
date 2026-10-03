@@ -1,0 +1,444 @@
+/* =========================================
+   MANUAL ENTRY PANEL
+   (shell / headings / buttons come from
+   CaptureStep.css)
+========================================= */
+
+.new-operation {
+  padding:
+    28px
+    32px;
+
+  display: grid;
+
+  grid-template-columns:
+    262px
+    minmax(0, 1fr);
+
+  align-content: start;
+
+  gap:
+    18px
+    28px;
+}
+
+
+.new-operation__heading {
+  grid-column: 1 / -1;
+}
+
+
+/* =========================================
+   TYPE SWITCH
+========================================= */
+
+.new-operation__types {
+  grid-column: 1 / -1;
+
+  width: fit-content;
+
+  padding: 4px;
+
+  display: grid;
+
+  grid-auto-flow: column;
+
+  gap: 3px;
+
+  border-radius:
+    var(--radius-md);
+
+  background:
+    var(--color-surface-soft);
+}
+
+
+.new-operation__type {
+  min-width: 118px;
+
+  height: 36px;
+
+  border: 0;
+
+  border-radius:
+    var(--radius-sm);
+
+  color:
+    var(--color-text-secondary);
+
+  background: transparent;
+
+  font: inherit;
+
+  font-size: 13px;
+
+  cursor: pointer;
+}
+
+
+.new-operation__type--active {
+  color:
+    var(--color-text-primary);
+
+  background:
+    var(--color-surface);
+
+  box-shadow:
+    var(--shadow-sm);
+}
+
+
+/* =========================================
+   AMOUNT
+========================================= */
+
+.new-operation__amount {
+  align-self: start;
+
+  display: block;
+}
+
+
+.new-operation__amount > span {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 12px;
+}
+
+
+.new-operation__amount > div {
+  height: 68px;
+
+  padding:
+    0
+    16px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  border:
+    1px solid
+    var(--color-border);
+
+  border-radius:
+    var(--radius-lg);
+
+  background:
+    var(--input-background);
+}
+
+
+.new-operation__amount > div:focus-within {
+  border-color:
+    var(--input-focus);
+
+  box-shadow:
+    0 0 0 3px
+    var(--input-focus-ring);
+}
+
+
+.new-operation__amount input {
+  width: 100%;
+
+  border: 0;
+
+  outline: 0;
+
+  color:
+    var(--input-text);
+
+  background: transparent;
+
+  font: inherit;
+
+  font-family:
+    var(--font-heading);
+
+  font-size: 26px;
+
+  font-weight: 700;
+
+  text-align: start;
+}
+
+
+.new-operation__amount b {
+  flex: none;
+
+  color:
+    var(--color-text-muted);
+
+  font-size: 14px;
+}
+
+
+/* =========================================
+   FIELDS
+========================================= */
+
+.new-operation__grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  align-content: start;
+
+  gap: 12px;
+}
+
+
+.new-operation__field {
+  display: grid;
+
+  gap: 6px;
+
+  color:
+    var(--color-text-secondary);
+
+  font-size: 12px;
+}
+
+
+.new-operation__field input,
+.new-operation__field select {
+  width: 100%;
+
+  height: 42px;
+
+  padding:
+    0
+    12px;
+
+  box-sizing: border-box;
+
+  border:
+    1px solid
+    var(--input-border);
+
+  border-radius:
+    var(--radius-md);
+
+  color:
+    var(--input-text);
+
+  background:
+    var(--input-background);
+
+  font: inherit;
+
+  font-size: 13px;
+}
+
+
+.new-operation__field input:focus,
+.new-operation__field select:focus {
+  outline: 0;
+
+  border-color:
+    var(--input-focus);
+
+  box-shadow:
+    0 0 0 3px
+    var(--input-focus-ring);
+}
+
+
+.new-operation__field input:disabled,
+.new-operation__field select:disabled {
+  opacity: 0.7;
+}
+
+
+.new-operation__field small,
+.new-operation__amount small {
+  color:
+    var(--color-danger);
+
+  font-size: 11px;
+
+  line-height: 1.5;
+}
+
+
+.new-operation__account > div {
+  height: 42px;
+
+  padding:
+    0
+    12px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  overflow: hidden;
+
+  border:
+    1px solid
+    var(--input-border);
+
+  border-radius:
+    var(--radius-md);
+
+  color:
+    var(--color-text-muted);
+
+  background:
+    var(--color-surface-soft);
+
+  font-size: 13px;
+
+  white-space: nowrap;
+}
+
+
+.new-operation__account svg {
+  flex: none;
+
+  color:
+    var(--color-primary);
+}
+
+
+.new-operation__account bdi {
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.new-operation__footer {
+  grid-column: 2;
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  align-items: center;
+
+  gap:
+    8px
+    16px;
+}
+
+
+.new-operation__transfer-hint {
+  margin: 0;
+
+  color:
+    var(--color-text-muted);
+
+  font-size: 12px !important;
+}
+
+
+.new-operation__link {
+  padding: 0;
+
+  border: 0;
+
+  color:
+    var(--color-primary);
+
+  background: transparent;
+
+  font: inherit;
+
+  font-weight: 600;
+
+  text-decoration: underline;
+
+  cursor: pointer;
+}
+
+
+.new-operation__error {
+  grid-column: 1 / -1;
+
+  margin: 0;
+
+  padding:
+    10px
+    12px;
+
+  border:
+    1px solid
+    color-mix(in srgb, var(--color-danger) 28%, transparent);
+
+  border-radius:
+    var(--radius-md);
+
+  color:
+    color-mix(in srgb, var(--color-danger) 85%, var(--color-text-primary)) !important;
+
+  background:
+    var(--danger-soft);
+
+  font-size: 12px !important;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 900px) {
+  .new-operation {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+
+  .new-operation__footer {
+    grid-column: 1;
+  }
+}
+
+
+@media (max-width: 640px) {
+  .new-operation {
+    padding:
+      20px
+      14px;
+  }
+
+
+  .new-operation__types {
+    width: 100%;
+
+    grid-auto-flow: row;
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+
+  .new-operation__type {
+    min-width: 0;
+  }
+
+
+  .new-operation__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+
+  .new-operation__footer .capture-action {
+    width: 100%;
+  }
+}

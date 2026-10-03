@@ -1,0 +1,153 @@
+import { useExperience } from "../../../../features/Dashboards/User/Experience/useExperience";
+import { LuEye, LuEyeOff } from "react-icons/lu";
+import {
+  LuSearch,
+  LuMoon,
+  LuSun,
+  LuBell,
+  LuMenu,
+  LuGlobe,
+} from "react-icons/lu";
+
+import { useTranslation } from "react-i18next";
+
+import { useAuthContext } from "../../../../contexts/auth/useAuthContext";
+import { useUnreadNotifications } from "../../../../contexts/notifications/useUnreadNotifications";
+import { useThemeContext } from "../../../../contexts/theme/useThemeContext";
+import { getDisplayLocale } from "../../../../features/Dashboards/User/Accounts/accountHelpers";
+import { formatUnreadBadge } from "../../../../features/Dashboards/User/Notifications/notificationHelpers";
+
+import "./DashboardHeader.css";
+import { Link } from "react-router-dom";
+import { PATH } from "../../../../routes/Path";
+
+const getUserInitials = (name) => {
+  const nameParts = name?.trim().split(/\s+/).filter(Boolean) ?? [];
+
+  if (nameParts.length === 0) return "U";
+
+  if (nameParts.length === 1) {
+    return Array.from(nameParts[0]).slice(0, 2).join("").toLocaleUpperCase();
+  }
+
+  return `${Array.from(nameParts[0])[0]}${Array.from(nameParts.at(-1))[0]}`.toLocaleUpperCase();
+};
+
+export default function DashboardHeader({
+  onToggleSidebar,
+  isSidebarOpen = false,
+}) {
+  const { t, i18n } = useTranslation();
+  const { user } = useAuthContext();
+  const { preferences, update } = useExperience();
+  const { isDark, toggleTheme } = useThemeContext();
+  // GET /notifications/unread-count, owned by UnreadNotificationsProvider.
+  const { count: unreadCount } = useUnreadNotifications();
+  const userInitials = getUserInitials(user?.name);
+
+  const isArabic = (i18n.resolvedLanguage || i18n.language)
+    ?.toLowerCase()
+    .startsWith("ar");
+
+  const toggleLanguage = () => {
+    i18n.changeLanguage(isArabic ? "en" : "ar");
+  };
+
+  return (
+    <header className="dashboard-header">
+      <button
+        type="button"
+        className="dashboard-header__menu"
+        onClick={onToggleSidebar}
+        aria-label={t("dashboard.header.openMenu")}
+        aria-expanded={isSidebarOpen}
+        aria-controls="dashboard-sidebar"
+      >
+        <LuMenu aria-hidden="true" />
+      </button>
+
+      <div className="dashboard-header__search">
+        <LuSearch />
+
+        <input
+          type="search"
+          placeholder={t("dashboard.header.searchPlaceholder")}
+        />
+      </div>
+
+      <div className="dashboard-header__actions">
+        <button
+          type="button"
+          className="dashboard-header__icon-button"
+          aria-pressed={preferences.hiddenMoney}
+          aria-label={t(
+            `experience:${preferences.hiddenMoney ? "showMoney" : "hideMoney"}`,
+          )}
+          title={t(
+            `experience:${preferences.hiddenMoney ? "showMoney" : "hideMoney"}`,
+          )}
+          onClick={() =>
+            update((state) => ({ ...state, hiddenMoney: !state.hiddenMoney }))
+          }
+        >
+          {preferences.hiddenMoney ? (
+            <LuEye aria-hidden="true" />
+          ) : (
+            <LuEyeOff aria-hidden="true" />
+          )}
+        </button>
+        <button
+          type="button"
+          className="dashboard-header__icon-button"
+          onClick={toggleTheme}
+          aria-label={
+            isDark
+              ? t("dashboard.header.lightMode")
+              : t("dashboard.header.darkMode")
+          }
+        >
+          {isDark ? <LuSun /> : <LuMoon />}
+        </button>
+
+        <button
+          type="button"
+          className="dashboard-header__language"
+          onClick={toggleLanguage}
+          aria-label={t("dashboard.header.switchLanguage")}
+        >
+          <LuGlobe />
+
+          <span>{isArabic ? "English" : "العربية"}</span>
+        </button>
+
+        <Link
+          to={PATH.USER.NOTIFICATIONS}
+          className="dashboard-header__notification"
+          aria-label={
+            unreadCount > 0
+              ? t("dashboard.notifications.bell.unread", { count: unreadCount })
+              : t("dashboard.notifications.bell.label")
+          }
+        >
+          <LuBell aria-hidden="true" />
+
+          {unreadCount > 0 && (
+            <span className="dashboard-header__badge" aria-hidden="true">
+              {formatUnreadBadge(unreadCount, getDisplayLocale(i18n.language))}
+            </span>
+          )}
+        </Link>
+
+        <Link
+          to={PATH.USER.SETTING}
+          type="button"
+          className="dashboard-header__avatar"
+          aria-label={user?.name || t("dashboard.header.userProfile")}
+          title={user?.name || undefined}
+        >
+          {userInitials}
+        </Link>
+      </div>
+    </header>
+  );
+}

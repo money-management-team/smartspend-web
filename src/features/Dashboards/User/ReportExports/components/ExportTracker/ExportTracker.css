@@ -1,0 +1,291 @@
+.export-tracker {
+  margin-top: 16px;
+  padding: 14px 18px;
+
+  display: grid;
+  gap: 10px;
+
+  border: 1px solid color-mix(in srgb, var(--primary) 30%, var(--color-border));
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.export-tracker__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.export-tracker__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.export-tracker__title strong {
+  color: var(--color-text-strong);
+  font-size: 14px;
+}
+
+.export-tracker__dismiss {
+  width: 28px;
+  height: 28px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  border: 0;
+  border-radius: 8px;
+
+  color: var(--color-text-secondary);
+  background: transparent;
+
+  cursor: pointer;
+}
+
+.export-tracker__dismiss:hover {
+  background: var(--color-surface-hover);
+}
+
+.export-tracker__hint,
+.export-tracker__failure {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  text-align: start;
+}
+
+.export-tracker__hint {
+  color: var(--color-text-secondary);
+}
+
+.export-tracker__failure {
+  color: var(--color-danger);
+}
+
+.export-tracker__meta {
+  margin: 0;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 18px;
+
+  font-size: 12px;
+}
+
+.export-tracker__meta div {
+  display: flex;
+  gap: 5px;
+}
+
+.export-tracker__meta dt {
+  color: var(--color-text-muted);
+}
+
+.export-tracker__meta dd {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-weight: 600;
+}
+
+.export-tracker__warning {
+  margin: 0;
+  padding: 8px 12px;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+
+  border-radius: var(--radius-md);
+
+  color: var(--color-warning);
+  background: var(--warning-soft);
+
+  font-size: 12px;
+}
+
+.export-tracker__warning button {
+  height: 28px;
+  padding: 0 10px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 12px;
+
+  cursor: pointer;
+}
+
+.export-tracker__warning svg {
+  width: 13px;
+  height: 13px;
+}
+
+.export-tracker__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.export-tracker__footer a {
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.export-tracker__footer a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Status steps (no percentages: the backend reports none) ---------- */
+
+.export-tracker__steps {
+  margin: 0;
+  padding: 0;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+
+  list-style: none;
+}
+
+.export-tracker__step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  color: var(--color-text-muted);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Connector between two steps; logical, so it follows RTL. */
+.export-tracker__step + .export-tracker__step::before {
+  content: "";
+
+  width: 18px;
+  height: 2px;
+
+  margin-inline-end: 4px;
+
+  border-radius: 2px;
+
+  background: var(--color-border);
+}
+
+.export-tracker__step-marker {
+  width: 18px;
+  height: 18px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+}
+
+.export-tracker__step-marker svg {
+  width: 18px;
+  height: 18px;
+}
+
+.export-tracker__step--current {
+  color: var(--color-primary);
+}
+
+.export-tracker__step--current .export-tracker__step-marker {
+  border: 0;
+}
+
+.export-tracker__step--done {
+  color: var(--color-success);
+}
+
+.export-tracker__step--done .export-tracker__step-marker {
+  border: 0;
+}
+
+.export-tracker__step--done + .export-tracker__step::before {
+  background: var(--color-success);
+}
+
+.export-tracker__step-spinner {
+  animation: export-tracker-spin 1s linear infinite;
+}
+
+@keyframes export-tracker-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .export-tracker__step-spinner {
+    animation: none;
+  }
+}
+
+.export-tracker--failed {
+  border-color: color-mix(in srgb, var(--color-danger) 35%, var(--color-border));
+}
+
+.export-tracker--completed {
+  border-color: color-mix(in srgb, var(--color-success) 35%, var(--color-border));
+}
+
+.export-tracker__retry {
+  height: 34px;
+  padding: 0 14px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-pill);
+
+  color: var(--navigation-active-text);
+  background: var(--color-primary);
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.export-tracker__retry:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.export-tracker__retry:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.export-tracker__retry svg {
+  width: 14px;
+  height: 14px;
+}
