@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Trans, useTranslation } from "react-i18next";
 
 import { useAuthContext } from "../../../../contexts/auth/useAuthContext";
@@ -6,11 +7,22 @@ import { useResendVerificationEmail } from "../../../../contexts/emailVerificati
 
 import "./EmailVerificationBanner.css";
 
+const DISMISS_KEY_PREFIX = "emailVerificationBannerDismissed:";
+
+function readDismissed(key) {
+  try {
+    return localStorage.getItem(key) === "1";
+  } catch {
+    return false;
+  }
+}
+
 /*
  * Dashboard warning while GET /auth/email/status says `verified === false`.
  * `null` (verification doesn't apply) and `true` show nothing. After a
  * resend that turns out to be "already verified", the banner stays only to
- * show that confirmation until it is closed.
+ * show that confirmation until it is closed. The "X" button hides the warning
+ * on every page; the choice is remembered per email address in localStorage.
  */
 export default function EmailVerificationBanner() {
   const { t } = useTranslation();
@@ -18,11 +30,23 @@ export default function EmailVerificationBanner() {
   const { status } = useEmailVerification();
   const { send, isSending, notice, clearNotice } = useResendVerificationEmail();
 
-  const isUnverified = status?.verified === false;
+  const email = status?.email ?? user?.email ?? "";
+  const dismissKey = `${DISMISS_KEY_PREFIX}${email}`;
+  const [dismissedKey, setDismissedKey] = useState(null);
+  const isDismissed = dismissedKey === dismissKey || readDismissed(dismissKey);
+
+  const isUnverified = status?.verified === false && !isDismissed;
 
   if (!isUnverified && !notice) return null;
 
-  const email = status?.email ?? user?.email ?? "";
+  const dismiss = () => {
+    try {
+      localStorage.setItem(dismissKey, "1");
+    } catch {
+      // Storage unavailable: hide for this page load only.
+    }
+    setDismissedKey(dismissKey);
+  };
 
   return (
     <section
@@ -64,19 +88,32 @@ export default function EmailVerificationBanner() {
       </div>
 
       {isUnverified ? (
-        <button
-          type="button"
-          className="email-verification-banner__action"
-          onClick={send}
-          disabled={isSending}
-          aria-busy={isSending || undefined}
-        >
-          {t(
-            isSending
-              ? "auth.emailVerification.sending"
-              : "auth.emailVerification.resend",
-          )}
-        </button>
+        <>
+          <button
+            type="button"
+            className="email-verification-banner__action"
+            onClick={send}
+            disabled={isSending}
+            aria-busy={isSending || undefined}
+          >
+            {t(
+              isSending
+                ? "auth.emailVerification.sending"
+                : "auth.emailVerification.resend",
+            )}
+          </button>
+          <button
+            type="button"
+            className="email-verification-banner__dismiss"
+            onClick={dismiss}
+            aria-label={t("common.close")}
+            title={t("common.close")}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 6l12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </>
       ) : (
         <button
           type="button"

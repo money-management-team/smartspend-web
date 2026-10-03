@@ -83,6 +83,7 @@ Used by the dashboard banner and by the verification page's error state.
 
 - It shows the title, the email (in `<bdi>`, so it stays LTR in Arabic, via `Trans`), and the resend button. Resend outcomes show as a line inside the banner (`role="status"` for success, `role="alert"` for errors, `dir="auto"`).
 - When a resend reports "already verified", the refreshed status hides the warning. The banner then stays in its green "done" style with the confirmation and a "Close" button, and disappears when closed.
+- An "X" button (`common.close` as its label) next to the resend button hides the warning. Because the banner lives in `DashboardLayout`, it disappears on every page. The choice is stored in `localStorage` under `emailVerificationBannerDismissed:<email>`, so it survives reloads and a new, different unverified email shows the warning again. If storage is unavailable, it is hidden until the next page load.
 - Styles: `EmailVerificationBanner.css`. It uses warning tokens (`--color-warning`, `--warning-soft`) and success tokens in the done state, logical layout, dark-theme text overrides, and stacks the button full-width at ≤640px.
 
 ## i18n
