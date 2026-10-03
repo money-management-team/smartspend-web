@@ -1,6 +1,10 @@
+import PublicInformationRoute from "../features/PublicPage/Information/PublicInformationRoute";
+import AttentionCenter from "../features/Dashboards/User/Experience/AttentionCenter";
+import MonthlyReview from "../features/Dashboards/User/Experience/MonthlyReview";
+import QuickTemplates from "../features/Dashboards/User/Experience/QuickTemplates";
+import GettingStarted from "../features/Dashboards/User/Experience/GettingStarted";
 import AccountType from "../features/Auth/AccountType/AccountType";
-import CompanyLogin from "../features/Auth/CompanyLogin/CompanyLogin";
-import CompanyRegister from "../features/Auth/CompanyRegister/CompanyRegister";
+import CompanyUnavailable from "../features/Auth/CompanyUnavailable/CompanyUnavailable";
 import ForgotPassword from "../features/Auth/ForgotPassword/ForgotPassword";
 import Login from "../features/Auth/Login/Login";
 import PasswordChanged from "../features/Auth/PasswordChanged/PasswordChanged";
@@ -11,6 +15,7 @@ import VerifyEmail from "../features/Auth/VerifyEmail/VerifyEmail";
 import AccountDetails from "../features/Dashboards/User/AccountDetails/AccountDetails";
 import Accounts from "../features/Dashboards/User/Accounts/Accounts";
 import AIAssistant from "../features/Dashboards/User/AIAssistant/AIAssistant";
+import Imports from "../features/Dashboards/User/Imports/Imports";
 import AiExpenseCaptureDetails from "../features/Dashboards/User/AiExpenseCaptureDetails/AiExpenseCaptureDetails";
 import AiExpenseCaptures from "../features/Dashboards/User/AiExpenseCaptures/AiExpenseCaptures";
 import BudgetDetails from "../features/Dashboards/User/BudgetDetails/BudgetDetails";
@@ -56,6 +61,10 @@ const routes = [
         index: true,
         element: <Home />,
       },
+      ...Object.entries(PATH.PUBLIC).map(([key, path]) => ({
+        path,
+        element: <PublicInformationRoute pageKey={key.toLowerCase()} />,
+      })),
       {
         path: "*",
         element: <NotFound />,
@@ -91,11 +100,11 @@ const guestRoutes = [
       },
       {
         path: PATH.AUTH.COMPANY_SIGNIN,
-        element: <CompanyLogin />,
+        element: <CompanyUnavailable />,
       },
       {
         path: PATH.AUTH.COMPANY_REGISTER,
-        element: <CompanyRegister />,
+        element: <CompanyUnavailable />,
       },
       {
         path: PATH.AUTH.FORGOT_PASSWORD,
@@ -148,6 +157,13 @@ const userRoutes = [
       </RequireAuth>
     ),
     children: [
+      {
+        path: PATH.USER.ATTENTION,
+        element: <AttentionCenter />,
+      },
+      { path: PATH.USER.MONTHLY_REVIEW, element: <MonthlyReview /> },
+      { path: PATH.USER.QUICK_TEMPLATES, element: <QuickTemplates /> },
+      { path: PATH.USER.GETTING_STARTED, element: <GettingStarted /> },
       {
         path: PATH.USER.DASHBOARD,
         element: <Dashboard />,
@@ -241,6 +257,8 @@ const userRoutes = [
         path: PATH.USER.AI_ASSISTANT,
         element: <AIAssistant />,
       },
+      { path: PATH.USER.IMPORTS, element: <Imports /> },
+      { path: PATH.USER.IMPORT_DETAILS, element: <Imports /> },
       {
         path: PATH.USER.NOTIFICATIONS,
         element: <Notifications />,

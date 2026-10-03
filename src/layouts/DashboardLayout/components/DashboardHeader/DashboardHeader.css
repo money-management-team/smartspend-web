@@ -390,16 +390,47 @@
 }
 
 @media (max-width: 480px) {
+  /* Search is dropped on very narrow screens; the header's
+     space-between then keeps the menu at the start edge and the actions
+     at the end edge in both directions. */
   .dashboard-header__search {
     display: none;
   }
+}
 
+
+/* ================================
+   ACCESSIBILITY / TOUCH
+================================ */
+
+.dashboard-header :is(button, a):focus-visible,
+.dashboard-sidebar :is(button, a):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.dashboard-header__actions {
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1024px) {
   .dashboard-header__menu {
-    margin-inline-end: auto;
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
   }
 
-  [dir="rtl"] .dashboard-header__menu {
-    margin-inline-start: auto;
-    margin-inline-end: 0;
+  .dashboard-header__icon-button,
+  .dashboard-header__notification,
+  .dashboard-header__language {
+    min-width: 40px;
+    min-height: 40px;
+    justify-content: center;
+  }
+
+  .dashboard-header__avatar {
+    width: 40px;
+    height: 40px;
   }
 }

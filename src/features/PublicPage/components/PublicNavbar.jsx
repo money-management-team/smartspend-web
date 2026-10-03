@@ -1,11 +1,7 @@
 import { Link, NavLink } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-import {
-  LuGlobe,
-  LuMoon,
-  LuSun,
-} from "react-icons/lu";
+import { LuGlobe, LuMoon, LuSun } from "react-icons/lu";
 
 import logo from "../../../assets/smart-spend-logo.png";
 import { useAuthContext } from "../../../contexts/auth/useAuthContext";
@@ -27,17 +23,6 @@ export default function PublicNavbar() {
     await i18n.changeLanguage(isArabic ? "en" : "ar");
   };
 
-  const scrollToSection = (id) => {
-  const section = document.getElementById(id);
-
-  if (section) {
-    section.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  }
-};
-
   return (
     <header className="home-navbar">
       <div className="home-container home-navbar__inner">
@@ -50,18 +35,19 @@ export default function PublicNavbar() {
           </span>
         </Link>
 
-
         <nav
           className="home-navbar__links"
-          aria-label="Public navigation"
+          aria-label={isArabic ? "التنقل الرئيسي" : "Main navigation"}
         >
-          <a  onClick={() => scrollToSection("features")}>{t("home.nav.features")}</a>
+          <Link to={`${PATH.HOME}#features`}>{t("home.nav.features")}</Link>
 
-          <a onClick={() => scrollToSection("how-it-works")}>{t("home.nav.howItWorks")}</a>
+          <Link to={`${PATH.HOME}#how-it-works`}>
+            {t("home.nav.howItWorks")}
+          </Link>
 
-          <a onClick={() => scrollToSection("security")}>{t("home.nav.security")}</a>
+          <Link to={`${PATH.HOME}#security`}>{t("home.nav.security")}</Link>
 
-          <a onClick={() => scrollToSection("faq")}>{t("home.nav.faq")}</a>
+          <Link to={`${PATH.HOME}#faq`}>{t("home.nav.faq")}</Link>
         </nav>
 
         <div className="home-navbar__actions">
@@ -80,9 +66,7 @@ export default function PublicNavbar() {
             type="button"
             className="home-navbar__theme"
             onClick={toggleTheme}
-            aria-label={
-              isDark ? "Switch to light mode" : "Switch to dark mode"
-            }
+            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
           >
             {isDark ? <LuSun /> : <LuMoon />}
           </button>

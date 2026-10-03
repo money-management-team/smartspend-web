@@ -1,10 +1,15 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuInfo, LuTriangleAlert } from "react-icons/lu";
 
 import Loading from "../../../../../../components/Loading/Loading";
 import { accountsApi } from "../../../api/accountsApi";
-import { ApiError, getApiErrorMessage, getStoredWorkspace } from "../../../api/apiClient";
+import {
+  ApiError,
+  getApiErrorMessage,
+  getStoredWorkspace,
+} from "../../../api/apiClient";
 import { debtsApi } from "../../../api/debtsApi";
 import { getDisplayLocale } from "../../../Accounts/accountHelpers";
 import {
@@ -56,7 +61,12 @@ const RELOAD_ACCOUNT_CODES = ["NOT_FOUND", "VALIDATION_ERROR"];
  * `onOutdated` is called after a failure that may mean the page no longer
  * shows the debt's real state (e.g. a payment recorded despite a timeout).
  */
-export default function DebtPaymentForm({ debt, onCompleted, onOutdated, onClose }) {
+export default function DebtPaymentForm({
+  debt,
+  onCompleted,
+  onOutdated,
+  onClose,
+}) {
   const { t, i18n } = useTranslation();
   const locale = getDisplayLocale(i18n.language);
   const currency = debt.currency_code;
@@ -64,7 +74,12 @@ export default function DebtPaymentForm({ debt, onCompleted, onOutdated, onClose
   const remaining = debt.remaining_amount;
 
   const [today] = useState(getTodayInputValue);
-  const [form, setForm] = useState(() => ({ account_id: "", amount: "", paid_at: today, notes: "" }));
+  const [form, setForm] = useState(() => ({
+    account_id: "",
+    amount: "",
+    paid_at: today,
+    notes: "",
+  }));
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [hint, setHint] = useState("");
@@ -75,7 +90,11 @@ export default function DebtPaymentForm({ debt, onCompleted, onOutdated, onClose
   /* ---------- Accounts ---------- */
 
   const [reloadKey, setReloadKey] = useState(0);
-  const [options, setOptions] = useState({ key: null, accounts: [], error: null });
+  const [options, setOptions] = useState({
+    key: null,
+    accounts: [],
+    error: null,
+  });
   // The debt's own workspace: its money only moves on that workspace's accounts.
   const workspaceId = debt.workspace_id ?? getStoredWorkspace()?.id;
 
@@ -90,8 +109,16 @@ export default function DebtPaymentForm({ debt, onCompleted, onOutdated, onClose
 
         setOptions(
           Array.isArray(accounts)
-            ? { key: reloadKey, accounts: getEligibleAccounts(accounts, currency), error: null }
-            : { key: reloadKey, accounts: [], error: new ApiError("", { code: "MALFORMED_RESPONSE" }) },
+            ? {
+                key: reloadKey,
+                accounts: getEligibleAccounts(accounts, currency),
+                error: null,
+              }
+            : {
+                key: reloadKey,
+                accounts: [],
+                error: new ApiError("", { code: "MALFORMED_RESPONSE" }),
+              },
         );
       })
       .catch((error) => {
@@ -103,10 +130,13 @@ export default function DebtPaymentForm({ debt, onCompleted, onOutdated, onClose
   }, [workspaceId, currency, reloadKey]);
 
   const isLoadingOptions = options.key !== reloadKey;
-  const payingAccounts = options.accounts.filter((account) => canAccountPay(account, direction));
+  const payingAccounts = options.accounts.filter((account) =>
+    canAccountPay(account, direction),
+  );
   // A chosen account that is no longer listed (reloaded list) counts as no choice.
   const selectedAccount =
-    payingAccounts.find((account) => String(account.id) === form.account_id) ?? null;
+    payingAccounts.find((account) => String(account.id) === form.account_id) ??
+    null;
 
   /* ---------- Handlers ---------- */
 
@@ -134,7 +164,10 @@ export default function DebtPaymentForm({ debt, onCompleted, onOutdated, onClose
     // Synchronous guard: a double click fires twice before React re-renders.
     if (pendingRef.current) return;
 
-    const values = { ...form, account_id: selectedAccount ? String(selectedAccount.id) : "" };
+    const values = {
+      ...form,
+      account_id: selectedAccount ? String(selectedAccount.id) : "",
+    };
     const nextErrors = validatePaymentForm(values, { remaining, t });
 
     if (Object.keys(nextErrors).length > 0) {
@@ -166,7 +199,8 @@ export default function DebtPaymentForm({ debt, onCompleted, onOutdated, onClose
         if (error?.code === "VALIDATION_ERROR") setErrors(error.errors ?? {});
         setMessage(getDebtErrorMessage(error, t, "payment"));
         setHint(getPaymentErrorHint(error, t));
-        if (RELOAD_ACCOUNT_CODES.includes(error?.code)) setReloadKey((key) => key + 1);
+        if (RELOAD_ACCOUNT_CODES.includes(error?.code))
+          setReloadKey((key) => key + 1);
         onOutdated?.(error);
       }
 
@@ -199,7 +233,8 @@ export default function DebtPaymentForm({ debt, onCompleted, onOutdated, onClose
 
   const amount = form.amount.trim();
   const hasValidAmount = !getAmountError(amount);
-  const isKnownDirection = direction === "payable" || direction === "receivable";
+  const isKnownDirection =
+    direction === "payable" || direction === "receivable";
   // Payable: the payment leaves the account. Compared on the decimal strings;
   // the backend makes the final decision (an account may allow negatives).
   const exceedsBalance =
@@ -209,7 +244,11 @@ export default function DebtPaymentForm({ debt, onCompleted, onOutdated, onClose
     selectedAccount.allow_negative_balance !== true &&
     isAboveAmount(amount, selectedAccount.current_balance ?? "0");
 
-  const canSubmit = !isSubmitting && !isLoadingOptions && !options.error && payingAccounts.length > 0;
+  const canSubmit =
+    !isSubmitting &&
+    !isLoadingOptions &&
+    !options.error &&
+    payingAccounts.length > 0;
   const optional = t("dashboard.transactions.form.optional");
 
   return (
@@ -229,11 +268,18 @@ export default function DebtPaymentForm({ debt, onCompleted, onOutdated, onClose
         <header>
           <div className="debt-payment-form__title">
             <h2 id="debt-payment-form-title">
-              {t(`dashboard.debts.paymentForm.title.${isKnownDirection ? direction : "payable"}`)}
+              {t(
+                `dashboard.debts.paymentForm.title.${isKnownDirection ? direction : "payable"}`,
+              )}
             </h2>
             <p dir="auto">{debt.counterparty_name}</p>
           </div>
-          <button type="button" onClick={close} disabled={isSubmitting} aria-label={t("common.close")}>
+          <button
+            type="button"
+            onClick={close}
+            disabled={isSubmitting}
+            aria-label={t("common.close")}
+          >
             ×
           </button>
         </header>
@@ -249,35 +295,53 @@ export default function DebtPaymentForm({ debt, onCompleted, onOutdated, onClose
           <div>
             <dt>{t("dashboard.debts.fields.remainingAmount")}</dt>
             <dd>
-              <bdi dir="ltr">{remaining == null ? "—" : money(remaining)}</bdi>
+              <bdi dir="ltr">
+                <PrivateMoney>
+                  {remaining == null ? "—" : money(remaining)}
+                </PrivateMoney>
+              </bdi>
             </dd>
-            {isPositiveMoney(remaining) && !isLoadingOptions && !options.error && (
-              <dd>
-                <button
-                  type="button"
-                  className="debt-payment-form__fill"
-                  onClick={payRemaining}
-                  disabled={isSubmitting}
-                >
-                  {t("dashboard.debts.paymentForm.payRemaining")}
-                </button>
-              </dd>
-            )}
+            {isPositiveMoney(remaining) &&
+              !isLoadingOptions &&
+              !options.error && (
+                <dd>
+                  <button
+                    type="button"
+                    className="debt-payment-form__fill"
+                    onClick={payRemaining}
+                    disabled={isSubmitting}
+                  >
+                    {t("dashboard.debts.paymentForm.payRemaining")}
+                  </button>
+                </dd>
+              )}
           </div>
           <div>
             <dt>{t("dashboard.debts.fields.paidAmount")}</dt>
             <dd>
-              <bdi dir="ltr">{debt.paid_amount == null ? "—" : money(debt.paid_amount)}</bdi>
+              <bdi dir="ltr">
+                <PrivateMoney>
+                  {debt.paid_amount == null ? "—" : money(debt.paid_amount)}
+                </PrivateMoney>
+              </bdi>
             </dd>
           </div>
         </dl>
 
-        {isLoadingOptions && <Loading message={t("dashboard.debts.form.loadingAccounts")} />}
+        {isLoadingOptions && (
+          <Loading message={t("dashboard.debts.form.loadingAccounts")} />
+        )}
 
         {!isLoadingOptions && options.error && (
-          <div className="account-form-modal__error debt-payment-form__options-error" role="alert">
+          <div
+            className="account-form-modal__error debt-payment-form__options-error"
+            role="alert"
+          >
             <p>{getApiErrorMessage(options.error, t)}</p>
-            <button type="button" onClick={() => setReloadKey((key) => key + 1)}>
+            <button
+              type="button"
+              onClick={() => setReloadKey((key) => key + 1)}
+            >
               {t("common.retry")}
             </button>
           </div>
@@ -300,7 +364,9 @@ export default function DebtPaymentForm({ debt, onCompleted, onOutdated, onClose
                   {options.accounts.length === 0
                     ? t("dashboard.debts.form.noAccounts", { currency })
                     : payingAccounts.length === 0
-                      ? t("dashboard.debts.paymentForm.noPayingAccounts", { currency })
+                      ? t("dashboard.debts.paymentForm.noPayingAccounts", {
+                          currency,
+                        })
                       : t("dashboard.debts.form.selectAccount")}
                 </option>
                 {options.accounts.map((account) => (
@@ -313,7 +379,10 @@ export default function DebtPaymentForm({ debt, onCompleted, onOutdated, onClose
                   </option>
                 ))}
               </select>
-              <em className="account-form-modal__hint" id="debt-payment-form-account-hint">
+              <em
+                className="account-form-modal__hint"
+                id="debt-payment-form-account-hint"
+              >
                 {t(
                   direction === "payable"
                     ? "dashboard.debts.paymentForm.accountHint.payable"
@@ -340,7 +409,10 @@ export default function DebtPaymentForm({ debt, onCompleted, onOutdated, onClose
                   aria-describedby="debt-payment-form-amount-hint"
                   required
                 />
-                <em className="account-form-modal__hint" id="debt-payment-form-amount-hint">
+                <em
+                  className="account-form-modal__hint"
+                  id="debt-payment-form-amount-hint"
+                >
                   {t("dashboard.debts.paymentForm.amountHint", { currency })}
                 </em>
                 {fieldErrors("amount")}
@@ -365,10 +437,15 @@ export default function DebtPaymentForm({ debt, onCompleted, onOutdated, onClose
 
             {selectedAccount && hasValidAmount && isKnownDirection && (
               <p className="debt-payment-form__effect" role="status">
-                {t(`dashboard.debts.paymentForm.effect.${direction}`, { account: selectedAccount.name ?? "" })}{" "}
-                <bdi dir="ltr" className={`debt-payment-form__effect-amount debt-payment-form__effect-amount--${direction}`}>
+                {t(`dashboard.debts.paymentForm.effect.${direction}`, {
+                  account: selectedAccount.name ?? "",
+                })}{" "}
+                <bdi
+                  dir="ltr"
+                  className={`debt-payment-form__effect-amount debt-payment-form__effect-amount--${direction}`}
+                >
                   {direction === "payable" ? "−" : "+"}
-                  {money(amount)}
+                  <PrivateMoney>{money(amount)}</PrivateMoney>
                 </bdi>
               </p>
             )}
@@ -377,9 +454,14 @@ export default function DebtPaymentForm({ debt, onCompleted, onOutdated, onClose
               <p className="debt-payment-form__warning" role="status">
                 <LuTriangleAlert aria-hidden="true" />
                 <span>
-                  {t("dashboard.debts.paymentForm.exceedsBalance", {
-                    balance: money(selectedAccount.current_balance, selectedAccount.currency_code),
-                  })}
+                  <PrivateMoney>
+                    {t("dashboard.debts.paymentForm.exceedsBalance", {
+                      balance: money(
+                        selectedAccount.current_balance,
+                        selectedAccount.currency_code,
+                      ),
+                    })}
+                  </PrivateMoney>
                 </span>
               </p>
             )}
@@ -413,7 +495,11 @@ export default function DebtPaymentForm({ debt, onCompleted, onOutdated, onClose
               <button type="button" onClick={close} disabled={isSubmitting}>
                 {t("common.cancel")}
               </button>
-              <button type="submit" disabled={!canSubmit} aria-busy={isSubmitting || undefined}>
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                aria-busy={isSubmitting || undefined}
+              >
                 {t(
                   isSubmitting
                     ? "dashboard.debts.paymentForm.submitting"

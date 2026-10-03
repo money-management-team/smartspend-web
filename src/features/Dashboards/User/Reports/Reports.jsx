@@ -1,3 +1,4 @@
+import SavedViews from "../Experience/SavedViews";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router-dom";
@@ -21,6 +22,7 @@ import {
 import { formatDate } from "../utils/formatters";
 import ReportAnalytics from "./components/ReportAnalytics/ReportAnalytics";
 import ReportFilters from "./components/ReportFilters/ReportFilters";
+import ReportHighlights from "./components/ReportHighlights/ReportHighlights";
 import ReportItemsTable from "./components/ReportItemsTable/ReportItemsTable";
 import ReportPagination from "./components/ReportPagination/ReportPagination";
 import ReportPeriod from "./components/ReportPeriod/ReportPeriod";
@@ -36,6 +38,7 @@ import {
   getWorkspaceTimezone,
   isCurrencyCode,
   isEmptyValue,
+  parseComparison,
   parseReport,
   readReportFilters,
   reportFiltersToQuery,
@@ -46,9 +49,15 @@ import {
 import "./Reports.css";
 
 // Analytics worth showing: anything besides the period / flag metadata.
-const METADATA_KEYS = new Set(["previous_period", "actual_source", "templates_are_forecast_only"]);
+const METADATA_KEYS = new Set([
+  "previous_period",
+  "actual_source",
+  "templates_are_forecast_only",
+]);
 const hasAnalytics = (analytics) =>
-  Object.entries(analytics).some(([key, value]) => !METADATA_KEYS.has(key) && !isEmptyValue(value));
+  Object.entries(analytics).some(
+    ([key, value]) => !METADATA_KEYS.has(key) && !isEmptyValue(value),
+  );
 
 /*
  * Sprint 6 reports (GET /reports/*), one page with a tab per report. The
@@ -76,14 +85,20 @@ export default function Reports() {
     const controller = new AbortController();
     const current = readReportFilters(new URLSearchParams(filterKey), timeZone);
 
-    getReport(current.report, reportFiltersToQuery(current), { signal: controller.signal })
+    getReport(current.report, reportFiltersToQuery(current), {
+      signal: controller.signal,
+    })
       .then((response) => {
         const parsed = parseReport(response);
 
         setResult(
           parsed
             ? { key: requestKey, data: parsed, error: null }
-            : { key: requestKey, data: null, error: new ApiError("", { code: "MALFORMED_RESPONSE" }) },
+            : {
+                key: requestKey,
+                data: null,
+                error: new ApiError("", { code: "MALFORMED_RESPONSE" }),
+              },
         );
       })
       .catch((error) => {
@@ -99,7 +114,10 @@ export default function Reports() {
   const error = isLoading ? null : result.error;
   const definition = REPORT_DEFINITIONS[filters.report];
   const showItems = reportHasItems(filters.report);
-  const currencies = getCurrencyOptions(filters.currency, ...(report?.summary ?? []).map((row) => row.currency_code));
+  const currencies = getCurrencyOptions(
+    filters.currency,
+    ...(report?.summary ?? []).map((row) => row.currency_code),
+  );
   const fieldErrors = getReportFieldErrors(error);
   const isEmpty =
     report != null &&
@@ -109,11 +127,17 @@ export default function Reports() {
 
   const navigate = (next) => setSearchParams(reportFiltersToSearchParams(next));
   const selectReport = (name) => {
-    if (name !== filters.report) navigate({ ...filters, report: name, page: 1 });
+    if (name !== filters.report)
+      navigate({ ...filters, report: name, page: 1 });
   };
   const applyFilters = (draft) => navigate({ ...filters, ...draft, page: 1 });
   const resetFilters = () =>
-    navigate(readReportFilters(new URLSearchParams({ report: filters.report }), timeZone));
+    navigate(
+      readReportFilters(
+        new URLSearchParams({ report: filters.report }),
+        timeZone,
+      ),
+    );
   const goToPage = (page) => navigate({ ...filters, page });
   const retry = () => setReloadKey((key) => key + 1);
 
@@ -121,7 +145,10 @@ export default function Reports() {
 
   // The export being followed on this page; its tracker polls the status.
   const [trackedExport, setTrackedExport] = useState(null);
-  const [exportRequest, setExportRequest] = useState({ pending: false, error: null });
+  const [exportRequest, setExportRequest] = useState({
+    pending: false,
+    error: null,
+  });
   const [isFormatDialogOpen, setIsFormatDialogOpen] = useState(false);
   // The last format chosen, preselected the next time the dialog opens.
   const [exportFormat, setExportFormat] = useState(DEFAULT_EXPORT_FORMAT);
@@ -134,14 +161,19 @@ export default function Reports() {
    * file: the tracker follows it and enables Download only once the backend
    * reports `download_available`. Resolves to whether it was queued.
    */
-  const createExport = async ({ report: reportName, format, exportFilters }) => {
+  const createExport = async ({
+    report: reportName,
+    format,
+    exportFilters,
+  }) => {
     if (exportPendingRef.current) return false;
 
     exportPendingRef.current = true;
     setExportRequest({ pending: true, error: null });
 
     try {
-      const workspaceId = exportFilters.workspace_id ?? (await resolveWorkspaceId());
+      const workspaceId =
+        exportFilters.workspace_id ?? (await resolveWorkspaceId());
       const response = await reportExportsApi.create({
         report: reportName,
         format,
@@ -168,7 +200,9 @@ export default function Reports() {
 
   const closeFormatDialog = () => {
     // A create error belongs to the dialog; it is not carried onto the page.
-    setExportRequest((current) => (current.pending ? current : { pending: false, error: null }));
+    setExportRequest((current) =>
+      current.pending ? current : { pending: false, error: null },
+    );
     setIsFormatDialogOpen(false);
     exportButtonRef.current?.focus();
   };
@@ -194,13 +228,19 @@ export default function Reports() {
 
     try {
       const { generateReportPdf } = await import("./pdf/generateReportPdf");
-      const { blob, filename } = await generateReportPdf({ filters, t, i18n, signal: controller.signal });
+      const { blob, filename } = await generateReportPdf({
+        filters,
+        t,
+        i18n,
+        signal: controller.signal,
+      });
 
       saveBlobAsFile(blob, filename);
       setExportRequest({ pending: false, error: null });
       return true;
     } catch (pdfError) {
-      if (pdfError.name === "AbortError" || controller.signal.aborted) return false;
+      if (pdfError.name === "AbortError" || controller.signal.aborted)
+        return false;
 
       // API errors keep their own wording; a layout or rendering failure
       // gets a plain "could not be created".
@@ -209,7 +249,10 @@ export default function Reports() {
         error:
           pdfError instanceof ApiError
             ? pdfError
-            : new ApiError(t("dashboard.reportExports.errors.pdfFailed"), { code: "PDF_FAILED", cause: pdfError }),
+            : new ApiError(t("dashboard.reportExports.errors.pdfFailed"), {
+                code: "PDF_FAILED",
+                cause: pdfError,
+              }),
       });
       return false;
     } finally {
@@ -253,6 +296,16 @@ export default function Reports() {
     });
 
   const locale = getDisplayLocale(i18n.language);
+  // The backend's current-vs-previous figures, reshaped only; the KPI tiles
+  // read their change line from here (the comparison table parses the same).
+  const comparison = report
+    ? parseComparison({
+        comparison: report.analytics.comparison_by_currency,
+        previousSummary: report.analytics.previous_summary_by_currency,
+        summary: report.summary,
+        order: definition.summary.flatMap((group) => group.fields),
+      })
+    : [];
   const exportPeriod =
     filters.from && filters.to
       ? t("dashboard.reports.period.range", {
@@ -264,9 +317,22 @@ export default function Reports() {
   return (
     <div className="reports-page">
       <ReportsHeader
+        icon={definition.icon}
+        title={getReportName(filters.report, t)}
+        description={t(`dashboard.reports.descriptions.${filters.report}`)}
+        period={exportPeriod}
         actions={
           <>
-            <Link to={PATH.USER.REPORT_EXPORTS} className="reports-page__history-link">
+            <Link
+              to={PATH.USER.MONTHLY_REVIEW}
+              className="reports-page__history-link"
+            >
+              {t("experience:monthly")}
+            </Link>
+            <Link
+              to={PATH.USER.REPORT_EXPORTS}
+              className="reports-page__history-link"
+            >
               <LuHistory aria-hidden="true" />
               <span>{t("dashboard.reportExports.history.title")}</span>
             </Link>
@@ -318,104 +384,152 @@ export default function Reports() {
         />
       )}
 
-      <ReportTabs activeReport={filters.report} onChange={selectReport} />
+      <div className="reports-page__workspace">
+        <aside className="reports-page__navigation">
+          <ReportTabs activeReport={filters.report} onChange={selectReport} />
+        </aside>
 
-      <ReportFilters
-        key={filterKey}
-        filters={filters}
-        currencies={currencies}
-        showPerPage={showItems}
-        timeZone={timeZone}
-        onApply={applyFilters}
-        onReset={resetFilters}
-      />
+        <div className="reports-page__main">
+          <SavedViews
+            scope="reports"
+            filters={Object.fromEntries(reportFiltersToSearchParams(filters))}
+            onApply={(values) =>
+              setSearchParams(
+                reportFiltersToSearchParams(
+                  readReportFilters(new URLSearchParams(values), timeZone),
+                ),
+              )
+            }
+          />
+          <ReportFilters
+            key={filterKey}
+            filters={filters}
+            currencies={currencies}
+            showPerPage={showItems}
+            timeZone={timeZone}
+            onApply={applyFilters}
+            onReset={resetFilters}
+          />
 
-      <div className="reports-page__content" aria-busy={isLoading}>
-        {isLoading && <Loading message={t("dashboard.reports.states.loading")} />}
-
-        {error && (
-          <div className="reports-page__state reports-page__state--error" role="alert">
-            <p className="reports-page__state-title">{t("dashboard.reports.states.failed")}</p>
-            <p>{getReportErrorMessage(error, t)}</p>
-            {fieldErrors.length > 0 && (
-              <ul className="reports-page__field-errors">
-                {fieldErrors.map((message) => (
-                  <li key={message}>{message}</li>
-                ))}
-              </ul>
+          <div className="reports-page__content" aria-busy={isLoading}>
+            {isLoading && (
+              <Loading message={t("dashboard.reports.states.loading")} />
             )}
-            <div className="reports-page__state-actions">
-              <button type="button" onClick={retry}>
-                {t("common.retry")}
-              </button>
-              {error.code === "VALIDATION_ERROR" && (
-                <button type="button" className="reports-page__secondary" onClick={resetFilters}>
-                  {t("dashboard.reports.filters.reset")}
-                </button>
-              )}
-            </div>
-          </div>
-        )}
 
-        {report && (
-          <>
-            <ReportPeriod
-              report={filters.report}
-              period={report.period}
-              previousPeriod={report.analytics.previous_period}
-              filters={report.filters}
-              notes={definition.notes}
-            />
-
-            {isEmpty ? (
-              <div className="reports-page__state">
-                <p className="reports-page__state-title">{t("dashboard.reports.states.empty")}</p>
-                <p>{t("dashboard.reports.states.emptyHint")}</p>
-              </div>
-            ) : (
-              <>
-                <div className="reports-page__summary">
-                  <ReportSummary rows={report.summary} groups={definition.summary} />
+            {error && (
+              <div
+                className="reports-page__state reports-page__state--error"
+                role="alert"
+              >
+                <p className="reports-page__state-title">
+                  {t("dashboard.reports.states.failed")}
+                </p>
+                <p>{getReportErrorMessage(error, t)}</p>
+                {fieldErrors.length > 0 && (
+                  <ul className="reports-page__field-errors">
+                    {fieldErrors.map((message) => (
+                      <li key={message}>{message}</li>
+                    ))}
+                  </ul>
+                )}
+                <div className="reports-page__state-actions">
+                  <button type="button" onClick={retry}>
+                    {t("common.retry")}
+                  </button>
+                  {error.code === "VALIDATION_ERROR" && (
+                    <button
+                      type="button"
+                      className="reports-page__secondary"
+                      onClick={resetFilters}
+                    >
+                      {t("dashboard.reports.filters.reset")}
+                    </button>
+                  )}
                 </div>
+              </div>
+            )}
 
-                <ReportAnalytics
-                  definition={definition}
-                  analytics={report.analytics}
-                  summary={report.summary}
-                  groupBy={report.filters?.group_by ?? filters.group_by}
+            {report && (
+              <>
+                <ReportPeriod
+                  period={report.period}
+                  previousPeriod={report.analytics.previous_period}
+                  filters={report.filters}
+                  notes={definition.notes}
                 />
 
-                {showItems && (
-                  <div className="reports-page__items">
-                    <ReportSection
-                      title={t(`dashboard.reports.itemsTitle.${filters.report}`)}
-                      hint={t("dashboard.reports.sections.itemsHint")}
-                    >
-                      {report.items.length > 0 ? (
-                        <ReportItemsTable
-                          columns={definition.columns}
-                          rows={report.items}
-                          fallbackCurrency={isCurrencyCode(filters.currency) ? filters.currency : null}
-                        />
-                      ) : report.pagination && report.pagination.total > 0 && filters.page > 1 ? (
-                        <div className="reports-page__inline-state">
-                          <p>{t("dashboard.reports.states.emptyPage")}</p>
-                          <button type="button" onClick={() => goToPage(1)}>
-                            {t("dashboard.transactions.pagination.first")}
-                          </button>
-                        </div>
-                      ) : (
-                        <p className="reports-page__inline-state">{t("dashboard.reports.states.emptyItems")}</p>
-                      )}
-
-                      <ReportPagination pagination={report.pagination} onPageChange={goToPage} />
-                    </ReportSection>
+                {isEmpty ? (
+                  <div className="reports-page__state">
+                    <p className="reports-page__state-title">
+                      {t("dashboard.reports.states.empty")}
+                    </p>
+                    <p>{t("dashboard.reports.states.emptyHint")}</p>
                   </div>
+                ) : (
+                  <>
+                    <ReportHighlights
+                      rows={report.summary}
+                      fields={definition.highlights ?? []}
+                      comparison={comparison}
+                    />
+
+                    <ReportAnalytics
+                      definition={definition}
+                      analytics={report.analytics}
+                      summary={report.summary}
+                      groupBy={report.filters?.group_by ?? filters.group_by}
+                    />
+
+                    <ReportSummary
+                      rows={report.summary}
+                      groups={definition.summary}
+                      title={t("dashboard.reports.sections.details")}
+                    />
+
+                    {showItems && (
+                      <ReportSection
+                        title={t(
+                          `dashboard.reports.itemsTitle.${filters.report}`,
+                        )}
+                        hint={t("dashboard.reports.sections.itemsHint")}
+                      >
+                        {report.items.length > 0 ? (
+                          <ReportItemsTable
+                            columns={definition.columns}
+                            rows={report.items}
+                            fallbackCurrency={
+                              isCurrencyCode(filters.currency)
+                                ? filters.currency
+                                : null
+                            }
+                          />
+                        ) : report.pagination &&
+                          report.pagination.total > 0 &&
+                          filters.page > 1 ? (
+                          <div className="reports-page__inline-state">
+                            <p>{t("dashboard.reports.states.emptyPage")}</p>
+                            <button type="button" onClick={() => goToPage(1)}>
+                              {t("dashboard.transactions.pagination.first")}
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="reports-page__inline-state">
+                            {t("dashboard.reports.states.emptyItems")}
+                          </p>
+                        )}
+
+                        <ReportPagination
+                          pagination={report.pagination}
+                          onPageChange={goToPage}
+                        />
+                      </ReportSection>
+                    )}
+                  </>
                 )}
               </>
             )}
-          </>
-        )}
+          </div>
+        </div>
       </div>
     </div>
   );

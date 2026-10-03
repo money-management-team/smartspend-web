@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useTranslation } from "react-i18next";
 import {
   Bar,
@@ -26,7 +27,11 @@ function CashFlowTooltip({ active, payload, currency, locale }) {
       {payload.map((entry) => (
         <span key={entry.dataKey}>
           {t(`dashboard.user.cashFlow.${entry.dataKey}`)}:{" "}
-          <bdi>{formatMoney(entry.value, currency, locale)}</bdi>
+          <bdi>
+            <PrivateMoney>
+              {formatMoney(entry.value, currency, locale)}
+            </PrivateMoney>
+          </bdi>
         </span>
       ))}
     </div>
@@ -51,7 +56,10 @@ export default function CashFlowChart({ totals, periodLabel }) {
       expense: Number(totals?.expense) || 0,
     },
   ];
-  const compact = new Intl.NumberFormat(locale, { notation: "compact", maximumFractionDigits: 1 });
+  const compact = new Intl.NumberFormat(locale, {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  });
 
   return (
     <SectionCard
@@ -59,7 +67,10 @@ export default function CashFlowChart({ totals, periodLabel }) {
       title={t("dashboard.user.cashFlow.title")}
       subtitle={
         currency
-          ? t("dashboard.user.cashFlow.subtitleCurrency", { period: periodLabel, currency })
+          ? t("dashboard.user.cashFlow.subtitleCurrency", {
+              period: periodLabel,
+              currency,
+            })
           : periodLabel
       }
     >
@@ -67,9 +78,19 @@ export default function CashFlowChart({ totals, periodLabel }) {
         <>
           <div className="cash-flow-card__chart" dir="ltr">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data} margin={{ top: 12, right: 8, left: 0, bottom: 0 }} barGap={18}>
+              <BarChart
+                data={data}
+                margin={{ top: 12, right: 8, left: 0, bottom: 0 }}
+                barGap={18}
+              >
                 <CartesianGrid vertical={false} stroke="var(--color-border)" />
-                <XAxis dataKey="label" axisLine={false} tickLine={false} tick={false} height={4} />
+                <XAxis
+                  dataKey="label"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={false}
+                  height={4}
+                />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
@@ -79,27 +100,54 @@ export default function CashFlowChart({ totals, periodLabel }) {
                 />
                 <Tooltip
                   cursor={{ fill: "var(--surface-hover)" }}
-                  content={<CashFlowTooltip currency={currency} locale={locale} />}
+                  content={
+                    <CashFlowTooltip currency={currency} locale={locale} />
+                  }
                 />
-                <Bar dataKey="income" fill="var(--chart-green)" radius={[8, 8, 0, 0]} maxBarSize={72} />
-                <Bar dataKey="expense" fill="var(--chart-orange)" radius={[8, 8, 0, 0]} maxBarSize={72} />
+                <Bar
+                  dataKey="income"
+                  fill="var(--chart-green)"
+                  radius={[8, 8, 0, 0]}
+                  maxBarSize={72}
+                />
+                <Bar
+                  dataKey="expense"
+                  fill="var(--chart-orange)"
+                  radius={[8, 8, 0, 0]}
+                  maxBarSize={72}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
           <dl className="cash-flow-card__figures">
             {["income", "expense", "net"].map((key) => (
-              <div key={key} className={`cash-flow-card__figure cash-flow-card__figure--${key}`}>
+              <div
+                key={key}
+                className={`cash-flow-card__figure cash-flow-card__figure--${key}`}
+              >
                 <dt>{t(`dashboard.user.cashFlow.${key}`)}</dt>
-                <dd className={key === "net" && isNegativeAmount(totals?.net) ? "cash-flow-card__negative" : ""}>
-                  <bdi>{formatOptionalMoney(totals?.[key], currency, locale)}</bdi>
+                <dd
+                  className={
+                    key === "net" && isNegativeAmount(totals?.net)
+                      ? "cash-flow-card__negative"
+                      : ""
+                  }
+                >
+                  <bdi>
+                    <PrivateMoney>
+                      {formatOptionalMoney(totals?.[key], currency, locale)}
+                    </PrivateMoney>
+                  </bdi>
                 </dd>
               </div>
             ))}
           </dl>
         </>
       ) : (
-        <p className="cash-flow-card__empty">{t("dashboard.user.cashFlow.empty")}</p>
+        <p className="cash-flow-card__empty">
+          {t("dashboard.user.cashFlow.empty")}
+        </p>
       )}
     </SectionCard>
   );

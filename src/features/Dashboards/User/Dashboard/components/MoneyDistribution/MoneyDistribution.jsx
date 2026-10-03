@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { createElement } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -13,7 +14,10 @@ import SectionCard from "../shared/SectionCard";
 import ProgressBar from "../shared/ProgressBar";
 
 import "./MoneyDistribution.css";
-import { ACCOUNT_TYPES, getDisplayLocale } from "../../../Accounts/accountHelpers";
+import {
+  ACCOUNT_TYPES,
+  getDisplayLocale,
+} from "../../../Accounts/accountHelpers";
 import { translateEnum } from "../../../FinancialOperations/transactionHelpers";
 import { formatOptionalMoney } from "../../dashboardHelpers";
 
@@ -68,11 +72,17 @@ export default function MoneyDistribution({ accounts }) {
       }
     >
       {groups.length === 0 ? (
-        <p className="money-distribution__empty">{t("dashboard.user.money.empty")}</p>
+        <p className="money-distribution__empty">
+          {t("dashboard.user.money.empty")}
+        </p>
       ) : (
         <div className="money-distribution__grid">
           {groups.map(({ key, type, currency, items }) => {
-            const largest = Math.max(...items.map((account) => Math.abs(Number(account.current_balance) || 0)));
+            const largest = Math.max(
+              ...items.map((account) =>
+                Math.abs(Number(account.current_balance) || 0),
+              ),
+            );
 
             return (
               <article className="money-account" key={key}>
@@ -88,32 +98,55 @@ export default function MoneyDistribution({ accounts }) {
                       {currency && <bdi>{currency}</bdi>}
                     </small>
                     <span className="money-account__count">
-                      {t("dashboard.user.money.accountsCount", { count: items.length })}
+                      {t("dashboard.user.money.accountsCount", {
+                        count: items.length,
+                      })}
                     </span>
                   </div>
                 </div>
 
                 {items.map((account) => (
-                  <div className="money-account__line" key={account.id ?? account.name}>
+                  <div
+                    className="money-account__line"
+                    key={account.id ?? account.name}
+                  >
                     <div className="money-account__line-meta">
                       <div>
                         {account.id != null ? (
-                          <Link to={getAccountDetailsPath(account.id)} className="money-account__name">
+                          <Link
+                            to={getAccountDetailsPath(account.id)}
+                            className="money-account__name"
+                          >
                             {account.name}
                           </Link>
                         ) : (
                           <span>{account.name}</span>
                         )}
                         {account.status && account.status !== "active" && (
-                          <small>{translateEnum(t, i18n, "dashboard.accounts.status", account.status)}</small>
+                          <small>
+                            {translateEnum(
+                              t,
+                              i18n,
+                              "dashboard.accounts.status",
+                              account.status,
+                            )}
+                          </small>
                         )}
                       </div>
                       <strong>
-                        {formatOptionalMoney(account.current_balance, account.currency_code, locale)}
+                        <PrivateMoney>
+                          {formatOptionalMoney(
+                            account.current_balance,
+                            account.currency_code,
+                            locale,
+                          )}
+                        </PrivateMoney>
                       </strong>
                     </div>
 
-                    <ProgressBar value={barWidth(account.current_balance, largest)} />
+                    <ProgressBar
+                      value={barWidth(account.current_balance, largest)}
+                    />
                   </div>
                 ))}
               </article>

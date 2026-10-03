@@ -5,6 +5,7 @@ import "./AccountFilters.css";
 const filters = [
   "all",
   "bank",
+  "credit",
   "wallet",
   "cash",
   "savings",

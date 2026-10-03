@@ -153,6 +153,6 @@
 
 @media (max-width: 520px) {
   .goal-movement-form__row {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }

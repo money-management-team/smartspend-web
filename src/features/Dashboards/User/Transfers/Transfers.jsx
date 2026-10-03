@@ -1,3 +1,4 @@
+import PrivateMoney from "../Experience/PrivateMoney";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
@@ -57,7 +58,10 @@ export default function Transfers() {
   const [searchParams, setSearchParams] = useSearchParams();
   // Filters and page live in the URL, so the details page's back link (and
   // the browser's) return to the same view.
-  const filters = useMemo(() => readTransferFilters(searchParams), [searchParams]);
+  const filters = useMemo(
+    () => readTransferFilters(searchParams),
+    [searchParams],
+  );
   const query = useMemo(() => transferFiltersToQuery(filters), [filters]);
   const isFiltered = hasActiveTransferFilters(filters);
   // `?new=1` (the dashboard's Transfer action) opens the form once; the flag
@@ -68,9 +72,12 @@ export default function Transfers() {
 
   useEffect(() => {
     if (searchParams.has("new")) {
-      setSearchParams(transferFiltersToSearchParams(readTransferFilters(searchParams)), {
-        replace: true,
-      });
+      setSearchParams(
+        transferFiltersToSearchParams(readTransferFilters(searchParams)),
+        {
+          replace: true,
+        },
+      );
     }
   }, [searchParams, setSearchParams]);
 
@@ -84,10 +91,17 @@ export default function Transfers() {
     // Same call as the transfer form: the session workspace's active accounts.
     // A failure only leaves the account filters with "All accounts".
     accountsApi
-      .list({ id_workspace: getStoredWorkspace()?.id }, { signal: controller.signal })
+      .list(
+        { id_workspace: getStoredWorkspace()?.id },
+        { signal: controller.signal },
+      )
       .then((response) => {
         const list = response.data?.accounts;
-        setAccounts(Array.isArray(list) ? list.filter((account) => account?.id != null) : []);
+        setAccounts(
+          Array.isArray(list)
+            ? list.filter((account) => account?.id != null)
+            : [],
+        );
       })
       .catch(() => {});
 
@@ -97,7 +111,11 @@ export default function Transfers() {
   /* ---------- Filters ---------- */
 
   const updateFilters = (changes) => {
-    const next = { ...readCurrentFilters(), ...changes, page: changes.page ?? 1 };
+    const next = {
+      ...readCurrentFilters(),
+      ...changes,
+      page: changes.page ?? 1,
+    };
 
     // Keep the range valid (date_to ≥ date_from) instead of sending a 422.
     if (next.date_from && next.date_to && next.date_to < next.date_from) {
@@ -109,9 +127,12 @@ export default function Transfers() {
   };
 
   const clearFilters = () =>
-    setSearchParams(transferFiltersToSearchParams(readTransferFilters(new URLSearchParams())), {
-      replace: true,
-    });
+    setSearchParams(
+      transferFiltersToSearchParams(readTransferFilters(new URLSearchParams())),
+      {
+        replace: true,
+      },
+    );
 
   /* ---------- List ---------- */
 
@@ -146,13 +167,18 @@ export default function Transfers() {
   }, [query, requestKey]);
 
   const isLoading = result.key !== requestKey;
-  const { page: listPage, error } = isLoading ? { page: null, error: null } : result;
+  const { page: listPage, error } = isLoading
+    ? { page: null, error: null }
+    : result;
   const items = listPage?.items ?? [];
 
   const goToPage = (next) =>
-    setSearchParams(transferFiltersToSearchParams({ ...readCurrentFilters(), page: next }), {
-      replace: false,
-    });
+    setSearchParams(
+      transferFiltersToSearchParams({ ...readCurrentFilters(), page: next }),
+      {
+        replace: false,
+      },
+    );
 
   // The backend ledger is the source of truth: after money moved, the list is
   // refetched instead of being patched locally.
@@ -193,13 +219,20 @@ export default function Transfers() {
               </>
             )}
           </p>
-          <button type="button" onClick={() => setNotice(null)} aria-label={t("common.close")}>
+          <button
+            type="button"
+            onClick={() => setNotice(null)}
+            aria-label={t("common.close")}
+          >
             <LuX aria-hidden="true" />
           </button>
         </div>
       )}
 
-      <section className="transfers-page__panel" aria-labelledby="transfers-list-title">
+      <section
+        className="transfers-page__panel"
+        aria-labelledby="transfers-list-title"
+      >
         <header className="transfers-page__panel-head">
           <h2 id="transfers-list-title">
             {t("dashboard.transfers.listTitle")}
@@ -217,13 +250,21 @@ export default function Transfers() {
         />
 
         <div className="transfers-page__list">
-          {isLoading && <Loading message={t("dashboard.transfers.states.loading")} />}
+          {isLoading && (
+            <Loading message={t("dashboard.transfers.states.loading")} />
+          )}
 
           {!isLoading && error && (
-            <div className="transfers-page__state transfers-page__state--error" role="alert">
+            <div
+              className="transfers-page__state transfers-page__state--error"
+              role="alert"
+            >
               <p>{getTransferErrorMessage(error, t)}</p>
               <div className="transfers-page__state-actions">
-                <button type="button" onClick={() => setReloadKey((key) => key + 1)}>
+                <button
+                  type="button"
+                  onClick={() => setReloadKey((key) => key + 1)}
+                >
                   {t("common.retry")}
                 </button>
                 {isFiltered && (
@@ -265,8 +306,14 @@ export default function Transfers() {
           {!isLoading &&
             !error &&
             items.map((transfer) => {
-              const from = getAccountLabel(getFromAccount(transfer), transfer.from_account_id);
-              const to = getAccountLabel(getToAccount(transfer), transfer.to_account_id);
+              const from = getAccountLabel(
+                getFromAccount(transfer),
+                transfer.from_account_id,
+              );
+              const to = getAccountLabel(
+                getToAccount(transfer),
+                transfer.to_account_id,
+              );
               const isReversed = transfer.status === "reversed";
 
               return (
@@ -294,13 +341,21 @@ export default function Transfers() {
                     <small>
                       <bdi dir="ltr">#{transfer.id}</bdi>
                       {" · "}
-                      <bdi>{formatDate(transfer.occurred_at, locale, timeZone)}</bdi>
+                      <bdi>
+                        {formatDate(transfer.occurred_at, locale, timeZone)}
+                      </bdi>
                       {hasTransferFee(transfer) && (
                         <>
                           {" · "}
                           <bdi>
                             {t("dashboard.transfers.fields.fee")}{" "}
-                            {formatMoney(transfer.fee_amount, transfer.currency_code, locale)}
+                            <PrivateMoney>
+                              {formatMoney(
+                                transfer.fee_amount,
+                                transfer.currency_code,
+                                locale,
+                              )}
+                            </PrivateMoney>
                           </bdi>
                         </>
                       )}
@@ -310,7 +365,13 @@ export default function Transfers() {
                   <div className="transfer-row__side">
                     {/* A transfer is neither income nor expense: no sign. */}
                     <strong className="transfer-row__amount" dir="ltr">
-                      {formatMoney(transfer.amount, transfer.currency_code, locale)}
+                      <PrivateMoney>
+                        {formatMoney(
+                          transfer.amount,
+                          transfer.currency_code,
+                          locale,
+                        )}
+                      </PrivateMoney>
                     </strong>
                     <TransactionStatusBadge
                       status={transfer.status}
@@ -361,7 +422,10 @@ export default function Transfers() {
       </section>
 
       {isCreating && (
-        <TransferForm onCreated={handleCreated} onClose={() => setIsCreating(false)} />
+        <TransferForm
+          onCreated={handleCreated}
+          onClose={() => setIsCreating(false)}
+        />
       )}
     </div>
   );

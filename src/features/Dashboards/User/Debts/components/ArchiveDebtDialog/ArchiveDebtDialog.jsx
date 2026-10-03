@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuTriangleAlert } from "react-icons/lu";
@@ -46,7 +47,8 @@ export default function ArchiveDebtDialog({ debt, onConfirm, onClose }) {
       await onConfirm();
     } catch (error) {
       // 401 is handled by apiClient's session-expired flow.
-      if (error?.code !== "UNAUTHENTICATED") setMessage(getDebtErrorMessage(error, t, "archive"));
+      if (error?.code !== "UNAUTHENTICATED")
+        setMessage(getDebtErrorMessage(error, t, "archive"));
     } finally {
       pendingRef.current = false;
       setIsRunning(false);
@@ -70,14 +72,24 @@ export default function ArchiveDebtDialog({ debt, onConfirm, onClose }) {
       >
         <header>
           <h2 id="archive-debt-title" dir="auto">
-            {t("dashboard.debts.archiveDialog.title", { name: debt.counterparty_name ?? `#${debt.id}` })}
+            {t("dashboard.debts.archiveDialog.title", {
+              name: debt.counterparty_name ?? `#${debt.id}`,
+            })}
           </h2>
-          <button type="button" onClick={close} disabled={isRunning} aria-label={t("common.close")}>
+          <button
+            type="button"
+            onClick={close}
+            disabled={isRunning}
+            aria-label={t("common.close")}
+          >
             ×
           </button>
         </header>
 
-        <div id="archive-debt-description" className="reverse-transaction-dialog__body">
+        <div
+          id="archive-debt-description"
+          className="reverse-transaction-dialog__body"
+        >
           <p>{t("dashboard.debts.archiveDialog.description")}</p>
 
           <ul>
@@ -91,15 +103,24 @@ export default function ArchiveDebtDialog({ debt, onConfirm, onClose }) {
           <div className="archive-debt-dialog__blocked" role="note">
             <LuTriangleAlert aria-hidden="true" />
             <p>
-              {t("dashboard.debts.archiveDialog.hasPayments", {
-                amount: formatMoney(debt.remaining_amount, debt.currency_code, locale),
-              })}
+              <PrivateMoney>
+                {t("dashboard.debts.archiveDialog.hasPayments", {
+                  amount: formatMoney(
+                    debt.remaining_amount,
+                    debt.currency_code,
+                    locale,
+                  ),
+                })}
+              </PrivateMoney>
             </p>
           </div>
         )}
 
         {message && (
-          <div className="account-form-modal__error archive-debt-dialog__error" role="alert">
+          <div
+            className="account-form-modal__error archive-debt-dialog__error"
+            role="alert"
+          >
             <p dir="auto">{message}</p>
           </div>
         )}
@@ -114,7 +135,11 @@ export default function ArchiveDebtDialog({ debt, onConfirm, onClose }) {
             disabled={isRunning || isBlocked}
             aria-busy={isRunning || undefined}
           >
-            {t(isRunning ? "dashboard.debts.archiveDialog.running" : "dashboard.debts.archiveDialog.confirm")}
+            {t(
+              isRunning
+                ? "dashboard.debts.archiveDialog.running"
+                : "dashboard.debts.archiveDialog.confirm",
+            )}
           </button>
         </footer>
       </section>

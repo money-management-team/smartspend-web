@@ -1,11 +1,8 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { createElement } from "react";
 import { useTranslation } from "react-i18next";
 
-import {
-  LuArrowDownRight,
-  LuArrowUpRight,
-  LuScale,
-} from "react-icons/lu";
+import { LuArrowDownRight, LuArrowUpRight, LuScale } from "react-icons/lu";
 
 import "./SummaryCards.css";
 import { getDisplayLocale } from "../../../Accounts/accountHelpers";
@@ -27,20 +24,33 @@ export default function SummaryCards({ totals }) {
   const locale = getDisplayLocale(i18n.language);
 
   return (
-    <section className="dashboard-summary-cards" aria-label={t("dashboard.user.summary.label")}>
+    <section
+      className="dashboard-summary-cards"
+      aria-label={t("dashboard.user.summary.label")}
+    >
       {cards.map(({ key, icon }) => {
         const value = totals?.[key];
-        const tone = key === "net" && isNegativeAmount(value) ? " dashboard-summary-card__amount--negative" : "";
+        const tone =
+          key === "net" && isNegativeAmount(value)
+            ? " dashboard-summary-card__amount--negative"
+            : "";
 
         return (
-          <article className={`dashboard-summary-card dashboard-summary-card--${key}`} key={key}>
+          <article
+            className={`dashboard-summary-card dashboard-summary-card--${key}`}
+            key={key}
+          >
             <div className="dashboard-summary-card__content">
               <span className="dashboard-summary-card__label">
                 {t(`dashboard.user.summary.${key}.label`)}
               </span>
 
               <div className={`dashboard-summary-card__amount${tone}`}>
-                <strong>{formatOptionalMoney(value, totals?.currency_code, locale)}</strong>
+                <strong>
+                  <PrivateMoney>
+                    {formatOptionalMoney(value, totals?.currency_code, locale)}
+                  </PrivateMoney>
+                </strong>
               </div>
 
               <span className="dashboard-summary-card__hint">

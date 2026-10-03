@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuInfo, LuLock } from "react-icons/lu";
@@ -24,7 +25,13 @@ import "../DebtForm/DebtForm.css";
 
 // Fields with their own input; errors for any other backend field (e.g.
 // `metadata`) are listed in the error block instead.
-const FORM_FIELDS = ["counterparty_name", "original_amount", "issued_at", "due_date", "notes"];
+const FORM_FIELDS = [
+  "counterparty_name",
+  "original_amount",
+  "issued_at",
+  "due_date",
+  "notes",
+];
 
 /*
  * Edit debt modal (PATCH /debts/{id}). Only counterparty, original amount,
@@ -120,10 +127,17 @@ export default function DebtEditForm({ debt, onSave, onClose }) {
       >
         <header>
           <div className="debt-form__title">
-            <h2 id="debt-edit-form-title">{t("dashboard.debts.editForm.title")}</h2>
+            <h2 id="debt-edit-form-title">
+              {t("dashboard.debts.editForm.title")}
+            </h2>
             <p dir="auto">{debt.counterparty_name}</p>
           </div>
-          <button type="button" onClick={close} disabled={isSaving} aria-label={t("common.close")}>
+          <button
+            type="button"
+            onClick={close}
+            disabled={isSaving}
+            aria-label={t("common.close")}
+          >
             ×
           </button>
         </header>
@@ -162,7 +176,10 @@ export default function DebtEditForm({ debt, onSave, onClose }) {
                 aria-describedby="debt-edit-form-amount-hint"
                 required
               />
-              <em className="account-form-modal__hint" id="debt-edit-form-amount-hint">
+              <em
+                className="account-form-modal__hint"
+                id="debt-edit-form-amount-hint"
+              >
                 {t("dashboard.debts.editForm.amountHint")}
               </em>
               {fieldErrors("original_amount")}
@@ -173,7 +190,14 @@ export default function DebtEditForm({ debt, onSave, onClose }) {
             <dl>
               <div>
                 <dt>{t("dashboard.debts.fields.direction")}</dt>
-                <dd>{translateEnum(t, i18n, "dashboard.debts.direction", debt.direction) || "—"}</dd>
+                <dd>
+                  {translateEnum(
+                    t,
+                    i18n,
+                    "dashboard.debts.direction",
+                    debt.direction,
+                  ) || "—"}
+                </dd>
               </div>
               <div>
                 <dt>{t("dashboard.debts.fields.currency")}</dt>
@@ -185,7 +209,15 @@ export default function DebtEditForm({ debt, onSave, onClose }) {
                 <div>
                   <dt>{t("dashboard.debts.fields.originalAmount")}</dt>
                   <dd>
-                    <bdi dir="ltr">{formatMoney(debt.original_amount, debt.currency_code, locale)}</bdi>
+                    <bdi dir="ltr">
+                      <PrivateMoney>
+                        {formatMoney(
+                          debt.original_amount,
+                          debt.currency_code,
+                          locale,
+                        )}
+                      </PrivateMoney>
+                    </bdi>
                   </dd>
                 </div>
               )}
@@ -264,7 +296,11 @@ export default function DebtEditForm({ debt, onSave, onClose }) {
             <button type="button" onClick={close} disabled={isSaving}>
               {t("common.cancel")}
             </button>
-            <button type="submit" disabled={isSaving} aria-busy={isSaving || undefined}>
+            <button
+              type="submit"
+              disabled={isSaving}
+              aria-busy={isSaving || undefined}
+            >
               {isSaving ? t("common.saving") : t("common.save")}
             </button>
           </footer>

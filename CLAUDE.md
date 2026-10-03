@@ -70,7 +70,8 @@ Dashboard pages (e.g. `Budgets.jsx`) follow the same shape:
 - errors are shown via `getApiErrorMessage`;
 - `components/Loading/Loading` is shown while loading.
 
-Not every dashboard page is wired to the backend yet. `AIAssistant` is static UI with no API module. `Settings` uses `authApi` for Profile (`PUT /profile`) and Security (`PATCH /profile/password`, see `docs/auth/change-password/implementation.md`), but its Preferences tab is still a placeholder. Check a page for an `*Api` import before assuming it has backend support.
+The personal dashboard pages use resource API modules. `AIAssistant` uses `aiCopilotApi` for conversations, insights, forecasts, feedback and privacy settings; see `docs/ai-copilot/integration.md`. `Imports` uses `importsApi` for statement review and posting; see `docs/imports/integration.md`. `Settings` uses `authApi` for Profile, Security and saved locale/timezone preferences; see `docs/settings/implementation.md`. Theme remains a browser preference.
+The supplied backend has no company registration or business workspace creation flow. The company auth screens are legacy presentation work and must not be presented as a functional business product without a separate backend implementation.
 
 ### i18n and RTL
 - `src/i18n.jsx` sets up i18next with a single `translation` namespace. Resources are one file per language, `src/locales/en/en.json` and `src/locales/ar/ar.json`, with top-level sections `common`, `api`, `auth`, `dashboard`, and `home`. `fallbackLng` is `en`.
@@ -94,6 +95,7 @@ Not every dashboard page is wired to the backend yet. `AIAssistant` is static UI
   - dark overrides under `:root[data-theme="dark"]`.
 - `ThemeProvider` sets `data-theme` on `<html>` and persists it to localStorage `theme`.
 - Use tokens instead of hard-coded colors (`--color-primary`, `--color-surface`, `--color-text-strong`, `--primary-soft`, `--gradient-primary`, `--font-heading`, …). Write theme-specific rules as `:root[data-theme="dark"] .selector`.
+- Dashboard pages: `DashboardLayout.css` owns the page gutter and max-width (`--dashboard-*` tokens); page roots must not set their own outer `max-width`/padding. Use `minmax(0, 1fr)` for single-column grids. Shared responsive fixes live in `layouts/DashboardLayout/dashboardPrimitives.css`; see `docs/dashboard-layout/responsive-system.md`.
 - Fonts: Tajawal for headings and large financial values; Cairo for the UI.
 - `src/features/PublicPage/Home/Home.css` is large and layered: later "FINAL …" sections override earlier rules for the same selectors, so search the whole file before changing a property.
 - `Home.jsx` adds `home-reveal*` classes to section selectors at runtime (IntersectionObserver) and drives the parallax CSS variables.

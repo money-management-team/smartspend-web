@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { LuCheck } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -34,11 +35,15 @@ export default function AccountStep({
 
   return (
     <section
-      className={hasSelection ? "account-step account-step--complete" : "account-step"}
+      className={
+        hasSelection ? "account-step account-step--complete" : "account-step"
+      }
       aria-labelledby="account-step-title"
     >
       <header className="step-heading">
-        <span className="step-heading__number" aria-hidden="true">1</span>
+        <span className="step-heading__number" aria-hidden="true">
+          1
+        </span>
 
         <div className="step-heading__copy">
           <h2 id="account-step-title">
@@ -56,13 +61,20 @@ export default function AccountStep({
       </header>
 
       {isLoading && (
-        <Loading message={t("dashboard.financialOperations.accountStep.loading")} />
+        <Loading
+          message={t("dashboard.financialOperations.accountStep.loading")}
+        />
       )}
 
       {!isLoading && error && (
-        <div className="account-step__state account-step__state--error" role="alert">
+        <div
+          className="account-step__state account-step__state--error"
+          role="alert"
+        >
           <p>{getApiErrorMessage(error, t)}</p>
-          <button type="button" onClick={onRetry}>{t("common.retry")}</button>
+          <button type="button" onClick={onRetry}>
+            {t("common.retry")}
+          </button>
         </div>
       )}
 
@@ -104,12 +116,15 @@ export default function AccountStep({
                     {t(`dashboard.accounts.types.${account.type}`, {
                       defaultValue: account.type,
                     })}
-                    {account.last_four_digits && ` •••• ${account.last_four_digits}`}
+                    {account.last_four_digits &&
+                      ` •••• ${account.last_four_digits}`}
                   </small>
                 </span>
 
                 <span className="account-option__balance">
-                  <small>{t("dashboard.financialOperations.accountStep.balance")}</small>
+                  <small>
+                    {t("dashboard.financialOperations.accountStep.balance")}
+                  </small>
                   <b
                     className={
                       isNegativeMoney(account.current_balance)
@@ -118,7 +133,13 @@ export default function AccountStep({
                     }
                     dir="ltr"
                   >
-                    {formatMoney(account.current_balance, account.currency_code, locale)}
+                    <PrivateMoney>
+                      {formatMoney(
+                        account.current_balance,
+                        account.currency_code,
+                        locale,
+                      )}
+                    </PrivateMoney>
                   </b>
                 </span>
 

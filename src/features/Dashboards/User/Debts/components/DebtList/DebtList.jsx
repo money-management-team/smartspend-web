@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { LuBookOpen, LuWalletCards } from "react-icons/lu";
@@ -36,7 +37,9 @@ export default function DebtList({ debts }) {
   return (
     <div className="debt-list">
       <table className="debt-list__table">
-        <caption className="debt-list__caption">{t("dashboard.debts.list.caption")}</caption>
+        <caption className="debt-list__caption">
+          {t("dashboard.debts.list.caption")}
+        </caption>
         <thead>
           <tr>
             <th scope="col">{t("dashboard.debts.fields.counterparty")}</th>
@@ -59,41 +62,74 @@ export default function DebtList({ debts }) {
             const dueDate = toDateOnly(debt.due_date);
 
             return (
-              <tr key={debt.id} className={isOverdueDebt(debt) ? "debt-list__row--overdue" : undefined}>
+              <tr
+                key={debt.id}
+                className={
+                  isOverdueDebt(debt) ? "debt-list__row--overdue" : undefined
+                }
+              >
                 <th scope="row" className="debt-list__party">
-                  <Link className="debt-list__link" to={getDebtDetailsPath(debt.id)} dir="auto">
+                  <Link
+                    className="debt-list__link"
+                    to={getDebtDetailsPath(debt.id)}
+                    dir="auto"
+                  >
                     {debt.counterparty_name || `#${debt.id}`}
                   </Link>
                   {movement != null && (
-                    <small className={`debt-list__movement${movement ? " debt-list__movement--posted" : ""}`}>
-                      {movement ? <LuWalletCards aria-hidden="true" /> : <LuBookOpen aria-hidden="true" />}
-                      {t(movement ? "dashboard.debts.list.withMovement" : "dashboard.debts.list.recordOnly")}
+                    <small
+                      className={`debt-list__movement${movement ? " debt-list__movement--posted" : ""}`}
+                    >
+                      {movement ? (
+                        <LuWalletCards aria-hidden="true" />
+                      ) : (
+                        <LuBookOpen aria-hidden="true" />
+                      )}
+                      {t(
+                        movement
+                          ? "dashboard.debts.list.withMovement"
+                          : "dashboard.debts.list.recordOnly",
+                      )}
                     </small>
                   )}
                 </th>
-                <td>
+                <td data-label={t("dashboard.debts.fields.direction")}>
                   <DebtBadge kind="direction" value={debt.direction} />
                 </td>
-                {AMOUNT_COLUMNS.map(({ key }) => (
-                  <td className="debt-list__amount" key={key}>
-                    <bdi dir="ltr">{formatOptionalMoney(debt[key], currency, locale)}</bdi>
+                {AMOUNT_COLUMNS.map(({ key, label }) => (
+                  <td
+                    className="debt-list__amount"
+                    data-label={t(`dashboard.debts.fields.${label}`)}
+                    key={key}
+                  >
+                    <bdi dir="ltr">
+                      <PrivateMoney>
+                        {formatOptionalMoney(debt[key], currency, locale)}
+                      </PrivateMoney>
+                    </bdi>
                   </td>
                 ))}
-                <td>
+                <td data-label={t("dashboard.debts.fields.dueDate")}>
                   {dueDate ? (
                     <bdi>{formatDate(dueDate, locale)}</bdi>
                   ) : (
-                    <span className="debt-list__muted">{t("dashboard.debts.list.noDueDate")}</span>
+                    <span className="debt-list__muted">
+                      {t("dashboard.debts.list.noDueDate")}
+                    </span>
                   )}
                 </td>
-                <td>
+                <td data-label={t("dashboard.debts.fields.status")}>
                   <DebtBadge kind="status" value={getDebtStatus(debt)} />
                 </td>
-                <td>
+                <td data-label={t("dashboard.debts.fields.daysUntilDue")}>
                   {countdown ? (
-                    <span className={`debt-list__countdown debt-list__countdown--${countdown.key}`}>
+                    <span
+                      className={`debt-list__countdown debt-list__countdown--${countdown.key}`}
+                    >
                       {t(`dashboard.debts.list.${countdown.key}`, {
-                        days: new Intl.NumberFormat(locale).format(countdown.days),
+                        days: new Intl.NumberFormat(locale).format(
+                          countdown.days,
+                        ),
                       })}
                     </span>
                   ) : (

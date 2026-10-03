@@ -6,9 +6,9 @@ The old placeholder "Export PDF / Export Excel" buttons, which only logged to th
 
 ## Reports
 
-One page with a tab per report. Each tab calls exactly one endpoint:
+One page with a switcher entry per report. Each report calls exactly one endpoint:
 
-| Tab | Endpoint | What it shows |
+| Report | Endpoint | What it shows |
 |---|---|---|
 | Overview | `GET /reports/overview` | Dashboard-ready totals (income, cash flow, transfers, balances, budgets, savings, debts, recurring forecast) plus top categories and transactions. No item list. |
 | Income & Expense | `GET /reports/income-expense` | Income, expense, and net, compared with the previous period, with trend, top categories, top transactions, and average expense. |
@@ -23,12 +23,16 @@ One page with a tab per report. Each tab calls exactly one endpoint:
 
 ## Page layout
 
-1. Header and report tabs.
-2. Filter bar: quick periods, date from and to, currency (or all currencies), group by (day, week, or month), and per page (list reports only). See [implementation.md](implementation.md#filters).
-3. Period bar: the period the backend used, the previous period, the time zone, the applied currency and grouping, and the report's financial rule.
-4. Summary: one card per currency from `summary_by_currency`.
-5. Analytics: a trend chart per currency, the previous-period comparison, and the report-specific sections.
-6. Items table and pagination, for every report except Overview.
+Redesigned 2026-09-29 so the numbers come first and nothing is shown twice.
+
+1. **Header** (dark identity band, like the other finance pages): "Reports" eyebrow, the selected report's icon, name and description, the requested period, and the Export history / Export report actions.
+2. **Report switcher**: a side rail grouped into Performance (Overview, Income & Expense, Cash Flow, Categories), Balances & movements (Accounts, Transfers) and Planning (Budgets, Savings Goals, Debts, Recurring). At 1024px and below it becomes a native select with the same groups.
+3. **Filters toolbar**: quick periods as a segmented control; date from and to, currency, group by and per page (list reports only) with Apply / Reset on the same row. On phones the detailed fields fold behind a toggle. See [implementation.md](implementation.md#filters).
+4. **Context bar**: one quiet line with the period the backend used, the previous period, the time zone, the applied currency and grouping, then the report's financial rule.
+5. **Key figures**: KPI tiles per currency (the definition's `highlights`), each with the backend's change vs the previous period when the comparison has it.
+6. **Analytics**: trend chart per currency, previous-period comparison and the report-specific sections (two columns when the report column is at least 720px wide).
+7. **All figures**: every `summary_by_currency` field, one card per currency, groups tiled in a grid.
+8. **Items table** and pagination, for every report except Overview.
 
 ## Related docs
 

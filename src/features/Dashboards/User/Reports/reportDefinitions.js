@@ -27,6 +27,8 @@ import { pickValue } from "./reportHelpers";
  * What each report shows, on top of the shared primitives. Nothing here
  * calculates: every entry names backend fields to display.
  *
+ * - highlights: the headline `summary_by_currency` fields shown as KPI tiles
+ *   (only those present in a row are shown).
  * - summary: groups of `summary_by_currency` fields, in order. Fields the
  *   backend sends that aren't listed are still shown after them.
  * - notes: the financial rule that explains the report's numbers.
@@ -48,6 +50,7 @@ const CURRENCY_COLUMN = { id: "currency_code", type: "currency", keys: ["currenc
 export const REPORT_DEFINITIONS = {
   overview: {
     icon: LuLayoutDashboard,
+    highlights: ["total_income", "total_expense", "net_income", "current_account_balance"],
     notes: ["overview"],
     summary: [
       { title: "incomeExpense", fields: ["total_income", "total_expense", "net_income"] },
@@ -74,6 +77,7 @@ export const REPORT_DEFINITIONS = {
 
   "income-expense": {
     icon: LuScale,
+    highlights: ["total_income", "total_expense", "net_income", "transaction_count"],
     notes: ["incomeExpense"],
     summary: [{ fields: ["total_income", "total_expense", "net_income", "transaction_count"] }],
     analytics: [
@@ -108,6 +112,7 @@ export const REPORT_DEFINITIONS = {
 
   "cash-flow": {
     icon: LuActivity,
+    highlights: ["total_inflow", "total_outflow", "net_cash_flow"],
     notes: ["cashFlow"],
     summary: [{ fields: ["total_inflow", "total_outflow", "net_cash_flow"] }],
     analytics: [],
@@ -133,6 +138,7 @@ export const REPORT_DEFINITIONS = {
 
   accounts: {
     icon: LuWallet,
+    highlights: ["total_current_balance", "total_net_change", "total_inflow", "total_outflow"],
     notes: ["accounts"],
     summary: [
       {
@@ -170,6 +176,7 @@ export const REPORT_DEFINITIONS = {
 
   categories: {
     icon: LuTags,
+    highlights: ["total_income", "total_expense", "net_income", "categories_count"],
     notes: ["categories"],
     summary: [{ fields: ["total_income", "total_expense", "net_income", "categories_count"] }],
     analytics: [],
@@ -195,6 +202,7 @@ export const REPORT_DEFINITIONS = {
 
   transfers: {
     icon: LuArrowLeftRight,
+    highlights: ["total_principal", "total_fees", "transfers_count", "net_internal_transfer_effect"],
     notes: ["transfers"],
     summary: [
       {
@@ -232,6 +240,7 @@ export const REPORT_DEFINITIONS = {
 
   budgets: {
     icon: LuTarget,
+    highlights: ["total_budget", "total_spent", "total_remaining", "budgets_count"],
     notes: ["budgets"],
     summary: [{ fields: ["total_budget", "total_spent", "total_remaining", "budgets_count"] }],
     analytics: [
@@ -265,6 +274,7 @@ export const REPORT_DEFINITIONS = {
 
   "savings-goals": {
     icon: LuPiggyBank,
+    highlights: ["total_target", "total_saved", "total_remaining", "period_net_movement"],
     notes: ["savingsGoals"],
     summary: [
       { fields: ["total_target", "total_saved", "total_remaining", "goals_count"] },
@@ -295,6 +305,7 @@ export const REPORT_DEFINITIONS = {
 
   debts: {
     icon: LuHandCoins,
+    highlights: ["payable_outstanding", "receivable_outstanding", "payments", "collections"],
     notes: ["debts"],
     summary: [
       { title: "payable", fields: ["payable_original", "payable_outstanding"] },
@@ -335,6 +346,7 @@ export const REPORT_DEFINITIONS = {
 
   recurring: {
     icon: LuRepeat,
+    highlights: ["expected_income", "expected_expense", "active_templates", "upcoming_occurrences"],
     notes: ["recurring"],
     summary: [
       {
@@ -382,3 +394,13 @@ export const COMMON_ANALYTICS_KEYS = new Set([
 
 // Occurrence states shown in the recurring table, in lifecycle order.
 export const OCCURRENCE_STATES = ["posted", "skipped", "failed", "scheduled", "due", "cancelled"];
+
+/*
+ * How the report switcher groups the reports. Every name in
+ * REPORT_ENDPOINTS appears exactly once.
+ */
+export const REPORT_GROUPS = [
+  { id: "performance", reports: ["overview", "income-expense", "cash-flow", "categories"] },
+  { id: "balances", reports: ["accounts", "transfers"] },
+  { id: "planning", reports: ["budgets", "savings-goals", "debts", "recurring"] },
+];

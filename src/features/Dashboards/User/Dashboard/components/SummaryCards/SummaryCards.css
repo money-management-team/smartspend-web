@@ -270,7 +270,7 @@
 
 @media (max-width: 720px) {
   .dashboard-summary-cards {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
 
     gap: 14px;
   }

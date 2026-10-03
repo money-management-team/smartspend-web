@@ -266,6 +266,6 @@
 
 @media (max-width: 420px) {
   .debt-summary-card__sides {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }

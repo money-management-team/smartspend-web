@@ -1,7 +1,15 @@
+import PrivateMoney from "../Experience/PrivateMoney";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
-import { LuArchive, LuArrowLeft, LuHandCoins, LuInfo, LuPencil, LuX } from "react-icons/lu";
+import {
+  LuArchive,
+  LuArrowLeft,
+  LuHandCoins,
+  LuInfo,
+  LuPencil,
+  LuX,
+} from "react-icons/lu";
 
 import Loading from "../../../../components/Loading/Loading";
 import { useAuthContext } from "../../../../contexts/auth/useAuthContext";
@@ -36,7 +44,13 @@ import "./DebtDetails.css";
 
 // After these a write may have been applied (or the debt changed meanwhile):
 // the debt is refetched once the dialog showing the error closes.
-const STALE_CODES = ["CONFLICT", "FORBIDDEN", "NOT_FOUND", "VALIDATION_ERROR", ...UNKNOWN_OUTCOME_CODES];
+const STALE_CODES = [
+  "CONFLICT",
+  "FORBIDDEN",
+  "NOT_FOUND",
+  "VALIDATION_ERROR",
+  ...UNKNOWN_OUTCOME_CODES,
+];
 
 const EMPTY_NOTICE = { key: null, type: null, status: null };
 
@@ -86,7 +100,11 @@ export default function DebtDetails() {
         setResult(
           isDebtEntity(debt)
             ? { key: requestKey, debt, error: null }
-            : { key: requestKey, debt: null, error: new ApiError("", { code: "MALFORMED_RESPONSE" }) },
+            : {
+                key: requestKey,
+                debt: null,
+                error: new ApiError("", { code: "MALFORMED_RESPONSE" }),
+              },
         );
       })
       .catch((error) => {
@@ -121,7 +139,8 @@ export default function DebtDetails() {
     }
   };
 
-  const showNotice = (type, status = null) => setNotice({ key: requestKey, type, status });
+  const showNotice = (type, status = null) =>
+    setNotice({ key: requestKey, type, status });
 
   // Shows the debt a write returned; without a usable debt, everything is
   // refetched. Nothing is patched by hand.
@@ -131,7 +150,10 @@ export default function DebtDetails() {
       return;
     }
 
-    setResult((current) => ({ ...current, debt: mergeDebt(current.debt, nextDebt) }));
+    setResult((current) => ({
+      ...current,
+      debt: mergeDebt(current.debt, nextDebt),
+    }));
   };
 
   /* ---------- Edit ---------- */
@@ -146,7 +168,8 @@ export default function DebtDetails() {
         response = await debtsApi.update(debt.id, payload);
       } catch (requestError) {
         if (requestError?.code === "NOT_FOUND") markUnavailable(requestError);
-        else if (requestError?.code !== "VALIDATION_ERROR") markStale(requestError);
+        else if (requestError?.code !== "VALIDATION_ERROR")
+          markStale(requestError);
         throw requestError;
       }
 
@@ -198,7 +221,10 @@ export default function DebtDetails() {
     applyDebt(response?.data?.debt);
     setPaymentsKey((key) => key + 1);
     setDialog(null);
-    showNotice("reverseSuccess", response?.data?.debt ? getDebtStatus(response.data.debt) : null);
+    showNotice(
+      "reverseSuccess",
+      response?.data?.debt ? getDebtStatus(response.data.debt) : null,
+    );
   };
 
   /* ---------- Archive ---------- */
@@ -245,7 +271,13 @@ export default function DebtDetails() {
         {backLink}
 
         <div className="debt-details__state" role="alert">
-          <h1>{t(isNotFound ? "dashboard.debts.details.notFoundTitle" : "dashboard.debts.details.errorTitle")}</h1>
+          <h1>
+            {t(
+              isNotFound
+                ? "dashboard.debts.details.notFoundTitle"
+                : "dashboard.debts.details.errorTitle",
+            )}
+          </h1>
           <p>{getDebtErrorMessage(error, t)}</p>
 
           {!isNotFound && (
@@ -268,14 +300,24 @@ export default function DebtDetails() {
   const name = debt.counterparty_name || `#${debt.id}`;
 
   const money = (value) =>
-    value == null || value === "" ? "—" : <bdi dir="ltr">{formatMoney(value, currency, locale)}</bdi>;
+    value == null || value === "" ? (
+      "—"
+    ) : (
+      <bdi dir="ltr">
+        <PrivateMoney>{formatMoney(value, currency, locale)}</PrivateMoney>
+      </bdi>
+    );
   const date = (value) => {
     const day = toDateOnly(value);
     return day ? <bdi>{formatDate(day, locale)}</bdi> : null;
   };
-  const dateTime = (value) => <bdi>{formatDateTime(value, locale, timeZone)}</bdi>;
+  const dateTime = (value) => (
+    <bdi>{formatDateTime(value, locale, timeZone)}</bdi>
+  );
   const countdownText = countdown
-    ? t(`dashboard.debts.list.${countdown.key}`, { days: new Intl.NumberFormat(locale).format(countdown.days) })
+    ? t(`dashboard.debts.list.${countdown.key}`, {
+        days: new Intl.NumberFormat(locale).format(countdown.days),
+      })
     : "—";
 
   const noteKey =
@@ -291,30 +333,52 @@ export default function DebtDetails() {
     ["originalAmount", money(debt.original_amount)],
     ["paidAmount", money(debt.paid_amount)],
     ["remainingAmount", money(debt.remaining_amount)],
-    ["paymentsCount", paymentsCount == null ? "—" : <bdi>{new Intl.NumberFormat(locale).format(paymentsCount)}</bdi>],
+    [
+      "paymentsCount",
+      paymentsCount == null ? (
+        "—"
+      ) : (
+        <bdi>{new Intl.NumberFormat(locale).format(paymentsCount)}</bdi>
+      ),
+    ],
     ["daysUntilDue", countdownText],
   ];
 
   const openingValue =
-    movement == null
-      ? null
-      : debt.opening_transaction_id != null
-        ? (
-            <Link to={getTransactionDetailsPath(debt.opening_transaction_id)}>
-              {t("dashboard.debts.details.openingTransaction")} <bdi dir="ltr">#{debt.opening_transaction_id}</bdi>
-            </Link>
-          )
-        : t(movement ? "dashboard.debts.list.withMovement" : "dashboard.debts.list.recordOnly");
+    movement == null ? null : debt.opening_transaction_id != null ? (
+      <Link to={getTransactionDetailsPath(debt.opening_transaction_id)}>
+        {t("dashboard.debts.details.openingTransaction")}{" "}
+        <bdi dir="ltr">#{debt.opening_transaction_id}</bdi>
+      </Link>
+    ) : (
+      t(
+        movement
+          ? "dashboard.debts.list.withMovement"
+          : "dashboard.debts.list.recordOnly",
+      )
+    );
 
   const rows = [
     ["counterparty", <bdi key="name">{name}</bdi>],
-    ["direction", translateEnum(t, i18n, "dashboard.debts.direction", debt.direction) || "—"],
-    ["currency", <bdi key="currency" dir="ltr">{currency || "—"}</bdi>],
+    [
+      "direction",
+      translateEnum(t, i18n, "dashboard.debts.direction", debt.direction) ||
+        "—",
+    ],
+    [
+      "currency",
+      <bdi key="currency" dir="ltr">
+        {currency || "—"}
+      </bdi>,
+    ],
     ["issuedAt", date(debt.issued_at) ?? "—"],
     ["dueDate", date(debt.due_date) ?? t("dashboard.debts.list.noDueDate")],
     ["status", translateEnum(t, i18n, "dashboard.debts.status", status) || "—"],
     lifecycle !== "unknown" &&
-      lifecycle !== status && ["lifecycleStatus", translateEnum(t, i18n, "dashboard.debts.status", lifecycle)],
+      lifecycle !== status && [
+        "lifecycleStatus",
+        translateEnum(t, i18n, "dashboard.debts.status", lifecycle),
+      ],
     debt.owner?.name && ["owner", <bdi key="owner">{debt.owner.name}</bdi>],
     openingValue && ["openingMovement", openingValue],
     debt.settled_at && ["settledAt", dateTime(debt.settled_at)],
@@ -343,12 +407,21 @@ export default function DebtDetails() {
               <>
                 {" "}
                 {t("dashboard.debts.notices.statusNow", {
-                  status: translateEnum(t, i18n, "dashboard.debts.status", notice.status),
+                  status: translateEnum(
+                    t,
+                    i18n,
+                    "dashboard.debts.status",
+                    notice.status,
+                  ),
                 })}
               </>
             )}
           </p>
-          <button type="button" onClick={() => setNotice(EMPTY_NOTICE)} aria-label={t("common.close")}>
+          <button
+            type="button"
+            onClick={() => setNotice(EMPTY_NOTICE)}
+            aria-label={t("common.close")}
+          >
             <LuX aria-hidden="true" />
           </button>
         </div>
@@ -387,7 +460,11 @@ export default function DebtDetails() {
             </button>
           )}
           {actions.canEdit && (
-            <button type="button" className="debt-details__action" onClick={() => setDialog("edit")}>
+            <button
+              type="button"
+              className="debt-details__action"
+              onClick={() => setDialog("edit")}
+            >
               <LuPencil aria-hidden="true" />
               <span>{t("dashboard.debts.actions.edit")}</span>
             </button>
@@ -406,18 +483,29 @@ export default function DebtDetails() {
       </header>
 
       {noteKey && (
-        <p className={`debt-details__note debt-details__note--${noteKey}`} role="note">
+        <p
+          className={`debt-details__note debt-details__note--${noteKey}`}
+          role="note"
+        >
           <LuInfo aria-hidden="true" />
           <span>{t(`dashboard.debts.details.${noteKey}`)}</span>
         </p>
       )}
 
-      <section className="debt-details__panel" aria-labelledby="debt-details-amounts-title">
-        <h2 id="debt-details-amounts-title">{t("dashboard.debts.details.amountsTitle")}</h2>
+      <section
+        className="debt-details__panel"
+        aria-labelledby="debt-details-amounts-title"
+      >
+        <h2 id="debt-details-amounts-title">
+          {t("dashboard.debts.details.amountsTitle")}
+        </h2>
 
         <dl className="debt-details__stats">
           {stats.map(([key, value]) => (
-            <div className={`debt-details__stat debt-details__stat--${key}`} key={key}>
+            <div
+              className={`debt-details__stat debt-details__stat--${key}`}
+              key={key}
+            >
               <dt>{t(`dashboard.debts.fields.${key}`)}</dt>
               <dd>{value}</dd>
             </div>
@@ -431,7 +519,10 @@ export default function DebtDetails() {
         onReverse={(payment) => setDialog({ type: "reverse", payment })}
       />
 
-      <section className="debt-details__panel" aria-labelledby="debt-details-title">
+      <section
+        className="debt-details__panel"
+        aria-labelledby="debt-details-title"
+      >
         <h2 id="debt-details-title">{t("dashboard.debts.details.title")}</h2>
 
         <dl className="debt-details__list">
@@ -467,7 +558,11 @@ export default function DebtDetails() {
       )}
 
       {dialog === "archive" && actions.canArchive && (
-        <ArchiveDebtDialog debt={debt} onConfirm={handleArchive} onClose={closeDialog} />
+        <ArchiveDebtDialog
+          debt={debt}
+          onConfirm={handleArchive}
+          onClose={closeDialog}
+        />
       )}
     </div>
   );

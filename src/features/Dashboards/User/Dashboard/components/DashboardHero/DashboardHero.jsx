@@ -1,11 +1,7 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { createElement } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  LuPlus,
-  LuMinus,
-  LuArrowRightLeft,
-  LuTarget,
-} from "react-icons/lu";
+import { LuPlus, LuMinus, LuArrowRightLeft, LuTarget } from "react-icons/lu";
 import { useNavigate } from "react-router-dom";
 import {
   getNewOperationPath,
@@ -26,7 +22,13 @@ const actions = [
 ];
 
 // `totals.current_balance` is the backend's figure, shown as sent.
-export default function DashboardHero({ user, totals, period, periodLabel, multiCurrency }) {
+export default function DashboardHero({
+  user,
+  totals,
+  period,
+  periodLabel,
+  multiCurrency,
+}) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const locale = getDisplayLocale(i18n.language);
@@ -51,12 +53,22 @@ export default function DashboardHero({ user, totals, period, periodLabel, multi
         <p>{t("dashboard.user.hero.subtitle")}</p>
 
         <strong className="dashboard-hero-card__balance">
-          <bdi>{formatOptionalMoney(totals?.current_balance, totals?.currency_code, locale)}</bdi>
+          <bdi>
+            <PrivateMoney>
+              {formatOptionalMoney(
+                totals?.current_balance,
+                totals?.currency_code,
+                locale,
+              )}
+            </PrivateMoney>
+          </bdi>
         </strong>
 
         <small>
           {multiCurrency && totals?.currency_code
-            ? t("dashboard.user.hero.balanceInCurrency", { currency: totals.currency_code })
+            ? t("dashboard.user.hero.balanceInCurrency", {
+                currency: totals.currency_code,
+              })
             : t("dashboard.user.hero.balanceLabel")}
         </small>
       </div>

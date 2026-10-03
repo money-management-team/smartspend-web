@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useTranslation } from "react-i18next";
 import {
   Bar,
@@ -12,18 +13,30 @@ import {
 
 import { getDisplayLocale } from "../../../Accounts/accountHelpers";
 import { formatDate } from "../../../utils/formatters";
-import { formatReportValue, getFieldLabel, isCurrencyCode } from "../../reportHelpers";
+import {
+  formatReportValue,
+  getFieldLabel,
+  isCurrencyCode,
+} from "../../reportHelpers";
 import ReportSection from "../ReportSection/ReportSection";
 
 import "./ReportTrendChart.css";
 
-const PALETTE = ["var(--chart-blue)", "var(--chart-purple)", "var(--chart-green)", "var(--chart-orange)", "var(--chart-red)"];
+const PALETTE = [
+  "var(--chart-blue)",
+  "var(--chart-purple)",
+  "var(--chart-green)",
+  "var(--chart-orange)",
+  "var(--chart-red)",
+];
 
 // Semantic color of a series; unknown series take the next palette color.
 function getSeriesColor(key, index) {
   const name = key.split(".").pop();
-  if (/income|inflow|(^|_)in$|contribution|received|collection/.test(name)) return "var(--chart-green)";
-  if (/expense|outflow|(^|_)out$|withdrawal|given|payment|spent/.test(name)) return "var(--chart-orange)";
+  if (/income|inflow|(^|_)in$|contribution|received|collection/.test(name))
+    return "var(--chart-green)";
+  if (/expense|outflow|(^|_)out$|withdrawal|given|payment|spent/.test(name))
+    return "var(--chart-orange)";
   if (/fee/.test(name)) return "var(--chart-red)";
   if (/net/.test(name)) return "var(--chart-blue)";
   return PALETTE[index % PALETTE.length];
@@ -40,18 +53,33 @@ function getSeriesLabel(key, t, i18n) {
 function formatBucket(label, groupBy, locale) {
   const text = String(label ?? "");
 
-  if (/^\d{4}-\d{2}$/.test(text) || (groupBy === "month" && /^\d{4}-\d{2}-\d{2}/.test(text))) {
+  if (
+    /^\d{4}-\d{2}$/.test(text) ||
+    (groupBy === "month" && /^\d{4}-\d{2}-\d{2}/.test(text))
+  ) {
     const [year, month] = text.split("-").map(Number);
-    return new Intl.DateTimeFormat(locale, { month: "short", year: "numeric", timeZone: "UTC" }).format(
-      new Date(Date.UTC(year, month - 1, 1)),
-    );
+    return new Intl.DateTimeFormat(locale, {
+      month: "short",
+      year: "numeric",
+      timeZone: "UTC",
+    }).format(new Date(Date.UTC(year, month - 1, 1)));
   }
-  if (/^\d{4}-\d{2}-\d{2}/.test(text)) return formatDate(text.slice(0, 10), locale);
+  if (/^\d{4}-\d{2}-\d{2}/.test(text))
+    return formatDate(text.slice(0, 10), locale);
 
   return text || "—";
 }
 
-function TrendTooltip({ active, payload, label, series, currency, locale, t, i18n }) {
+function TrendTooltip({
+  active,
+  payload,
+  label,
+  series,
+  currency,
+  locale,
+  t,
+  i18n,
+}) {
   if (!active || !payload?.length) return null;
 
   const raw = payload[0]?.payload?.raw ?? {};
@@ -61,9 +89,16 @@ function TrendTooltip({ active, payload, label, series, currency, locale, t, i18
       <strong>{label}</strong>
       {series.map((key, index) => (
         <span key={key}>
-          <i style={{ background: getSeriesColor(key, index) }} aria-hidden="true" />
+          <i
+            style={{ background: getSeriesColor(key, index) }}
+            aria-hidden="true"
+          />
           {getSeriesLabel(key, t, i18n)}:{" "}
-          <bdi dir="ltr">{formatReportValue(raw[key], "money", { currency, locale })}</bdi>
+          <bdi dir="ltr">
+            <PrivateMoney>
+              {formatReportValue(raw[key], "money", { currency, locale })}
+            </PrivateMoney>
+          </bdi>
         </span>
       ))}
     </div>
@@ -81,15 +116,27 @@ export default function ReportTrendChart({ groups, groupBy }) {
 
   if (groups.length === 0) return null;
 
-  const compact = new Intl.NumberFormat(locale, { notation: "compact", maximumFractionDigits: 1 });
+  const compact = new Intl.NumberFormat(locale, {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  });
 
   return (
-    <ReportSection wide title={t("dashboard.reports.sections.trend")} hint={t("dashboard.reports.sections.trendHint")}>
+    <ReportSection
+      wide
+      title={t("dashboard.reports.sections.trend")}
+      hint={t("dashboard.reports.sections.trendHint")}
+    >
       <div className="report-trend">
         {groups.map((group) => {
-          const currency = isCurrencyCode(group.currency) ? group.currency : null;
+          const currency = isCurrencyCode(group.currency)
+            ? group.currency
+            : null;
           const data = group.points.map((point) => {
-            const entry = { label: formatBucket(point.label, groupBy, locale), raw: point.values };
+            const entry = {
+              label: formatBucket(point.label, groupBy, locale),
+              raw: point.values,
+            };
 
             group.series.forEach((key, index) => {
               const number = Number(point.values[key]);
@@ -100,7 +147,10 @@ export default function ReportTrendChart({ groups, groupBy }) {
           });
 
           return (
-            <figure className="report-trend__group" key={group.currency || "all"}>
+            <figure
+              className="report-trend__group"
+              key={group.currency || "all"}
+            >
               {group.currency && (
                 <figcaption>
                   <bdi dir="ltr">{group.currency}</bdi>
@@ -109,8 +159,15 @@ export default function ReportTrendChart({ groups, groupBy }) {
 
               <div className="report-trend__chart" dir="ltr">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }} barGap={3}>
-                    <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
+                  <BarChart
+                    data={data}
+                    margin={{ top: 10, right: 8, left: 0, bottom: 0 }}
+                    barGap={3}
+                  >
+                    <CartesianGrid
+                      vertical={false}
+                      stroke="var(--chart-grid)"
+                    />
                     <XAxis
                       dataKey="label"
                       axisLine={false}
@@ -126,9 +183,17 @@ export default function ReportTrendChart({ groups, groupBy }) {
                     />
                     <ReferenceLine y={0} stroke="var(--chart-grid)" />
                     <Tooltip
-                      cursor={{ fill: "color-mix(in srgb, var(--primary) 4%, transparent)" }}
+                      cursor={{
+                        fill: "color-mix(in srgb, var(--primary) 4%, transparent)",
+                      }}
                       content={
-                        <TrendTooltip series={group.series} currency={currency} locale={locale} t={t} i18n={i18n} />
+                        <TrendTooltip
+                          series={group.series}
+                          currency={currency}
+                          locale={locale}
+                          t={t}
+                          i18n={i18n}
+                        />
                       }
                     />
                     {group.series.map((key, index) => (
@@ -149,7 +214,10 @@ export default function ReportTrendChart({ groups, groupBy }) {
               <ul className="report-trend__legend">
                 {group.series.map((key, index) => (
                   <li key={key}>
-                    <i style={{ background: getSeriesColor(key, index) }} aria-hidden="true" />
+                    <i
+                      style={{ background: getSeriesColor(key, index) }}
+                      aria-hidden="true"
+                    />
                     {getSeriesLabel(key, t, i18n)}
                   </li>
                 ))}

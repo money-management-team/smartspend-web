@@ -1,8 +1,12 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useTranslation } from "react-i18next";
 import { LuSparkles } from "react-icons/lu";
 
 import { getDisplayLocale } from "../../../Accounts/accountHelpers";
-import { getSuggestionEntries, humanizeCaptureField } from "../../captureHelpers";
+import {
+  getSuggestionEntries,
+  humanizeCaptureField,
+} from "../../captureHelpers";
 
 import "./AiSuggestions.css";
 
@@ -48,9 +52,13 @@ export default function AiSuggestions({ capture }) {
         <ul className="ai-suggestions__list">
           {entries.map((entry) => (
             <li className="ai-suggestions__item" key={entry.field}>
-              <span className="ai-suggestions__field">{label(entry.field)}</span>
+              <span className="ai-suggestions__field">
+                {label(entry.field)}
+              </span>
 
-              <span className="ai-suggestions__value" dir="auto">{entry.value}</span>
+              <span className="ai-suggestions__value" dir="auto">
+                <PrivateMoney>{entry.value}</PrivateMoney>
+              </span>
 
               {/* How sure the model was — never a sign the value is correct,
                   so it stays plain secondary text with no success tone. */}

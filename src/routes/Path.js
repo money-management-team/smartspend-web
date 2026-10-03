@@ -1,5 +1,13 @@
 export const PATH = {
   HOME: "/",
+  PUBLIC: {
+    FEATURES: "/features",
+    PRICING: "/pricing",
+    SECURITY: "/security",
+    ABOUT: "/about",
+    CONTACT: "/contact",
+    SUPPORT: "/support",
+  },
   AUTH: {
     ACCOUNT_TYPE: "/account-type",
     SIGNIN: "/signin",
@@ -15,6 +23,10 @@ export const PATH = {
   },
   USER: {
     DASHBOARD: "/dashboard",
+    ATTENTION: "/dashboard/attention",
+    MONTHLY_REVIEW: "/dashboard/reports/monthly-review",
+    QUICK_TEMPLATES: "/dashboard/financial-operations/templates",
+    GETTING_STARTED: "/dashboard/getting-started",
     ACCOUNTS: "/dashboard/accounts",
     ACCOUNT_DETAILS: "/dashboard/accounts/:accountId",
     CATEGORIES: "/dashboard/categories",
@@ -37,6 +49,8 @@ export const PATH = {
     REPORTS: "/dashboard/reports",
     REPORT_EXPORTS: "/dashboard/reports/exports",
     AI_ASSISTANT: "/dashboard/ai-assistant",
+    IMPORTS: "/dashboard/imports",
+    IMPORT_DETAILS: "/dashboard/imports/:importId",
     NOTIFICATIONS: "/dashboard/notifications",
     SETTING: "/dashboard/settings",
   },
@@ -113,7 +127,8 @@ export const getRecurringDetailsPath = (recurringTransactionId) =>
 
 /* The Notifications page on its Financial alerts tab (calculated alerts, not
    the persistent notification inbox). */
-export const getFinancialAlertsPath = () => `${PATH.USER.NOTIFICATIONS}?tab=alerts`;
+export const getFinancialAlertsPath = () =>
+  `${PATH.USER.NOTIFICATIONS}?tab=alerts`;
 
 /*
  * Page of the record a calendar event or a notification refers to. The

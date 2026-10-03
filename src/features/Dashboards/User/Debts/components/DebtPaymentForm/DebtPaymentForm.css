@@ -198,6 +198,6 @@
 @media (max-width: 520px) {
   .debt-payment-form__row,
   .debt-payment-form__balance {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }

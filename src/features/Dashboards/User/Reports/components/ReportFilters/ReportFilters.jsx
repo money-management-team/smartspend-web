@@ -1,6 +1,6 @@
 import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { LuRotateCcw, LuSlidersHorizontal } from "react-icons/lu";
+import { LuChevronDown, LuRotateCcw, LuSlidersHorizontal } from "react-icons/lu";
 
 import {
   DATE_PRESETS,
@@ -21,10 +21,16 @@ const FIELDS = ["from", "to", "currency", "group_by", "per_page"];
  * incomplete or reversed range is never applied. The parent remounts this
  * component (via `key`) when the applied filters change, so the draft always
  * starts from what is in the URL.
+ *
+ * Layout: quick periods are always visible. On phones the detailed fields
+ * fold behind a toggle (CSS shows them unconditionally on wider screens);
+ * they open by themselves when the range is invalid.
  */
 export default function ReportFilters({ filters, currencies, showPerPage, timeZone, onApply, onReset }) {
   const { t } = useTranslation();
   const errorId = useId();
+  const fieldsId = useId();
+  const [showFields, setShowFields] = useState(false);
   const [draft, setDraft] = useState(() => ({
     from: filters.from,
     to: filters.to,
@@ -49,6 +55,7 @@ export default function ReportFilters({ filters, currencies, showPerPage, timeZo
     const rangeError = validateDateRange(draft.from, draft.to);
     if (rangeError) {
       setError(rangeError);
+      setShowFields(true);
       return;
     }
 
@@ -62,21 +69,35 @@ export default function ReportFilters({ filters, currencies, showPerPage, timeZo
 
   return (
     <form className="report-filters" onSubmit={handleSubmit} noValidate>
-      <div className="report-filters__presets" role="group" aria-label={t("dashboard.reports.filters.presetsLabel")}>
-        {DATE_PRESETS.map((preset) => (
-          <button
-            key={preset}
-            type="button"
-            className={`report-filters__preset ${activePreset === preset ? "report-filters__preset--active" : ""}`}
-            aria-pressed={activePreset === preset}
-            onClick={() => applyPreset(preset)}
-          >
-            {t(`dashboard.reports.filters.presets.${preset}`)}
-          </button>
-        ))}
+      <div className="report-filters__top">
+        <div className="report-filters__presets" role="group" aria-label={t("dashboard.reports.filters.presetsLabel")}>
+          {DATE_PRESETS.map((preset) => (
+            <button
+              key={preset}
+              type="button"
+              className={`report-filters__preset ${activePreset === preset ? "report-filters__preset--active" : ""}`}
+              aria-pressed={activePreset === preset}
+              onClick={() => applyPreset(preset)}
+            >
+              {t(`dashboard.reports.filters.presets.${preset}`)}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          className={`report-filters__toggle ${showFields ? "report-filters__toggle--open" : ""}`}
+          aria-expanded={showFields}
+          aria-controls={fieldsId}
+          onClick={() => setShowFields((open) => !open)}
+        >
+          <LuSlidersHorizontal aria-hidden="true" />
+          <span>{t("dashboard.reports.filters.more")}</span>
+          <LuChevronDown aria-hidden="true" className="report-filters__toggle-chevron" />
+        </button>
       </div>
 
-      <div className="report-filters__fields">
+      <div id={fieldsId} className={`report-filters__fields ${showFields ? "report-filters__fields--open" : ""}`}>
         <label className="report-filters__field">
           <span>{t("dashboard.reports.filters.from")}</span>
           <input

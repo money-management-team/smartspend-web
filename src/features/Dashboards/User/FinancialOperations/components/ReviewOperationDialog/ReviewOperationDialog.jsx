@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useMemo, useRef, useState } from "react";
 import {
   LuArrowRight,
@@ -20,14 +21,23 @@ import {
   getDisplayLocale,
   isNegativeMoney,
 } from "../../../Accounts/accountHelpers";
-import { formatMoney, subtractMoney, sumMoney } from "../../../utils/formatters";
+import {
+  formatMoney,
+  subtractMoney,
+  sumMoney,
+} from "../../../utils/formatters";
 
 // The dialog's buttons are the capture card's (.capture-action).
 import "../CaptureStep/CaptureStep.css";
 import "./ReviewOperationDialog.css";
 
 // Codes after which it is unknown whether the operation was recorded.
-const UNKNOWN_OUTCOME = ["NETWORK_ERROR", "TIMEOUT", "SERVER_ERROR", "MALFORMED_RESPONSE"];
+const UNKNOWN_OUTCOME = [
+  "NETWORK_ERROR",
+  "TIMEOUT",
+  "SERVER_ERROR",
+  "MALFORMED_RESPONSE",
+];
 
 /*
  * Receipt-style confirmation: the last step of every input method. Nothing is
@@ -67,7 +77,9 @@ export default function ReviewOperationDialog({
 
   // Balances stay the backend's decimal strings; the arithmetic is exact.
   const balance = account?.current_balance ?? "0";
-  const amountForMath = getAmountError(operation.amount) ? "0" : operation.amount;
+  const amountForMath = getAmountError(operation.amount)
+    ? "0"
+    : operation.amount;
   const balanceAfter = isExpense
     ? subtractMoney(balance, amountForMath)
     : sumMoney([balance, amountForMath]);
@@ -87,9 +99,12 @@ export default function ReviewOperationDialog({
     const nextErrors = {};
     const amountError = getAmountError(operation.amount);
 
-    if (amountError) nextErrors.amount = t(`dashboard.transactions.validation.${amountError}`);
+    if (amountError)
+      nextErrors.amount = t(`dashboard.transactions.validation.${amountError}`);
     if (isExpense && !operation.category_id) {
-      nextErrors.category_id = t("dashboard.transactions.validation.categoryRequired");
+      nextErrors.category_id = t(
+        "dashboard.transactions.validation.categoryRequired",
+      );
     }
 
     return nextErrors;
@@ -191,7 +206,9 @@ export default function ReviewOperationDialog({
                 {/* The brand name is not translated, as in the sidebar. */}
                 <strong>Smart Spend</strong>
                 <span>
-                  {t(`dashboard.financialOperations.newOperation.${operation.type}`)}
+                  {t(
+                    `dashboard.financialOperations.newOperation.${operation.type}`,
+                  )}
                 </span>
               </div>
             </div>
@@ -222,7 +239,13 @@ export default function ReviewOperationDialog({
               </div>
             ) : (
               <strong dir="ltr">
-                {formatMoney(operation.amount, account?.currency_code, locale)}
+                <PrivateMoney>
+                  {formatMoney(
+                    operation.amount,
+                    account?.currency_code,
+                    locale,
+                  )}
+                </PrivateMoney>
               </strong>
             )}
 
@@ -236,7 +259,9 @@ export default function ReviewOperationDialog({
               {isEditing ? (
                 <input
                   value={operation.description}
-                  onChange={(event) => change("description", event.target.value)}
+                  onChange={(event) =>
+                    change("description", event.target.value)
+                  }
                   maxLength={255}
                   dir="auto"
                   aria-label={t("dashboard.transactions.fields.description")}
@@ -255,7 +280,9 @@ export default function ReviewOperationDialog({
               {isEditing ? (
                 <select
                   value={operation.category_id}
-                  onChange={(event) => change("category_id", event.target.value)}
+                  onChange={(event) =>
+                    change("category_id", event.target.value)
+                  }
                   aria-label={t("dashboard.transactions.fields.category")}
                   aria-invalid={errors.category_id ? true : undefined}
                 >
@@ -263,12 +290,15 @@ export default function ReviewOperationDialog({
                     {t("dashboard.financialOperations.review.noCategory")}
                   </option>
                   {availableCategories.map((item) => (
-                    <option value={String(item.id)} key={item.id}>{item.name}</option>
+                    <option value={String(item.id)} key={item.id}>
+                      {item.name}
+                    </option>
                   ))}
                 </select>
               ) : (
                 <b dir="auto">
-                  {category?.name ?? t("dashboard.financialOperations.review.noCategory")}
+                  {category?.name ??
+                    t("dashboard.financialOperations.review.noCategory")}
                 </b>
               )}
             </div>
@@ -284,14 +314,18 @@ export default function ReviewOperationDialog({
               t("dashboard.transactions.fields.account"),
               account
                 ? `${account.name}${
-                    account.last_four_digits ? ` •••• ${account.last_four_digits}` : ""
+                    account.last_four_digits
+                      ? ` •••• ${account.last_four_digits}`
+                      : ""
                   }`
                 : "—",
             )}
 
             {line(
               t("dashboard.financialOperations.review.method"),
-              t(`dashboard.financialOperations.review.methods.${operation.method}`),
+              t(
+                `dashboard.financialOperations.review.methods.${operation.method}`,
+              ),
             )}
 
             <div className="receipt__line">
@@ -324,15 +358,30 @@ export default function ReviewOperationDialog({
 
           <div className="receipt__balance">
             <div>
-              <span>{t("dashboard.financialOperations.review.balanceBefore")}</span>
-              <b dir="ltr">{formatMoney(balance, account?.currency_code, locale)}</b>
+              <span>
+                {t("dashboard.financialOperations.review.balanceBefore")}
+              </span>
+              <b dir="ltr">
+                <PrivateMoney>
+                  {formatMoney(balance, account?.currency_code, locale)}
+                </PrivateMoney>
+              </b>
             </div>
 
-            <LuArrowRight className="receipt__balance-arrow" aria-hidden="true" />
+            <LuArrowRight
+              className="receipt__balance-arrow"
+              aria-hidden="true"
+            />
 
             <div>
-              <span>{t("dashboard.financialOperations.review.balanceAfter")}</span>
-              <b dir="ltr">{formatMoney(balanceAfter, account?.currency_code, locale)}</b>
+              <span>
+                {t("dashboard.financialOperations.review.balanceAfter")}
+              </span>
+              <b dir="ltr">
+                <PrivateMoney>
+                  {formatMoney(balanceAfter, account?.currency_code, locale)}
+                </PrivateMoney>
+              </b>
             </div>
           </div>
 
@@ -349,7 +398,9 @@ export default function ReviewOperationDialog({
             <p dir="auto">{feedback.text}</p>
             {feedback.hint && <p>{feedback.hint}</p>}
             {feedback.details.map((detail) => (
-              <p key={detail} dir="auto">{detail}</p>
+              <p key={detail} dir="auto">
+                {detail}
+              </p>
             ))}
           </div>
         )}
@@ -361,7 +412,11 @@ export default function ReviewOperationDialog({
             onClick={() => setIsEditing((value) => !value)}
             disabled={isSaving}
           >
-            {isEditing ? <LuCheck aria-hidden="true" /> : <LuPencil aria-hidden="true" />}
+            {isEditing ? (
+              <LuCheck aria-hidden="true" />
+            ) : (
+              <LuPencil aria-hidden="true" />
+            )}
             {t(
               isEditing
                 ? "dashboard.financialOperations.review.saveChanges"
@@ -378,7 +433,9 @@ export default function ReviewOperationDialog({
           >
             {isSaving
               ? t("dashboard.financialOperations.review.confirming")
-              : t(`dashboard.financialOperations.review.confirm.${operation.type}`)}
+              : t(
+                  `dashboard.financialOperations.review.confirm.${operation.type}`,
+                )}
           </button>
         </footer>
       </section>

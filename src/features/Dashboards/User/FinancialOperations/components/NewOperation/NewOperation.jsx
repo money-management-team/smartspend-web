@@ -1,3 +1,5 @@
+import { manualTemplateForm } from "../../../Experience/experienceStore";
+import ManualTemplateTools from "../../../Experience/ManualTemplateTools";
 import { useMemo, useState } from "react";
 import { LuArrowRight, LuWalletCards } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
@@ -30,6 +32,8 @@ const emptyForm = () => ({
  */
 export default function NewOperation({
   account,
+  accounts,
+  onSelectAccount,
   categories,
   initialType = "expense",
   isLoadingOptions = false,
@@ -77,9 +81,12 @@ export default function NewOperation({
     const nextErrors = {};
     const amountError = getAmountError(form.amount);
 
-    if (amountError) nextErrors.amount = t(`dashboard.transactions.validation.${amountError}`);
+    if (amountError)
+      nextErrors.amount = t(`dashboard.transactions.validation.${amountError}`);
     if (isExpense && !selectedCategoryId) {
-      nextErrors.category_id = t("dashboard.transactions.validation.categoryRequired");
+      nextErrors.category_id = t(
+        "dashboard.transactions.validation.categoryRequired",
+      );
     }
 
     return nextErrors;
@@ -110,7 +117,11 @@ export default function NewOperation({
   };
 
   return (
-    <form className="capture-panel new-operation" onSubmit={handleSubmit} noValidate>
+    <form
+      className="capture-panel new-operation"
+      onSubmit={handleSubmit}
+      noValidate
+    >
       <div className="new-operation__heading">
         <span className="capture-panel__kicker">
           {t("dashboard.financialOperations.manual.kicker")}
@@ -119,6 +130,20 @@ export default function NewOperation({
         <h3>{t("dashboard.financialOperations.manual.title")}</h3>
         <p>{t("dashboard.financialOperations.manual.description")}</p>
       </div>
+
+      <ManualTemplateTools
+        account={account}
+        accounts={accounts}
+        categories={categories}
+        type={type}
+        form={form}
+        onApply={(template) => {
+          onSelectAccount(template.account_id);
+          setType(template.type);
+          setForm(manualTemplateForm(template, getTodayInputValue()));
+          setErrors({});
+        }}
+      />
 
       <div
         className="new-operation__types"
@@ -145,7 +170,11 @@ export default function NewOperation({
       {optionsError && (
         <p className="new-operation__error" role="alert">
           {getApiErrorMessage(optionsError, t)}{" "}
-          <button type="button" className="new-operation__link" onClick={onRetryOptions}>
+          <button
+            type="button"
+            className="new-operation__link"
+            onClick={onRetryOptions}
+          >
             {t("common.retry")}
           </button>
         </p>
@@ -180,7 +209,9 @@ export default function NewOperation({
             name="note"
             value={form.note}
             onChange={handleChange}
-            placeholder={t("dashboard.financialOperations.form.notePlaceholder")}
+            placeholder={t(
+              "dashboard.financialOperations.form.notePlaceholder",
+            )}
             maxLength={255}
             dir="auto"
           />
@@ -201,7 +232,9 @@ export default function NewOperation({
             required={isExpense}
           >
             {availableCategories.length === 0 ? (
-              <option value="">{t("dashboard.financialOperations.form.noCategories")}</option>
+              <option value="">
+                {t("dashboard.financialOperations.form.noCategories")}
+              </option>
             ) : (
               <option value="" disabled={isExpense}>
                 {t(
@@ -212,7 +245,9 @@ export default function NewOperation({
               </option>
             )}
             {availableCategories.map((category) => (
-              <option value={category.id} key={category.id}>{category.name}</option>
+              <option value={category.id} key={category.id}>
+                {category.name}
+              </option>
             ))}
           </select>
 
@@ -254,14 +289,20 @@ export default function NewOperation({
             <bdi>
               {account
                 ? account.name
-                : t("dashboard.financialOperations.captureStep.chooseAccountAbove")}
+                : t(
+                    "dashboard.financialOperations.captureStep.chooseAccountAbove",
+                  )}
             </bdi>
           </div>
         </div>
       </div>
 
       <div className="new-operation__footer">
-        <button type="submit" className="capture-action" disabled={isLoadingOptions}>
+        <button
+          type="submit"
+          className="capture-action"
+          disabled={isLoadingOptions}
+        >
           {t(`dashboard.financialOperations.review.open.${type}`)}
           <LuArrowRight aria-hidden="true" />
         </button>

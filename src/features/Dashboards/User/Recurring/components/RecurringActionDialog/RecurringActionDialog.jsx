@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuTriangleAlert } from "react-icons/lu";
@@ -50,7 +51,13 @@ const OUTDATING_CODES = ["NOT_FOUND", "CONFLICT", "VALIDATION_ERROR"];
  * next attempt can't post a later occurrence by mistake. `onOutdated` tells
  * the parent to refetch when the dialog closes.
  */
-export default function RecurringActionDialog({ action, rule, onConfirm, onClose, onOutdated }) {
+export default function RecurringActionDialog({
+  action,
+  rule,
+  onConfirm,
+  onClose,
+  onOutdated,
+}) {
   const { t, i18n } = useTranslation();
   const locale = getDisplayLocale(i18n.language);
   const pendingRef = useRef(false);
@@ -75,7 +82,9 @@ export default function RecurringActionDialog({ action, rule, onConfirm, onClose
     const trimmedReason = reason.trim();
     if (action === "skip" && trimmedReason.length > REASON_MAX) {
       setFailure({
-        message: t("dashboard.recurring.validation.reasonTooLong", { max: REASON_MAX }),
+        message: t("dashboard.recurring.validation.reasonTooLong", {
+          max: REASON_MAX,
+        }),
         hint: "",
         occurrence: null,
       });
@@ -106,7 +115,8 @@ export default function RecurringActionDialog({ action, rule, onConfirm, onClose
         });
 
         if (unknownOutcome && action === "confirm") setIsBlocked(true);
-        if (unknownOutcome || OUTDATING_CODES.includes(error?.code)) onOutdated?.();
+        if (unknownOutcome || OUTDATING_CODES.includes(error?.code))
+          onOutdated?.();
       }
     } finally {
       pendingRef.current = false;
@@ -133,12 +143,20 @@ export default function RecurringActionDialog({ action, rule, onConfirm, onClose
           <h2 id="recurring-action-title" dir="auto">
             {t(`${prefix}.title`, { name: rule.name })}
           </h2>
-          <button type="button" onClick={close} disabled={isRunning} aria-label={t("common.close")}>
+          <button
+            type="button"
+            onClick={close}
+            disabled={isRunning}
+            aria-label={t("common.close")}
+          >
             ×
           </button>
         </header>
 
-        <div id="recurring-action-description" className="recurring-action-dialog__body">
+        <div
+          id="recurring-action-description"
+          className="recurring-action-dialog__body"
+        >
           <p>{t(`${prefix}.description`)}</p>
           <ul>
             {POINTS[action].map((point) => (
@@ -156,18 +174,30 @@ export default function RecurringActionDialog({ action, rule, onConfirm, onClose
                   <dt>{t("dashboard.recurring.fields.dueDate")}</dt>
                   <dd>
                     <bdi>{formatDate(next.due_date, locale)}</bdi>
-                    {isOverdueOccurrence(next) && <RecurringBadge kind="overdue" />}
+                    {isOverdueOccurrence(next) && (
+                      <RecurringBadge kind="overdue" />
+                    )}
                   </dd>
                 </div>
                 <div>
                   <dt>{t("dashboard.recurring.fields.amount")}</dt>
                   <dd>
-                    <bdi>{formatMoney(next.amount ?? rule.amount, currency, locale)}</bdi>
+                    <bdi>
+                      <PrivateMoney>
+                        {formatMoney(
+                          next.amount ?? rule.amount,
+                          currency,
+                          locale,
+                        )}
+                      </PrivateMoney>
+                    </bdi>
                   </dd>
                 </div>
                 <div>
                   <dt>{t("dashboard.recurring.fields.account")}</dt>
-                  <dd dir="auto">{getAccountLabel(rule.account, rule.account_id)}</dd>
+                  <dd dir="auto">
+                    {getAccountLabel(rule.account, rule.account_id)}
+                  </dd>
                 </div>
                 {next.status && (
                   <div>
@@ -193,7 +223,8 @@ export default function RecurringActionDialog({ action, rule, onConfirm, onClose
         {action === "skip" && (
           <label className="recurring-action-dialog__reason">
             <span>
-              {t("dashboard.recurring.fields.reason")} ({t("dashboard.transactions.form.optional")})
+              {t("dashboard.recurring.fields.reason")} (
+              {t("dashboard.transactions.form.optional")})
             </span>
             <textarea
               value={reason}
@@ -202,7 +233,9 @@ export default function RecurringActionDialog({ action, rule, onConfirm, onClose
                 setFailure(null);
               }}
               maxLength={REASON_MAX}
-              placeholder={t("dashboard.recurring.actionDialog.skip.reasonPlaceholder")}
+              placeholder={t(
+                "dashboard.recurring.actionDialog.skip.reasonPlaceholder",
+              )}
               disabled={isRunning}
               aria-invalid={failure?.fieldError ? true : undefined}
               dir="auto"
@@ -212,7 +245,10 @@ export default function RecurringActionDialog({ action, rule, onConfirm, onClose
         )}
 
         {failure && (
-          <div className="account-form-modal__error recurring-action-dialog__error" role="alert">
+          <div
+            className="account-form-modal__error recurring-action-dialog__error"
+            role="alert"
+          >
             <p dir="auto">{failure.message}</p>
             {failure.occurrence && (
               <dl className="recurring-action-dialog__failure">
@@ -220,7 +256,9 @@ export default function RecurringActionDialog({ action, rule, onConfirm, onClose
                   <div>
                     <dt>{t("dashboard.recurring.fields.dueDate")}</dt>
                     <dd>
-                      <bdi>{formatDate(failure.occurrence.due_date, locale)}</bdi>
+                      <bdi>
+                        {formatDate(failure.occurrence.due_date, locale)}
+                      </bdi>
                     </dd>
                   </div>
                 )}
@@ -228,7 +266,10 @@ export default function RecurringActionDialog({ action, rule, onConfirm, onClose
                   <div>
                     <dt>{t("dashboard.recurring.fields.status")}</dt>
                     <dd>
-                      <RecurringBadge kind="occurrence" value={failure.occurrence.status} />
+                      <RecurringBadge
+                        kind="occurrence"
+                        value={failure.occurrence.status}
+                      />
                     </dd>
                   </div>
                 )}

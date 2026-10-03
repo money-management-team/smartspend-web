@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { LuSparkles, LuTrendingUp } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 
@@ -41,7 +42,12 @@ export default function OperationsIntro({ today, hasAccount }) {
 
             return (
               <div className="operations-intro__flow-item" key={step}>
-                {index > 0 && <i className="operations-intro__flow-line" aria-hidden="true" />}
+                {index > 0 && (
+                  <i
+                    className="operations-intro__flow-line"
+                    aria-hidden="true"
+                  />
+                )}
 
                 <span
                   className={
@@ -77,14 +83,22 @@ export default function OperationsIntro({ today, hasAccount }) {
             </strong>
           ) : (
             <strong dir="ltr">
-              {formatMoney(main?.amount ?? 0, main?.currency ?? today.currency, locale)}
+              <PrivateMoney>
+                {formatMoney(
+                  main?.amount ?? 0,
+                  main?.currency ?? today.currency,
+                  locale,
+                )}
+              </PrivateMoney>
             </strong>
           )}
         </div>
 
         <small>
           {others.length > 0
-            ? t("dashboard.financialOperations.today.more", { extra: others.length })
+            ? t("dashboard.financialOperations.today.more", {
+                extra: others.length,
+              })
             : t("dashboard.financialOperations.today.updated")}
         </small>
       </div>

@@ -1,29 +1,58 @@
+/* =========================================
+   DASHBOARD SHELL
+
+   Breakpoint scale used by the whole user dashboard
+   (CSS custom properties cannot be used inside @media, so the values are
+   repeated literally; keep to this scale):
+
+     sm   640px   phone / large phone boundary
+     md   768px   tablet portrait
+     lg  1024px   sidebar becomes a drawer at or below this width
+     xl  1280px   wide desktop
+
+   The shell owns the page gutter and the maximum content width.
+   Page roots must not add their own outer max-width / padding; the rule
+   at the bottom of this file normalises legacy page roots.
+========================================= */
+
 .dashboard-layout {
+  --dashboard-sidebar-width: 218px;
+  --dashboard-header-height: 64px;
+  --dashboard-content-max-width: 1280px;
+  --dashboard-page-padding-inline: 32px;
+  --dashboard-page-padding-block: 28px;
+  --dashboard-section-gap: 24px;
+  --dashboard-card-gap: 18px;
+  --dashboard-card-radius: var(--radius-lg);
+  --dashboard-touch-target: 44px;
+
   width: 100%;
   min-height: 100vh;
+  min-height: 100dvh;
 
   display: flex;
 
-  background:
-    var(--color-background);
+  background: var(--color-background);
 
-  color:
-    var(--color-text-primary);
+  color: var(--color-text-primary);
 }
 
 .dashboard-layout__main {
   min-width: 0;
   min-height: 100vh;
+  min-height: 100dvh;
 
   flex: 1;
 
   display: flex;
   flex-direction: column;
 
-  margin-inline-start: 218px;
+  /* Safety net: a stray wide child must never scroll the whole page. */
+  overflow-x: clip;
 
-  transition:
-    margin-inline-start 200ms ease;
+  margin-inline-start: var(--dashboard-sidebar-width);
+
+  transition: margin-inline-start 200ms ease;
 }
 
 .dashboard-layout__content {
@@ -31,22 +60,52 @@
 
   min-width: 0;
 
-  padding: 24px;
+  padding:
+    var(--dashboard-page-padding-block)
+    var(--dashboard-page-padding-inline)
+    calc(var(--dashboard-page-padding-block) + 16px);
 
-  background:
-    var(--color-background);
+  background: var(--color-background);
 }
 
 .dashboard-layout__overlay {
   display: none;
 }
 
+/* Every page root (any direct child except the verification banner) shares
+   one container. Specificity is deliberately (0,2,0) so it wins over the
+   single-class rules the pages historically carried. */
+.dashboard-layout .dashboard-layout__content > :not(.email-verification-banner) {
+  width: 100%;
+  max-width: var(--dashboard-content-max-width);
+  min-width: 0;
+  margin-inline: auto;
+  padding-inline: 0;
+  padding-block-start: 0;
+  padding-block-end: 0;
+  box-sizing: border-box;
+}
+
+/* Long words, names and URLs wrap instead of widening the page. */
+.dashboard-layout__content {
+  overflow-wrap: break-word;
+}
+
+.dashboard-layout__content :is(input, select, textarea, button) {
+  overflow-wrap: normal;
+}
+
 
 /* ================================
-   TABLET / MOBILE
+   TABLET / SMALL DESKTOP
 ================================ */
 
 @media (max-width: 1024px) {
+  .dashboard-layout {
+    --dashboard-page-padding-inline: 24px;
+    --dashboard-page-padding-block: 24px;
+  }
+
   .dashboard-layout__main {
     margin-inline-start: 0;
   }
@@ -64,8 +123,7 @@
 
     border: 0;
 
-    background:
-      color-mix(in srgb, black 40%, transparent);
+    background: color-mix(in srgb, black 40%, transparent);
 
     backdrop-filter: blur(2px);
 
@@ -79,7 +137,17 @@
 ================================ */
 
 @media (max-width: 640px) {
-  .dashboard-layout__content {
-    padding: 16px;
+  .dashboard-layout {
+    --dashboard-header-height: 60px;
+    --dashboard-page-padding-inline: 14px;
+    --dashboard-page-padding-block: 16px;
+    --dashboard-section-gap: 18px;
+    --dashboard-card-gap: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-layout__main {
+    transition: none;
   }
 }

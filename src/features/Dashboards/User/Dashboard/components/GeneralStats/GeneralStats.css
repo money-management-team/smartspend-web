@@ -70,7 +70,7 @@
 
 @media (max-width: 560px) {
   .general-stats-card__grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     padding: 14px;
   }
 }

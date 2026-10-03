@@ -1,3 +1,4 @@
+import PrivateMoney from "../Experience/PrivateMoney";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useParams } from "react-router-dom";
@@ -15,7 +16,11 @@ import { PATH, getTransactionDetailsPath } from "../../../../routes/Path";
 import { accountsApi } from "../api/accountsApi";
 import { aiExpenseCapturesApi } from "../api/aiExpenseCapturesApi";
 import { categoriesApi } from "../api/categoriesApi";
-import { ApiError, getApiErrorMessage, getStoredWorkspace } from "../api/apiClient";
+import {
+  ApiError,
+  getApiErrorMessage,
+  getStoredWorkspace,
+} from "../api/apiClient";
 import {
   createIdempotentAttempt,
   translateEnum,
@@ -126,7 +131,9 @@ export default function AiExpenseCaptureDetails() {
    * of queuing the capture a second time. The shared attempt helper, not a
    * second idempotency system.
    */
-  const [retryAttempt] = useState(() => createIdempotentAttempt(RETRY_ATTEMPT_PREFIX));
+  const [retryAttempt] = useState(() =>
+    createIdempotentAttempt(RETRY_ATTEMPT_PREFIX),
+  );
 
   /*
    * One Idempotency-Key per logical confirmation, and this one is mandatory:
@@ -136,7 +143,9 @@ export default function AiExpenseCaptureDetails() {
    * retired only on success or a definitive refusal, after which a genuinely
    * new confirmation gets a new key.
    */
-  const [confirmAttempt] = useState(() => createIdempotentAttempt(CONFIRM_ATTEMPT_PREFIX));
+  const [confirmAttempt] = useState(() =>
+    createIdempotentAttempt(CONFIRM_ATTEMPT_PREFIX),
+  );
 
   /*
    * One key per logical discard. Optional here, exactly as for retry — the
@@ -144,7 +153,9 @@ export default function AiExpenseCaptureDetails() {
    * a retry after a timeout the same request rather than a second
    * destructive one.
    */
-  const [discardAttempt] = useState(() => createIdempotentAttempt(DISCARD_ATTEMPT_PREFIX));
+  const [discardAttempt] = useState(() =>
+    createIdempotentAttempt(DISCARD_ATTEMPT_PREFIX),
+  );
 
   /*
    * The reviewed draft the user is editing.
@@ -221,7 +232,10 @@ export default function AiExpenseCaptureDetails() {
 
     Promise.all([
       accountsApi.list({ id_workspace: workspaceId }, { signal }),
-      categoriesApi.list({ workspace_id: workspaceId, type: "expense" }, { signal }),
+      categoriesApi.list(
+        { workspace_id: workspaceId, type: "expense" },
+        { signal },
+      ),
     ])
       .then(([accountsResponse, categoriesResponse]) => {
         setOptions({
@@ -269,7 +283,12 @@ export default function AiExpenseCaptureDetails() {
     const advance = (patch) =>
       setPoll((current) => {
         const count = (current.key === requestKey ? current.count : 0) + 1;
-        return { key: requestKey, count, stopped: count >= MAX_CAPTURE_POLLS, ...patch(count) };
+        return {
+          key: requestKey,
+          count,
+          stopped: count >= MAX_CAPTURE_POLLS,
+          ...patch(count),
+        };
       });
 
     const timer = setTimeout(() => {
@@ -288,7 +307,9 @@ export default function AiExpenseCaptureDetails() {
            * are merged.)
            */
           setResult((current) =>
-            current.key === requestKey ? { ...current, capture: next } : current,
+            current.key === requestKey
+              ? { ...current, capture: next }
+              : current,
           );
           advance(() => ({ error: null }));
         })
@@ -298,7 +319,8 @@ export default function AiExpenseCaptureDetails() {
           advance((count) => ({
             error,
             stopped:
-              CAPTURE_FATAL_POLL_CODES.includes(error.code) || count >= MAX_CAPTURE_POLLS,
+              CAPTURE_FATAL_POLL_CODES.includes(error.code) ||
+              count >= MAX_CAPTURE_POLLS,
           }));
         });
     }, getCapturePollDelay(pollState.count));
@@ -310,7 +332,9 @@ export default function AiExpenseCaptureDetails() {
   }, [captureId, requestKey, isPolling, pollState.count]);
 
   const isLoading = result.key !== requestKey;
-  const { capture, error } = isLoading ? { capture: null, error: null } : result;
+  const { capture, error } = isLoading
+    ? { capture: null, error: null }
+    : result;
 
   /*
    * Saves the reviewed draft. The payload is built by the form from the
@@ -369,7 +393,9 @@ export default function AiExpenseCaptureDetails() {
     const idempotencyKey = retryAttempt.keyFor({ capture_id: capture.id });
 
     try {
-      const response = await aiExpenseCapturesApi.retry(capture.id, { idempotencyKey });
+      const response = await aiExpenseCapturesApi.retry(capture.id, {
+        idempotencyKey,
+      });
       const updated = parseCaptureResponse(response);
 
       if (!updated || String(updated.id) !== String(capture.id)) {
@@ -380,7 +406,10 @@ export default function AiExpenseCaptureDetails() {
 
       setResult((current) =>
         current.key === requestKey
-          ? { ...current, capture: mergeCaptureUpdate(current.capture, updated) }
+          ? {
+              ...current,
+              capture: mergeCaptureUpdate(current.capture, updated),
+            }
           : current,
       );
       // A fresh requeue deserves fresh checks, even if an earlier run of them
@@ -459,7 +488,9 @@ export default function AiExpenseCaptureDetails() {
     const idempotencyKey = confirmAttempt.keyFor({ capture_id: capture.id });
 
     try {
-      const response = await aiExpenseCapturesApi.confirm(capture.id, body, { idempotencyKey });
+      const response = await aiExpenseCapturesApi.confirm(capture.id, body, {
+        idempotencyKey,
+      });
       const { capture: updated, transaction } = parseConfirmResponse(response);
 
       if (!updated || String(updated.id) !== String(capture.id)) {
@@ -521,7 +552,9 @@ export default function AiExpenseCaptureDetails() {
     const idempotencyKey = discardAttempt.keyFor({ capture_id: capture.id });
 
     try {
-      const response = await aiExpenseCapturesApi.discard(capture.id, { idempotencyKey });
+      const response = await aiExpenseCapturesApi.discard(capture.id, {
+        idempotencyKey,
+      });
       const updated = parseCaptureResponse(response);
 
       if (!updated || String(updated.id) !== String(capture.id)) {
@@ -535,7 +568,9 @@ export default function AiExpenseCaptureDetails() {
        * everything the capture already carried survives and stays readable.
        */
       setResult((c) =>
-        c.key === requestKey ? { ...c, capture: mergeCaptureUpdate(capture, updated) } : c,
+        c.key === requestKey
+          ? { ...c, capture: mergeCaptureUpdate(capture, updated) }
+          : c,
       );
     } catch (error) {
       discardAttempt.settle(error);
@@ -574,7 +609,11 @@ export default function AiExpenseCaptureDetails() {
     // signs the user out.
     const isNotFound = error.code === "NOT_FOUND";
     const isForbidden = error.code === "FORBIDDEN";
-    const titleKey = isNotFound ? "notFoundTitle" : isForbidden ? "forbiddenTitle" : "errorTitle";
+    const titleKey = isNotFound
+      ? "notFoundTitle"
+      : isForbidden
+        ? "forbiddenTitle"
+        : "errorTitle";
     // A 403 or 404 won't change on a retry: only the transport errors will.
     const canRetry = !isNotFound && !isForbidden;
 
@@ -593,7 +632,10 @@ export default function AiExpenseCaptureDetails() {
           </p>
 
           {canRetry && (
-            <button type="button" onClick={() => setReloadKey((key) => key + 1)}>
+            <button
+              type="button"
+              onClick={() => setReloadKey((key) => key + 1)}
+            >
               {t("common.retry")}
             </button>
           )}
@@ -622,7 +664,9 @@ export default function AiExpenseCaptureDetails() {
 
   const eligibleAccounts = getEligibleAccounts(options.accounts);
   const draftAccount =
-    eligibleAccounts.find((account) => String(account.id) === draft.account_id) ?? null;
+    eligibleAccounts.find(
+      (account) => String(account.id) === draft.account_id,
+    ) ?? null;
   const isDraftDirty = isCaptureFormDirty(draft, capture);
 
   /*
@@ -681,24 +725,42 @@ export default function AiExpenseCaptureDetails() {
         transaction.type && [
           "type",
           <bdi key="type" dir="auto">
-            {translateEnum(t, i18n, "dashboard.transactions.types", transaction.type)}
+            {translateEnum(
+              t,
+              i18n,
+              "dashboard.transactions.types",
+              transaction.type,
+            )}
           </bdi>,
         ],
         transaction.status && [
           "status",
           <bdi key="tx-status" dir="auto">
-            {translateEnum(t, i18n, "dashboard.transactions.statuses", transaction.status)}
+            {translateEnum(
+              t,
+              i18n,
+              "dashboard.transactions.statuses",
+              transaction.status,
+            )}
           </bdi>,
         ],
         transaction.amount != null && [
           "amount",
           <bdi key="amount" dir="ltr">
-            {formatMoney(transaction.amount, transaction.currency_code, locale)}
+            <PrivateMoney>
+              {formatMoney(
+                transaction.amount,
+                transaction.currency_code,
+                locale,
+              )}
+            </PrivateMoney>
           </bdi>,
         ],
         transaction.source && [
           "source",
-          <bdi key="source" dir="auto">{humanizeCaptureField(transaction.source)}</bdi>,
+          <bdi key="source" dir="auto">
+            {humanizeCaptureField(transaction.source)}
+          </bdi>,
         ],
       ].filter(Boolean);
 
@@ -707,7 +769,9 @@ export default function AiExpenseCaptureDetails() {
     capture.source_type && [
       "sourceType",
       <bdi key="source" dir="auto">
-        {i18n.exists(sourceTypeKey) ? t(sourceTypeKey) : humanizeCaptureField(capture.source_type)}
+        {i18n.exists(sourceTypeKey)
+          ? t(sourceTypeKey)
+          : humanizeCaptureField(capture.source_type)}
       </bdi>,
     ],
     [
@@ -718,7 +782,9 @@ export default function AiExpenseCaptureDetails() {
           {t("dashboard.aiCaptures.details.unavailable")}
         </span>
       ) : (
-        <bdi key="version" dir="ltr">{reviewVersion}</bdi>
+        <bdi key="version" dir="ltr">
+          {reviewVersion}
+        </bdi>
       ),
     ],
   ].filter(Boolean);
@@ -751,11 +817,11 @@ export default function AiExpenseCaptureDetails() {
       )}
 
       {/*
-        * The checks stopped while the backend is still working. That says
-        * nothing about the capture — its status is still whatever the backend
-        * holds — so nothing is marked failed here; the user is simply given
-        * the check back.
-        */}
+       * The checks stopped while the backend is still working. That says
+       * nothing about the capture — its status is still whatever the backend
+       * holds — so nothing is marked failed here; the user is simply given
+       * the check back.
+       */}
       {isInFlight && pollState.stopped && (
         <div className="capture-details__stalled" role="status">
           <p>{t("dashboard.aiCaptures.processing.stalled")}</p>
@@ -777,8 +843,13 @@ export default function AiExpenseCaptureDetails() {
         onBusyChange={setIsActionBusy}
       />
 
-      <section className="capture-details__panel" aria-labelledby="capture-summary-title">
-        <h2 id="capture-summary-title">{t("dashboard.aiCaptures.details.summary.title")}</h2>
+      <section
+        className="capture-details__panel"
+        aria-labelledby="capture-summary-title"
+      >
+        <h2 id="capture-summary-title">
+          {t("dashboard.aiCaptures.details.summary.title")}
+        </h2>
 
         <dl className="capture-details__list">
           {summary.map(([key, value]) => (
@@ -804,13 +875,13 @@ export default function AiExpenseCaptureDetails() {
       )}
 
       {/*
-        * While the AI still owes a result there are no suggestions and no
-        * review values to show yet — `AiSuggestions` and `ReviewValues` would
-        * only render their "empty" copy, which reads like the AI came back
-        * with nothing rather than that it is still working. A loading
-        * indicator replaces them instead, so the user never sees that
-        * blank/incomplete screen before the analysis finishes.
-        */}
+       * While the AI still owes a result there are no suggestions and no
+       * review values to show yet — `AiSuggestions` and `ReviewValues` would
+       * only render their "empty" copy, which reads like the AI came back
+       * with nothing rather than that it is still working. A loading
+       * indicator replaces them instead, so the user never sees that
+       * blank/incomplete screen before the analysis finishes.
+       */}
       {isInFlight ? (
         <Loading
           variant="page"
@@ -892,7 +963,9 @@ export default function AiExpenseCaptureDetails() {
 
           <ul className="capture-details__warnings">
             {warnings.map((warning) => (
-              <li key={warning} dir="auto">{warning}</li>
+              <li key={warning} dir="auto">
+                {warning}
+              </li>
             ))}
           </ul>
         </section>
@@ -900,7 +973,10 @@ export default function AiExpenseCaptureDetails() {
 
       {/* The capture created a transaction: the one state where money exists. */}
       {captureHasTransaction(capture) && (
-        <section className="capture-details__panel" aria-labelledby="capture-transaction-title">
+        <section
+          className="capture-details__panel"
+          aria-labelledby="capture-transaction-title"
+        >
           <h2 id="capture-transaction-title">
             {t("dashboard.aiCaptures.details.transaction.title")}
           </h2>
@@ -921,13 +997,15 @@ export default function AiExpenseCaptureDetails() {
               </div>
 
               {/*
-                * Straight from the confirm response, when this page is the
-                * one that created it. Values are shown exactly as the backend
-                * sent them — nothing here recomputes a balance or a total.
-                */}
+               * Straight from the confirm response, when this page is the
+               * one that created it. Values are shown exactly as the backend
+               * sent them — nothing here recomputes a balance or a total.
+               */}
               {transactionFields.map(([key, value]) => (
                 <div className="capture-details__row" key={key}>
-                  <dt>{t(`dashboard.aiCaptures.details.transaction.${key}`)}</dt>
+                  <dt>
+                    {t(`dashboard.aiCaptures.details.transaction.${key}`)}
+                  </dt>
                   <dd>{value}</dd>
                 </div>
               ))}

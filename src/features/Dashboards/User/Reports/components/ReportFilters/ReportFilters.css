@@ -1,78 +1,152 @@
+/* =========================================
+   REPORT FILTERS (toolbar)
+   Quick periods as a segmented control, then the detailed fields with the
+   actions aligned on the same row. On phones the fields fold behind a
+   toggle.
+========================================= */
+
 .report-filters {
-  margin-top: 16px;
-  padding: 14px 18px;
+  padding: 14px 16px;
 
   display: grid;
-  gap: 12px;
+  gap: 14px;
 
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--report-line);
   border-radius: var(--radius-lg);
 
   background: var(--color-surface);
   box-shadow: var(--shadow-xs);
 }
 
-.report-filters__presets {
+.report-filters__top {
+  min-width: 0;
+
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* ---------- Quick periods ---------- */
+
+.report-filters__presets {
+  max-width: 100%;
+  padding: 4px;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+
+  border-radius: var(--radius-md);
+
+  background: var(--surface-soft);
 }
 
 .report-filters__preset {
-  height: 28px;
-  padding: 0 12px;
+  min-height: 34px;
+  padding: 0 14px;
 
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-pill);
+  border: 0;
+  border-radius: 9px;
 
   color: var(--color-text-secondary);
-  background: var(--color-surface);
+  background: transparent;
 
   font: inherit;
   font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
 
   cursor: pointer;
   transition:
     color var(--transition-fast),
-    border-color var(--transition-fast),
-    background-color var(--transition-fast);
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .report-filters__preset:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  color: var(--color-text-strong);
 }
 
-.report-filters__preset--active {
-  border-color: var(--color-primary);
+.report-filters__preset--active,
+.report-filters__preset--active:hover {
   color: var(--color-primary);
-  background: var(--primary-soft);
-  font-weight: 600;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  font-weight: 700;
 }
+
+/* ---------- Mobile toggle ---------- */
+
+.report-filters__toggle {
+  display: none;
+
+  min-height: 40px;
+  padding: 0 12px;
+
+  align-items: center;
+  gap: 7px;
+
+  border: 1px solid var(--report-line);
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.report-filters__toggle svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+.report-filters__toggle-chevron {
+  transition: transform var(--transition-fast);
+}
+
+.report-filters__toggle--open .report-filters__toggle-chevron {
+  transform: rotate(180deg);
+}
+
+/* ---------- Fields ---------- */
 
 .report-filters__fields {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  align-items: end;
-  gap: 10px 12px;
+  padding-top: 14px;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+
+  border-top: 1px solid var(--report-line);
 }
 
 .report-filters__field {
   min-width: 0;
+  flex: 1 1 140px;
 
   display: grid;
-  gap: 5px;
+  gap: 6px;
 
   color: var(--color-text-secondary);
-  font-size: 11px;
+
+  font-size: 12px;
+  font-weight: 600;
   text-align: start;
 }
 
 .report-filters__field input,
 .report-filters__field select {
   width: 100%;
-  height: 34px;
-  padding-inline: 10px;
+  height: 40px;
+  padding-inline: 11px;
 
   box-sizing: border-box;
 
@@ -84,12 +158,14 @@
   background: var(--color-surface);
 
   font: inherit;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
-.report-filters__field input:focus,
-.report-filters__field select:focus {
+.report-filters__field input:focus-visible,
+.report-filters__field select:focus-visible {
   border-color: var(--color-primary);
+  outline: none;
   box-shadow: 0 0 0 3px var(--input-focus-ring);
 }
 
@@ -102,15 +178,18 @@
 }
 
 .report-filters__actions {
+  flex: 0 0 auto;
+
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
 }
 
 .report-filters__apply,
 .report-filters__reset {
-  height: 34px;
+  height: 40px;
   padding: 0 14px;
+
+  flex: 1 1 auto;
 
   display: inline-flex;
   align-items: center;
@@ -121,6 +200,7 @@
 
   font: inherit;
   font-size: 12px;
+  font-weight: 700;
   white-space: nowrap;
 
   cursor: pointer;
@@ -130,11 +210,12 @@
 .report-filters__reset svg {
   width: 14px;
   height: 14px;
+  flex: none;
 }
 
 .report-filters__apply {
   border: 1px solid var(--color-primary);
-  color: var(--navigation-active-text);
+  color: var(--text-inverse);
   background: var(--color-primary);
 }
 
@@ -143,7 +224,7 @@
 }
 
 .report-filters__apply:disabled {
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -165,8 +246,67 @@
   text-align: start;
 }
 
-@media (prefers-reduced-motion: reduce) {
+/* ---------- Phones ---------- */
+
+@media (max-width: 640px) {
+  .report-filters {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .report-filters__top {
+    flex-wrap: nowrap;
+    align-items: stretch;
+  }
+
+  .report-filters__presets {
+    min-width: 0;
+    flex: 1 1 auto;
+
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .report-filters__presets::-webkit-scrollbar {
+    display: none;
+  }
+
   .report-filters__preset {
+    padding: 0 11px;
+  }
+
+  .report-filters__toggle {
+    display: inline-flex;
+    flex: none;
+  }
+
+  .report-filters__toggle span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .report-filters__fields {
+    display: none;
+  }
+
+  .report-filters__fields--open {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .report-filters__actions {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .report-filters__preset,
+  .report-filters__toggle-chevron {
     transition: none;
   }
 }

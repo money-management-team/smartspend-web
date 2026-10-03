@@ -8,7 +8,9 @@ import { getApiErrorMessage } from "../../Dashboards/User/api/apiClient";
 
 import AuthAlert from "../components/AuthAlert/AuthAlert";
 import AuthButton from "../components/AuthButton/AuthButton";
-import AuthCheckbox from "../components/AuthCheckbox/AuthCheckbox";
+import PolicyConsent, {
+  PolicyDialog,
+} from "../components/PolicyConsent/PolicyConsent";
 import AuthField from "../components/AuthField/AuthField";
 import AuthHeading from "../components/AuthHeading/AuthHeading";
 import {
@@ -20,6 +22,7 @@ import {
 } from "../components/AuthIcons";
 import AuthPromo from "../components/AuthPromo/AuthPromo";
 import AuthSocial from "../components/AuthSocial/AuthSocial";
+import useGoogleSignIn from "../components/AuthSocial/useGoogleSignIn";
 import AuthSwitchPrompt from "../components/AuthSwitchPrompt/AuthSwitchPrompt";
 import PasswordField from "../components/PasswordField/PasswordField";
 
@@ -75,11 +78,18 @@ const featureIcons = [ShieldIcon, SparklesIcon, CardIcon];
 export default function Register() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { register, loginWithGoogle } = useAuthContext();
+  const { register } = useAuthContext();
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const google = useGoogleSignIn({
+    acceptedPolicies: form.termsAccepted,
+    onAccepted: () =>
+      setForm((current) => ({ ...current, termsAccepted: true })),
+    onError: setGeneralError,
+  });
+  const locked = isSubmitting || google.busy || google.needsConsent;
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
@@ -101,7 +111,7 @@ export default function Register() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (isSubmitting) return;
+    if (locked) return;
 
     setErrors({});
     setGeneralError("");
@@ -127,27 +137,6 @@ export default function Register() {
     }
   };
 
-  const handleGoogleCredential = async (idToken) => {
-    if (isSubmitting) return;
-
-    setErrors({});
-    setGeneralError("");
-    setIsSubmitting(true);
-
-    try {
-      await loginWithGoogle(idToken);
-
-      navigate(PATH.USER.DASHBOARD, { replace: true });
-    } catch (error) {
-      // No field to show `id_token` errors under, so its message is the alert.
-      setGeneralError(
-        error?.errors?.id_token?.[0] ?? getApiErrorMessage(error, t),
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const features = [0, 1, 2].map((index) => ({
     title: t(`auth.register.promo.features.${index}.title`),
     description: t(`auth.register.promo.features.${index}.description`),
@@ -155,6 +144,12 @@ export default function Register() {
 
   return (
     <>
+      {google.needsConsent && (
+        <PolicyDialog
+          onAccept={google.acceptConsent}
+          onClose={google.cancelConsent}
+        />
+      )}
       <AuthPromo
         title={t("auth.register.promo.title")}
         subtitle={t("auth.register.promo.subtitle")}
@@ -197,7 +192,7 @@ export default function Register() {
             onChange={handleChange}
             placeholder={t("auth.register.fields.fullName.placeholder")}
             autoComplete="name"
-            disabled={isSubmitting}
+            disabled={locked}
             required
           />
 
@@ -212,7 +207,7 @@ export default function Register() {
             onChange={handleChange}
             placeholder={t("auth.register.fields.contact.placeholder")}
             autoComplete="username"
-            disabled={isSubmitting}
+            disabled={locked}
             required
           />
 
@@ -225,7 +220,7 @@ export default function Register() {
             onChange={handleChange}
             placeholder={t("auth.register.fields.password.placeholder")}
             autoComplete="new-password"
-            disabled={isSubmitting}
+            disabled={locked}
             minLength={8}
             required
           />
@@ -239,27 +234,31 @@ export default function Register() {
             onChange={handleChange}
             placeholder={t("auth.register.fields.confirmPassword.placeholder")}
             autoComplete="new-password"
-            disabled={isSubmitting}
+            disabled={locked}
             minLength={8}
             required
           />
 
-          <AuthCheckbox
+          <PolicyConsent
             id="register-terms"
             name="termsAccepted"
             checked={form.termsAccepted}
-            onChange={handleChange}
+            onChange={(accepted) => {
+              setForm((current) => ({ ...current, termsAccepted: accepted }));
+              setErrors((current) => ({
+                ...current,
+                termsAccepted: undefined,
+              }));
+              setGeneralError("");
+            }}
             errors={errors.termsAccepted}
-            disabled={isSubmitting}
-          >
-            {t("auth.register.terms.prefix")}{" "}
-            <a href="#terms">{t("auth.register.terms.link")}</a>
-          </AuthCheckbox>
+            disabled={locked}
+          />
 
           {generalError && <AuthAlert>{generalError}</AuthAlert>}
 
           <AuthButton
-            loading={isSubmitting}
+            loading={isSubmitting || google.busy}
             loadingLabel={t("auth.register.loading")}
           >
             {t("auth.register.submit")}
@@ -269,12 +268,14 @@ export default function Register() {
         <AuthSocial
           dividerLabel={t("auth.register.social.divider")}
           googleLabel={t("auth.register.social.google")}
-          appleLabel={t("auth.register.social.apple")}
-          onGoogleCredential={handleGoogleCredential}
+          onGoogleCredential={(idToken) => {
+            setErrors({});
+            return google.handleCredential(idToken);
+          }}
           onGoogleUnavailable={() =>
             setGeneralError(t("auth.common.googleUnavailable"))
           }
-          disabled={isSubmitting}
+          disabled={locked}
         />
 
         <AuthSwitchPrompt

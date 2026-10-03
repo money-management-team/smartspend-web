@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { LuChevronLeft, LuChevronRight, LuUndo2 } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -61,11 +62,17 @@ export default function Ledger({
 
           <h2 id="ledger-title">
             {t("dashboard.transactions.title")}
-            {page && !isLoading && <span className="ledger__count">{page.total}</span>}
+            {page && !isLoading && (
+              <span className="ledger__count">{page.total}</span>
+            )}
           </h2>
         </div>
 
-        <div className="ledger__filters" role="group" aria-label={t("dashboard.transactions.fields.type")}>
+        <div
+          className="ledger__filters"
+          role="group"
+          aria-label={t("dashboard.transactions.fields.type")}
+        >
           {TYPE_FILTERS.map((item) => {
             const isActive = (filters.type || "all") === item;
 
@@ -74,8 +81,14 @@ export default function Ledger({
                 type="button"
                 key={item}
                 aria-pressed={isActive}
-                className={isActive ? "ledger__filter ledger__filter--active" : "ledger__filter"}
-                onClick={() => onFiltersChange({ type: item === "all" ? "" : item })}
+                className={
+                  isActive
+                    ? "ledger__filter ledger__filter--active"
+                    : "ledger__filter"
+                }
+                onClick={() =>
+                  onFiltersChange({ type: item === "all" ? "" : item })
+                }
               >
                 {t(`dashboard.transactions.filters.types.${item}`)}
               </button>
@@ -93,13 +106,17 @@ export default function Ledger({
       />
 
       <div className="ledger__list">
-        {isLoading && <Loading message={t("dashboard.transactions.states.loading")} />}
+        {isLoading && (
+          <Loading message={t("dashboard.transactions.states.loading")} />
+        )}
 
         {!isLoading && error && (
           <div className="ledger__state ledger__state--error" role="alert">
             <p>{getApiErrorMessage(error, t)}</p>
             <div className="ledger__state-actions">
-              <button type="button" onClick={onRetry}>{t("common.retry")}</button>
+              <button type="button" onClick={onRetry}>
+                {t("common.retry")}
+              </button>
               {filtered && (
                 <button type="button" onClick={onClearFilters}>
                   {t("dashboard.transactions.filters.clear")}
@@ -131,86 +148,117 @@ export default function Ledger({
           </div>
         )}
 
-        {!isLoading && !error && items.map((transaction) => {
-          const tone = getAmountTone(transaction);
-          const account = getPrimaryAccount(transaction);
-          const isReversed = transaction.status === "reversed";
-          const amount = String(transaction.amount ?? "").replace(/^-/, "");
-          const meta = [
-            transaction.category?.name,
-            account?.name,
-            formatDate(transaction.occurred_at, locale, timeZone),
-          ].filter(Boolean);
+        {!isLoading &&
+          !error &&
+          items.map((transaction) => {
+            const tone = getAmountTone(transaction);
+            const account = getPrimaryAccount(transaction);
+            const isReversed = transaction.status === "reversed";
+            const amount = String(transaction.amount ?? "").replace(/^-/, "");
+            const meta = [
+              transaction.category?.name,
+              account?.name,
+              formatDate(transaction.occurred_at, locale, timeZone),
+            ].filter(Boolean);
 
-          return (
-            <article
-              className={`ledger-row${isReversed ? " ledger-row--reversed" : ""}`}
-              key={transaction.id}
-            >
-              <span className={`ledger-row__icon ledger-row__icon--${tone}`} aria-hidden="true">
-                {renderTransactionIcon(transaction)}
-              </span>
-
-              <div className="ledger-row__copy">
-                {/* Stretched over the row: the row opens the details page. */}
-                <Link
-                  className="ledger-row__link"
-                  to={getTransactionDetailsPath(transaction.id)}
-                  state={{ from: listSearch }}
+            return (
+              <article
+                className={`ledger-row${isReversed ? " ledger-row--reversed" : ""}`}
+                key={transaction.id}
+              >
+                <span
+                  className={`ledger-row__icon ledger-row__icon--${tone}`}
+                  aria-hidden="true"
                 >
-                  <strong dir="auto">{getTransactionTitle(transaction, t, i18n)}</strong>
-                </Link>
-                <small>
-                  {translateEnum(t, i18n, "dashboard.transactions.types", transaction.type)}
-                  {meta.map((part, index) => (
-                    <span key={index}>
-                      {" · "}
-                      <bdi>{part}</bdi>
-                    </span>
-                  ))}
-                </small>
-              </div>
+                  {renderTransactionIcon(transaction)}
+                </span>
 
-              <div className="ledger-row__side">
-                <strong className={`ledger-row__amount ledger-row__amount--${tone}`} dir="ltr">
-                  {getAmountSign(transaction)}
-                  {formatMoney(amount, transaction.currency_code, locale)}
-                </strong>
-
-                <div className="ledger-row__badges">
-                  {transaction.status !== "posted" && (
-                    <TransactionStatusBadge status={transaction.status} />
-                  )}
-                  {isReversalRecord(transaction) && (
-                    <span className="ledger-row__chip">{t("dashboard.transactions.chips.reversal")}</span>
-                  )}
-                  {transaction.related_transaction_id != null && !isReversalRecord(transaction) && (
-                    <span className="ledger-row__chip">{t("dashboard.transactions.chips.correction")}</span>
-                  )}
-                  {isTransferTransaction(transaction) && transaction.type !== "transfer" && (
-                    <span className="ledger-row__chip">{t("dashboard.transactions.chips.transfer")}</span>
-                  )}
+                <div className="ledger-row__copy">
+                  {/* Stretched over the row: the row opens the details page. */}
+                  <Link
+                    className="ledger-row__link"
+                    to={getTransactionDetailsPath(transaction.id)}
+                    state={{ from: listSearch }}
+                  >
+                    <strong dir="auto">
+                      {getTransactionTitle(transaction, t, i18n)}
+                    </strong>
+                  </Link>
+                  <small>
+                    {translateEnum(
+                      t,
+                      i18n,
+                      "dashboard.transactions.types",
+                      transaction.type,
+                    )}
+                    {meta.map((part, index) => (
+                      <span key={index}>
+                        {" · "}
+                        <bdi>{part}</bdi>
+                      </span>
+                    ))}
+                  </small>
                 </div>
-              </div>
 
-              {canChangeTransaction(transaction) ? (
-                <button
-                  type="button"
-                  className="ledger-row__reverse"
-                  onClick={() => onReverse(transaction)}
-                  aria-label={t("dashboard.transactions.actions.reverseNamed", {
-                    name: getTransactionTitle(transaction, t, i18n),
-                  })}
-                  title={t("dashboard.transactions.actions.reverse")}
-                >
-                  <LuUndo2 aria-hidden="true" />
-                </button>
-              ) : (
-                <span className="ledger-row__reverse-placeholder" aria-hidden="true" />
-              )}
-            </article>
-          );
-        })}
+                <div className="ledger-row__side">
+                  <strong
+                    className={`ledger-row__amount ledger-row__amount--${tone}`}
+                    dir="ltr"
+                  >
+                    {getAmountSign(transaction)}
+                    <PrivateMoney>
+                      {formatMoney(amount, transaction.currency_code, locale)}
+                    </PrivateMoney>
+                  </strong>
+
+                  <div className="ledger-row__badges">
+                    {transaction.status !== "posted" && (
+                      <TransactionStatusBadge status={transaction.status} />
+                    )}
+                    {isReversalRecord(transaction) && (
+                      <span className="ledger-row__chip">
+                        {t("dashboard.transactions.chips.reversal")}
+                      </span>
+                    )}
+                    {transaction.related_transaction_id != null &&
+                      !isReversalRecord(transaction) && (
+                        <span className="ledger-row__chip">
+                          {t("dashboard.transactions.chips.correction")}
+                        </span>
+                      )}
+                    {isTransferTransaction(transaction) &&
+                      transaction.type !== "transfer" && (
+                        <span className="ledger-row__chip">
+                          {t("dashboard.transactions.chips.transfer")}
+                        </span>
+                      )}
+                  </div>
+                </div>
+
+                {canChangeTransaction(transaction) ? (
+                  <button
+                    type="button"
+                    className="ledger-row__reverse"
+                    onClick={() => onReverse(transaction)}
+                    aria-label={t(
+                      "dashboard.transactions.actions.reverseNamed",
+                      {
+                        name: getTransactionTitle(transaction, t, i18n),
+                      },
+                    )}
+                    title={t("dashboard.transactions.actions.reverse")}
+                  >
+                    <LuUndo2 aria-hidden="true" />
+                  </button>
+                ) : (
+                  <span
+                    className="ledger-row__reverse-placeholder"
+                    aria-hidden="true"
+                  />
+                )}
+              </article>
+            );
+          })}
       </div>
 
       {!isLoading && !error && page && page.lastPage > 1 && (

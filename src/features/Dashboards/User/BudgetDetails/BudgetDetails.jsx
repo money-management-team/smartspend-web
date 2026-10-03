@@ -1,3 +1,4 @@
+import PrivateMoney from "../Experience/PrivateMoney";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useParams } from "react-router-dom";
@@ -60,7 +61,11 @@ export default function BudgetDetails() {
   // match the current request, the page is loading.
   const [reloadKey, setReloadKey] = useState(0);
   const requestKey = `${budgetId}:${reloadKey}`;
-  const [result, setResult] = useState({ key: null, budget: null, error: null });
+  const [result, setResult] = useState({
+    key: null,
+    budget: null,
+    error: null,
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
   // One-time success message ({ key, type, name }) for the current request.
@@ -140,10 +145,17 @@ export default function BudgetDetails() {
     const controller = new AbortController();
     const key = requestKey;
     progressControllerRef.current = controller;
-    setProgressState({ key, isRefreshing: true, error: null, refreshed: false });
+    setProgressState({
+      key,
+      isRefreshing: true,
+      error: null,
+      refreshed: false,
+    });
 
     try {
-      const response = await budgetsApi.getProgress(budget.id, { signal: controller.signal });
+      const response = await budgetsApi.getProgress(budget.id, {
+        signal: controller.signal,
+      });
       const progress = response.data?.progress;
 
       if (!progress || typeof progress !== "object") {
@@ -155,18 +167,30 @@ export default function BudgetDetails() {
           ? { ...current, budget: withFreshProgress(current.budget, progress) }
           : current,
       );
-      setProgressState({ key, isRefreshing: false, error: null, refreshed: true });
+      setProgressState({
+        key,
+        isRefreshing: false,
+        error: null,
+        refreshed: true,
+      });
     } catch (requestError) {
-      if (requestError.name === "AbortError" || controller.signal.aborted) return;
+      if (requestError.name === "AbortError" || controller.signal.aborted)
+        return;
 
       if (requestError?.code === "NOT_FOUND") {
         markUnavailable(requestError);
         return;
       }
 
-      setProgressState({ key, isRefreshing: false, error: requestError, refreshed: false });
+      setProgressState({
+        key,
+        isRefreshing: false,
+        error: requestError,
+        refreshed: false,
+      });
     } finally {
-      if (progressControllerRef.current === controller) progressControllerRef.current = null;
+      if (progressControllerRef.current === controller)
+        progressControllerRef.current = null;
     }
   };
 
@@ -188,7 +212,10 @@ export default function BudgetDetails() {
       // The response carries the recalculated progress; without it, the
       // progress is fetched so no stale figures stay on screen.
       if (isBudgetEntity(updatedBudget, budget.id)) {
-        setResult((current) => ({ ...current, budget: mergeBudget(current.budget, updatedBudget) }));
+        setResult((current) => ({
+          ...current,
+          budget: mergeBudget(current.budget, updatedBudget),
+        }));
         if (!updatedBudget.progress) refreshProgress();
       } else {
         reload();
@@ -224,8 +251,14 @@ export default function BudgetDetails() {
 
     const archivedBudget = response?.data?.budget;
 
-    if (isBudgetEntity(archivedBudget, budget.id) && isArchivedBudget(archivedBudget)) {
-      setResult((current) => ({ ...current, budget: mergeBudget(current.budget, archivedBudget) }));
+    if (
+      isBudgetEntity(archivedBudget, budget.id) &&
+      isArchivedBudget(archivedBudget)
+    ) {
+      setResult((current) => ({
+        ...current,
+        budget: mergeBudget(current.budget, archivedBudget),
+      }));
     } else {
       reload();
     }
@@ -290,9 +323,17 @@ export default function BudgetDetails() {
   const isRefreshing = showProgressState && progressState.isRefreshing;
 
   const money = (value) =>
-    value == null || value === "" ? "—" : <bdi dir="ltr">{formatMoney(value, currency, locale)}</bdi>;
+    value == null || value === "" ? (
+      "—"
+    ) : (
+      <bdi dir="ltr">
+        <PrivateMoney>{formatMoney(value, currency, locale)}</PrivateMoney>
+      </bdi>
+    );
   const count = (value) =>
-    value == null || value === "" ? "—" : new Intl.NumberFormat(locale).format(Number(value));
+    value == null || value === ""
+      ? "—"
+      : new Intl.NumberFormat(locale).format(Number(value));
   const date = (value) => formatDate(toPeriodDate(value), locale);
   const periodText = (
     <>
@@ -324,21 +365,39 @@ export default function BudgetDetails() {
     ["scope", t(`dashboard.budgets.scopes.${scope}`)],
     scope === "category" && ["category", categoryValue ?? "—"],
     ["amountLimit", money(budget.amount_limit)],
-    ["currency", <bdi key="currency" dir="ltr">{currency}</bdi>],
+    [
+      "currency",
+      <bdi key="currency" dir="ltr">
+        {currency}
+      </bdi>,
+    ],
     ["period", periodText],
     [
       "status",
-      t(isArchived ? "dashboard.budgets.status.archived" : "dashboard.budgets.status.active"),
+      t(
+        isArchived
+          ? "dashboard.budgets.status.archived"
+          : "dashboard.budgets.status.active",
+      ),
     ],
-    budget.archived_at && ["archivedAt", formatDateTime(budget.archived_at, locale, timeZone)],
+    budget.archived_at && [
+      "archivedAt",
+      formatDateTime(budget.archived_at, locale, timeZone),
+    ],
     budget.notes && [
       "notes",
       <span className="budget-details__notes" dir="auto" key="notes">
         {budget.notes}
       </span>,
     ],
-    budget.created_at && ["createdAt", formatDateTime(budget.created_at, locale, timeZone)],
-    budget.updated_at && ["updatedAt", formatDateTime(budget.updated_at, locale, timeZone)],
+    budget.created_at && [
+      "createdAt",
+      formatDateTime(budget.created_at, locale, timeZone),
+    ],
+    budget.updated_at && [
+      "updatedAt",
+      formatDateTime(budget.updated_at, locale, timeZone),
+    ],
   ].filter(Boolean);
 
   const stats = progress
@@ -346,8 +405,11 @@ export default function BudgetDetails() {
         ["spent", money(progress.spent)],
         [
           "remaining",
-          <span className={isOverspent ? "budget-details__negative" : undefined} key="remaining">
-            {money(progress.remaining)}
+          <span
+            className={isOverspent ? "budget-details__negative" : undefined}
+            key="remaining"
+          >
+            <PrivateMoney>{money(progress.remaining)}</PrivateMoney>
           </span>,
         ],
         ["amountLimit", money(progress.amount_limit)],
@@ -362,7 +424,9 @@ export default function BudgetDetails() {
 
       {notice.key === requestKey && (
         <div className="budget-details__notice" role="status">
-          <p dir="auto">{t(`dashboard.budgets.${notice.type}`, { name: notice.name })}</p>
+          <p dir="auto">
+            {t(`dashboard.budgets.${notice.type}`, { name: notice.name })}
+          </p>
           <button
             type="button"
             onClick={() => setNotice({ key: null, type: null, name: "" })}
@@ -378,7 +442,9 @@ export default function BudgetDetails() {
           <h1 dir="auto">{budget.name}</h1>
 
           <div className="budget-details__chips">
-            <span className={`budget-details__chip budget-details__chip--${scope}`}>
+            <span
+              className={`budget-details__chip budget-details__chip--${scope}`}
+            >
               {t(`dashboard.budgets.scopes.${scope}`)}
             </span>
             {isArchived ? (
@@ -398,7 +464,11 @@ export default function BudgetDetails() {
 
         {canManage && (
           <div className="budget-details__actions">
-            <button type="button" className="budget-details__action" onClick={() => setIsEditing(true)}>
+            <button
+              type="button"
+              className="budget-details__action"
+              onClick={() => setIsEditing(true)}
+            >
               <LuPencil aria-hidden="true" />
               <span>{t("dashboard.budgets.edit")}</span>
             </button>
@@ -421,9 +491,14 @@ export default function BudgetDetails() {
         </p>
       )}
 
-      <section className="budget-details__panel" aria-labelledby="budget-progress-title">
+      <section
+        className="budget-details__panel"
+        aria-labelledby="budget-progress-title"
+      >
         <div className="budget-details__panel-head">
-          <h2 id="budget-progress-title">{t("dashboard.budgets.details.progressTitle")}</h2>
+          <h2 id="budget-progress-title">
+            {t("dashboard.budgets.details.progressTitle")}
+          </h2>
 
           <button
             type="button"
@@ -489,12 +564,19 @@ export default function BudgetDetails() {
             </dl>
           </>
         ) : (
-          <p className="budget-details__empty">{t("dashboard.budgets.card.noProgress")}</p>
+          <p className="budget-details__empty">
+            {t("dashboard.budgets.card.noProgress")}
+          </p>
         )}
       </section>
 
-      <section className="budget-details__panel" aria-labelledby="budget-details-title">
-        <h2 id="budget-details-title">{t("dashboard.budgets.details.title")}</h2>
+      <section
+        className="budget-details__panel"
+        aria-labelledby="budget-details-title"
+      >
+        <h2 id="budget-details-title">
+          {t("dashboard.budgets.details.title")}
+        </h2>
 
         <dl className="budget-details__list">
           {rows.map(([key, value]) => (
@@ -507,11 +589,19 @@ export default function BudgetDetails() {
       </section>
 
       {isEditing && canManage && (
-        <BudgetForm budget={budget} onSave={handleSave} onClose={closeDialogs} />
+        <BudgetForm
+          budget={budget}
+          onSave={handleSave}
+          onClose={closeDialogs}
+        />
       )}
 
       {isArchiveOpen && canManage && (
-        <ArchiveBudgetDialog budget={budget} onConfirm={handleArchive} onClose={closeDialogs} />
+        <ArchiveBudgetDialog
+          budget={budget}
+          onConfirm={handleArchive}
+          onClose={closeDialogs}
+        />
       )}
     </div>
   );

@@ -30,7 +30,7 @@ const INTEGER = /^[+-]?\d+$/;
 export const isObject = (value) =>
   value != null && typeof value === "object" && !Array.isArray(value);
 
-const hasValue = (value) => value != null && value !== "";
+export const hasValue = (value) => value != null && value !== "";
 
 export const isCurrencyCode = (value) => CURRENCY.test(String(value ?? ""));
 
@@ -390,6 +390,17 @@ export function getAmountTone(value) {
   if (typeof value === "number") return value < 0 ? "negative" : value > 0 ? "positive" : "zero";
   if (isNegativeMoney(value)) return "negative";
   return /[1-9]/.test(String(value)) ? "positive" : "zero";
+}
+
+// Direction of a comparison change: the backend's `direction` / `trend`
+// when sent, otherwise the sign of its change figure. Never calculated from
+// two totals. Returns "positive", "negative" or "zero".
+export function getChangeDirection(metric) {
+  const trend = String(metric?.trend ?? "").toLowerCase();
+  if (["up", "increase", "increased", "higher"].includes(trend)) return "positive";
+  if (["down", "decrease", "decreased", "lower"].includes(trend)) return "negative";
+  if (["flat", "same", "unchanged", "equal"].includes(trend)) return "zero";
+  return getAmountTone(metric?.change ?? metric?.percent);
 }
 
 // Width (0–100) of a progress bar for a backend percentage. Only the bar is

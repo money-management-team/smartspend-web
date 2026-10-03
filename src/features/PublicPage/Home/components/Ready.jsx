@@ -8,8 +8,7 @@ import {
 } from "react-icons/lu";
 
 import logo from "../../../../assets/smart-spend-logo.png";
-import { AUTH_INTENT, getAccountTypePath } from "../../../../routes/Path";
-
+import { AUTH_INTENT, getAccountTypePath, PATH } from "../../../../routes/Path";
 
 export default function Ready() {
   const { t } = useTranslation();
@@ -35,27 +34,34 @@ export default function Ready() {
                   <span aria-hidden="true">↗</span>
                 </Link>
 
-                <button type="button" className="home-cta__secondary">
+                <Link to={PATH.PUBLIC.CONTACT} className="home-cta__secondary">
                   {t("home.cta.sales")}
-                </button>
+                </Link>
               </div>
             </div>
 
             <div className="home-cta__visual" aria-hidden="true">
               <div className="home-cta__orbit home-cta__orbit--one" />
               <div className="home-cta__orbit home-cta__orbit--two" />
-              <span className="home-cta__visual-core"><img src={logo} alt="" /></span>
-              <span className="home-cta__visual-icon home-cta__visual-icon--wallet"><LuWalletCards /></span>
-              <span className="home-cta__visual-icon home-cta__visual-icon--chart"><LuChartNoAxesCombined /></span>
-              <span className="home-cta__visual-icon home-cta__visual-icon--ai"><LuBrainCircuit /></span>
-              <span className="home-cta__visual-icon home-cta__visual-icon--shield"><LuShieldCheck /></span>
+              <span className="home-cta__visual-core">
+                <img src={logo} alt="" />
+              </span>
+              <span className="home-cta__visual-icon home-cta__visual-icon--wallet">
+                <LuWalletCards />
+              </span>
+              <span className="home-cta__visual-icon home-cta__visual-icon--chart">
+                <LuChartNoAxesCombined />
+              </span>
+              <span className="home-cta__visual-icon home-cta__visual-icon--ai">
+                <LuBrainCircuit />
+              </span>
+              <span className="home-cta__visual-icon home-cta__visual-icon--shield">
+                <LuShieldCheck />
+              </span>
             </div>
           </div>
         </div>
       </section>
-
-    
     </>
   );
 }
-

@@ -1,12 +1,28 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { LuArrowDownLeft, LuArrowUpRight, LuInfo, LuTriangleAlert } from "react-icons/lu";
+import {
+  LuArrowDownLeft,
+  LuArrowUpRight,
+  LuInfo,
+  LuTriangleAlert,
+} from "react-icons/lu";
 
 import Loading from "../../../../../../components/Loading/Loading";
 import { accountsApi } from "../../../api/accountsApi";
-import { ApiError, getApiErrorMessage, getStoredWorkspace } from "../../../api/apiClient";
-import { getDisplayLocale, isNegativeMoney } from "../../../Accounts/accountHelpers";
-import { getAmountError, getTodayInputValue } from "../../../FinancialOperations/transactionHelpers";
+import {
+  ApiError,
+  getApiErrorMessage,
+  getStoredWorkspace,
+} from "../../../api/apiClient";
+import {
+  getDisplayLocale,
+  isNegativeMoney,
+} from "../../../Accounts/accountHelpers";
+import {
+  getAmountError,
+  getTodayInputValue,
+} from "../../../FinancialOperations/transactionHelpers";
 import { formatMoney, subtractMoney } from "../../../utils/formatters";
 import {
   COUNTERPARTY_MAX,
@@ -42,7 +58,10 @@ const FORM_FIELDS = [
 
 // Same icons as DebtBadge: what the debt means for the user (payable: money
 // they will pay out; receivable: money coming back to them).
-const DIRECTION_ICONS = { payable: LuArrowUpRight, receivable: LuArrowDownLeft };
+const DIRECTION_ICONS = {
+  payable: LuArrowUpRight,
+  receivable: LuArrowDownLeft,
+};
 
 function emptyForm() {
   return {
@@ -82,14 +101,20 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
   const [hint, setHint] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const pendingRef = useRef(false);
-  const [currencyOptions] = useState(() => getCurrencyOptions(form.currency_code));
+  const [currencyOptions] = useState(() =>
+    getCurrencyOptions(form.currency_code),
+  );
   // The session workspace, the one the debt is created in.
   const [workspaceId] = useState(() => getStoredWorkspace()?.id);
 
   /* ---------- Accounts (only once the opening movement is requested) ---------- */
 
   const [reloadKey, setReloadKey] = useState(0);
-  const [options, setOptions] = useState({ key: null, accounts: [], error: null });
+  const [options, setOptions] = useState({
+    key: null,
+    accounts: [],
+    error: null,
+  });
   const withMovement = form.with_movement;
 
   useEffect(() => {
@@ -105,7 +130,11 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
         setOptions(
           Array.isArray(accounts)
             ? { key: reloadKey, accounts, error: null }
-            : { key: reloadKey, accounts: [], error: new ApiError("", { code: "MALFORMED_RESPONSE" }) },
+            : {
+                key: reloadKey,
+                accounts: [],
+                error: new ApiError("", { code: "MALFORMED_RESPONSE" }),
+              },
         );
       })
       .catch((error) => {
@@ -117,11 +146,16 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
   }, [withMovement, workspaceId, reloadKey]);
 
   const isLoadingOptions = withMovement && options.key !== reloadKey;
-  const eligibleAccounts = getEligibleAccounts(options.accounts, form.currency_code);
+  const eligibleAccounts = getEligibleAccounts(
+    options.accounts,
+    form.currency_code,
+  );
   // A chosen account that is no longer listed (other currency, reloaded list)
   // counts as no choice.
   const selectedAccount = withMovement
-    ? (eligibleAccounts.find((account) => String(account.id) === form.account_id) ?? null)
+    ? (eligibleAccounts.find(
+        (account) => String(account.id) === form.account_id,
+      ) ?? null)
     : null;
 
   /* ---------- Handlers ---------- */
@@ -144,7 +178,12 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
     const nextValue = type === "checkbox" ? checked : value;
 
     setForm((current) => ({ ...current, [name]: nextValue }));
-    resetFeedback(name, ...(name === "with_movement" || name === "currency_code" ? ["account_id"] : []));
+    resetFeedback(
+      name,
+      ...(name === "with_movement" || name === "currency_code"
+        ? ["account_id"]
+        : []),
+    );
   };
 
   const handleSubmit = async (event) => {
@@ -154,7 +193,10 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
     // debt (and its movement) twice.
     if (pendingRef.current) return;
 
-    const values = { ...form, account_id: selectedAccount ? String(selectedAccount.id) : "" };
+    const values = {
+      ...form,
+      account_id: selectedAccount ? String(selectedAccount.id) : "",
+    };
     const nextErrors = validateDebtForm(values, { t });
 
     if (Object.keys(nextErrors).length > 0) {
@@ -175,11 +217,16 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
       if (error?.code !== "UNAUTHENTICATED") {
         if (error?.code === "VALIDATION_ERROR") setErrors(error.errors ?? {});
         setMessage(getDebtErrorMessage(error, t, "create"));
-        setHint(getCreateErrorHint(error, t, { withMovement: values.with_movement }));
+        setHint(
+          getCreateErrorHint(error, t, { withMovement: values.with_movement }),
+        );
 
         if (isUnknownOutcome(error)) onOutdated?.();
         // The account may be gone or its balance changed: list it again.
-        if (values.with_movement && ["NOT_FOUND", "VALIDATION_ERROR"].includes(error?.code)) {
+        if (
+          values.with_movement &&
+          ["NOT_FOUND", "VALIDATION_ERROR"].includes(error?.code)
+        ) {
           setReloadKey((key) => key + 1);
         }
       }
@@ -201,7 +248,8 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
   const optional = t("dashboard.transactions.form.optional");
   const amount = form.original_amount.trim();
   const hasValidAmount = !getAmountError(amount);
-  const money = (value, currency = form.currency_code) => formatMoney(value, currency, locale);
+  const money = (value, currency = form.currency_code) =>
+    formatMoney(value, currency, locale);
   const accountLabel = (account) =>
     `${account.name ?? `#${account.id}`} · ${money(account.current_balance, account.currency_code)}`;
 
@@ -212,7 +260,9 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
     selectedAccount != null &&
     hasValidAmount &&
     selectedAccount.allow_negative_balance !== true &&
-    isNegativeMoney(subtractMoney(selectedAccount.current_balance ?? "0", amount));
+    isNegativeMoney(
+      subtractMoney(selectedAccount.current_balance ?? "0", amount),
+    );
 
   const movementNote = !withMovement
     ? "movementOff"
@@ -220,7 +270,8 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
       ? `movementOn.${form.direction}`
       : "movementOn.chooseDirection";
 
-  const canSubmit = !isSaving && !(withMovement && (isLoadingOptions || options.error));
+  const canSubmit =
+    !isSaving && !(withMovement && (isLoadingOptions || options.error));
 
   return (
     <div
@@ -238,7 +289,12 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
       >
         <header>
           <h2 id="debt-form-title">{t("dashboard.debts.form.title")}</h2>
-          <button type="button" onClick={close} disabled={isSaving} aria-label={t("common.close")}>
+          <button
+            type="button"
+            onClick={close}
+            disabled={isSaving}
+            aria-label={t("common.close")}
+          >
             ×
           </button>
         </header>
@@ -254,7 +310,9 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
                   <label
                     key={direction}
                     className={`debt-form__direction debt-form__direction--${direction}${
-                      form.direction === direction ? " debt-form__direction--selected" : ""
+                      form.direction === direction
+                        ? " debt-form__direction--selected"
+                        : ""
                     }`}
                   >
                     <input
@@ -265,12 +323,23 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
                       onChange={handleChange}
                       aria-invalid={errors.direction ? true : undefined}
                     />
-                    <span className="debt-form__direction-icon" aria-hidden="true">
+                    <span
+                      className="debt-form__direction-icon"
+                      aria-hidden="true"
+                    >
                       <Icon />
                     </span>
                     <span className="debt-form__direction-copy">
-                      <strong>{t(`dashboard.debts.form.directions.${direction}.title`)}</strong>
-                      <span>{t(`dashboard.debts.form.directions.${direction}.description`)}</span>
+                      <strong>
+                        {t(
+                          `dashboard.debts.form.directions.${direction}.title`,
+                        )}
+                      </strong>
+                      <span>
+                        {t(
+                          `dashboard.debts.form.directions.${direction}.description`,
+                        )}
+                      </span>
                     </span>
                   </label>
                 );
@@ -369,7 +438,9 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
             </label>
           </div>
 
-          <div className={`debt-form__movement${withMovement ? " debt-form__movement--on" : ""}`}>
+          <div
+            className={`debt-form__movement${withMovement ? " debt-form__movement--on" : ""}`}
+          >
             <label className="account-form-modal__check">
               <input
                 type="checkbox"
@@ -387,12 +458,20 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
               <span>{t(`dashboard.debts.form.${movementNote}`)}</span>
             </p>
 
-            {withMovement && isLoadingOptions && <Loading message={t("dashboard.debts.form.loadingAccounts")} />}
+            {withMovement && isLoadingOptions && (
+              <Loading message={t("dashboard.debts.form.loadingAccounts")} />
+            )}
 
             {withMovement && !isLoadingOptions && options.error && (
-              <div className="account-form-modal__error debt-form__options-error" role="alert">
+              <div
+                className="account-form-modal__error debt-form__options-error"
+                role="alert"
+              >
                 <p>{getApiErrorMessage(options.error, t)}</p>
-                <button type="button" onClick={() => setReloadKey((key) => key + 1)}>
+                <button
+                  type="button"
+                  onClick={() => setReloadKey((key) => key + 1)}
+                >
                   {t("common.retry")}
                 </button>
               </div>
@@ -412,7 +491,9 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
                 >
                   <option value="" disabled>
                     {eligibleAccounts.length === 0
-                      ? t("dashboard.debts.form.noAccounts", { currency: form.currency_code })
+                      ? t("dashboard.debts.form.noAccounts", {
+                          currency: form.currency_code,
+                        })
                       : t("dashboard.debts.form.selectAccount")}
                   </option>
                   {eligibleAccounts.map((account) => (
@@ -421,30 +502,47 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
                     </option>
                   ))}
                 </select>
-                <em className="account-form-modal__hint" id="debt-form-account-hint">
-                  {t("dashboard.debts.form.accountHint", { currency: form.currency_code })}
+                <em
+                  className="account-form-modal__hint"
+                  id="debt-form-account-hint"
+                >
+                  {t("dashboard.debts.form.accountHint", {
+                    currency: form.currency_code,
+                  })}
                 </em>
                 {fieldErrors("account_id")}
               </label>
             )}
 
-            {selectedAccount && hasValidAmount && DEBT_DIRECTIONS.includes(form.direction) && (
-              <p className="debt-form__effect" role="status">
-                {t(`dashboard.debts.form.effect.${form.direction}`, { account: selectedAccount.name ?? "" })}{" "}
-                <bdi dir="ltr" className={`debt-form__effect-amount debt-form__effect-amount--${form.direction}`}>
-                  {form.direction === "payable" ? "+" : "−"}
-                  {money(amount)}
-                </bdi>
-              </p>
-            )}
+            {selectedAccount &&
+              hasValidAmount &&
+              DEBT_DIRECTIONS.includes(form.direction) && (
+                <p className="debt-form__effect" role="status">
+                  {t(`dashboard.debts.form.effect.${form.direction}`, {
+                    account: selectedAccount.name ?? "",
+                  })}{" "}
+                  <bdi
+                    dir="ltr"
+                    className={`debt-form__effect-amount debt-form__effect-amount--${form.direction}`}
+                  >
+                    {form.direction === "payable" ? "+" : "−"}
+                    <PrivateMoney>{money(amount)}</PrivateMoney>
+                  </bdi>
+                </p>
+              )}
 
             {exceedsBalance && (
               <p className="debt-form__warning" role="status">
                 <LuTriangleAlert aria-hidden="true" />
                 <span>
-                  {t("dashboard.debts.form.exceedsBalance", {
-                    balance: money(selectedAccount.current_balance, selectedAccount.currency_code),
-                  })}
+                  <PrivateMoney>
+                    {t("dashboard.debts.form.exceedsBalance", {
+                      balance: money(
+                        selectedAccount.current_balance,
+                        selectedAccount.currency_code,
+                      ),
+                    })}
+                  </PrivateMoney>
                 </span>
               </p>
             )}
@@ -479,10 +577,18 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
             <button type="button" onClick={close} disabled={isSaving}>
               {t("common.cancel")}
             </button>
-            <button type="submit" disabled={!canSubmit} aria-busy={isSaving || undefined}>
+            <button
+              type="submit"
+              disabled={!canSubmit}
+              aria-busy={isSaving || undefined}
+            >
               {isSaving
                 ? t("common.saving")
-                : t(withMovement ? "dashboard.debts.form.submitWithMovement" : "dashboard.debts.form.submit")}
+                : t(
+                    withMovement
+                      ? "dashboard.debts.form.submitWithMovement"
+                      : "dashboard.debts.form.submit",
+                  )}
             </button>
           </footer>
         </form>

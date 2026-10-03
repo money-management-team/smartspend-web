@@ -10,11 +10,12 @@ src/features/Dashboards/User/
     ├── reportHelpers.js              # filters/URL, dates, tolerant readers, formatting, errors
     ├── reportDefinitions.js          # per-report summary groups, notes, analytics sections, columns
     └── components/
-        ├── ReportsHeader/            # title + subtitle
-        ├── ReportTabs/               # one button per report
+        ├── ReportsHeader/            # report-aware header: name, description, period, actions
+        ├── ReportTabs/               # grouped rail (desktop) / grouped select (≤1024px)
         ├── ReportFilters/            # filter bar (draft → apply)
         ├── ReportPeriod/             # backend period, previous period, filters echo, rule note
-        ├── ReportSummary/            # summary_by_currency cards
+        ├── ReportHighlights/         # KPI tiles: definition.highlights + backend comparison
+        ├── ReportSummary/            # "All figures": summary_by_currency cards
         ├── ReportAnalytics/          # orchestrates analytics sections
         ├── ReportTrendChart/         # trend_by_currency (recharts), one chart per currency
         ├── ReportComparison/         # current vs previous per currency
@@ -56,6 +57,7 @@ This follows the dashboard pattern with a request key, like `Debts.jsx`:
 
 `reportDefinitions.js` describes each report on top of the shared components:
 
+- `highlights`: the headline `summary_by_currency` fields shown as KPI tiles by `ReportHighlights`, one row per currency; only fields present in a row appear. Each tile's change line is the backend's comparison for that metric (`percent`, else `change`), read from the same `parseComparison` result as the comparison table and shown in a neutral color with a direction icon (`getChangeDirection` in `reportHelpers.js`, shared with `ReportComparison`). Nothing is calculated.
 - `summary`: ordered field groups (e.g. Debts: Payable / Receivable / Period movements; Recurring: Templates / Expected (forecast) / Occurrences; Overview: eight domain groups). Fields the backend sends that aren't listed are still shown under "Other figures", and nested objects (such as cash-flow buckets) become their own group.
 - `notes`: the financial rule shown under the period bar.
 - `analytics`: report-specific sections by `analytics` key and kind: `ranked`, `transactions`, `distribution`, `metrics`, or `generic`. Trend, comparison, and the recurring flags are handled for every report. Any other non-empty analytics key is still rendered with `ReportMetrics`, titled by its field label.
@@ -87,12 +89,19 @@ Unknown fields get a readable label from their key (`getFieldLabel` checks `i18n
 | Empty analytics | "No analytics for this period." |
 | Empty items | "No rows for this period."; on a page past the end, "This page is empty" with a first-page button. |
 
+## Layout and styling
+
+- `Reports.css` owns the page tokens (`--report-line`, `--report-tile`, `--report-gap`, and the dark header band `--report-hero-*`) and the two-column workspace (232px rail + `minmax(0, 1fr)`; one column at 1024px and below). Reports no longer takes any rule from `financeExperience.css`.
+- `.reports-page__content` is a named size container (`report-content`). The analytics grid goes to one column below 720px of *content* width, and the KPI grid is one row of `--highlight-count` tiles from 680px (2-up below), so the layout follows the column, not the viewport (the sidebar and rail change the available width).
+- The rail is sticky under the header on desktop. The switcher select and the rail are never displayed together.
+- Filters: the fields show a toggle (`aria-expanded` / `aria-controls`) only on phones; it opens by itself on an invalid range, and the form remounts after Apply, which folds it again.
+
 ## i18n and RTL
 
-- All strings are under `dashboard.reports.*` in `en.json` and `ar.json`, in exact key parity. Groups: `names`, `descriptions`, `itemsTitle`, `notes`, `filters`, `period`, `sections`, `summaryGroups`, `comparison`, `flags`, `states`, `errors`, `fields` (backend field labels), and `values` (statuses, types, directions, scopes, frequencies, buckets).
+- All strings are under `dashboard.reports.*` in `en.json` and `ar.json`, in exact key parity. Groups: `tabs` (incl. `tabs.groups`), `highlights`, `names`, `descriptions`, `itemsTitle`, `notes`, `filters`, `period`, `sections`, `summaryGroups`, `comparison`, `flags`, `states`, `errors`, `fields` (backend field labels), and `values` (statuses, types, directions, scopes, frequencies, buckets).
 - Numbers and amounts are isolated with `<bdi dir="ltr">`. Dates and user text use a plain `<bdi>`.
 - Charts render in a `dir="ltr"` box, as on the dashboard. Pagination chevrons are mirrored in RTL. Layout uses logical properties (`inline-size`, `padding-inline`, `text-align: start`).
-- The tab bar scrolls horizontally on narrow screens. Transitions honor `prefers-reduced-motion`.
+- Narrow screens use the grouped select instead of a scrolling tab bar; quick periods scroll inside their segmented control. Transitions honor `prefers-reduced-motion`.
 
 ## Verification
 
@@ -106,5 +115,7 @@ Done while implementing (no test framework is configured, so the harnesses were 
   - every analytics reader;
   - 401, 403, 404, 422, 429, and 500 mapping, and 401 clearing the session.
 - Render harness (Vite SSR): every report rendered in English and Arabic with documented payloads. It checked that no `[object Object]`, `NaN`, or raw key is printed, that no missing-translation warning fires, that detail links are present, that Overview has no pagination, that two currencies give two cards, and that the empty states render.
+
+Redesign (2026-09-29): headless Chrome against the built app with mocked two-currency reports rendered Overview, Income & Expense, Debts and Recurring at 360–1920px in English and Arabic (and dark mode spot checks) with no element outside the viewport; `npm run build` and `npm run lint` pass.
 
 At the time of writing, the backend at `VITE_API_BASE_URL` answered `404` for every `/reports/*` path (while e.g. `/dashboard` answered `401`), so the Sprint 6 routes were not deployed there yet. The page shows "This report isn't available" for that 404. Check the live responses against the tolerant readers once the routes are deployed.

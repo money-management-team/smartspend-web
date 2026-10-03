@@ -15,6 +15,7 @@
       "unexpected": "The server returned an unexpected response. Please try again.",
       "server": "The server could not complete the request. Please try again shortly.",
       "requestFailed": "Unable to complete the request. Please try again.",
+      "httpStatus": "The request could not be completed (HTTP {{status}}). Please try again.",
       "rateLimited": "Too many attempts. Try again after {{seconds}} seconds.",
       "aFew": "a few",
       "workspaceUnavailable": "Unable to determine the current workspace."
@@ -341,12 +342,24 @@
           "Clear reports"
         ]
       }
+    },
+    "companyUnavailable": {
+      "title": "Business accounts are not available yet",
+      "description": "The business workspace needs its own backend registration and permissions.",
+      "detail": "This version supports personal finance accounts. We will open business registration when its secure workflow is ready.",
+      "personal": "Create a personal account",
+      "back": "Back to account type",
+      "short": "Coming soon"
     }
   },
   "dashboard": {
     "header": {
       "searchPlaceholder": "Search transactions, accounts...",
-      "userProfile": "User profile"
+      "userProfile": "User profile",
+      "openMenu": "Open navigation menu",
+      "lightMode": "Switch to light mode",
+      "darkMode": "Switch to dark mode",
+      "switchLanguage": "Switch language"
     },
     "sidebar": {
       "tagline": "AI money management",
@@ -376,7 +389,8 @@
         "planning": "Planning"
       },
       "financialReports": "Financial reports",
-      "reportExports": "Export history"
+      "reportExports": "Export history",
+      "close": "Close navigation menu"
     },
     "user": {
       "common": {
@@ -515,6 +529,12 @@
     "accounts": {
       "title": "Accounts",
       "subtitle": "Cash, bank accounts, wallets and cards in one place.",
+      "overviewLabel": "Account overview",
+      "viewsLabel": "Account status",
+      "activeView": "Active accounts",
+      "archivedView": "Archived accounts",
+      "activeDescription": "Accounts ready for daily activity and transfers.",
+      "archivedDescription": "Balances and records remain available to view. New activity is blocked.",
       "add": "Add account",
       "filters": {
         "all": "All",
@@ -543,6 +563,7 @@
         "description": "Archiving is not deletion. The account moves out of your active accounts.",
         "keepsHistory": "All of its transactions and balance history are kept.",
         "noNewActivity": "It can't receive new income, expenses or transfers.",
+        "findArchived": "You can find it later under Archived accounts on this page.",
         "notDeleted": "Nothing is permanently deleted.",
         "confirm": "Archive account",
         "archiving": "Archiving..."
@@ -592,6 +613,7 @@
       "states": {
         "loading": "Loading accounts...",
         "empty": "No accounts found for this filter.",
+        "emptyArchived": "No archived accounts yet.",
         "emptyAll": "You don't have any active accounts yet."
       }
     },
@@ -770,13 +792,45 @@
       },
       "voice": {
         "kicker": "Smart voice entry",
-        "title": "Say it naturally.",
-        "description": "For example: I paid 35 shekels for lunch from my current account.",
+        "title": "Say your expense naturally.",
+        "description": "Describe one expense in your preferred language. Include the amount, currency and what you paid for, then listen to your recording.",
         "start": "Start recording",
         "stop": "Stop recording",
         "listening": "Listening now...",
         "unavailable": "Voice entry isn't connected to the server yet, so nothing was recorded. Use manual entry in the meantime.",
-        "fallback": "Enter it manually"
+        "fallback": "Enter it manually",
+        "exampleLabel": "Try saying",
+        "example": "I paid 25 shekels for lunch today.",
+        "hint": "Record up to one minute. An expense is saved only after you review and confirm it.",
+        "requesting": "Allow microphone access in the browser prompt.",
+        "processing": "Preparing your recording…",
+        "ready": "Your recording is ready",
+        "durationLabel": "Recording duration",
+        "levelLabel": "Microphone sound level",
+        "recordAgain": "Record again",
+        "cancel": "Cancel",
+        "removeRecording": "Delete recording",
+        "playLabel": "Listen to your recording",
+        "previewHint": "Check what you said before sending it for analysis.",
+        "useRecording": "Use this recording",
+        "stoppedAtLimit": "Recording stopped automatically at the one-minute limit.",
+        "stoppedOnBackground": "Recording stopped when you left the page. Listen to it or record again.",
+        "errors": {
+          "VOICE_INSECURE": "Recording requires HTTPS or localhost. You can use manual entry.",
+          "VOICE_UNSUPPORTED": "This browser does not support the required recording features. Try a modern browser or use manual entry.",
+          "VOICE_PERMISSION_DENIED": "Microphone access was denied. Enable it for this site in your browser settings and try again.",
+          "VOICE_PERMISSION_TIMEOUT": "Microphone permission did not arrive. Try again and accept the browser prompt.",
+          "VOICE_MIC_NOT_FOUND": "No available microphone was found. Connect one and try again.",
+          "VOICE_MIC_BUSY": "The microphone could not open. Close other apps using it and try again.",
+          "VOICE_MIC_INTERRUPTED": "The microphone disconnected or the page changed while recording started. Check it and record again.",
+          "VOICE_TOO_SHORT": "The recording is too short. Speak for at least half a second before stopping.",
+          "VOICE_TOO_LONG": "The maximum is one minute. Record one expense within that time.",
+          "VOICE_TOO_LARGE": "The recording is too large. Try a shorter recording.",
+          "VOICE_CONVERSION_FAILED": "The audio could not be prepared. Record again or use manual entry.",
+          "VOICE_RECORDING_FAILED": "Recording could not complete. Check the microphone and try again.",
+          "VOICE_RECORDING_BUSY": "Your recording is being prepared. Wait a moment or cancel.",
+          "VOICE_CANCELLED": "Recording was cancelled."
+        }
       },
       "scan": {
         "kicker": "Smart receipt",
@@ -844,6 +898,161 @@
         "incomeCreated": "Income recorded. The account balance was updated by the ledger.",
         "expenseCreated": "Expense recorded. The account balance was updated by the ledger.",
         "viewTransaction": "View transaction"
+      },
+      "voiceFlow": {
+        "uploading": "Uploading your recording securely…",
+        "recording": "Voice recording #{{id}}",
+        "reviewTitle": "Review the expense details",
+        "reviewHint": "Check the transcript and fields carefully. Complete unspoken information, then save the draft before confirming. Fields marked * are required to post the expense.",
+        "transcript": "What the platform understood",
+        "processing": "Transcribing and analyzing your expense",
+        "processingHint": "Follow the status here or reopen the recording from history later. No expense has been posted yet.",
+        "pollStopped": "Automatic checks stopped after a long wait or connection failure. Refresh the status; this does not rerun analysis or consume an allowance.",
+        "analysisFailed": "Analysis could not complete. Retry if the audio is available and your allowance permits, or use manual entry.",
+        "sourceUnavailable": "The audio is no longer available for analysis. Record again or use manual entry.",
+        "retry": "Analyze again — uses one voice allowance",
+        "check": "Refresh status",
+        "choose": "Choose…",
+        "save": "Save draft",
+        "saving": "Saving…",
+        "saveFirst": "You have unsaved changes. Save them first; saving a draft does not post an expense.",
+        "confirmReview": "Review confirmation",
+        "finalConfirmation": "Confirm expense posting",
+        "finalHint": "These saved values will be posted and the amount deducted from the account. Check them, then confirm.",
+        "confirm": "I confirm — post expense",
+        "cancel": "Cancel",
+        "confirmed": "Expense posted successfully",
+        "confirmedHint": "The transaction was created and the platform refreshed account and transaction data.",
+        "transaction": "View transaction",
+        "suggestions": "View AI extraction",
+        "otherSuggestion": "Additional suggestion",
+        "confidence": "Confidence {{value}}%",
+        "newRecording": "New recording",
+        "discard": "Discard draft",
+        "discardHint": "Discard this draft? No expense will be posted from it, and the used analysis allowance is not refunded.",
+        "discardConfirm": "Yes, discard draft",
+        "history": "My voice recordings",
+        "historyHint": "Your recordings in the selected account workspace. Reopen drafts after refreshing or leaving this page.",
+        "historyEmpty": "No voice recordings in this workspace yet.",
+        "historyFailed": "History could not load. Refresh it again.",
+        "refreshHistory": "Refresh history",
+        "previous": "Previous",
+        "next": "Next",
+        "validation": "Check the draft fields and current status before continuing.",
+        "fieldInvalid": "Check this field; the value may be invalid or no longer available.",
+        "currencyMismatch": "The expense currency does not match the account currency. Correct the account or currency based on the actual expense.",
+        "optionsFailed": "Accounts or categories could not load. Reload them before saving or confirming.",
+        "needsReload": "The draft changed or the save result is uncertain. Refresh its status before editing again.",
+        "reloadWarning": "Reloading the server draft will discard your unsaved edits. Continue?",
+        "replayUpload": "Resend the same upload attempt",
+        "replayConfirm": "Complete the same confirmation attempt",
+        "replayRetry": "Complete the same analysis retry",
+        "receiptUncertain": "The upload result is uncertain. Resending uses the same file and attempt key to avoid duplicate receipts.",
+        "insufficientBalance": "The account balance is insufficient. Check the balance or select the correct account and try again.",
+        "uncertain": {
+          "upload": "The connection failed or the upload result is uncertain. Do not start another attempt for this file; resend the same attempt or check history.",
+          "confirm": "Expense posting is uncertain. Do not enter the expense manually a second time. Check the status or complete the same confirmation attempt; edits are temporarily locked.",
+          "retry": "Analysis retry is uncertain. Check the status or complete the same attempt to avoid another allowance charge."
+        },
+        "statuses": {
+          "uploaded": "Audio received",
+          "queued": "Waiting for analysis",
+          "processing": "Analyzing",
+          "ready_for_review": "Ready for review",
+          "confirmed": "Confirmed",
+          "failed": "Analysis failed",
+          "discarded": "Discarded"
+        },
+        "fields": {
+          "account_id": "Account",
+          "category_id": "Category",
+          "amount": "Amount",
+          "currency_code": "Currency",
+          "transaction_date": "Expense date",
+          "transaction_time": "Expense time",
+          "merchant_name": "Merchant or payee",
+          "reference_number": "Reference",
+          "description": "Description",
+          "total_amount": "Extracted amount",
+          "tax_amount": "Spoken tax",
+          "fee_amount": "Spoken fee",
+          "category_hint": "Suggested category",
+          "payment_method": "Payment method",
+          "card_last_four": "Last card digits"
+        },
+        "warnings": {
+          "amount_missing": "No clear amount was spoken. Enter it after checking.",
+          "currency_missing": "The currency was not clear. Select it yourself.",
+          "date_missing": "No date was spoken. Enter the correct expense date.",
+          "date_ambiguous": "The date is ambiguous. Check it before confirming.",
+          "unclear_speech": "Some speech was unclear. Check the transcript and details.",
+          "multiple_operations": "More than one operation was spoken. Record each expense separately.",
+          "unsupported_operation": "This flow handles expenses. Use the appropriate entry for income or transfers.",
+          "ambiguous_amount": "The amount has several possible meanings. Check it.",
+          "amount_unverified": "The amount could not be verified from speech; enter it manually.",
+          "currency_unverified": "The currency could not be verified; select it yourself.",
+          "date_unverified": "The date could not be verified; enter it yourself.",
+          "account_selection_required": "Select and check the correct account before confirming.",
+          "critical_fields_missing": "Required information is missing. Complete it before confirming.",
+          "unknown": "Check the expense details; analysis returned another review note."
+        },
+        "timeHint": "Expense time is optional. Leaving it blank posts the expense at 00:00 in the recording workspace timezone.",
+        "progress": {
+          "label": "Voice analysis status",
+          "eyebrow": "Preparing your expense",
+          "stepsLabel": "Recording preparation steps",
+          "steps": {
+            "upload": "Upload recording",
+            "queue": "Wait for processing",
+            "transcription": "Convert speech to text",
+            "extraction": "Extract expense details"
+          },
+          "stepStates": {
+            "done": "Complete",
+            "current": "In progress",
+            "waiting": "Next step"
+          },
+          "phases": {
+            "uploading": {
+              "title": "Uploading your recording",
+              "hint": "We are securely sending your recording for analysis. You do not need to submit it again."
+            },
+            "retrying": {
+              "title": "Starting another analysis",
+              "hint": "We are sending your request and waiting for processing to begin. The result will appear here automatically."
+            },
+            "queued": {
+              "title": "Recording received — waiting for analysis",
+              "hint": "Your recording is in the processing queue. We will follow its status automatically."
+            },
+            "transcribing": {
+              "title": "Understanding what you said",
+              "hint": "We are converting your speech to text in its original language. This may take a little time."
+            },
+            "extracting": {
+              "title": "Preparing your expense details",
+              "hint": "Your speech has been transcribed. We are now analysing the amount, currency, date and other details you mentioned."
+            }
+          },
+          "noFinancialEffect": "No expense is posted and no money is deducted until you review and confirm.",
+          "autoReview": "The review screen will appear automatically when analysis finishes. There is no need to resend the recording.",
+          "longWait": "Analysis is taking longer. Select “Refresh status” to resume checking, or open this recording from history later."
+        }
+      },
+      "aiInput": {
+        "title": "Today’s AI input allowances",
+        "voice": "Voice recording",
+        "receipt": "Receipt capture",
+        "remaining": "remaining",
+        "refresh": "Refresh allowances",
+        "loading": "Checking…",
+        "unknown": "Allowance currently unavailable",
+        "exhausted": "You have used this method’s daily allowance.",
+        "reset": "Resets at {{time}} in your device timezone.",
+        "minute": "The temporary request limit was reached. Wait briefly, then refresh allowances.",
+        "loadFailed": "Allowances could not be checked. Refresh or use manual entry.",
+        "policy": "Each method has a separate user allowance shared across workspaces. Local recording, status checks and draft review do not use an allowance. Resets at 00:00 UTC.",
+        "manual": "Continue with manual entry"
       }
     },
     "transactions": {
@@ -867,7 +1076,8 @@
         "import": "Import",
         "recurring": "Recurring",
         "ai": "Smart capture",
-        "api": "API"
+        "api": "API",
+        "voice": "Voice recording"
       },
       "entryRoles": {
         "income": "Income",
@@ -1753,6 +1963,38 @@
         "pausedHint": "Paused goals don't accept contributions. Resume the goal first. Nothing was moved.",
         "archivedHint": "Archived goals don't accept new money movements. Nothing was moved.",
         "notMovedHint": "Nothing was moved and no balance changed."
+      },
+      "plans": {
+        "title": "Planned savings contributions",
+        "subtitle": "Future plans only; money moves when you fulfil a contribution.",
+        "add": "Add a plan",
+        "edit": "Edit plan",
+        "noMoneyMoved": "Creating or editing a plan does not move money. Use Fulfil contribution to post the transfer.",
+        "source": "Source account",
+        "sourceRequired": "Choose a source account.",
+        "sourceUnavailable": "This source account is unavailable. Edit the plan or check the account before fulfilling it.",
+        "selectAccount": "Choose an account",
+        "noAccounts": "No eligible accounts in this currency.",
+        "amount": "Planned amount",
+        "date": "Planned date",
+        "dateRequired": "Choose today or a future date.",
+        "notes": "Notes (optional)",
+        "notesLength": "Notes must be at most 1000 characters.",
+        "filter": "Status",
+        "statuses": {
+          "all": "All",
+          "planned": "Planned",
+          "fulfilled": "Fulfilled",
+          "cancelled": "Cancelled"
+        },
+        "empty": "No plans match this status.",
+        "fulfill": "Fulfil contribution",
+        "cancel": "Cancel plan",
+        "confirmCancel": "Cancel this plan? Its history will be kept and no money will move.",
+        "cancelledNotice": "Plan cancelled.",
+        "savedNotice": "Plan saved.",
+        "previous": "Previous",
+        "next": "Next"
       }
     },
     "debts": {
@@ -2044,7 +2286,12 @@
       "title": "Reports",
       "subtitle": "Backend-calculated financial reports for any period, with every currency kept separate.",
       "tabs": {
-        "label": "Report type"
+        "label": "Report type",
+        "groups": {
+          "performance": "Performance",
+          "balances": "Balances & movements",
+          "planning": "Planning"
+        }
       },
       "names": {
         "overview": "Overview",
@@ -2119,7 +2366,8 @@
           "toRequired": "Choose an end date.",
           "invalidDate": "Enter valid dates.",
           "fromAfterTo": "The start date must be on or before the end date."
-        }
+        },
+        "more": "Custom range and options"
       },
       "period": {
         "current": "Current period",
@@ -2149,7 +2397,8 @@
         "savingsProgressSummary": "Savings progress",
         "debtSummary": "Debt summary",
         "recurringForecast": "Recurring forecast",
-        "forecast": "Forecast"
+        "forecast": "Forecast",
+        "details": "All figures"
       },
       "summaryGroups": {
         "incomeExpense": "Income & expense",
@@ -2394,11 +2643,15 @@
         "trendHint": "Grouped by {{unit}}; each currency is shown separately.",
         "truncated": "Showing the first {{shown}} of {{total}} rows. Export CSV or Excel for the complete list.",
         "emptyTitle": "No data available for the selected filters."
+      },
+      "highlights": {
+        "label": "Key figures",
+        "vsPrevious": "vs previous period"
       }
     },
     "aiAssistant": {
       "title": "AI Financial Assistant",
-      "subtitle": "Ask anything about your money.",
+      "subtitle": "Clearer answers grounded in your own financial data.",
       "initialMessage": "Your July net cash flow was +$4,450. Dining is your fastest-growing category at +24%. Want a plan to bring it back in line?",
       "conversations": {
         "title": "Conversations",
@@ -2410,6 +2663,7 @@
       "suggestions": {
         "safeSavings": "How much can I safely save this month?",
         "julySpending": "Where did my money go in July?",
+        "monthlySpending": "Where did my money go this month?",
         "diningBudget": "Suggest a budget for dining",
         "emergencyFund": "Am I on track for my emergency fund?"
       },
@@ -2417,6 +2671,149 @@
         "placeholder": "Ask Smart Spend...",
         "send": "Send",
         "sending": "Sending..."
+      },
+      "extra": {
+        "tabsLabel": "AI tools",
+        "ready": "Ready to chat",
+        "needsActivation": "Activate your assistant to begin",
+        "privateLabel": "Privacy & control",
+        "activationTitle": "Start with your consent",
+        "activationDescription": "SmartSpend uses your account data to help you understand spending and savings. Review how it works before enabling the assistant.",
+        "activationPointOne": "You can turn it off or delete its data at any time in settings.",
+        "activationPointTwo": "Deleting assistant data leaves your financial records intact.",
+        "consentDisclosure": "By choosing “Enable assistant”, you consent to processing your financial data for chat, insights and forecasts.",
+        "activate": "Enable assistant",
+        "activating": "Enabling…",
+        "enabledNotice": "Assistant enabled. You can start a conversation now.",
+        "reviewSettings": "Review settings",
+        "settingsUnavailable": "Could not load assistant settings. Please try again.",
+        "retry": "Try again",
+        "featureDisabled": "This feature is turned off",
+        "featureDisabledHint": "Enable it in assistant settings.",
+        "chatTitle": "Your financial chat",
+        "chatSubtitle": "Explore your finances with a question",
+        "welcomeTitle": "How can I help today?",
+        "welcomeDescription": "Ask about spending, budgets or goals. Choose a prompt below or write your own question.",
+        "noConversations": "No conversations yet. Start a new one.",
+        "feedbackLabel": "Rate this answer",
+        "feedbackTitle": "Share your feedback",
+        "feedbackReason": "Reason (optional)",
+        "feedbackComment": "Additional comment (optional)",
+        "optional": "Optional",
+        "cancelFeedback": "Cancel",
+        "reasons": {
+          "normal_activity": "Normal activity",
+          "not_useful": "Not useful",
+          "inaccurate": "Inaccurate",
+          "unclear": "Unclear",
+          "other": "Other"
+        },
+        "feedbackSaved": "Thanks, your feedback was saved.",
+        "thinking": "Preparing your answer",
+        "assistantCaution": "Check important figures before making financial decisions.",
+        "insightsTitle": "Insights for better decisions",
+        "insightsDescription": "Financial observations based on your account activity.",
+        "forecastTitle": "Cash flow forecast",
+        "forecastDescription": "An estimate of how your balances may change in the coming period.",
+        "settingsTitle": "Make it yours",
+        "settingsDescription": "Manage your consent, features and assistant data retention.",
+        "ai_enabledDescription": "Let the assistant process your financial data to answer questions.",
+        "insights_enabledDescription": "Analyze spending patterns and show financial observations.",
+        "forecast_enabledDescription": "See estimated future cash flow and balances.",
+        "chat": "Chat",
+        "insights": "Insights",
+        "forecast": "Forecast",
+        "settings": "AI settings",
+        "loading": "Loading…",
+        "invalidResponse": "The AI service returned an incomplete response.",
+        "confirmDeleteChat": "Delete this conversation?",
+        "confirmDeleteData": "Delete all AI Copilot data and withdraw consent? Financial records will remain.",
+        "moreMessages": "More messages",
+        "moreChats": "More conversations",
+        "refresh": "Refresh insights",
+        "queued": "Insight refresh queued. Check back soon.",
+        "insightsUpdated": "New insight data is available.",
+        "refreshStillQueued": "The update may continue in the background. Check again later.",
+        "waitingForInsights": "Waiting for insights…",
+        "emptyFilteredInsights": "No insights match these filters.",
+        "insightType": "Insight type",
+        "allTypes": "All types",
+        "insightStatus": "Insight status",
+        "currencyFilter": "Currency",
+        "applyFilters": "Apply",
+        "insightStatuses": {
+          "active": "Active",
+          "dismissed": "Dismissed",
+          "expired": "Expired",
+          "superseded": "Superseded"
+        },
+        "insightTypes": {
+          "spending_summary": "Spending summary",
+          "spending_change": "Spending change",
+          "top_category": "Top category",
+          "budget_risk": "Budget risk",
+          "unusual_spending": "Unusual spending",
+          "recurring_commitment": "Recurring commitment",
+          "debt_due": "Debt due",
+          "savings_goal_progress": "Savings progress",
+          "savings_suggestion": "Savings suggestion",
+          "cashflow_forecast": "Cashflow forecast"
+        },
+        "responseStatuses": {
+          "insufficient_data": "There is not enough data for a reliable answer.",
+          "unsupported": "This question is outside the financial assistant's scope."
+        },
+        "groundedFacts": "Facts behind this answer",
+        "futureContributionDate": "This suggestion is for {{date}}. The contribution form records transactions through today only; review the date and amount before confirming.",
+        "openContribution": "Review suggested savings contribution",
+        "emptyInsights": "No active insights yet.",
+        "helpful": "Helpful",
+        "not_helpful": "Not helpful",
+        "inaccurate": "Inaccurate",
+        "dismiss": "Dismiss",
+        "more": "Load more",
+        "noForecast": "There is not enough data for a forecast yet.",
+        "ai_enabled": "Enable AI and consent to processing",
+        "insights_enabled": "Enable insights",
+        "forecast_enabled": "Enable forecasts",
+        "language": "AI language",
+        "automatic": "Automatic",
+        "retention": "Retention (days)",
+        "save": "Save",
+        "consented": "AI consent is active.",
+        "consentNeeded": "AI consent is inactive. Enable AI to use the assistant.",
+        "deleteData": "Delete my AI data",
+        "deleted": "AI data deleted. Consent withdrawn.",
+        "deleteChat": "Delete conversation",
+        "emptyChat": "Start a conversation about your finances.",
+        "current_balance": "Current balance",
+        "expected_inflow": "Expected inflow",
+        "expected_outflow": "Expected outflow",
+        "projected_balance": "Projected balance",
+        "minimum_projected_balance": "Lowest projected balance",
+        "pressureDays": "Pressure days",
+        "assumptions": "Forecast assumptions",
+        "dailyTimeline": "Daily projection",
+        "date": "Date",
+        "closing_balance": "Closing balance",
+        "details": "Details",
+        "sourcesLabel": "Sources",
+        "historyToggle": "Conversation history",
+        "closeHistory": "Close conversation history",
+        "hideDetails": "Hide details",
+        "dismissAlert": "Dismiss message",
+        "chatFeature": "Ask questions about spending, budgets and goals in plain language.",
+        "insightsFeature": "Get observations about budget risks, unusual spending and savings chances.",
+        "forecastFeature": "See how your balances may move over the next 30 days.",
+        "featuresTitle": "Features",
+        "preferencesTitle": "Preferences",
+        "privacyTitle": "Privacy & data",
+        "dangerZone": "Delete assistant data",
+        "deleteDataHint": "Removes conversations, insights and feedback and withdraws consent. Your financial records are not touched.",
+        "retentionHint": "Between 7 and 365 days.",
+        "aiSummary": "AI summary",
+        "chartTitle": "Projected closing balance",
+        "pressureDaysHint": "Days when your balance is expected to be tight."
       }
     },
     "notifications": {
@@ -2690,7 +3087,16 @@
         }
       },
       "preferences": {
-        "title": "Preferences"
+        "title": "Preferences",
+        "language": "Language",
+        "timezone": "Time zone",
+        "theme": "Appearance",
+        "light": "Light",
+        "dark": "Dark",
+        "save": "Save preferences",
+        "saving": "Saving…",
+        "saved": "Preferences saved.",
+        "aiSettings": "Manage AI privacy and preferences"
       }
     },
     "reportExports": {
@@ -3016,6 +3422,101 @@
         "expired": "The secure link to this receipt has expired. Refresh it to look again.",
         "refreshLink": "Refresh link"
       }
+    },
+    "imports": {
+      "title": "Statement imports",
+      "subtitle": "Upload a CSV or XLSX statement, review its rows, then confirm the transactions.",
+      "upload": "Upload statement",
+      "account": "Account",
+      "file": "Statement file",
+      "select": "Select…",
+      "filterStatus": "Filter by status",
+      "filterAccount": "Filter by account",
+      "filterRows": "Filter rows",
+      "allStatuses": "All statuses",
+      "allAccounts": "All accounts",
+      "noMatchingRows": "No rows match these filters.",
+      "history": "Import history",
+      "empty": "No imports yet.",
+      "more": "Load more",
+      "back": "← All imports",
+      "notFound": "Import not found.",
+      "loading": "Loading…",
+      "status": "Status",
+      "counts": "Rows: {{total}} total · {{valid}} valid · {{invalid}} invalid · {{duplicate}} duplicates · {{ignored}} ignored · {{imported}} imported",
+      "processing": "Posting transactions. This page refreshes automatically.",
+      "mapping": "Map statement columns",
+      "mappingHelp": "Choose a file column for each field. Date and either amount or debit/credit are required. Saving and validating do not move money.",
+      "unmapped": "Not mapped",
+      "expenseCategory": "Default expense category",
+      "incomeCategory": "Default income category",
+      "saveMapping": "Save column mapping",
+      "validate": "Validate rows",
+      "mapped": "Mapping saved. Validate the rows next.",
+      "validated": "Rows validated. Review them before confirmation.",
+      "cancel": "Cancel import",
+      "cancelConfirm": "Cancel this import without posting any transactions?",
+      "cancelled": "Import cancelled.",
+      "reviewWarning": "Only valid rows will be posted. Review duplicates and invalid rows before confirmation.",
+      "confirm": "Confirm import",
+      "confirmPrompt": "Post all valid rows as financial transactions?",
+      "confirmed": "Import accepted. Wait for processing to finish.",
+      "reverseReason": "Reason for reversal",
+      "reverse": "Reverse imported transactions",
+      "reversePrompt": "Reverse every transaction created by this import? This will create opposing ledger entries.",
+      "reversed": "Import reversed.",
+      "preview": "Statement preview",
+      "duplicate": "Possible duplicate of transaction",
+      "edit": "Edit row",
+      "ignore": "Ignore row",
+      "saved": "Row saved.",
+      "income": "Income",
+      "expense": "Expense",
+      "save": "Save row",
+      "previous": "Previous",
+      "next": "Next",
+      "fields": {
+        "date": "Date",
+        "description": "Description",
+        "amount": "Amount",
+        "debit": "Debit",
+        "credit": "Credit",
+        "type": "Type",
+        "currency": "Currency",
+        "category": "Category",
+        "reference": "Reference"
+      },
+      "rowFields": {
+        "transaction_date": "Date",
+        "amount": "Amount",
+        "currency": "Currency",
+        "description": "Description",
+        "transaction_type": "Type",
+        "category_id": "Category"
+      },
+      "statuses": {
+        "uploaded": "Uploaded",
+        "mapping_required": "Mapping needed",
+        "validating": "Validating",
+        "ready_for_review": "Ready for review",
+        "partially_valid": "Partially valid",
+        "confirmed": "Confirmed",
+        "processing": "Processing",
+        "completed": "Completed",
+        "failed": "Failed",
+        "cancelled": "Cancelled",
+        "reversed": "Reversed"
+      },
+      "rowStatuses": {
+        "pending": "Pending",
+        "valid": "Valid",
+        "invalid": "Invalid",
+        "duplicate": "Possible duplicate",
+        "ignored": "Ignored",
+        "imported": "Imported",
+        "failed": "Failed",
+        "reversed": "Reversed"
+      }
     }
   },
   "home": {
@@ -3039,27 +3540,30 @@
       "badge": "AI-powered personal finance",
       "titleStart": "Manage your money smarter,",
       "titleHighlight": "all in one place",
-      "description": "Smart Spend connects your accounts, organizes every transaction, tracks your budgets and savings goals, and explains your spending in plain language.",
+      "description": "Organize accounts, transactions, budgets and savings goals, review reports, and use AI tools to understand your recorded data.",
       "primaryButton": "Start managing my money",
       "watchDemo": "Watch the demo",
-      "users": "50,000+ users trust Smart Spend"
+      "users": "An Arabic and English experience for personal money management",
+      "visual": {
+        "viewAll": "View all"
+      }
     },
     "stats": {
       "users": {
-        "title": "50k+ Users",
-        "text": "Growing community"
+        "title": "One financial space",
+        "text": "For accounts, transactions and goals"
       },
       "security": {
-        "title": "Secure Financial Data",
-        "text": "Encrypted end to end"
+        "title": "Access permissions",
+        "text": "Linked to your account and workspace"
       },
       "ai": {
         "title": "AI-Powered Insights",
         "text": "Clear, useful advice"
       },
       "monitoring": {
-        "title": "24/7 Monitoring",
-        "text": "Always watching your accounts"
+        "title": "Reviewable history",
+        "text": "Follow your financial movements"
       }
     },
     "features": {
@@ -3067,8 +3571,8 @@
       "subtitle": "Everything you need to understand, plan and grow your money.",
       "items": {
         "sync": {
-          "title": "Automatic Sync",
-          "description": "Connect your accounts and automatically organize transactions."
+          "title": "Organized accounts",
+          "description": "Add accounts and review balances and movement history inside the platform."
         },
         "analytics": {
           "title": "Smart Analytics",
@@ -3087,10 +3591,11 @@
           "description": "Get alerts about budgets and upcoming bills."
         },
         "budgets": {
-          "title": "Shared Budgets",
-          "description": "Manage shared spending with family or partners."
+          "title": "Clear budgets",
+          "description": "Set spending limits and review progress using your recorded data."
         }
-      }
+      },
+      "eyebrow": "Tools for everyday money"
     },
     "ai": {
       "badge": "AI Assistant",
@@ -3100,7 +3605,14 @@
       "secondary": "See recommendations",
       "cardTitle": "Your dining expenses increased 18% this month.",
       "recommendation": "Recommendation",
-      "recommendationText": "Reducing dining expenses by 10% could help you save approximately $45 this month."
+      "recommendationText": "Illustrative example: reducing dining expenses may leave more room for saving. Suggestions inside your account depend on your recorded data and review.",
+      "proofReceipts": "Receipt analysis",
+      "proofPatterns": "Spending patterns",
+      "proofGuidance": "Reviewable suggestions",
+      "live": "Illustrative example",
+      "userPrompt": "How can I review this month's spending?",
+      "savingPotential": "Potential saving (example)",
+      "askAnything": "Ask about your financial data"
     },
     "steps": {
       "title": "Start your journey in 3 simple steps",
@@ -3108,44 +3620,52 @@
       "items": {
         "account": {
           "title": "Create your account",
-          "description": "Sign up in under a minute, no card required."
+          "description": "Create your account and review the terms and privacy policy."
         },
         "connect": {
-          "title": "Link your accounts",
-          "description": "Securely connect banks and cards in a few taps."
+          "title": "Add your accounts",
+          "description": "Choose a currency and opening balance, then start recording transactions."
         },
         "control": {
           "title": "Control your money",
           "description": "Track budgets, bills and savings in one place."
         }
-      }
+      },
+      "eyebrow": "Simple steps"
     },
     "security": {
       "badge": "Security",
-      "title": "Your financial data stays protected",
-      "subtitle": "Security is a default, not a feature you have to turn on.",
+      "title": "Controls for your financial history",
+      "subtitle": "Permissions, review and private analysis files within the platform.",
       "items": {
         "connections": {
-          "title": "Secure account connections",
-          "description": "Read-only connections through trusted providers."
+          "title": "Clear permissions",
+          "description": "Data access depends on the user and workspace permissions."
         },
         "storage": {
-          "title": "Strong data protection",
-          "description": "Data is encrypted in transit and at rest."
+          "title": "Private analysis files",
+          "description": "Audio and receipts use private storage and are validated before processing."
         },
         "privacy": {
           "title": "Privacy-focused design",
-          "description": "We never sell your personal financial data."
+          "description": "Choose what you share with analysis tools and review your options in the privacy policy."
         },
         "monitoring": {
-          "title": "Real-time monitoring",
-          "description": "Unusual activity is flagged when it happens."
+          "title": "Reviewable financial history",
+          "description": "Review original operations and their effects; archiving does not delete account history."
         }
-      }
+      },
+      "statusTitle": "Review before confirmation",
+      "statusText": "Voice and receipt drafts need your confirmation"
     },
     "dashboardPreview": {
       "title": "Everything you need, in one dashboard",
-      "subtitle": "Balance, income, expenses, savings, budgets, transactions and AI insights — one clear view."
+      "subtitle": "A dashboard preview using example data, not a real account. Your actual information appears after sign-in.",
+      "eyebrow": "Illustrative preview",
+      "welcome": "Welcome",
+      "overview": "Financial overview",
+      "vsLastMonth": "vs. last month",
+      "cashFlow": "Cash flow"
     },
     "preview": {
       "totalBalance": "Total balance",
@@ -3161,19 +3681,19 @@
       "items": {
         "security": {
           "question": "Is my financial data safe?",
-          "answer": "Your data is encrypted in transit and at rest, and account connections are read-only by default."
+          "answer": "Access depends on your account and workspace permissions. Analysis files use private storage, and voice and receipt expenses require your review and confirmation."
         },
         "categories": {
           "question": "How are expenses categorized?",
-          "answer": "Smart Spend automatically categorizes transactions and lets you edit categories at any time."
+          "answer": "Choose a category when recording a transaction. Voice and receipt analysis may help prepare the draft; review and adjust the category before confirmation."
         },
         "multipleAccounts": {
-          "question": "Can I connect multiple accounts?",
-          "answer": "Yes. You can manage multiple bank accounts, wallets and cards."
+          "question": "Can I manage multiple accounts?",
+          "answer": "Yes, add multiple financial accounts and review their balances and movements inside the platform. This does not mean automatic bank synchronization."
         },
         "freePlan": {
-          "question": "Is there a free plan?",
-          "answer": "Smart Spend can support different subscription plans depending on your account."
+          "question": "What are the voice and receipt analysis limits?",
+          "answer": "The current configuration is 10 voice and 10 receipt attempts per day independently. Your displayed remaining allowance is authoritative, and manual entry stays available."
         },
         "aiAnalysis": {
           "question": "How does AI analyze my spending?",
@@ -3183,13 +3703,16 @@
           "question": "Can I use Smart Spend in Arabic?",
           "answer": "Yes. Smart Spend supports both Arabic and English."
         }
-      }
+      },
+      "eyebrow": "Clear answers",
+      "note": "Find more detailed guidance in the help center linked from the footer."
     },
     "cta": {
       "title": "Ready to take control of your future?",
-      "subtitle": "Join thousands of smart users and start your financial journey today.",
-      "signup": "Sign up free",
-      "sales": "Talk to sales"
+      "subtitle": "Start with clear records and follow budgets and goals in one connected experience.",
+      "signup": "Create your account",
+      "sales": "Contact us",
+      "eyebrow": "Your next step"
     },
     "footer": {
       "description": "Smart Spend helps you understand your money, plan ahead and reach your goals with AI-powered clarity.",

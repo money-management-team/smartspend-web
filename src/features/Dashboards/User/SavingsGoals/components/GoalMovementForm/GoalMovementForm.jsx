@@ -1,12 +1,20 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuInfo, LuTriangleAlert } from "react-icons/lu";
 
 import Loading from "../../../../../../components/Loading/Loading";
 import { accountsApi } from "../../../api/accountsApi";
-import { ApiError, getApiErrorMessage, getStoredWorkspace } from "../../../api/apiClient";
+import {
+  ApiError,
+  getApiErrorMessage,
+  getStoredWorkspace,
+} from "../../../api/apiClient";
 import { savingsGoalsApi } from "../../../api/savingsGoalsApi";
-import { getDisplayLocale, isNegativeMoney } from "../../../Accounts/accountHelpers";
+import {
+  getDisplayLocale,
+  isNegativeMoney,
+} from "../../../Accounts/accountHelpers";
 import {
   createIdempotentAttempt,
   getAmountError,
@@ -51,7 +59,15 @@ const API_METHOD = { contribution: "contribute", withdrawal: "withdraw" };
  * `type` is "contribution" or "withdrawal". `onOutdated` is called after a
  * failure that may mean the page no longer shows the goal's real state.
  */
-export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, onClose }) {
+export default function GoalMovementForm({
+  type,
+  goal,
+  plan = null,
+  prefill = null,
+  onCompleted,
+  onOutdated,
+  onClose,
+}) {
   const { t, i18n } = useTranslation();
   const locale = getDisplayLocale(i18n.language);
   const isContribution = type === "contribution";
@@ -61,9 +77,9 @@ export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, 
 
   const [today] = useState(getTodayInputValue);
   const [form, setForm] = useState(() => ({
-    [accountField]: "",
-    amount: "",
-    date: today,
+    [accountField]: plan?.from_account?.id ? String(plan.from_account.id) : "",
+    amount: plan ? String(plan.amount) : (prefill?.amount ?? ""),
+    date: prefill?.date && prefill.date <= today ? prefill.date : today,
     description: "",
   }));
   const [errors, setErrors] = useState({});
@@ -76,7 +92,11 @@ export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, 
   /* ---------- Accounts ---------- */
 
   const [reloadKey, setReloadKey] = useState(0);
-  const [options, setOptions] = useState({ key: null, accounts: [], error: null });
+  const [options, setOptions] = useState({
+    key: null,
+    accounts: [],
+    error: null,
+  });
   // The goal's own workspace: money only moves between its accounts.
   const workspaceId = goal.workspace_id ?? getStoredWorkspace()?.id;
   const goalAccountId = goal.account?.id;
@@ -94,7 +114,10 @@ export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, 
           Array.isArray(accounts)
             ? {
                 key: reloadKey,
-                accounts: getEligibleAccounts(accounts, { currency, goalAccountId }),
+                accounts: getEligibleAccounts(accounts, {
+                  currency,
+                  goalAccountId,
+                }),
                 error: null,
               }
             : {
@@ -133,11 +156,13 @@ export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, 
       [accountField]: Number(form[accountField]),
       amount: form.amount.trim(),
     };
+    if (isContribution && plan) payload.planned_contribution_id = plan.id;
 
     if (form.description.trim()) payload.description = form.description.trim();
     // Today is left to the backend (it records "now"); another day is sent at
     // midday so no time zone can shift it.
-    if (form.date && form.date !== today) payload.occurred_at = toOccurredAt(form.date);
+    if (form.date && form.date !== today)
+      payload.occurred_at = toOccurredAt(form.date);
 
     return payload;
   };
@@ -156,7 +181,11 @@ export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, 
     const payload = buildPayload();
     // Unchanged details keep the previous attempt's key, so a retry after an
     // unknown outcome is replayed instead of moving the money again.
-    const idempotencyKey = attempt.keyFor({ goalId: goal.id, type, ...payload });
+    const idempotencyKey = attempt.keyFor({
+      goalId: goal.id,
+      type,
+      ...payload,
+    });
 
     pendingRef.current = true;
     setIsSubmitting(true);
@@ -167,7 +196,11 @@ export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, 
     let response;
 
     try {
-      response = await savingsGoalsApi[API_METHOD[type]](goal.id, payload, idempotencyKey);
+      response = await savingsGoalsApi[API_METHOD[type]](
+        goal.id,
+        payload,
+        idempotencyKey,
+      );
       attempt.settle(null);
     } catch (error) {
       attempt.settle(error);
@@ -177,7 +210,10 @@ export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, 
         if (error?.code === "VALIDATION_ERROR") {
           setErrors(
             Object.fromEntries(
-              Object.entries(error.errors ?? {}).map(([key, value]) => [FIELD_OF[key] ?? key, value]),
+              Object.entries(error.errors ?? {}).map(([key, value]) => [
+                FIELD_OF[key] ?? key,
+                value,
+              ]),
             ),
           );
         }
@@ -218,7 +254,14 @@ export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, 
     isNegativeMoney(subtractMoney(savedAmount, form.amount.trim()));
 
   const canSubmit =
-    !isSubmitting && !isLoadingOptions && !options.error && options.accounts.length > 0;
+    !isSubmitting &&
+    !isLoadingOptions &&
+    !options.error &&
+    options.accounts.length > 0 &&
+    (!plan ||
+      options.accounts.some(
+        (account) => String(account.id) === form[accountField],
+      ));
   const titleId = `goal-movement-form-title-${type}`;
   const optional = t("dashboard.transactions.form.optional");
 
@@ -238,10 +281,17 @@ export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, 
       >
         <header>
           <div className="goal-movement-form__title">
-            <h2 id={titleId}>{t(`dashboard.savingsGoals.movementForm.${type}.title`)}</h2>
+            <h2 id={titleId}>
+              {t(`dashboard.savingsGoals.movementForm.${type}.title`)}
+            </h2>
             <p dir="auto">{goal.name}</p>
           </div>
-          <button type="button" onClick={close} disabled={isSubmitting} aria-label={t("common.close")}>
+          <button
+            type="button"
+            onClick={close}
+            disabled={isSubmitting}
+            aria-label={t("common.close")}
+          >
             ×
           </button>
         </header>
@@ -249,12 +299,22 @@ export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, 
         <div className="goal-movement-form__note" role="note">
           <LuInfo aria-hidden="true" />
           <div>
-            <p>{t(`dashboard.savingsGoals.movementForm.${type}.explanation`)}</p>
+            <p>
+              {t(`dashboard.savingsGoals.movementForm.${type}.explanation`)}
+            </p>
             {isContribution && getGoalStatus(goal) === "achieved" && (
-              <p>{t("dashboard.savingsGoals.movementForm.contribution.overfundHint")}</p>
+              <p>
+                {t(
+                  "dashboard.savingsGoals.movementForm.contribution.overfundHint",
+                )}
+              </p>
             )}
             {!isContribution && getGoalStatus(goal) === "achieved" && (
-              <p>{t("dashboard.savingsGoals.movementForm.withdrawal.achievedHint")}</p>
+              <p>
+                {t(
+                  "dashboard.savingsGoals.movementForm.withdrawal.achievedHint",
+                )}
+              </p>
             )}
           </div>
         </div>
@@ -264,18 +324,30 @@ export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, 
             <div>
               <dt>{t("dashboard.savingsGoals.fields.savedAmount")}</dt>
               <dd>
-                <bdi dir="ltr">{money(savedAmount)}</bdi>
+                <bdi dir="ltr">
+                  <PrivateMoney>{money(savedAmount)}</PrivateMoney>
+                </bdi>
               </dd>
             </div>
           </dl>
         )}
 
-        {isLoadingOptions && <Loading message={t("dashboard.savingsGoals.movementForm.loadingAccounts")} />}
+        {isLoadingOptions && (
+          <Loading
+            message={t("dashboard.savingsGoals.movementForm.loadingAccounts")}
+          />
+        )}
 
         {!isLoadingOptions && options.error && (
-          <div className="account-form-modal__error goal-movement-form__options-error" role="alert">
+          <div
+            className="account-form-modal__error goal-movement-form__options-error"
+            role="alert"
+          >
             <p>{getApiErrorMessage(options.error, t)}</p>
-            <button type="button" onClick={() => setReloadKey((key) => key + 1)}>
+            <button
+              type="button"
+              onClick={() => setReloadKey((key) => key + 1)}
+            >
               {t("common.retry")}
             </button>
           </div>
@@ -295,7 +367,9 @@ export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, 
                 name={accountField}
                 value={form[accountField]}
                 onChange={handleChange}
-                disabled={isSubmitting || options.accounts.length === 0}
+                disabled={
+                  isSubmitting || options.accounts.length === 0 || Boolean(plan)
+                }
                 aria-invalid={errors[accountField] ? true : undefined}
                 aria-describedby={`goal-movement-form-account-hint-${type}`}
                 required
@@ -311,10 +385,23 @@ export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, 
                   </option>
                 ))}
               </select>
-              <em className="account-form-modal__hint" id={`goal-movement-form-account-hint-${type}`}>
-                {t("dashboard.savingsGoals.movementForm.accountHint", { currency })}
+              <em
+                className="account-form-modal__hint"
+                id={`goal-movement-form-account-hint-${type}`}
+              >
+                {t("dashboard.savingsGoals.movementForm.accountHint", {
+                  currency,
+                })}
               </em>
               {fieldErrors(accountField)}
+              {plan &&
+                !options.accounts.some(
+                  (account) => String(account.id) === form[accountField],
+                ) && (
+                  <em className="account-form-modal__hint">
+                    {t("dashboard.savingsGoals.plans.sourceUnavailable")}
+                  </em>
+                )}
             </label>
 
             <div className="goal-movement-form__row">
@@ -334,7 +421,9 @@ export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, 
                 />
                 {currency && (
                   <em className="account-form-modal__hint">
-                    {t("dashboard.savingsGoals.movementForm.currencyHint", { currency })}
+                    {t("dashboard.savingsGoals.movementForm.currencyHint", {
+                      currency,
+                    })}
                   </em>
                 )}
                 {fieldErrors("amount")}
@@ -355,13 +444,29 @@ export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, 
               </label>
             </div>
 
+            {prefill?.date && prefill.date > today && (
+              <p className="goal-movement-form__warning" role="status">
+                <LuTriangleAlert aria-hidden="true" />
+                <span>
+                  {t("dashboard.aiAssistant.extra.futureContributionDate", {
+                    date: prefill.date,
+                  })}
+                </span>
+              </p>
+            )}
+
             {isAboveSaved && (
               <p className="goal-movement-form__warning" role="status">
                 <LuTriangleAlert aria-hidden="true" />
                 <span>
-                  {t("dashboard.savingsGoals.movementForm.withdrawal.aboveSaved", {
-                    amount: money(savedAmount),
-                  })}
+                  <PrivateMoney>
+                    {t(
+                      "dashboard.savingsGoals.movementForm.withdrawal.aboveSaved",
+                      {
+                        amount: money(savedAmount),
+                      },
+                    )}
+                  </PrivateMoney>
                 </span>
               </p>
             )}
@@ -374,7 +479,9 @@ export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, 
                 name="description"
                 value={form.description}
                 onChange={handleChange}
-                placeholder={t(`dashboard.savingsGoals.movementForm.${type}.descriptionPlaceholder`)}
+                placeholder={t(
+                  `dashboard.savingsGoals.movementForm.${type}.descriptionPlaceholder`,
+                )}
                 maxLength={DESCRIPTION_MAX}
                 dir="auto"
                 disabled={isSubmitting}
@@ -395,7 +502,11 @@ export default function GoalMovementForm({ type, goal, onCompleted, onOutdated, 
               <button type="button" onClick={close} disabled={isSubmitting}>
                 {t("common.cancel")}
               </button>
-              <button type="submit" disabled={!canSubmit} aria-busy={isSubmitting || undefined}>
+              <button
+                type="submit"
+                disabled={!canSubmit}
+                aria-busy={isSubmitting || undefined}
+              >
                 {t(
                   isSubmitting
                     ? `dashboard.savingsGoals.movementForm.${type}.submitting`

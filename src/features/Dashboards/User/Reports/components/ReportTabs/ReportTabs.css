@@ -1,55 +1,108 @@
+/* =========================================
+   REPORT SWITCHER
+   Rail on desktop, native select at or below 1024px.
+========================================= */
+
 .report-tabs {
-  margin-top: 22px;
-  max-width: 100%;
-  overflow-x: auto;
-  scrollbar-width: thin;
+  min-width: 0;
+}
+
+.report-tabs__rail {
+  padding: 14px 10px;
+
+  display: grid;
+  gap: 16px;
+
+  border: 1px solid var(--report-line);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+}
+
+.report-tabs__group {
+  display: grid;
+  gap: 4px;
+}
+
+.report-tabs__group-label {
+  padding: 0 10px 4px;
+
+  color: var(--color-text-muted);
+
+  font-size: 11px;
+  font-weight: 700;
+  text-align: start;
 }
 
 .report-tabs__list {
-  width: max-content;
-  padding: 4px;
+  margin: 0;
+  padding: 0;
 
-  display: flex;
-  align-items: center;
+  display: grid;
   gap: 2px;
 
-  border-radius: 12px;
-  background: var(--surface-soft);
+  list-style: none;
 }
 
 .report-tab {
-  height: 34px;
-  padding: 0 13px;
+  position: relative;
 
-  display: inline-flex;
+  width: 100%;
+  min-height: 40px;
+  padding: 6px 10px;
+
+  display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 10px;
 
   border: 0;
-  border-radius: 9px;
+  border-radius: var(--radius-md);
 
   color: var(--color-text-secondary);
   background: transparent;
 
   font: inherit;
-  font-size: 12px;
-  white-space: nowrap;
+  font-size: 13px;
+  text-align: start;
 
   cursor: pointer;
   transition:
     color var(--transition-fast),
-    background-color var(--transition-fast),
-    box-shadow var(--transition-fast);
+    background-color var(--transition-fast);
 }
 
-.report-tab svg {
+.report-tab__icon {
+  width: 28px;
+  height: 28px;
+  flex: none;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 8px;
+
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.report-tab__icon svg {
   width: 15px;
   height: 15px;
-  flex-shrink: 0;
+}
+
+.report-tab__label {
+  min-width: 0;
+  line-height: 1.35;
 }
 
 .report-tab:hover {
-  color: var(--color-text-primary);
+  color: var(--color-text-strong);
+  background: var(--surface-soft);
 }
 
 .report-tab:focus-visible {
@@ -57,15 +110,92 @@
   outline-offset: 1px;
 }
 
-.report-tab--active {
+.report-tab--active,
+.report-tab--active:hover {
   color: var(--color-primary);
+  background: var(--primary-soft);
+  font-weight: 700;
+}
+
+.report-tab--active .report-tab__icon {
+  color: var(--text-inverse);
+  background: var(--color-primary);
+}
+
+/* ---------- Compact picker ---------- */
+
+.report-tabs__picker {
+  display: none;
+}
+
+.report-tabs__picker-label {
+  display: block;
+  margin-bottom: 6px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  font-weight: 700;
+  text-align: start;
+}
+
+.report-tabs__select {
+  position: relative;
+}
+
+.report-tabs__select select {
+  width: 100%;
+  min-height: 46px;
+  padding-inline: 14px 40px;
+
+  appearance: none;
+
+  border: 1px solid var(--report-line);
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-strong);
   background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
-  font-weight: 600;
+  box-shadow: var(--shadow-xs);
+
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.report-tabs__select select:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.report-tabs__select svg {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 14px;
+
+  width: 18px;
+  height: 18px;
+
+  color: var(--color-text-secondary);
+
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+@media (max-width: 1024px) {
+  .report-tabs__rail {
+    display: none;
+  }
+
+  .report-tabs__picker {
+    display: block;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .report-tab {
+  .report-tab,
+  .report-tab__icon {
     transition: none;
   }
 }

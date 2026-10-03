@@ -1,13 +1,25 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { createElement } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { LuArrowUpRight, LuCalendarDays, LuChartPie, LuHandCoins, LuRepeat2, LuTarget } from "react-icons/lu";
+import {
+  LuArrowUpRight,
+  LuCalendarDays,
+  LuChartPie,
+  LuHandCoins,
+  LuRepeat2,
+  LuTarget,
+} from "react-icons/lu";
 
 import { getSubjectPath } from "../../../../../../routes/Path";
 import { getDisplayLocale } from "../../../Accounts/accountHelpers";
 import { formatOptionalMoney } from "../../../Dashboard/dashboardHelpers";
 import { translateEnum } from "../../../FinancialOperations/transactionHelpers";
-import { getEventActions, getEventSeverity, getEventTypeClass } from "../../calendarHelpers";
+import {
+  getEventActions,
+  getEventSeverity,
+  getEventTypeClass,
+} from "../../calendarHelpers";
 
 import "./CalendarEvent.css";
 
@@ -38,13 +50,19 @@ export default function CalendarEvent({ event }) {
   const severity = getEventSeverity(event);
   const path = getSubjectPath(event.subject_type, event.subject_id);
   const actions = path ? getEventActions(event) : [];
-  const typeLabel = translateEnum(t, i18n, "dashboard.calendar.types", event.type) || t("dashboard.calendar.types.other");
+  const typeLabel =
+    translateEnum(t, i18n, "dashboard.calendar.types", event.type) ||
+    t("dashboard.calendar.types.other");
   const title = event.title || typeLabel;
   const hasAmount = event.amount != null && event.amount !== "";
-  const direction = DIRECTIONS.includes(event.direction) ? event.direction : null;
+  const direction = DIRECTIONS.includes(event.direction)
+    ? event.direction
+    : null;
 
   return (
-    <li className={`calendar-event calendar-event--${type} calendar-event--${severity}`}>
+    <li
+      className={`calendar-event calendar-event--${type} calendar-event--${severity}`}
+    >
       <span className="calendar-event__icon" aria-hidden="true">
         {createElement(TYPE_ICONS[type])}
       </span>
@@ -54,20 +72,40 @@ export default function CalendarEvent({ event }) {
           <span className="calendar-event__type">{typeLabel}</span>
 
           {event.status && (
-            <span className={`calendar-event__status calendar-event__status--${severity}`}>
-              {translateEnum(t, i18n, "dashboard.calendar.statuses", event.status)}
+            <span
+              className={`calendar-event__status calendar-event__status--${severity}`}
+            >
+              {translateEnum(
+                t,
+                i18n,
+                "dashboard.calendar.statuses",
+                event.status,
+              )}
             </span>
           )}
 
-          {event.occurrence_status && event.occurrence_status !== event.status && (
-            <span className="calendar-event__status">
-              {translateEnum(t, i18n, "dashboard.recurring.occurrenceStatuses", event.occurrence_status)}
-            </span>
-          )}
+          {event.occurrence_status &&
+            event.occurrence_status !== event.status && (
+              <span className="calendar-event__status">
+                {translateEnum(
+                  t,
+                  i18n,
+                  "dashboard.recurring.occurrenceStatuses",
+                  event.occurrence_status,
+                )}
+              </span>
+            )}
 
           {severity !== "info" && (
-            <span className={`calendar-event__severity calendar-event__severity--${severity}`}>
-              {translateEnum(t, i18n, "dashboard.calendar.severities", event.severity)}
+            <span
+              className={`calendar-event__severity calendar-event__severity--${severity}`}
+            >
+              {translateEnum(
+                t,
+                i18n,
+                "dashboard.calendar.severities",
+                event.severity,
+              )}
             </span>
           )}
         </div>
@@ -85,17 +123,30 @@ export default function CalendarEvent({ event }) {
         {(hasAmount || direction) && (
           <p className="calendar-event__meta">
             {direction && (
-              <span className={`calendar-event__direction calendar-event__direction--${direction}`}>
-                {translateEnum(t, i18n, "dashboard.transactions.types", direction)}
+              <span
+                className={`calendar-event__direction calendar-event__direction--${direction}`}
+              >
+                {translateEnum(
+                  t,
+                  i18n,
+                  "dashboard.transactions.types",
+                  direction,
+                )}
               </span>
             )}
             {hasAmount && (
               <strong className="calendar-event__amount">
                 <bdi dir="ltr">
                   {/* Without a currency the amount is shown as sent. */}
-                  {event.currency_code
-                    ? formatOptionalMoney(event.amount, event.currency_code, locale)
-                    : event.amount}
+                  <PrivateMoney>
+                    {event.currency_code
+                      ? formatOptionalMoney(
+                          event.amount,
+                          event.currency_code,
+                          locale,
+                        )
+                      : event.amount}
+                  </PrivateMoney>
                 </bdi>
               </strong>
             )}
@@ -104,7 +155,11 @@ export default function CalendarEvent({ event }) {
       </div>
 
       {path && (
-        <div className="calendar-event__actions" role="group" aria-label={t("dashboard.calendar.event.actionsLabel")}>
+        <div
+          className="calendar-event__actions"
+          role="group"
+          aria-label={t("dashboard.calendar.event.actionsLabel")}
+        >
           {actions.map((action) => (
             <Link key={action} to={path} className="calendar-event__action">
               {translateEnum(t, i18n, "dashboard.calendar.actions", action)}
@@ -116,7 +171,10 @@ export default function CalendarEvent({ event }) {
             className="calendar-event__action calendar-event__action--open"
             aria-label={t("dashboard.calendar.event.openLabel", { title })}
           >
-            <LuArrowUpRight className="calendar-event__open-icon" aria-hidden="true" />
+            <LuArrowUpRight
+              className="calendar-event__open-icon"
+              aria-hidden="true"
+            />
             <span>{t("dashboard.calendar.event.open")}</span>
           </Link>
         </div>

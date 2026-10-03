@@ -133,9 +133,13 @@
 
   color: var(--navigation-active-text);
 
-  font-size: 38px;
+  font-size: clamp(28px, 4.4vw, 38px);
 
   font-weight: 760;
+
+  max-width: 100%;
+
+  overflow-wrap: anywhere;
 
   line-height: 1.05;
 
@@ -344,7 +348,7 @@
 
 
   .dashboard-hero-card__balance {
-    font-size: 32px;
+    font-size: clamp(26px, 8vw, 32px);
   }
 
 
@@ -365,8 +369,8 @@
    VERY SMALL MOBILE
 ========================================= */
 
-@media (max-width: 400px) {
+@media (max-width: 340px) {
   .dashboard-hero-card__actions {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }

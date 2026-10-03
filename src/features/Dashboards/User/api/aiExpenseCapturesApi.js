@@ -1,8 +1,8 @@
-import { ApiError, apiDownload, apiRequest, pickQuery, toApiRelativeUrl } from "./apiClient";
+import { ApiError, apiDownload, apiRequest, pickQuery, toApiRelativeUrl } from "./apiClient.js";
 import {
   CAPTURE_UPLOAD_FILE_FIELD,
   CAPTURE_UPLOAD_PATH,
-} from "../AiExpenseCaptures/captureConstants";
+} from "../AiExpenseCaptures/captureConstants.js";
 
 // A receipt can be large and the connection slow; the default request
 // timeout is written for JSON, not for an upload.
@@ -34,36 +34,14 @@ const capturePath = (captureId) => `/ai/expense-captures/${encodeURIComponent(ca
  * - get → `data.capture` is the capture itself, never `data`. Parse it with
  *   `parseCaptureResponse`.
  *
- * All seven documented Sprint 7 endpoints are integrated, plus `create`,
- * which is NOT part of the documented contract — see its own comment.
+ * Receipt upload and all review lifecycle endpoints use the current backend contract.
  */
 export const aiExpenseCapturesApi = {
-  /*
-   * Uploads a receipt and creates the capture the AI will read.
-   *
-   * ⚠ **This endpoint is not in the documented Sprint 7 contract.** The path,
-   * the multipart field name and the response shape all come from
-   * `captureConstants` and are assumptions, not verified backend facts —
-   * see the block comment there. If the route does not exist the request
-   * answers 404/405, which `isMissingUploadRoute` reports as "the service
-   * isn't available" rather than as a bad file.
-   *
-   * The body is a `FormData` carrying the file and nothing else. No
-   * `account_id`, `workspace_id` or `user_id` is attached: the account is
-   * chosen later, during review, and ownership is the backend's from the
-   * bearer token. `apiRequest` leaves a FormData body alone so the browser
-   * writes the multipart Content-Type with its own boundary.
-   *
-   * Creating a capture moves no money — nothing is recorded until the
-   * reviewed draft is confirmed. `idempotencyKey` is optional and simply
-   * stops a retry after a timeout from producing a second capture of the same
-   * receipt.
-   *
-   * → expected `data.capture`, parsed with `parseCaptureResponse`.
-   */
+  // Verified receipt upload: file, optional selected workspace and one stable upload key.
   create: (file, options = {}) => {
     const formData = new FormData();
     formData.append(CAPTURE_UPLOAD_FILE_FIELD, file);
+    if (options.workspaceId != null) formData.append("workspace_id", String(options.workspaceId));
 
     return apiRequest(CAPTURE_UPLOAD_PATH, {
       method: "POST",

@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import PrivateMoney from "../Experience/PrivateMoney";
+import AccountStatementExport from "./AccountStatementExport";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { LuArchive, LuArrowLeft, LuPencil } from "react-icons/lu";
@@ -20,6 +22,7 @@ import {
 import { formatDate, formatMoney } from "../utils/formatters";
 
 import "./AccountDetails.css";
+import AccountMovementHistory from "./AccountMovementHistory";
 
 export default function AccountDetails() {
   const { accountId } = useParams();
@@ -33,10 +36,26 @@ export default function AccountDetails() {
   // match the current request, the page is loading.
   const [reloadKey, setReloadKey] = useState(0);
   const requestKey = `${accountId}:${reloadKey}`;
-  const [result, setResult] = useState({ key: null, account: null, error: null });
+  const [result, setResult] = useState({
+    key: null,
+    account: null,
+    error: null,
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
   const saveRequestRef = useRef(null);
+
+  const handleHistoryAccountRefresh = useCallback(
+    (updatedAccount) => {
+      setResult((current) =>
+        current.key === requestKey &&
+        String(current.account?.id) === String(updatedAccount.id)
+          ? { ...current, account: updatedAccount }
+          : current,
+      );
+    },
+    [requestKey],
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -44,6 +63,7 @@ export default function AccountDetails() {
     accountsApi
       .get(accountId, { signal: controller.signal })
       .then((response) => {
+        if (controller.signal.aborted) return;
         const account = response.data?.account;
 
         setResult(
@@ -65,7 +85,9 @@ export default function AccountDetails() {
   }, [accountId, requestKey]);
 
   const isLoading = result.key !== requestKey;
-  const { account, error } = isLoading ? { account: null, error: null } : result;
+  const { account, error } = isLoading
+    ? { account: null, error: null }
+    : result;
 
   // Once the account is gone for this user (404), show the not-available state.
   const markUnavailable = (requestError) => {
@@ -117,13 +139,20 @@ export default function AccountDetails() {
     }
 
     // It is no longer an active account: back to the list, which refetches.
-    navigate(PATH.USER.ACCOUNTS, {
+    navigate(`${PATH.USER.ACCOUNTS}?view=archived`, {
       state: { archivedAccountName: account.name },
     });
   };
 
   const backLink = (
-    <Link className="account-details__back" to={PATH.USER.ACCOUNTS}>
+    <Link
+      className="account-details__back"
+      to={
+        account?.status === "archived"
+          ? `${PATH.USER.ACCOUNTS}?view=archived`
+          : PATH.USER.ACCOUNTS
+      }
+    >
       <LuArrowLeft aria-hidden="true" />
       <span>{t("dashboard.accounts.details.back")}</span>
     </Link>
@@ -156,7 +185,10 @@ export default function AccountDetails() {
           <p>{getAccountErrorMessage(error, t)}</p>
 
           {!isNotFound && (
-            <button type="button" onClick={() => setReloadKey((key) => key + 1)}>
+            <button
+              type="button"
+              onClick={() => setReloadKey((key) => key + 1)}
+            >
               {t("common.retry")}
             </button>
           )}
@@ -171,10 +203,25 @@ export default function AccountDetails() {
   const date = (value) => formatDate(value, locale, timeZone);
 
   const rows = [
-    ["type", t(`dashboard.accounts.types.${account.type}`, { defaultValue: account.type })],
+    [
+      "type",
+      t(`dashboard.accounts.types.${account.type}`, {
+        defaultValue: account.type,
+      }),
+    ],
     ["currency", <bdi key="currency">{account.currency_code}</bdi>],
-    ["currentBalance", <bdi key="current" dir="ltr">{money(account.current_balance)}</bdi>],
-    ["openingBalance", <bdi key="opening" dir="ltr">{money(account.opening_balance)}</bdi>],
+    [
+      "currentBalance",
+      <bdi key="current" dir="ltr">
+        <PrivateMoney>{money(account.current_balance)}</PrivateMoney>
+      </bdi>,
+    ],
+    [
+      "openingBalance",
+      <bdi key="opening" dir="ltr">
+        <PrivateMoney>{money(account.opening_balance)}</PrivateMoney>
+      </bdi>,
+    ],
     [
       "negativeBalance",
       t(
@@ -185,11 +232,15 @@ export default function AccountDetails() {
     ],
     account.low_balance_threshold != null && [
       "lowBalanceThreshold",
-      <bdi key="threshold" dir="ltr">{money(account.low_balance_threshold)}</bdi>,
+      <bdi key="threshold" dir="ltr">
+        <PrivateMoney>{money(account.low_balance_threshold)}</PrivateMoney>
+      </bdi>,
     ],
     account.last_four_digits && [
       "lastFour",
-      <bdi key="last-four" dir="ltr">•••• {account.last_four_digits}</bdi>,
+      <bdi key="last-four" dir="ltr">
+        •••• {account.last_four_digits}
+      </bdi>,
     ],
     color && [
       "color",
@@ -288,16 +339,38 @@ export default function AccountDetails() {
           }
           dir="ltr"
         >
-          {money(account.current_balance)}
+          <PrivateMoney>{money(account.current_balance)}</PrivateMoney>
         </strong>
         <small>
           {t("dashboard.accounts.details.openingBalance")}:{" "}
-          <bdi dir="ltr">{money(account.opening_balance)}</bdi>
+          <bdi dir="ltr">
+            <PrivateMoney>{money(account.opening_balance)}</PrivateMoney>
+          </bdi>
         </small>
       </section>
 
-      <section className="account-details__panel" aria-labelledby="account-details-title">
-        <h2 id="account-details-title">{t("dashboard.accounts.details.title")}</h2>
+      <AccountStatementExport
+        key={account.id}
+        account={account}
+        locale={locale}
+        timeZone={timeZone}
+      />
+
+      <AccountMovementHistory
+        key={`${account.workspace_id}:${account.id}`}
+        account={account}
+        locale={locale}
+        timeZone={timeZone}
+        onAccountRefreshed={handleHistoryAccountRefresh}
+      />
+
+      <section
+        className="account-details__panel"
+        aria-labelledby="account-details-title"
+      >
+        <h2 id="account-details-title">
+          {t("dashboard.accounts.details.title")}
+        </h2>
 
         <dl className="account-details__list">
           {rows.map(([key, value]) => (

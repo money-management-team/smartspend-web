@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { createElement } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -13,7 +14,10 @@ import { useAuthContext } from "../../../../../../contexts/auth/useAuthContext";
 
 import "./RecentTransactions.css";
 import { getDisplayLocale } from "../../../Accounts/accountHelpers";
-import { getTransactionTitle, translateEnum } from "../../../FinancialOperations/transactionHelpers";
+import {
+  getTransactionTitle,
+  translateEnum,
+} from "../../../FinancialOperations/transactionHelpers";
 import { formatDate, formatMoney } from "../../../utils/formatters";
 
 const icons = {
@@ -38,32 +42,44 @@ export default function RecentTransactions({ transactions }) {
       className="recent-transactions-card"
       title={t("dashboard.user.recentTransactions.title")}
       action={
-        <Link to={PATH.USER.FINANCIAL_OPERATIONS} className="dashboard-section-link">
+        <Link
+          to={PATH.USER.FINANCIAL_OPERATIONS}
+          className="dashboard-section-link"
+        >
           {t("dashboard.user.common.viewAll")}
         </Link>
       }
     >
       <div className="recent-transactions-card__list">
         {visibleTransactions.length === 0 && (
-          <p className="recent-transactions-card__empty">{t("dashboard.user.recentTransactions.empty")}</p>
+          <p className="recent-transactions-card__empty">
+            {t("dashboard.user.recentTransactions.empty")}
+          </p>
         )}
 
         {visibleTransactions.map((transaction) => {
-          const tone = ["income", "expense", "transfer"].includes(transaction.type)
+          const tone = ["income", "expense", "transfer"].includes(
+            transaction.type,
+          )
             ? transaction.type
             : "transfer";
           const title = getTransactionTitle(transaction, t, i18n);
 
           return (
             <article className="recent-transaction" key={transaction.id}>
-              <span className={`recent-transaction__icon recent-transaction__icon--${tone}`}>
+              <span
+                className={`recent-transaction__icon recent-transaction__icon--${tone}`}
+              >
                 {createElement(icons[transaction.type] ?? LuArrowRightLeft)}
               </span>
 
               <div className="recent-transaction__copy">
                 <strong dir="auto">
                   {transaction.id != null ? (
-                    <Link to={getTransactionDetailsPath(transaction.id)} className="recent-transaction__link">
+                    <Link
+                      to={getTransactionDetailsPath(transaction.id)}
+                      className="recent-transaction__link"
+                    >
                       {title}
                     </Link>
                   ) : (
@@ -72,15 +88,34 @@ export default function RecentTransactions({ transactions }) {
                 </strong>
                 <small>
                   {transaction.category?.name ||
-                    translateEnum(t, i18n, "dashboard.transactions.types", transaction.type)}
+                    translateEnum(
+                      t,
+                      i18n,
+                      "dashboard.transactions.types",
+                      transaction.type,
+                    )}
                   {" · "}
-                  <bdi>{formatDate(transaction.occurred_at, locale, timeZone)}</bdi>
+                  <bdi>
+                    {formatDate(transaction.occurred_at, locale, timeZone)}
+                  </bdi>
                 </small>
               </div>
 
-              <strong className={`recent-transaction__amount recent-transaction__amount--${tone}`}>
-                {transaction.type === "income" ? "+" : transaction.type === "expense" || transaction.type === "fee" ? "-" : ""}
-                {formatMoney(transaction.amount, transaction.currency_code, locale)}
+              <strong
+                className={`recent-transaction__amount recent-transaction__amount--${tone}`}
+              >
+                {transaction.type === "income"
+                  ? "+"
+                  : transaction.type === "expense" || transaction.type === "fee"
+                    ? "-"
+                    : ""}
+                <PrivateMoney>
+                  {formatMoney(
+                    transaction.amount,
+                    transaction.currency_code,
+                    locale,
+                  )}
+                </PrivateMoney>
               </strong>
             </article>
           );

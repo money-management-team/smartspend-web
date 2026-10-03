@@ -1,8 +1,9 @@
+import { useExperience } from "../../../../features/Dashboards/User/Experience/useExperience";
+import { LuEye, LuEyeOff } from "react-icons/lu";
 import {
   LuSearch,
   LuMoon,
   LuSun,
-
   LuBell,
   LuMenu,
   LuGlobe,
@@ -29,34 +30,27 @@ const getUserInitials = (name) => {
     return Array.from(nameParts[0]).slice(0, 2).join("").toLocaleUpperCase();
   }
 
-  return `${Array.from(nameParts[0])[0]}${Array.from(nameParts.at(-1))[0]}`
-    .toLocaleUpperCase();
+  return `${Array.from(nameParts[0])[0]}${Array.from(nameParts.at(-1))[0]}`.toLocaleUpperCase();
 };
 
 export default function DashboardHeader({
   onToggleSidebar,
+  isSidebarOpen = false,
 }) {
   const { t, i18n } = useTranslation();
   const { user } = useAuthContext();
+  const { preferences, update } = useExperience();
   const { isDark, toggleTheme } = useThemeContext();
   // GET /notifications/unread-count, owned by UnreadNotificationsProvider.
   const { count: unreadCount } = useUnreadNotifications();
   const userInitials = getUserInitials(user?.name);
 
-  const isArabic =
-    (
-      i18n.resolvedLanguage ||
-      i18n.language
-    )
-      ?.toLowerCase()
-      .startsWith("ar");
+  const isArabic = (i18n.resolvedLanguage || i18n.language)
+    ?.toLowerCase()
+    .startsWith("ar");
 
   const toggleLanguage = () => {
-    i18n.changeLanguage(
-      isArabic
-        ? "en"
-        : "ar",
-    );
+    i18n.changeLanguage(isArabic ? "en" : "ar");
   };
 
   return (
@@ -65,8 +59,11 @@ export default function DashboardHeader({
         type="button"
         className="dashboard-header__menu"
         onClick={onToggleSidebar}
+        aria-label={t("dashboard.header.openMenu")}
+        aria-expanded={isSidebarOpen}
+        aria-controls="dashboard-sidebar"
       >
-        <LuMenu />
+        <LuMenu aria-hidden="true" />
       </button>
 
       <div className="dashboard-header__search">
@@ -74,9 +71,7 @@ export default function DashboardHeader({
 
         <input
           type="search"
-          placeholder={t(
-            "dashboard.header.searchPlaceholder",
-          )}
+          placeholder={t("dashboard.header.searchPlaceholder")}
         />
       </div>
 
@@ -84,8 +79,32 @@ export default function DashboardHeader({
         <button
           type="button"
           className="dashboard-header__icon-button"
+          aria-pressed={preferences.hiddenMoney}
+          aria-label={t(
+            `experience:${preferences.hiddenMoney ? "showMoney" : "hideMoney"}`,
+          )}
+          title={t(
+            `experience:${preferences.hiddenMoney ? "showMoney" : "hideMoney"}`,
+          )}
+          onClick={() =>
+            update((state) => ({ ...state, hiddenMoney: !state.hiddenMoney }))
+          }
+        >
+          {preferences.hiddenMoney ? (
+            <LuEye aria-hidden="true" />
+          ) : (
+            <LuEyeOff aria-hidden="true" />
+          )}
+        </button>
+        <button
+          type="button"
+          className="dashboard-header__icon-button"
           onClick={toggleTheme}
-          aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          aria-label={
+            isDark
+              ? t("dashboard.header.lightMode")
+              : t("dashboard.header.darkMode")
+          }
         >
           {isDark ? <LuSun /> : <LuMoon />}
         </button>
@@ -94,14 +113,11 @@ export default function DashboardHeader({
           type="button"
           className="dashboard-header__language"
           onClick={toggleLanguage}
+          aria-label={t("dashboard.header.switchLanguage")}
         >
           <LuGlobe />
 
-          <span>
-            {isArabic
-              ? "English"
-              : "العربية"}
-          </span>
+          <span>{isArabic ? "English" : "العربية"}</span>
         </button>
 
         <Link
@@ -122,7 +138,8 @@ export default function DashboardHeader({
           )}
         </Link>
 
-        <Link to={PATH.USER.SETTING}
+        <Link
+          to={PATH.USER.SETTING}
           type="button"
           className="dashboard-header__avatar"
           aria-label={user?.name || t("dashboard.header.userProfile")}

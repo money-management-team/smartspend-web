@@ -15,9 +15,10 @@ const rangeOf = (period) => ({
 /*
  * The period the backend actually used (`data.period`), which is the source
  * of truth even when it differs from the requested range, plus the previous
- * period it compared against and the report's financial rule.
+ * period it compared against and the report's financial rule. The report's
+ * name and description live in the page header, so they are not repeated.
  */
-export default function ReportPeriod({ report, period, previousPeriod, filters, notes }) {
+export default function ReportPeriod({ period, previousPeriod, filters, notes }) {
   const { t, i18n } = useTranslation();
   const locale = getDisplayLocale(i18n.language);
   const current = rangeOf(period);
@@ -29,11 +30,6 @@ export default function ReportPeriod({ report, period, previousPeriod, filters, 
 
   return (
     <div className="report-period">
-      <div className="report-period__heading">
-        <h2>{t(`dashboard.reports.names.${report}`)}</h2>
-        <p>{t(`dashboard.reports.descriptions.${report}`)}</p>
-      </div>
-
       <dl className="report-period__facts">
         {(current.from || current.to) && (
           <div className="report-period__fact">
@@ -41,14 +37,14 @@ export default function ReportPeriod({ report, period, previousPeriod, filters, 
               <LuCalendarRange aria-hidden="true" />
               {t("dashboard.reports.period.current")}
             </dt>
-            <dd>{formatRange(current)}</dd>
+            <dd><bdi>{formatRange(current)}</bdi></dd>
           </div>
         )}
 
         {previous && (previous.from || previous.to) && (
           <div className="report-period__fact">
             <dt>{t("dashboard.reports.period.previous")}</dt>
-            <dd>{formatRange(previous)}</dd>
+            <dd><bdi>{formatRange(previous)}</bdi></dd>
           </div>
         )}
 

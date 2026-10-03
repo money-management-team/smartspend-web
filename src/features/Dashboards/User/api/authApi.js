@@ -15,11 +15,18 @@ export const authApi = {
       auth: false,
     }),
 
-  loginWithGoogle: (idToken) =>
+  loginWithGoogle: (idToken, { acceptedPolicies = false, signal } = {}) =>
     apiRequest("/auth/google", {
       method: "POST",
-      body: { id_token: idToken },
+      body: {
+        id_token: idToken,
+        ...(acceptedPolicies === true && {
+          terms_accepted: true,
+          privacy_accepted: true,
+        }),
+      },
       auth: false,
+      signal,
     }),
 
   /*

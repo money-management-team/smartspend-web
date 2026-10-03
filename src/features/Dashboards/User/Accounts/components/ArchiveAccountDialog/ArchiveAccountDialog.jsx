@@ -78,6 +78,7 @@ export default function ArchiveAccountDialog({ account, onConfirm, onClose }) {
             <li>{t("dashboard.accounts.archiveDialog.keepsHistory")}</li>
             <li>{t("dashboard.accounts.archiveDialog.noNewActivity")}</li>
             <li>{t("dashboard.accounts.archiveDialog.notDeleted")}</li>
+            <li>{t("dashboard.accounts.archiveDialog.findArchived")}</li>
           </ul>
         </div>
 

@@ -1,4 +1,5 @@
 import { createElement } from "react";
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useTranslation } from "react-i18next";
 import {
   LuPiggyBank,
@@ -12,11 +13,16 @@ import SectionCard from "../shared/SectionCard";
 import "./GeneralStats.css";
 import { getDisplayLocale } from "../../../Accounts/accountHelpers";
 import { formatPercentage } from "../../../Budgets/budgetHelpers";
-import { formatOptionalMoney, getTransfersSummary } from "../../dashboardHelpers";
+import {
+  formatOptionalMoney,
+  getTransfersSummary,
+} from "../../dashboardHelpers";
 
 const formatCount = (value, locale) => {
   const number = Number(value);
-  return value == null || value === "" || !Number.isFinite(number) ? "—" : number.toLocaleString(locale);
+  return value == null || value === "" || !Number.isFinite(number)
+    ? "—"
+    : number.toLocaleString(locale);
 };
 
 /*
@@ -28,7 +34,8 @@ export default function GeneralStats({ totals, transfers }) {
   const { t, i18n } = useTranslation();
   const locale = getDisplayLocale(i18n.language);
   const transferSummary = getTransfersSummary(transfers);
-  const activeAccounts = totals?.active_accounts_count ?? totals?.accounts_count;
+  const activeAccounts =
+    totals?.active_accounts_count ?? totals?.accounts_count;
 
   const stats = [
     {
@@ -42,13 +49,18 @@ export default function GeneralStats({ totals, transfers }) {
       value: formatCount(activeAccounts, locale),
       note:
         totals?.accounts_count != null && totals?.active_accounts_count != null
-          ? t("dashboard.user.stats.activeAccounts.note", { count: Number(totals.accounts_count) })
+          ? t("dashboard.user.stats.activeAccounts.note", {
+              count: Number(totals.accounts_count),
+            })
           : "",
     },
     {
       key: "transfers",
       icon: LuArrowRightLeft,
-      value: transferSummary?.count != null ? formatCount(transferSummary.count, locale) : "—",
+      value:
+        transferSummary?.count != null
+          ? formatCount(transferSummary.count, locale)
+          : "—",
       note:
         transferSummary?.amount != null
           ? formatOptionalMoney(
@@ -61,7 +73,11 @@ export default function GeneralStats({ totals, transfers }) {
     {
       key: "adjustments",
       icon: LuSlidersHorizontal,
-      value: formatOptionalMoney(totals?.adjustments, totals?.currency_code, locale),
+      value: formatOptionalMoney(
+        totals?.adjustments,
+        totals?.currency_code,
+        locale,
+      ),
     },
   ];
 
@@ -74,18 +90,28 @@ export default function GeneralStats({ totals, transfers }) {
       <div className="general-stats-card__grid">
         {stats.map(({ key, icon, value, note }) => (
           <article className="general-stat" key={key}>
-            <span className="general-stat__icon">
-              {createElement(icon)}
-            </span>
+            <span className="general-stat__icon">{createElement(icon)}</span>
 
             <div>
               <small>{t(`dashboard.user.stats.${key}.label`)}</small>
               <strong>
-                <bdi>{value}</bdi>
+                <bdi>
+                  {key === "adjustments" ? (
+                    <PrivateMoney>{value}</PrivateMoney>
+                  ) : (
+                    value
+                  )}
+                </bdi>
               </strong>
               {note && (
                 <span className="general-stat__note">
-                  <bdi>{note}</bdi>
+                  <bdi>
+                    {key === "transfers" ? (
+                      <PrivateMoney>{note}</PrivateMoney>
+                    ) : (
+                      note
+                    )}
+                  </bdi>
                 </span>
               )}
             </div>
@@ -93,7 +119,9 @@ export default function GeneralStats({ totals, transfers }) {
         ))}
       </div>
 
-      <p className="general-stats-card__footnote">{t("dashboard.user.stats.transfersNote")}</p>
+      <p className="general-stats-card__footnote">
+        {t("dashboard.user.stats.transfersNote")}
+      </p>
     </SectionCard>
   );
 }

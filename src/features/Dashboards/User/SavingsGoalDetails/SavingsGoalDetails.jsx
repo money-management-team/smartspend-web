@@ -1,6 +1,7 @@
+import PrivateMoney from "../Experience/PrivateMoney";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import {
   LuArchive,
   LuArrowLeft,
@@ -26,6 +27,7 @@ import { UNKNOWN_OUTCOME_CODES } from "../Transfers/transferHelpers";
 import GoalActionDialog from "../SavingsGoals/components/GoalActionDialog/GoalActionDialog";
 import GoalActivity from "../SavingsGoals/components/GoalActivity/GoalActivity";
 import GoalMovementForm from "../SavingsGoals/components/GoalMovementForm/GoalMovementForm";
+import PlannedContributions from "../SavingsGoals/components/PlannedContributions/PlannedContributions";
 import GoalProgressBar from "../SavingsGoals/components/GoalProgressBar/GoalProgressBar";
 import GoalStatusBadge from "../SavingsGoals/components/GoalStatusBadge/GoalStatusBadge";
 import SavingsGoalForm from "../SavingsGoals/components/SavingsGoalForm/SavingsGoalForm";
@@ -65,6 +67,8 @@ const LIFECYCLE_REQUESTS = {
  */
 export default function SavingsGoalDetails() {
   const { savingsGoalId } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { user, workspace } = useAuthContext();
   const locale = getDisplayLocale(i18n.language);
@@ -78,7 +82,12 @@ export default function SavingsGoalDetails() {
   // "edit" | "contribution" | "withdrawal" | "pause" | "resume" | "archive"
   const [dialog, setDialog] = useState(null);
   // One-time success message ({ key, type, name, status }) for the current request.
-  const [notice, setNotice] = useState({ key: null, type: null, name: "", status: null });
+  const [notice, setNotice] = useState({
+    key: null,
+    type: null,
+    name: "",
+    status: null,
+  });
   const [progressState, setProgressState] = useState({
     key: null,
     isRefreshing: false,
@@ -125,6 +134,16 @@ export default function SavingsGoalDetails() {
   const isLoading = result.key !== requestKey;
   const { goal, error } = isLoading ? { goal: null, error: null } : result;
 
+  const suggested = location.state?.aiContributionPrefill;
+  const aiPrefill =
+    goal &&
+    Number(goal.id) === suggested?.targetId &&
+    getGoalCurrency(goal) === suggested?.currency &&
+    getGoalActions(goal).canContribute
+      ? { amount: suggested.amount, date: suggested.date }
+      : null;
+  const movementDialog = dialog ?? (aiPrefill ? "contribution" : null);
+
   const reload = () => setReloadKey((key) => key + 1);
 
   // Once the goal is gone for this user (404), show the not-available state.
@@ -148,6 +167,11 @@ export default function SavingsGoalDetails() {
 
   const closeDialog = () => {
     setDialog(null);
+    if (suggested)
+      navigate(location.pathname + location.search, {
+        replace: true,
+        state: null,
+      });
 
     if (staleRef.current) {
       staleRef.current = false;
@@ -165,10 +189,17 @@ export default function SavingsGoalDetails() {
     const controller = new AbortController();
     const key = requestKey;
     progressControllerRef.current = controller;
-    setProgressState({ key, isRefreshing: true, error: null, refreshed: false });
+    setProgressState({
+      key,
+      isRefreshing: true,
+      error: null,
+      refreshed: false,
+    });
 
     try {
-      const response = await savingsGoalsApi.getProgress(savingsGoalId, { signal: controller.signal });
+      const response = await savingsGoalsApi.getProgress(savingsGoalId, {
+        signal: controller.signal,
+      });
       const progress = response.data?.progress;
 
       if (!progress || typeof progress !== "object") {
@@ -180,18 +211,30 @@ export default function SavingsGoalDetails() {
           ? { ...current, goal: withFreshProgress(current.goal, progress) }
           : current,
       );
-      setProgressState({ key, isRefreshing: false, error: null, refreshed: true });
+      setProgressState({
+        key,
+        isRefreshing: false,
+        error: null,
+        refreshed: true,
+      });
     } catch (requestError) {
-      if (requestError.name === "AbortError" || controller.signal.aborted) return;
+      if (requestError.name === "AbortError" || controller.signal.aborted)
+        return;
 
       if (requestError?.code === "NOT_FOUND") {
         markUnavailable(requestError);
         return;
       }
 
-      setProgressState({ key, isRefreshing: false, error: requestError, refreshed: false });
+      setProgressState({
+        key,
+        isRefreshing: false,
+        error: requestError,
+        refreshed: false,
+      });
     } finally {
-      if (progressControllerRef.current === controller) progressControllerRef.current = null;
+      if (progressControllerRef.current === controller)
+        progressControllerRef.current = null;
     }
   };
 
@@ -204,7 +247,10 @@ export default function SavingsGoalDetails() {
       return;
     }
 
-    setResult((current) => ({ ...current, goal: mergeGoal(current.goal, nextGoal) }));
+    setResult((current) => ({
+      ...current,
+      goal: mergeGoal(current.goal, nextGoal),
+    }));
     if (!nextGoal.progress) refreshProgress();
   };
 
@@ -228,7 +274,10 @@ export default function SavingsGoalDetails() {
       // goal is shown as is.
       applyGoal(updatedGoal);
       setDialog(null);
-      showNotice("updateSuccess", updatedGoal?.name ?? values.name ?? goal.name);
+      showNotice(
+        "updateSuccess",
+        updatedGoal?.name ?? values.name ?? goal.name,
+      );
     })();
 
     saveRequestRef.current = saveRequest;
@@ -249,6 +298,11 @@ export default function SavingsGoalDetails() {
     applyGoal(data?.savings_goal);
     setActivityKey((key) => key + 1);
     setDialog(null);
+    if (suggested)
+      navigate(location.pathname + location.search, {
+        replace: true,
+        state: null,
+      });
     showNotice(`${type}Success`, data?.savings_goal?.name ?? goal.name);
   };
 
@@ -269,7 +323,11 @@ export default function SavingsGoalDetails() {
     // Resume may return "active" or "achieved": whatever the backend says.
     applyGoal(nextGoal);
     setDialog(null);
-    showNotice(`${action}Success`, nextGoal?.name ?? goal.name, nextGoal?.status ?? null);
+    showNotice(
+      `${action}Success`,
+      nextGoal?.name ?? goal.name,
+      nextGoal?.status ?? null,
+    );
   };
 
   /* ---------- Render ---------- */
@@ -324,17 +382,32 @@ export default function SavingsGoalDetails() {
   const progressStatus = progress?.status;
   const percentage = formatPercentage(progress?.percentage_funded, locale);
   const deadlinePassed =
-    progress?.deadline_passed === true && status !== "achieved" && status !== "archived";
+    progress?.deadline_passed === true &&
+    status !== "achieved" &&
+    status !== "archived";
   const showProgressState = progressState.key === requestKey;
   const isRefreshing = showProgressState && progressState.isRefreshing;
 
   const money = (value) =>
-    value == null || value === "" ? "—" : <bdi dir="ltr">{formatMoney(value, currency, locale)}</bdi>;
+    value == null || value === "" ? (
+      "—"
+    ) : (
+      <bdi dir="ltr">
+        <PrivateMoney>{formatMoney(value, currency, locale)}</PrivateMoney>
+      </bdi>
+    );
   const count = (value) =>
-    value == null || value === "" ? "—" : <bdi>{new Intl.NumberFormat(locale).format(Number(value))}</bdi>;
-  const dateTime = (value) => <bdi>{formatDateTime(value, locale, timeZone)}</bdi>;
+    value == null || value === "" ? (
+      "—"
+    ) : (
+      <bdi>{new Intl.NumberFormat(locale).format(Number(value))}</bdi>
+    );
+  const dateTime = (value) => (
+    <bdi>{formatDateTime(value, locale, timeZone)}</bdi>
+  );
 
-  const account = goal.account && typeof goal.account === "object" ? goal.account : null;
+  const account =
+    goal.account && typeof goal.account === "object" ? goal.account : null;
   const accountValue = account ? (
     <span className="savings-goal-details__account">
       {account.id != null ? (
@@ -355,17 +428,33 @@ export default function SavingsGoalDetails() {
   const rows = [
     ["name", <bdi key="name">{goal.name}</bdi>],
     ["targetAmount", money(goal.target_amount)],
-    ["currency", <bdi key="currency" dir="ltr">{currency}</bdi>],
+    [
+      "currency",
+      <bdi key="currency" dir="ltr">
+        {currency}
+      </bdi>,
+    ],
     [
       "targetDate",
-      goal.target_date
-        ? <bdi key="date">{formatDate(toDateOnly(goal.target_date), locale)}</bdi>
-        : t("dashboard.savingsGoals.details.noTargetDate"),
+      goal.target_date ? (
+        <bdi key="date">{formatDate(toDateOnly(goal.target_date), locale)}</bdi>
+      ) : (
+        t("dashboard.savingsGoals.details.noTargetDate")
+      ),
     ],
-    ["status", translateEnum(t, i18n, "dashboard.savingsGoals.status", goal.status) || "—"],
+    [
+      "status",
+      translateEnum(t, i18n, "dashboard.savingsGoals.status", goal.status) ||
+        "—",
+    ],
     progressStatus && [
       "progressStatus",
-      translateEnum(t, i18n, "dashboard.savingsGoals.progressStatus", progressStatus),
+      translateEnum(
+        t,
+        i18n,
+        "dashboard.savingsGoals.progressStatus",
+        progressStatus,
+      ),
     ],
     ["savingsAccount", accountValue ?? "—"],
     goal.achieved_at && ["achievedAt", dateTime(goal.achieved_at)],
@@ -410,12 +499,19 @@ export default function SavingsGoalDetails() {
           <p dir="auto">
             {t(`dashboard.savingsGoals.notices.${notice.type}`, {
               name: notice.name,
-              status: translateEnum(t, i18n, "dashboard.savingsGoals.status", notice.status),
+              status: translateEnum(
+                t,
+                i18n,
+                "dashboard.savingsGoals.status",
+                notice.status,
+              ),
             })}
           </p>
           <button
             type="button"
-            onClick={() => setNotice({ key: null, type: null, name: "", status: null })}
+            onClick={() =>
+              setNotice({ key: null, type: null, name: "", status: null })
+            }
             aria-label={t("common.close")}
           >
             <LuX aria-hidden="true" />
@@ -455,25 +551,41 @@ export default function SavingsGoalDetails() {
             </button>
           )}
           {actions.canWithdraw && (
-            <button type="button" className="savings-goal-details__action" onClick={() => setDialog("withdrawal")}>
+            <button
+              type="button"
+              className="savings-goal-details__action"
+              onClick={() => setDialog("withdrawal")}
+            >
               <LuMinus aria-hidden="true" />
               <span>{t("dashboard.savingsGoals.actions.withdraw")}</span>
             </button>
           )}
           {actions.canPause && (
-            <button type="button" className="savings-goal-details__action" onClick={() => setDialog("pause")}>
+            <button
+              type="button"
+              className="savings-goal-details__action"
+              onClick={() => setDialog("pause")}
+            >
               <LuPause aria-hidden="true" />
               <span>{t("dashboard.savingsGoals.actions.pause")}</span>
             </button>
           )}
           {actions.canResume && (
-            <button type="button" className="savings-goal-details__action" onClick={() => setDialog("resume")}>
+            <button
+              type="button"
+              className="savings-goal-details__action"
+              onClick={() => setDialog("resume")}
+            >
               <LuPlay aria-hidden="true" />
               <span>{t("dashboard.savingsGoals.actions.resume")}</span>
             </button>
           )}
           {actions.canEdit && (
-            <button type="button" className="savings-goal-details__action" onClick={() => setDialog("edit")}>
+            <button
+              type="button"
+              className="savings-goal-details__action"
+              onClick={() => setDialog("edit")}
+            >
               <LuPencil aria-hidden="true" />
               <span>{t("dashboard.savingsGoals.actions.edit")}</span>
             </button>
@@ -492,15 +604,23 @@ export default function SavingsGoalDetails() {
       </header>
 
       {noteKey && (
-        <p className={`savings-goal-details__note savings-goal-details__note--${status}`} role="note">
+        <p
+          className={`savings-goal-details__note savings-goal-details__note--${status}`}
+          role="note"
+        >
           <LuInfo aria-hidden="true" />
           <span>{t(`dashboard.savingsGoals.details.${noteKey}`)}</span>
         </p>
       )}
 
-      <section className="savings-goal-details__panel" aria-labelledby="savings-goal-progress-title">
+      <section
+        className="savings-goal-details__panel"
+        aria-labelledby="savings-goal-progress-title"
+      >
         <div className="savings-goal-details__panel-head">
-          <h2 id="savings-goal-progress-title">{t("dashboard.savingsGoals.details.progressTitle")}</h2>
+          <h2 id="savings-goal-progress-title">
+            {t("dashboard.savingsGoals.details.progressTitle")}
+          </h2>
 
           <button
             type="button"
@@ -535,14 +655,22 @@ export default function SavingsGoalDetails() {
           <>
             <div className="savings-goal-details__meter">
               <div className="savings-goal-details__meter-copy">
-                {progressStatus && <GoalStatusBadge kind="progress" status={progressStatus} />}
+                {progressStatus && (
+                  <GoalStatusBadge kind="progress" status={progressStatus} />
+                )}
                 {GOAL_PROGRESS_STATUSES.includes(progressStatus) && (
-                  <p>{t(`dashboard.savingsGoals.progressHints.${progressStatus}`)}</p>
+                  <p>
+                    {t(
+                      `dashboard.savingsGoals.progressHints.${progressStatus}`,
+                    )}
+                  </p>
                 )}
               </div>
               <strong className="savings-goal-details__percent">
                 <bdi>{percentage}</bdi>
-                <small>{t("dashboard.savingsGoals.fields.percentageFunded")}</small>
+                <small>
+                  {t("dashboard.savingsGoals.fields.percentageFunded")}
+                </small>
               </strong>
             </div>
 
@@ -564,14 +692,33 @@ export default function SavingsGoalDetails() {
             </dl>
           </>
         ) : (
-          <p className="savings-goal-details__empty">{t("dashboard.savingsGoals.details.noProgress")}</p>
+          <p className="savings-goal-details__empty">
+            {t("dashboard.savingsGoals.details.noProgress")}
+          </p>
         )}
       </section>
 
-      <GoalActivity goalId={goal.id} currency={currency} refreshKey={activityKey} />
+      <PlannedContributions
+        goal={goal}
+        canContribute={actions.canContribute}
+        onMovementCompleted={(data) =>
+          handleMovementCompleted("contribution", data)
+        }
+      />
 
-      <section className="savings-goal-details__panel" aria-labelledby="savings-goal-details-title">
-        <h2 id="savings-goal-details-title">{t("dashboard.savingsGoals.details.title")}</h2>
+      <GoalActivity
+        goalId={goal.id}
+        currency={currency}
+        refreshKey={activityKey}
+      />
+
+      <section
+        className="savings-goal-details__panel"
+        aria-labelledby="savings-goal-details-title"
+      >
+        <h2 id="savings-goal-details-title">
+          {t("dashboard.savingsGoals.details.title")}
+        </h2>
 
         <dl className="savings-goal-details__list">
           {rows.map(([key, value]) => (
@@ -584,28 +731,39 @@ export default function SavingsGoalDetails() {
       </section>
 
       {dialog === "edit" && actions.canEdit && (
-        <SavingsGoalForm goal={goal} onSave={handleSave} onClose={closeDialog} />
+        <SavingsGoalForm
+          goal={goal}
+          onSave={handleSave}
+          onClose={closeDialog}
+        />
       )}
 
-      {(dialog === "contribution" && actions.canContribute) ||
-      (dialog === "withdrawal" && actions.canWithdraw) ? (
+      {(movementDialog === "contribution" && actions.canContribute) ||
+      (movementDialog === "withdrawal" && actions.canWithdraw) ? (
         <GoalMovementForm
-          type={dialog}
+          type={movementDialog}
           goal={goal}
-          onCompleted={(data) => handleMovementCompleted(dialog, data)}
+          prefill={movementDialog === "contribution" ? aiPrefill : null}
+          onCompleted={(data) => handleMovementCompleted(movementDialog, data)}
           onOutdated={markStale}
           onClose={closeDialog}
         />
       ) : null}
 
       {["pause", "resume", "archive"].includes(dialog) &&
-        (dialog === "pause" ? actions.canPause : dialog === "resume" ? actions.canResume : actions.canArchive) && (
+        (dialog === "pause"
+          ? actions.canPause
+          : dialog === "resume"
+            ? actions.canResume
+            : actions.canArchive) && (
           <GoalActionDialog
             action={dialog}
             goal={goal}
             onConfirm={() => handleLifecycle(dialog)}
             onClose={closeDialog}
-            onWithdraw={actions.canWithdraw ? () => setDialog("withdrawal") : undefined}
+            onWithdraw={
+              actions.canWithdraw ? () => setDialog("withdrawal") : undefined
+            }
           />
         )}
     </div>

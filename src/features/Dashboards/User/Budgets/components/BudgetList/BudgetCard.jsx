@@ -1,9 +1,13 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { LuArchive, LuPencil } from "react-icons/lu";
 
 import { getBudgetDetailsPath } from "../../../../../../routes/Path";
-import { getDisplayLocale, isNegativeMoney } from "../../../Accounts/accountHelpers";
+import {
+  getDisplayLocale,
+  isNegativeMoney,
+} from "../../../Accounts/accountHelpers";
 import { formatDate, formatMoney } from "../../../utils/formatters";
 import {
   canManageBudget,
@@ -37,7 +41,9 @@ export default function BudgetCard({ budget, onEdit, onArchive }) {
   const isOverspent = isNegativeMoney(progress?.remaining);
 
   return (
-    <article className={`budget-item${isArchived ? " budget-item--archived" : ""}`}>
+    <article
+      className={`budget-item${isArchived ? " budget-item--archived" : ""}`}
+    >
       <div className="budget-item__title-row">
         <div className="budget-item__identity">
           {/* Stretched over the card: the card opens the details page, which
@@ -66,7 +72,9 @@ export default function BudgetCard({ budget, onEdit, onArchive }) {
               type="button"
               className="budget-item__edit"
               onClick={onEdit}
-              aria-label={t("dashboard.budgets.editNamed", { name: budget.name })}
+              aria-label={t("dashboard.budgets.editNamed", {
+                name: budget.name,
+              })}
               title={t("dashboard.budgets.edit")}
             >
               <LuPencil aria-hidden="true" />
@@ -75,7 +83,9 @@ export default function BudgetCard({ budget, onEdit, onArchive }) {
               type="button"
               className="budget-item__archive"
               onClick={onArchive}
-              aria-label={t("dashboard.budgets.archiveNamed", { name: budget.name })}
+              aria-label={t("dashboard.budgets.archiveNamed", {
+                name: budget.name,
+              })}
               title={t("dashboard.budgets.archive")}
             >
               <LuArchive aria-hidden="true" />
@@ -99,11 +109,17 @@ export default function BudgetCard({ budget, onEdit, onArchive }) {
           <div className="budget-item__details">
             <span className="budget-item__spent">
               {t("dashboard.budgets.fields.spent")}{" "}
-              <bdi dir="ltr">{money(progress.spent)}</bdi>
+              <bdi dir="ltr">
+                <PrivateMoney>{money(progress.spent)}</PrivateMoney>
+              </bdi>
               {" / "}
-              <bdi dir="ltr">{money(progress.amount_limit)}</bdi>
+              <bdi dir="ltr">
+                <PrivateMoney>{money(progress.amount_limit)}</PrivateMoney>
+              </bdi>
             </span>
-            <strong className={`budget-item__percent${isOverspent ? " budget-item__percent--danger" : ""}`}>
+            <strong
+              className={`budget-item__percent${isOverspent ? " budget-item__percent--danger" : ""}`}
+            >
               <bdi>{percentage}</bdi>
             </strong>
           </div>
@@ -116,9 +132,13 @@ export default function BudgetCard({ budget, onEdit, onArchive }) {
           />
 
           <div className="budget-item__foot">
-            <span className={`budget-item__status${isOverspent ? " budget-item__status--danger" : ""}`}>
+            <span
+              className={`budget-item__status${isOverspent ? " budget-item__status--danger" : ""}`}
+            >
               {t("dashboard.budgets.fields.remaining")}{" "}
-              <bdi dir="ltr">{money(progress.remaining)}</bdi>
+              <bdi dir="ltr">
+                <PrivateMoney>{money(progress.remaining)}</PrivateMoney>
+              </bdi>
             </span>
             <span className="budget-item__period">
               <bdi>{formatDate(toPeriodDate(budget.period_start), locale)}</bdi>
@@ -131,9 +151,13 @@ export default function BudgetCard({ budget, onEdit, onArchive }) {
         <div className="budget-item__foot">
           <span className="budget-item__spent">
             {t("dashboard.budgets.fields.amountLimit")}{" "}
-            <bdi dir="ltr">{money(budget.amount_limit)}</bdi>
+            <bdi dir="ltr">
+              <PrivateMoney>{money(budget.amount_limit)}</PrivateMoney>
+            </bdi>
           </span>
-          <span className="budget-item__period">{t("dashboard.budgets.card.noProgress")}</span>
+          <span className="budget-item__period">
+            {t("dashboard.budgets.card.noProgress")}
+          </span>
         </div>
       )}
     </article>

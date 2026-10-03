@@ -1,3 +1,6 @@
+import DashboardExperience, {
+  GettingStartedCard,
+} from "../Experience/DashboardExperience";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
@@ -16,7 +19,11 @@ import RecurringCommitments from "./components/RecurringCommitments/RecurringCom
 import RecentTransactions from "./components/RecentTransactions/RecentTransactions";
 import FinancialAlerts from "./components/FinancialAlerts/FinancialAlerts";
 import { dashboardApi } from "../api/dashboardApi";
-import { ApiError, getApiErrorMessage, getStoredWorkspace } from "../api/apiClient";
+import {
+  ApiError,
+  getApiErrorMessage,
+  getStoredWorkspace,
+} from "../api/apiClient";
 import { useAuthContext } from "../../../../contexts/auth/useAuthContext";
 import {
   dashboardFiltersToQuery,
@@ -54,15 +61,22 @@ export default function Dashboard() {
 
   useEffect(() => {
     const controller = new AbortController();
-    const query = dashboardFiltersToQuery(readDashboardFilters(new URLSearchParams(filterKey)));
+    const query = dashboardFiltersToQuery(
+      readDashboardFilters(new URLSearchParams(filterKey)),
+    );
 
     dashboardApi
       .get(query, { signal: controller.signal })
       .then((response) => {
+        if (controller.signal.aborted) return;
         const data = response?.data;
 
         if (!data || typeof data !== "object") {
-          setResult({ key: requestKey, data: null, error: new ApiError("", { code: "MALFORMED_RESPONSE" }) });
+          setResult({
+            key: requestKey,
+            data: null,
+            error: new ApiError("", { code: "MALFORMED_RESPONSE" }),
+          });
           return;
         }
 
@@ -73,7 +87,8 @@ export default function Dashboard() {
           updateWorkspace({
             ...stored,
             id: workspaceId,
-            base_currency_code: data.scope?.primary_currency_code ?? stored.base_currency_code,
+            base_currency_code:
+              data.scope?.primary_currency_code ?? stored.base_currency_code,
             timezone: data.period?.timezone ?? stored.timezone,
           });
         }
@@ -92,7 +107,8 @@ export default function Dashboard() {
   // `data` is the last successful response (null after an error).
   const { data, error } = result;
 
-  const changePeriod = (next) => setSearchParams(dashboardFiltersToSearchParams(next));
+  const changePeriod = (next) =>
+    setSearchParams(dashboardFiltersToSearchParams(next));
   const retry = () => setReloadKey((key) => key + 1);
 
   const periodLabel = getPeriodLabel(t, data?.period, filters.period);
@@ -102,6 +118,7 @@ export default function Dashboard() {
 
   return (
     <div className="user-dashboard">
+      <GettingStartedCard />
       <DashboardPeriodFilter
         key={filterKey}
         filters={filters}
@@ -110,10 +127,15 @@ export default function Dashboard() {
         disabled={isLoading}
       />
 
-      {isLoading && !data && <Loading message={t("dashboard.user.states.loading")} />}
+      {isLoading && !data && (
+        <Loading message={t("dashboard.user.states.loading")} />
+      )}
 
       {!isLoading && error && (
-        <div className="user-dashboard__state user-dashboard__state--error" role="alert">
+        <div
+          className="user-dashboard__state user-dashboard__state--error"
+          role="alert"
+        >
           <p>{getApiErrorMessage(error, t)}</p>
           <button type="button" onClick={retry}>
             {t("common.retry")}
@@ -140,36 +162,63 @@ export default function Dashboard() {
             multiCurrency={multiCurrency}
           />
 
-          {multiCurrency && currencyRows.length > 0 && (
-            <CurrencySummary rows={currencyRows} primaryCurrency={primaryCurrency} />
-          )}
-
-          <SummaryCards totals={data.totals} />
-
-          <MoneyDistribution accounts={Array.isArray(data.accounts) ? data.accounts : []} />
-
-          <GeneralStats totals={data.totals} transfers={data.transfers} />
-
-          <div className="user-dashboard__charts-grid">
-            <CashFlowChart totals={data.totals} periodLabel={periodLabel} />
-            <ExpenseCategories
-              categories={getBlockItems(data.breakdown?.by_category)}
-              currency={primaryCurrency}
-            />
-          </div>
-
-          <div className="user-dashboard__three-grid">
-            <BudgetProgress budgets={getBlockItems(data.planning?.budgets)} />
-            <SavingsGoals goals={getBlockItems(data.planning?.savings_goals)} />
-            <RecurringCommitments block={data.commitments?.recurring} />
-          </div>
-
-          <div className="user-dashboard__bottom-grid">
-            <RecentTransactions
-              transactions={Array.isArray(data.recent_transactions) ? data.recent_transactions : []}
-            />
-            <FinancialAlerts workspaceId={workspace?.id} variant="compact" />
-          </div>
+          <DashboardExperience
+            blocks={{
+              currency:
+                multiCurrency && currencyRows.length > 0 ? (
+                  <CurrencySummary
+                    rows={currencyRows}
+                    primaryCurrency={primaryCurrency}
+                  />
+                ) : null,
+              summary: <SummaryCards totals={data.totals} />,
+              accounts: (
+                <MoneyDistribution
+                  accounts={Array.isArray(data.accounts) ? data.accounts : []}
+                />
+              ),
+              stats: (
+                <GeneralStats totals={data.totals} transfers={data.transfers} />
+              ),
+              cashFlow: (
+                <CashFlowChart totals={data.totals} periodLabel={periodLabel} />
+              ),
+              categories: (
+                <ExpenseCategories
+                  categories={getBlockItems(data.breakdown?.by_category)}
+                  currency={primaryCurrency}
+                />
+              ),
+              budgets: (
+                <BudgetProgress
+                  budgets={getBlockItems(data.planning?.budgets)}
+                />
+              ),
+              goals: (
+                <SavingsGoals
+                  goals={getBlockItems(data.planning?.savings_goals)}
+                />
+              ),
+              recurring: (
+                <RecurringCommitments block={data.commitments?.recurring} />
+              ),
+              recent: (
+                <RecentTransactions
+                  transactions={
+                    Array.isArray(data.recent_transactions)
+                      ? data.recent_transactions
+                      : []
+                  }
+                />
+              ),
+              alerts: (
+                <FinancialAlerts
+                  workspaceId={workspace?.id}
+                  variant="compact"
+                />
+              ),
+            }}
+          />
         </div>
       )}
     </div>

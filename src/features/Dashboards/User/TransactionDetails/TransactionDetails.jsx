@@ -1,3 +1,4 @@
+import PrivateMoney from "../Experience/PrivateMoney";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
@@ -60,7 +61,11 @@ export default function TransactionDetails() {
   // match the current request, the page is loading.
   const [reloadKey, setReloadKey] = useState(0);
   const requestKey = `${transactionId}:${reloadKey}`;
-  const [result, setResult] = useState({ key: null, transaction: null, error: null });
+  const [result, setResult] = useState({
+    key: null,
+    transaction: null,
+    error: null,
+  });
   const [isCorrecting, setIsCorrecting] = useState(false);
   const [isReversing, setIsReversing] = useState(false);
   // A dialog failed because the data is stale (e.g. already reversed):
@@ -98,7 +103,9 @@ export default function TransactionDetails() {
   }, [requestKey, transactionId]);
 
   const isLoading = result.key !== requestKey;
-  const { transaction, error } = isLoading ? { transaction: null, error: null } : result;
+  const { transaction, error } = isLoading
+    ? { transaction: null, error: null }
+    : result;
 
   const handleRequestError = (requestError) => {
     if (requestError?.code === "NOT_FOUND") {
@@ -127,7 +134,11 @@ export default function TransactionDetails() {
     let response;
 
     try {
-      response = await transactionsApi.correct(transaction.id, payload, idempotencyKey);
+      response = await transactionsApi.correct(
+        transaction.id,
+        payload,
+        idempotencyKey,
+      );
     } catch (requestError) {
       handleRequestError(requestError);
       throw requestError;
@@ -137,15 +148,26 @@ export default function TransactionDetails() {
     setIsCorrecting(false);
     setRefreshOnClose(false);
 
-    if (isTransactionEntity(replacement) && !sameId(replacement.id, transaction.id)) {
-      setNotice({ forId: String(replacement.id), kind: "corrected", originalId: transaction.id });
+    if (
+      isTransactionEntity(replacement) &&
+      !sameId(replacement.id, transaction.id)
+    ) {
+      setNotice({
+        forId: String(replacement.id),
+        kind: "corrected",
+        originalId: transaction.id,
+      });
       navigate(getTransactionDetailsPath(replacement.id), {
         replace: true,
         state: { from: listSearch },
       });
     } else {
       // No replacement in the response: show the current backend state.
-      setNotice({ forId: String(transactionId), kind: "corrected", originalId: null });
+      setNotice({
+        forId: String(transactionId),
+        kind: "corrected",
+        originalId: null,
+      });
       setReloadKey((key) => key + 1);
     }
   };
@@ -218,7 +240,10 @@ export default function TransactionDetails() {
           <p>{getTransactionErrorMessage(error, t)}</p>
 
           {!isNotFound && (
-            <button type="button" onClick={() => setReloadKey((key) => key + 1)}>
+            <button
+              type="button"
+              onClick={() => setReloadKey((key) => key + 1)}
+            >
               {t("common.retry")}
             </button>
           )}
@@ -233,22 +258,41 @@ export default function TransactionDetails() {
   const isReversal = isReversalRecord(transaction);
   const isReversed = transaction.status === "reversed";
   const accounts = getTransactionAccounts(transaction);
-  const typeLabel = translateEnum(t, i18n, "dashboard.transactions.types", transaction.type);
+  const typeLabel = translateEnum(
+    t,
+    i18n,
+    "dashboard.transactions.types",
+    transaction.type,
+  );
   const amount = String(transaction.amount ?? "").replace(/^-/, "");
-  const money = (value) => formatMoney(value, transaction.currency_code, locale);
+  const money = (value) =>
+    formatMoney(value, transaction.currency_code, locale);
   const dateTime = (value) => formatDateTime(value, locale, timeZone);
   const transactionLink = (id) => (
     <Link to={getTransactionDetailsPath(id)} state={{ from: listSearch }}>
       <bdi>#{id}</bdi>
     </Link>
   );
-  const shownNotice = notice && notice.forId === String(transactionId) ? notice : null;
+  const shownNotice =
+    notice && notice.forId === String(transactionId) ? notice : null;
 
   const rows = [
     ["type", typeLabel],
-    ["status", <TransactionStatusBadge key="status" status={transaction.status} />],
-    ["amount", <bdi key="amount" dir="ltr">{getAmountSign(transaction)}{money(amount)}</bdi>],
-    transaction.currency_code && ["currency", <bdi key="currency">{transaction.currency_code}</bdi>],
+    [
+      "status",
+      <TransactionStatusBadge key="status" status={transaction.status} />,
+    ],
+    [
+      "amount",
+      <bdi key="amount" dir="ltr">
+        {getAmountSign(transaction)}
+        <PrivateMoney>{money(amount)}</PrivateMoney>
+      </bdi>,
+    ],
+    transaction.currency_code && [
+      "currency",
+      <bdi key="currency">{transaction.currency_code}</bdi>,
+    ],
     accounts.length > 0 && [
       accounts.length > 1 ? "accounts" : "account",
       <span className="transaction-details__links" key="accounts">
@@ -262,26 +306,49 @@ export default function TransactionDetails() {
     [
       "category",
       transaction.category?.id != null || transaction.category_id != null ? (
-        <Link key="category" to={getCategoryDetailsPath(transaction.category?.id ?? transaction.category_id)}>
-          <bdi>{transaction.category?.name ?? `#${transaction.category_id}`}</bdi>
+        <Link
+          key="category"
+          to={getCategoryDetailsPath(
+            transaction.category?.id ?? transaction.category_id,
+          )}
+        >
+          <bdi>
+            {transaction.category?.name ?? `#${transaction.category_id}`}
+          </bdi>
         </Link>
       ) : (
         t("dashboard.transactions.details.none")
       ),
     ],
-    transaction.description && ["description", <bdi key="description">{transaction.description}</bdi>],
+    transaction.description && [
+      "description",
+      <bdi key="description">{transaction.description}</bdi>,
+    ],
     transaction.reference_number && [
       "referenceNumber",
-      <bdi key="reference" dir="ltr">{transaction.reference_number}</bdi>,
+      <bdi key="reference" dir="ltr">
+        {transaction.reference_number}
+      </bdi>,
     ],
     ["occurredAt", dateTime(transaction.occurred_at)],
     transaction.posted_at && ["postedAt", dateTime(transaction.posted_at)],
     transaction.source && [
       "source",
-      translateEnum(t, i18n, "dashboard.transactions.sources", transaction.source),
+      translateEnum(
+        t,
+        i18n,
+        "dashboard.transactions.sources",
+        transaction.source,
+      ),
     ],
-    transaction.creator?.name && ["createdBy", <bdi key="creator">{transaction.creator.name}</bdi>],
-    transaction.reversed_at && ["reversedAt", dateTime(transaction.reversed_at)],
+    transaction.creator?.name && [
+      "createdBy",
+      <bdi key="creator">{transaction.creator.name}</bdi>,
+    ],
+    transaction.reversed_at && [
+      "reversedAt",
+      dateTime(transaction.reversed_at),
+    ],
     transaction.reversal_reason && [
       "reversalReason",
       <bdi key="reversal-reason">{transaction.reversal_reason}</bdi>,
@@ -292,11 +359,15 @@ export default function TransactionDetails() {
         <bdi dir="ltr">#{transaction.transfer_id}</bdi>
       </Link>,
     ],
-    transaction.reversal_of_id != null && ["reversalOf", transactionLink(transaction.reversal_of_id)],
-    transaction.related_transaction_id != null && !isReversal && [
-      "replaces",
-      transactionLink(transaction.related_transaction_id),
+    transaction.reversal_of_id != null && [
+      "reversalOf",
+      transactionLink(transaction.reversal_of_id),
     ],
+    transaction.related_transaction_id != null &&
+      !isReversal && [
+        "replaces",
+        transactionLink(transaction.related_transaction_id),
+      ],
   ].filter(Boolean);
 
   const entries = (transaction.ledger_entries ?? []).filter(Boolean);
@@ -336,14 +407,21 @@ export default function TransactionDetails() {
               </>
             )}
           </p>
-          <button type="button" onClick={() => setNotice(null)} aria-label={t("common.close")}>
+          <button
+            type="button"
+            onClick={() => setNotice(null)}
+            aria-label={t("common.close")}
+          >
             <LuX aria-hidden="true" />
           </button>
         </div>
       )}
 
       <header className="transaction-details__header">
-        <span className={`transaction-details__icon transaction-details__icon--${tone}`} aria-hidden="true">
+        <span
+          className={`transaction-details__icon transaction-details__icon--${tone}`}
+          aria-hidden="true"
+        >
           {renderTransactionIcon(transaction)}
         </span>
 
@@ -351,13 +429,21 @@ export default function TransactionDetails() {
           <h1 dir="auto">{getTransactionTitle(transaction, t, i18n)}</h1>
 
           <div className="transaction-details__chips">
-            <span className={`transaction-details__chip transaction-details__chip--${tone}`}>{typeLabel}</span>
+            <span
+              className={`transaction-details__chip transaction-details__chip--${tone}`}
+            >
+              {typeLabel}
+            </span>
             <TransactionStatusBadge status={transaction.status} />
             {isReversal && (
-              <span className="transaction-details__chip">{t("dashboard.transactions.chips.reversal")}</span>
+              <span className="transaction-details__chip">
+                {t("dashboard.transactions.chips.reversal")}
+              </span>
             )}
             {transaction.related_transaction_id != null && !isReversal && (
-              <span className="transaction-details__chip">{t("dashboard.transactions.chips.correction")}</span>
+              <span className="transaction-details__chip">
+                {t("dashboard.transactions.chips.correction")}
+              </span>
             )}
           </div>
         </div>
@@ -391,14 +477,18 @@ export default function TransactionDetails() {
           dir="ltr"
         >
           {getAmountSign(transaction)}
-          {money(amount)}
+          <PrivateMoney>{money(amount)}</PrivateMoney>
         </strong>
         <small>
           {dateTime(transaction.occurred_at)}
           {accounts[0]?.name && (
             <>
               {" · "}
-              <bdi>{accounts.map((account) => account.name ?? `#${account.id}`).join(" → ")}</bdi>
+              <bdi>
+                {accounts
+                  .map((account) => account.name ?? `#${account.id}`)
+                  .join(" → ")}
+              </bdi>
             </>
           )}
         </small>
@@ -412,17 +502,25 @@ export default function TransactionDetails() {
       )}
 
       {isReversal && (
-        <p className="transaction-details__note transaction-details__note--info" role="note">
+        <p
+          className="transaction-details__note transaction-details__note--info"
+          role="note"
+        >
           <LuInfo aria-hidden="true" />
           <span>
             {t("dashboard.transactions.details.reversalNote")}
-            {transaction.reversal_of_id != null && <> {transactionLink(transaction.reversal_of_id)}</>}
+            {transaction.reversal_of_id != null && (
+              <> {transactionLink(transaction.reversal_of_id)}</>
+            )}
           </span>
         </p>
       )}
 
       {isTransfer && !isReversal && (
-        <p className="transaction-details__note transaction-details__note--info" role="note">
+        <p
+          className="transaction-details__note transaction-details__note--info"
+          role="note"
+        >
           <LuArrowRightLeft aria-hidden="true" />
           <span>
             {t("dashboard.transactions.details.transferNote")}
@@ -438,15 +536,26 @@ export default function TransactionDetails() {
         </p>
       )}
 
-      {!isTransfer && !isReversal && !isReversed && transaction.status !== "posted" && (
-        <p className="transaction-details__note transaction-details__note--info" role="note">
-          <LuInfo aria-hidden="true" />
-          <span>{t("dashboard.transactions.details.notPostedNote")}</span>
-        </p>
-      )}
+      {!isTransfer &&
+        !isReversal &&
+        !isReversed &&
+        transaction.status !== "posted" && (
+          <p
+            className="transaction-details__note transaction-details__note--info"
+            role="note"
+          >
+            <LuInfo aria-hidden="true" />
+            <span>{t("dashboard.transactions.details.notPostedNote")}</span>
+          </p>
+        )}
 
-      <section className="transaction-details__panel" aria-labelledby="transaction-details-title">
-        <h2 id="transaction-details-title">{t("dashboard.transactions.details.title")}</h2>
+      <section
+        className="transaction-details__panel"
+        aria-labelledby="transaction-details-title"
+      >
+        <h2 id="transaction-details-title">
+          {t("dashboard.transactions.details.title")}
+        </h2>
 
         <dl className="transaction-details__list">
           {rows.map(([key, value]) => (
@@ -459,17 +568,30 @@ export default function TransactionDetails() {
       </section>
 
       {entries.length > 0 && (
-        <section className="transaction-details__panel" aria-labelledby="transaction-entries-title">
-          <h2 id="transaction-entries-title">{t("dashboard.transactions.details.entriesTitle")}</h2>
-          <p className="transaction-details__panel-hint">{t("dashboard.transactions.details.entriesHint")}</p>
+        <section
+          className="transaction-details__panel"
+          aria-labelledby="transaction-entries-title"
+        >
+          <h2 id="transaction-entries-title">
+            {t("dashboard.transactions.details.entriesTitle")}
+          </h2>
+          <p className="transaction-details__panel-hint">
+            {t("dashboard.transactions.details.entriesHint")}
+          </p>
 
           <div className="transaction-details__table-wrap">
             <table className="transaction-details__table">
               <thead>
                 <tr>
-                  <th scope="col">{t("dashboard.transactions.details.entryAccount")}</th>
-                  <th scope="col">{t("dashboard.transactions.details.entryRole")}</th>
-                  <th scope="col">{t("dashboard.transactions.details.entryAmount")}</th>
+                  <th scope="col">
+                    {t("dashboard.transactions.details.entryAccount")}
+                  </th>
+                  <th scope="col">
+                    {t("dashboard.transactions.details.entryRole")}
+                  </th>
+                  <th scope="col">
+                    {t("dashboard.transactions.details.entryAmount")}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -487,7 +609,14 @@ export default function TransactionDetails() {
                           "—"
                         )}
                       </td>
-                      <td>{translateEnum(t, i18n, "dashboard.transactions.entryRoles", entry.entry_role) || "—"}</td>
+                      <td>
+                        {translateEnum(
+                          t,
+                          i18n,
+                          "dashboard.transactions.entryRoles",
+                          entry.entry_role,
+                        ) || "—"}
+                      </td>
                       <td
                         className={
                           isNegativeMoney(entry.signed_amount)
@@ -496,9 +625,16 @@ export default function TransactionDetails() {
                         }
                         dir="ltr"
                       >
-                        {entry.signed_amount != null
-                          ? formatMoney(entry.signed_amount, entry.currency_code ?? transaction.currency_code, locale)
-                          : "—"}
+                        <PrivateMoney>
+                          {entry.signed_amount != null
+                            ? formatMoney(
+                                entry.signed_amount,
+                                entry.currency_code ??
+                                  transaction.currency_code,
+                                locale,
+                              )
+                            : "—"}
+                        </PrivateMoney>
                       </td>
                     </tr>
                   );

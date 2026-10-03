@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "node scripts/generateLegalPages.mjs && vite",
+    "build": "node scripts/generateLegalPages.mjs && vite build",
+    "legal:generate": "node scripts/generateLegalPages.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },

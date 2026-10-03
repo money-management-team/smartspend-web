@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router-dom";
@@ -7,7 +8,11 @@ import { getTransactionDetailsPath } from "../../../../../../routes/Path";
 import { ApiError } from "../../../api/apiClient";
 import { recurringTransactionsApi } from "../../../api/recurringTransactionsApi";
 import { getDisplayLocale } from "../../../Accounts/accountHelpers";
-import { formatDate, formatDateTime, formatMoney } from "../../../utils/formatters";
+import {
+  formatDate,
+  formatDateTime,
+  formatMoney,
+} from "../../../utils/formatters";
 import RecurringBadge from "../RecurringBadge/RecurringBadge";
 import {
   OCCURRENCE_STATUSES,
@@ -31,7 +36,12 @@ import "./RecurringOccurrences.css";
  * `refreshKey` changes after an action on the rule, so the history is read
  * again from the backend.
  */
-export default function RecurringOccurrences({ ruleId, currency, refreshKey, timeZone }) {
+export default function RecurringOccurrences({
+  ruleId,
+  currency,
+  refreshKey,
+  timeZone,
+}) {
   const { t, i18n } = useTranslation();
   const locale = getDisplayLocale(i18n.language);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -44,7 +54,9 @@ export default function RecurringOccurrences({ ruleId, currency, refreshKey, tim
 
   useEffect(() => {
     const controller = new AbortController();
-    const query = occurrenceFiltersToQuery(readOccurrenceFilters(new URLSearchParams(filterKey)));
+    const query = occurrenceFiltersToQuery(
+      readOccurrenceFilters(new URLSearchParams(filterKey)),
+    );
 
     recurringTransactionsApi
       .listOccurrences(ruleId, query, { signal: controller.signal })
@@ -53,7 +65,11 @@ export default function RecurringOccurrences({ ruleId, currency, refreshKey, tim
         setResult(
           parsed
             ? { key: requestKey, page: parsed, error: null }
-            : { key: requestKey, page: null, error: new ApiError("", { code: "MALFORMED_RESPONSE" }) },
+            : {
+                key: requestKey,
+                page: null,
+                error: new ApiError("", { code: "MALFORMED_RESPONSE" }),
+              },
         );
       })
       .catch((error) => {
@@ -73,20 +89,31 @@ export default function RecurringOccurrences({ ruleId, currency, refreshKey, tim
     const params = new URLSearchParams(searchParams);
     params.delete("occurrence_status");
     params.delete("occurrences_page");
-    occurrenceFiltersToSearchParams(next).forEach((value, key) => params.set(key, value));
+    occurrenceFiltersToSearchParams(next).forEach((value, key) =>
+      params.set(key, value),
+    );
     setSearchParams(params, { replace: true });
   };
 
   const money = (occurrence) =>
     occurrence.amount == null || occurrence.amount === ""
       ? "—"
-      : formatMoney(occurrence.amount, occurrence.currency_code || currency || undefined, locale);
+      : formatMoney(
+          occurrence.amount,
+          occurrence.currency_code || currency || undefined,
+          locale,
+        );
 
   return (
-    <section className="recurring-occurrences" aria-labelledby="recurring-occurrences-title">
+    <section
+      className="recurring-occurrences"
+      aria-labelledby="recurring-occurrences-title"
+    >
       <header className="recurring-occurrences__head">
         <div>
-          <h2 id="recurring-occurrences-title">{t("dashboard.recurring.occurrences.title")}</h2>
+          <h2 id="recurring-occurrences-title">
+            {t("dashboard.recurring.occurrences.title")}
+          </h2>
           <p>{t("dashboard.recurring.occurrences.subtitle")}</p>
         </div>
 
@@ -94,10 +121,14 @@ export default function RecurringOccurrences({ ruleId, currency, refreshKey, tim
           <span>{t("dashboard.recurring.fields.status")}</span>
           <select
             value={filters.occurrence_status}
-            onChange={(event) => setFilters({ occurrence_status: event.target.value, page: 1 })}
+            onChange={(event) =>
+              setFilters({ occurrence_status: event.target.value, page: 1 })
+            }
             disabled={isLoading}
           >
-            <option value="">{t("dashboard.recurring.filters.allStatuses")}</option>
+            <option value="">
+              {t("dashboard.recurring.filters.allStatuses")}
+            </option>
             {OCCURRENCE_STATUSES.map((status) => (
               <option value={status} key={status}>
                 {t(`dashboard.recurring.occurrenceStatuses.${status}`)}
@@ -114,7 +145,10 @@ export default function RecurringOccurrences({ ruleId, currency, refreshKey, tim
       )}
 
       {!isLoading && error && (
-        <div className="recurring-occurrences__state recurring-occurrences__state--error" role="alert">
+        <div
+          className="recurring-occurrences__state recurring-occurrences__state--error"
+          role="alert"
+        >
           <p>{getRecurringErrorMessage(error, t)}</p>
           <button type="button" onClick={() => setReloadKey((key) => key + 1)}>
             {t("common.retry")}
@@ -140,10 +174,16 @@ export default function RecurringOccurrences({ ruleId, currency, refreshKey, tim
                 <th scope="col">{t("dashboard.recurring.fields.dueDate")}</th>
                 <th scope="col">{t("dashboard.recurring.fields.status")}</th>
                 <th scope="col">{t("dashboard.recurring.fields.amount")}</th>
-                <th scope="col">{t("dashboard.recurring.fields.transaction")}</th>
+                <th scope="col">
+                  {t("dashboard.recurring.fields.transaction")}
+                </th>
                 <th scope="col">{t("dashboard.recurring.fields.attempts")}</th>
-                <th scope="col">{t("dashboard.recurring.fields.failureReason")}</th>
-                <th scope="col">{t("dashboard.recurring.fields.processedAt")}</th>
+                <th scope="col">
+                  {t("dashboard.recurring.fields.failureReason")}
+                </th>
+                <th scope="col">
+                  {t("dashboard.recurring.fields.processedAt")}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -152,19 +192,32 @@ export default function RecurringOccurrences({ ruleId, currency, refreshKey, tim
                   <td>
                     <span className="recurring-occurrences__due">
                       <bdi>{formatDate(occurrence.due_date, locale)}</bdi>
-                      {isOverdueOccurrence(occurrence) && <RecurringBadge kind="overdue" />}
+                      {isOverdueOccurrence(occurrence) && (
+                        <RecurringBadge kind="overdue" />
+                      )}
                     </span>
                   </td>
                   <td>
-                    <RecurringBadge kind="occurrence" value={occurrence.status} />
+                    <RecurringBadge
+                      kind="occurrence"
+                      value={occurrence.status}
+                    />
                   </td>
                   <td>
-                    <bdi>{money(occurrence)}</bdi>
+                    <bdi>
+                      <PrivateMoney>{money(occurrence)}</PrivateMoney>
+                    </bdi>
                   </td>
                   <td>
                     {occurrence.transaction_id != null ? (
-                      <Link to={getTransactionDetailsPath(occurrence.transaction_id)}>
-                        {t("dashboard.recurring.occurrences.viewTransaction", { id: occurrence.transaction_id })}
+                      <Link
+                        to={getTransactionDetailsPath(
+                          occurrence.transaction_id,
+                        )}
+                      >
+                        {t("dashboard.recurring.occurrences.viewTransaction", {
+                          id: occurrence.transaction_id,
+                        })}
                       </Link>
                     ) : (
                       "—"
@@ -178,7 +231,13 @@ export default function RecurringOccurrences({ ruleId, currency, refreshKey, tim
                   </td>
                   <td>
                     {occurrence.processed_at ? (
-                      <bdi>{formatDateTime(occurrence.processed_at, locale, timeZone)}</bdi>
+                      <bdi>
+                        {formatDateTime(
+                          occurrence.processed_at,
+                          locale,
+                          timeZone,
+                        )}
+                      </bdi>
                     ) : (
                       "—"
                     )}
@@ -193,7 +252,11 @@ export default function RecurringOccurrences({ ruleId, currency, refreshKey, tim
       {!isLoading && !error && page && page.lastPage > 1 && (
         <footer className="recurring-occurrences__pagination">
           <span>
-            {t("dashboard.transactions.pagination.summary", { from: page.from, to: page.to, total: page.total })}
+            {t("dashboard.transactions.pagination.summary", {
+              from: page.from,
+              to: page.to,
+              total: page.total,
+            })}
           </span>
           <div className="recurring-occurrences__pages">
             <button
@@ -205,7 +268,10 @@ export default function RecurringOccurrences({ ruleId, currency, refreshKey, tim
               <LuChevronLeft aria-hidden="true" />
             </button>
             <span aria-live="polite">
-              {t("dashboard.transactions.pagination.page", { page: page.page, lastPage: page.lastPage })}
+              {t("dashboard.transactions.pagination.page", {
+                page: page.page,
+                lastPage: page.lastPage,
+              })}
             </span>
             <button
               type="button"

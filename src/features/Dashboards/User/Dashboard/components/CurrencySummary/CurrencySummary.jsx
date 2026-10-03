@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useTranslation } from "react-i18next";
 
 import SectionCard from "../shared/SectionCard";
@@ -41,7 +42,9 @@ export default function CurrencySummary({ rows, primaryCurrency }) {
                 <th scope="row">
                   <bdi>{row.currency_code}</bdi>
                   {row.currency_code === primaryCurrency && (
-                    <span className="currency-summary__primary">{t("dashboard.user.currencies.primary")}</span>
+                    <span className="currency-summary__primary">
+                      {t("dashboard.user.currencies.primary")}
+                    </span>
                   )}
                 </th>
                 <td>
@@ -50,9 +53,21 @@ export default function CurrencySummary({ rows, primaryCurrency }) {
                 {COLUMNS.map((column) => (
                   <td
                     key={column}
-                    className={column === "net" && isNegativeAmount(row[column]) ? "currency-summary__negative" : ""}
+                    className={
+                      column === "net" && isNegativeAmount(row[column])
+                        ? "currency-summary__negative"
+                        : ""
+                    }
                   >
-                    <bdi>{formatOptionalMoney(row[column], row.currency_code, locale)}</bdi>
+                    <bdi>
+                      <PrivateMoney>
+                        {formatOptionalMoney(
+                          row[column],
+                          row.currency_code,
+                          locale,
+                        )}
+                      </PrivateMoney>
+                    </bdi>
                   </td>
                 ))}
               </tr>

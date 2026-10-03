@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuCheck, LuRotateCcw, LuTriangleAlert } from "react-icons/lu";
@@ -108,7 +109,9 @@ export default function ReviewValues({
 
   const header = (
     <header className="review-values__header">
-      <h2 id="review-values-title">{t("dashboard.aiCaptures.details.review.title")}</h2>
+      <h2 id="review-values-title">
+        {t("dashboard.aiCaptures.details.review.title")}
+      </h2>
       <p>
         {t(
           isEditable
@@ -132,22 +135,34 @@ export default function ReviewValues({
     };
 
     const renderValue = ({ field, value }) => {
-      if (field === "account_id") return <bdi dir="auto">{named(accounts, value)}</bdi>;
-      if (field === "category_id") return <bdi dir="auto">{named(categories, value)}</bdi>;
+      if (field === "account_id")
+        return <bdi dir="auto">{named(accounts, value)}</bdi>;
+      if (field === "category_id")
+        return <bdi dir="auto">{named(categories, value)}</bdi>;
 
       /*
        * Money stays the backend's decimal string ("25.0000"); `formatMoney`
        * is display only and the stored value is never replaced by a float.
        */
       if (CAPTURE_MONEY_FIELDS.includes(field)) {
-        return <bdi dir="ltr">{formatMoney(value, values.currency_code, locale)}</bdi>;
+        return (
+          <bdi dir="ltr">
+            <PrivateMoney>
+              {formatMoney(value, values.currency_code, locale)}
+            </PrivateMoney>
+          </bdi>
+        );
       }
 
       if (field === "transaction_date") {
         return <bdi dir="ltr">{formatDate(value, locale)}</bdi>;
       }
 
-      if (["currency_code", "transaction_time", "reference_number"].includes(field)) {
+      if (
+        ["currency_code", "transaction_time", "reference_number"].includes(
+          field,
+        )
+      ) {
         return <bdi dir="ltr">{String(value)}</bdi>;
       }
 
@@ -182,7 +197,8 @@ export default function ReviewValues({
   const categoryOptions = getExpenseCategories(categories);
 
   const selectedAccount =
-    accountOptions.find((account) => String(account.id) === form.account_id) ?? null;
+    accountOptions.find((account) => String(account.id) === form.account_id) ??
+    null;
 
   /*
    * The saved value is always offered, even when it isn't in the loaded list
@@ -202,7 +218,10 @@ export default function ReviewValues({
     selectedAccount?.currency_code,
   );
 
-  const clientErrors = validateCaptureForm(form, { t, account: selectedAccount });
+  const clientErrors = validateCaptureForm(form, {
+    t,
+    account: selectedAccount,
+  });
   const changes = getCaptureChanges(form, capture);
   const isDirty = Object.keys(changes).length > 0;
   const reviewVersion = getReviewVersion(capture);
@@ -216,7 +235,11 @@ export default function ReviewValues({
    * just fail again, so the only way forward is an explicit reload.
    */
   const canSave =
-    isDirty && !isSaving && !isLocked && !isConflict && reviewVersion != null &&
+    isDirty &&
+    !isSaving &&
+    !isLocked &&
+    !isConflict &&
+    reviewVersion != null &&
     Object.keys(clientErrors).length === 0;
 
   /*
@@ -308,7 +331,10 @@ export default function ReviewValues({
        * A stale version is a 422 too, but it is not a field the user can fix,
        * so it gets the conflict block instead of an inline error.
        */
-      if (error?.code === "VALIDATION_ERROR" && !isCaptureVersionConflict(error)) {
+      if (
+        error?.code === "VALIDATION_ERROR" &&
+        !isCaptureVersionConflict(error)
+      ) {
         setServerErrors(error.errors ?? {});
       }
     } finally {
@@ -323,9 +349,14 @@ export default function ReviewValues({
     if (!messages) return null;
 
     return (
-      <small className="review-values__field-error" id={`${FORM_ID}-${field}-error`}>
+      <small
+        className="review-values__field-error"
+        id={`${FORM_ID}-${field}-error`}
+      >
         {messages.map((message) => (
-          <span key={message} dir="auto">{message}</span>
+          <span key={message} dir="auto">
+            {message}
+          </span>
         ))}
       </small>
     );
@@ -334,7 +365,10 @@ export default function ReviewValues({
   // Everything the backend rejected that has no control of its own (e.g. a
   // field this form doesn't render). Never dropped silently.
   const otherErrors = Object.entries(serverErrors)
-    .filter(([field, messages]) => messages && !CAPTURE_EDITABLE_FIELDS.includes(field))
+    .filter(
+      ([field, messages]) =>
+        messages && !CAPTURE_EDITABLE_FIELDS.includes(field),
+    )
     .flatMap(([, messages]) => messages);
 
   const controlProps = (field) => ({
@@ -344,25 +378,39 @@ export default function ReviewValues({
     onChange: handleChange,
     disabled: isSaving || isLocked,
     "aria-invalid": errorFor(field) ? true : undefined,
-    "aria-describedby": errorFor(field) ? `${FORM_ID}-${field}-error` : undefined,
+    "aria-describedby": errorFor(field)
+      ? `${FORM_ID}-${field}-error`
+      : undefined,
   });
 
   const optional = t("dashboard.transactions.form.optional");
 
   return (
-    <section className="review-values review-values--editable" aria-labelledby="review-values-title">
+    <section
+      className="review-values review-values--editable"
+      aria-labelledby="review-values-title"
+    >
       {header}
 
       {optionsError && (
         <p className="review-values__options-error" role="alert">
           {getApiErrorMessage(optionsError, t)}{" "}
-          <button type="button" className="review-values__link" onClick={onRetryOptions}>
+          <button
+            type="button"
+            className="review-values__link"
+            onClick={onRetryOptions}
+          >
             {t("common.retry")}
           </button>
         </p>
       )}
 
-      <form id={FORM_ID} className="review-values__form" onSubmit={handleSubmit} noValidate>
+      <form
+        id={FORM_ID}
+        className="review-values__form"
+        onSubmit={handleSubmit}
+        noValidate
+      >
         <div className="review-values__grid">
           <label className="review-values__field">
             <span>{label("account_id")}</span>
@@ -396,7 +444,9 @@ export default function ReviewValues({
                 {t("dashboard.aiCaptures.form.selectCategory")}
               </option>
               {missingOption(categoryOptions, form.category_id) && (
-                <option value={form.category_id}>{`#${form.category_id}`}</option>
+                <option
+                  value={form.category_id}
+                >{`#${form.category_id}`}</option>
               )}
               {categoryOptions.map((category) => (
                 <option value={category.id} key={category.id}>
@@ -411,7 +461,12 @@ export default function ReviewValues({
               user typed here is never replaced by it. */}
           <label className="review-values__field">
             <span>{label("merchant_name")}</span>
-            <input type="text" {...controlProps("merchant_name")} autoComplete="off" dir="auto" />
+            <input
+              type="text"
+              {...controlProps("merchant_name")}
+              autoComplete="off"
+              dir="auto"
+            />
             {fieldError("merchant_name")}
           </label>
 
@@ -431,9 +486,13 @@ export default function ReviewValues({
           <label className="review-values__field">
             <span>{label("currency_code")}</span>
             <select {...controlProps("currency_code")} dir="ltr">
-              <option value="">{t("dashboard.aiCaptures.form.selectCurrency")}</option>
+              <option value="">
+                {t("dashboard.aiCaptures.form.selectCurrency")}
+              </option>
               {currencyOptions.map((currency) => (
-                <option value={currency} key={currency}>{currency}</option>
+                <option value={currency} key={currency}>
+                  {currency}
+                </option>
               ))}
             </select>
             {fieldError("currency_code")}
@@ -458,9 +517,9 @@ export default function ReviewValues({
               {label("transaction_time")} ({optional})
             </span>
             {/*
-              * Seconds are offered only when the stored value has some: the
-              * form never invents `:00` for a time the user typed as HH:mm.
-              */}
+             * Seconds are offered only when the stored value has some: the
+             * form never invents `:00` for a time the user typed as HH:mm.
+             */}
             <input
               type="time"
               {...controlProps("transaction_time")}
@@ -532,28 +591,36 @@ export default function ReviewValues({
         {otherErrors.length > 0 && (
           <div className="review-values__error" role="alert">
             {otherErrors.map((message) => (
-              <p key={message} dir="auto">{message}</p>
+              <p key={message} dir="auto">
+                {message}
+              </p>
             ))}
           </div>
         )}
 
         {/*
-          * A stale review_version: someone else saved this draft after it was
-          * loaded here. Nothing is retried automatically, the same version is
-          * never resent, and the user's edits are left untouched on screen
-          * until they choose to replace them.
-          */}
+         * A stale review_version: someone else saved this draft after it was
+         * loaded here. Nothing is retried automatically, the same version is
+         * never resent, and the user's edits are left untouched on screen
+         * until they choose to replace them.
+         */}
         {isConflict && (
           <div className="review-values__conflict" role="alert">
             <p>
               <LuTriangleAlert aria-hidden="true" />
-              <span dir="auto">{t("dashboard.aiCaptures.form.conflict.message")}</span>
+              <span dir="auto">
+                {t("dashboard.aiCaptures.form.conflict.message")}
+              </span>
             </p>
             <p className="review-values__conflict-warning">
               {t("dashboard.aiCaptures.form.conflict.discards")}
             </p>
 
-            <button type="button" className="review-values__reload" onClick={onReloadLatest}>
+            <button
+              type="button"
+              className="review-values__reload"
+              onClick={onReloadLatest}
+            >
               <LuRotateCcw aria-hidden="true" />
               {t("dashboard.aiCaptures.form.conflict.reload")}
             </button>
@@ -563,49 +630,62 @@ export default function ReviewValues({
         {!isConflict && saveError && (
           <div className="review-values__error" role="alert">
             <p dir="auto">
-              {t("dashboard.aiCaptures.form.saveFailed")} {getApiErrorMessage(saveError, t)}
+              {t("dashboard.aiCaptures.form.saveFailed")}{" "}
+              {getApiErrorMessage(saveError, t)}
             </p>
 
             {/*
-              * A timeout or a dead connection leaves the outcome unknown, so
-              * nothing here claims the draft was saved. The edits stay in the
-              * form and the user can retry or read the server's copy.
-              */}
+             * A timeout or a dead connection leaves the outcome unknown, so
+             * nothing here claims the draft was saved. The edits stay in the
+             * form and the user can retry or read the server's copy.
+             */}
             {isUncertain && (
               <>
                 <p>{t("dashboard.aiCaptures.form.saveUncertain")}</p>
-                <button type="button" className="review-values__link" onClick={onReloadLatest}>
+                <button
+                  type="button"
+                  className="review-values__link"
+                  onClick={onReloadLatest}
+                >
                   {t("dashboard.aiCaptures.form.conflict.reload")}
                 </button>
               </>
             )}
 
-            <button type="submit" className="review-values__retry" disabled={!canSave}>
+            <button
+              type="submit"
+              className="review-values__retry"
+              disabled={!canSave}
+            >
               {t("dashboard.aiCaptures.form.retrySave")}
             </button>
           </div>
         )}
 
         <footer className="review-values__actions">
-          <button type="submit" className="review-values__save" disabled={!canSave}>
+          <button
+            type="submit"
+            className="review-values__save"
+            disabled={!canSave}
+          >
             {t(isSaving ? "common.saving" : "dashboard.aiCaptures.form.save")}
           </button>
 
           <p className="review-values__status" role="status">
-            {isSaving
-              ? t("dashboard.aiCaptures.form.saving")
-              : isSaved && !isDirty
-                ? (
-                    <>
-                      <LuCheck aria-hidden="true" />
-                      {t("dashboard.aiCaptures.form.saved")}
-                    </>
-                  )
-                : isDirty
-                  ? t("dashboard.aiCaptures.form.unsaved")
-                  : reviewVersion == null
-                    ? t("dashboard.aiCaptures.form.noVersion")
-                    : t("dashboard.aiCaptures.form.upToDate")}
+            {isSaving ? (
+              t("dashboard.aiCaptures.form.saving")
+            ) : isSaved && !isDirty ? (
+              <>
+                <LuCheck aria-hidden="true" />
+                {t("dashboard.aiCaptures.form.saved")}
+              </>
+            ) : isDirty ? (
+              t("dashboard.aiCaptures.form.unsaved")
+            ) : reviewVersion == null ? (
+              t("dashboard.aiCaptures.form.noVersion")
+            ) : (
+              t("dashboard.aiCaptures.form.upToDate")
+            )}
           </p>
         </footer>
       </form>

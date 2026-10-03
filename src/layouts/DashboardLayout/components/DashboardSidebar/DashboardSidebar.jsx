@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Link, NavLink, matchPath, useLocation, useNavigate } from "react-router-dom";
+import {
+  Link,
+  NavLink,
+  matchPath,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -61,15 +67,38 @@ function getNavigation(t, notificationsBadge) {
           icon: LuWalletCards,
         },
         {
+          type: "item",
+          label: t("experience:attention"),
+          path: PATH.USER.ATTENTION,
+          icon: LuBell,
+        },
+        {
           type: "group",
           id: "transactions",
           label: t("dashboard.sidebar.groups.transactions"),
           icon: LuCircleDollarSign,
           children: [
-            { label: t("dashboard.sidebar.financialOperations"), path: PATH.USER.FINANCIAL_OPERATIONS },
-            { label: t("dashboard.sidebar.transfers"), path: PATH.USER.TRANSFERS },
-            { label: t("dashboard.sidebar.recurring"), path: PATH.USER.RECURRING },
-            { label: t("dashboard.sidebar.aiCaptures"), path: PATH.USER.AI_EXPENSE_CAPTURES },
+            {
+              label: t("dashboard.sidebar.financialOperations"),
+              path: PATH.USER.FINANCIAL_OPERATIONS,
+            },
+            {
+              label: t("experience:templates"),
+              path: PATH.USER.QUICK_TEMPLATES,
+            },
+            {
+              label: t("dashboard.sidebar.transfers"),
+              path: PATH.USER.TRANSFERS,
+            },
+            {
+              label: t("dashboard.sidebar.recurring"),
+              path: PATH.USER.RECURRING,
+            },
+            {
+              label: t("dashboard.sidebar.aiCaptures"),
+              path: PATH.USER.AI_EXPENSE_CAPTURES,
+            },
+            { label: t("dashboard.imports.title"), path: PATH.USER.IMPORTS },
           ],
         },
         {
@@ -90,9 +119,15 @@ function getNavigation(t, notificationsBadge) {
           label: t("dashboard.sidebar.groups.planning"),
           icon: LuTarget,
           children: [
-            { label: t("dashboard.sidebar.categories"), path: PATH.USER.CATEGORIES },
+            {
+              label: t("dashboard.sidebar.categories"),
+              path: PATH.USER.CATEGORIES,
+            },
             { label: t("dashboard.sidebar.budgets"), path: PATH.USER.BUDGETS },
-            { label: t("dashboard.sidebar.savingsGoals"), path: PATH.USER.SAVINGS_GOALS },
+            {
+              label: t("dashboard.sidebar.savingsGoals"),
+              path: PATH.USER.SAVINGS_GOALS,
+            },
             { label: t("dashboard.sidebar.debts"), path: PATH.USER.DEBTS },
           ],
         },
@@ -102,8 +137,16 @@ function getNavigation(t, notificationsBadge) {
           label: t("dashboard.sidebar.reports"),
           icon: LuChartNoAxesCombined,
           children: [
-            { label: t("dashboard.sidebar.financialReports"), path: PATH.USER.REPORTS, end: true },
-            { label: t("dashboard.sidebar.reportExports"), path: PATH.USER.REPORT_EXPORTS },
+            {
+              label: t("dashboard.sidebar.financialReports"),
+              path: PATH.USER.REPORTS,
+              end: true,
+            },
+            {
+              label: t("dashboard.sidebar.reportExports"),
+              path: PATH.USER.REPORT_EXPORTS,
+            },
+            { label: t("experience:monthly"), path: PATH.USER.MONTHLY_REVIEW },
           ],
         },
       ],
@@ -112,6 +155,12 @@ function getNavigation(t, notificationsBadge) {
       id: "more",
       title: t("dashboard.sidebar.sections.more"),
       entries: [
+        {
+          type: "item",
+          label: t("experience:guide"),
+          path: PATH.USER.GETTING_STARTED,
+          icon: LuTarget,
+        },
         {
           type: "item",
           label: t("dashboard.sidebar.aiAssistant"),
@@ -136,8 +185,15 @@ function getNavigation(t, notificationsBadge) {
   ];
 }
 
+const linkMatchesExactly = (link, pathname) =>
+  Boolean(link.end) ||
+  (link.path === PATH.USER.FINANCIAL_OPERATIONS &&
+    pathname === PATH.USER.QUICK_TEMPLATES);
 const isLinkActive = (link, pathname) =>
-  matchPath({ path: link.path, end: Boolean(link.end) }, pathname) != null;
+  matchPath(
+    { path: link.path, end: linkMatchesExactly(link, pathname) },
+    pathname,
+  ) != null;
 
 /* ================================
    OPEN GROUPS (session)
@@ -148,7 +204,9 @@ const OPEN_GROUPS_KEY = "smartspend:sidebar-groups";
 
 function readStoredGroups() {
   try {
-    const stored = JSON.parse(window.sessionStorage.getItem(OPEN_GROUPS_KEY) ?? "{}");
+    const stored = JSON.parse(
+      window.sessionStorage.getItem(OPEN_GROUPS_KEY) ?? "{}",
+    );
     return stored && typeof stored === "object" ? stored : {};
   } catch {
     return {};
@@ -157,7 +215,9 @@ function readStoredGroups() {
 
 function storeGroups(choices) {
   try {
-    const open = Object.fromEntries(Object.entries(choices).map(([id, choice]) => [id, choice.open]));
+    const open = Object.fromEntries(
+      Object.entries(choices).map(([id, choice]) => [id, choice.open]),
+    );
     window.sessionStorage.setItem(OPEN_GROUPS_KEY, JSON.stringify(open));
   } catch {
     // Storage unavailable (private mode): the choice lasts for this page only.
@@ -174,7 +234,10 @@ function storeGroups(choices) {
 function useGroupChoices(pathname) {
   const [choices, setChoices] = useState(() =>
     Object.fromEntries(
-      Object.entries(readStoredGroups()).map(([id, open]) => [id, { open: open === true, path: null }]),
+      Object.entries(readStoredGroups()).map(([id, open]) => [
+        id,
+        { open: open === true, path: null },
+      ]),
     ),
   );
 
@@ -185,7 +248,10 @@ function useGroupChoices(pathname) {
   };
 
   const toggle = (group, containsActive) => {
-    const next = { ...choices, [group.id]: { open: !isOpen(group, containsActive), path: pathname } };
+    const next = {
+      ...choices,
+      [group.id]: { open: !isOpen(group, containsActive), path: pathname },
+    };
     setChoices(next);
     storeGroups(next);
   };
@@ -233,6 +299,7 @@ function SidebarItem({ item, onNavigate }) {
  * they are skipped by Tab and screen readers.
  */
 function SidebarGroup({ group, isOpen, isActive, onToggle, onNavigate }) {
+  const { pathname } = useLocation();
   const Icon = group.icon;
   const panelId = `dashboard-sidebar-group-${group.id}`;
 
@@ -257,7 +324,10 @@ function SidebarGroup({ group, isOpen, isActive, onToggle, onNavigate }) {
 
         <span className="dashboard-sidebar__label">{group.label}</span>
 
-        <LuChevronDown className="dashboard-sidebar__chevron" aria-hidden="true" />
+        <LuChevronDown
+          className="dashboard-sidebar__chevron"
+          aria-hidden="true"
+        />
       </button>
 
       <div className="dashboard-sidebar__panel" id={panelId} inert={!isOpen}>
@@ -266,7 +336,7 @@ function SidebarGroup({ group, isOpen, isActive, onToggle, onNavigate }) {
             <li key={child.path}>
               <NavLink
                 to={child.path}
-                end={child.end}
+                end={linkMatchesExactly(child, pathname)}
                 onClick={onNavigate}
                 className={({ isActive: isChildActive }) =>
                   `dashboard-sidebar__child ${isChildActive ? "dashboard-sidebar__child--active" : ""}`
@@ -286,10 +356,7 @@ function SidebarGroup({ group, isOpen, isActive, onToggle, onNavigate }) {
    SIDEBAR
 ================================ */
 
-export default function DashboardSidebar({
-  isOpen,
-  onClose,
-}) {
+export default function DashboardSidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { t, i18n } = useTranslation();
@@ -309,7 +376,7 @@ export default function DashboardSidebar({
     } catch (error) {
       console.error(
         "Logout failed:",
-        error.response?.data?.message || error.message
+        error.response?.data?.message || error.message,
       );
     } finally {
       setIsLoggingOut(false);
@@ -323,45 +390,38 @@ export default function DashboardSidebar({
     unreadCount > 0
       ? {
           text: formatUnreadBadge(unreadCount, getDisplayLocale(i18n.language)),
-          label: t("dashboard.notifications.bell.unread", { count: unreadCount }),
+          label: t("dashboard.notifications.bell.unread", {
+            count: unreadCount,
+          }),
         }
       : null,
   );
 
   return (
     <aside
-      className={`dashboard-sidebar ${
-        isOpen
-          ? "dashboard-sidebar--open"
-          : ""
-      }`}
+      id="dashboard-sidebar"
+      className={`dashboard-sidebar ${isOpen ? "dashboard-sidebar--open" : ""}`}
     >
-      <Link to= {PATH.HOME} className="dashboard-sidebar__brand">
-        <img
-          src={logo}
-          alt="Smart Spend"
-        />
+      <div className="dashboard-sidebar__brand">
+        <Link to={PATH.HOME} className="dashboard-sidebar__brand-link">
+          <img src={logo} alt="Smart Spend" />
 
-        <div className="dashboard-sidebar__brand-copy">
-          <strong>
-            Smart Spend
-          </strong>
+          <div className="dashboard-sidebar__brand-copy">
+            <strong>Smart Spend</strong>
 
-          <span>
-            {t(
-              "dashboard.sidebar.tagline",
-            )}
-          </span>
-        </div>
+            <span>{t("dashboard.sidebar.tagline")}</span>
+          </div>
+        </Link>
 
         <button
           type="button"
           className="dashboard-sidebar__close"
           onClick={onClose}
+          aria-label={t("dashboard.sidebar.close")}
         >
-          <LuX />
+          <LuX aria-hidden="true" />
         </button>
-      </Link>
+      </div>
 
       <nav className="dashboard-sidebar__nav">
         {navigation.map((section) => (
@@ -371,10 +431,18 @@ export default function DashboardSidebar({
             <div className="dashboard-sidebar__links">
               {section.entries.map((entry) => {
                 if (entry.type === "item") {
-                  return <SidebarItem key={entry.path} item={entry} onNavigate={onClose} />;
+                  return (
+                    <SidebarItem
+                      key={entry.path}
+                      item={entry}
+                      onNavigate={onClose}
+                    />
+                  );
                 }
 
-                const containsActive = entry.children.some((child) => isLinkActive(child, pathname));
+                const containsActive = entry.children.some((child) =>
+                  isLinkActive(child, pathname),
+                );
 
                 return (
                   <SidebarGroup
@@ -402,11 +470,7 @@ export default function DashboardSidebar({
         >
           <LuLogOut />
 
-          <span>
-            {t(
-              "dashboard.sidebar.logout",
-            )}
-          </span>
+          <span>{t("dashboard.sidebar.logout")}</span>
         </button>
       </div>
     </aside>

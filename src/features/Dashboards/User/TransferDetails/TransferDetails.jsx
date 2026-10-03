@@ -1,7 +1,14 @@
+import PrivateMoney from "../Experience/PrivateMoney";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useParams } from "react-router-dom";
-import { LuArrowLeft, LuArrowRightLeft, LuInfo, LuUndo2, LuX } from "react-icons/lu";
+import {
+  LuArrowLeft,
+  LuArrowRightLeft,
+  LuInfo,
+  LuUndo2,
+  LuX,
+} from "react-icons/lu";
 
 import Loading from "../../../../components/Loading/Loading";
 import { useAuthContext } from "../../../../contexts/auth/useAuthContext";
@@ -55,7 +62,12 @@ export default function TransferDetails() {
   // transfer keeps the current data on screen instead of flashing a spinner.
   const [reloadKey, setReloadKey] = useState(0);
   const requestKey = `${transferId}:${reloadKey}`;
-  const [result, setResult] = useState({ key: null, id: null, transfer: null, error: null });
+  const [result, setResult] = useState({
+    key: null,
+    id: null,
+    transfer: null,
+    error: null,
+  });
   const [isReversing, setIsReversing] = useState(false);
   // The reverse failed because the data is stale (already reversed): refetch
   // once the dialog closes, so its message stays readable.
@@ -92,7 +104,8 @@ export default function TransferDetails() {
 
   const isPending = result.key !== requestKey;
   // Data of another transfer is never shown while this one loads.
-  const shownResult = result.id === transferId ? result : { transfer: null, error: null };
+  const shownResult =
+    result.id === transferId ? result : { transfer: null, error: null };
   const transfer = shownResult.transfer;
   const error = isPending ? null : shownResult.error;
 
@@ -117,8 +130,15 @@ export default function TransferDetails() {
     } catch (requestError) {
       if (requestError?.code === "NOT_FOUND") {
         setIsReversing(false);
-        setResult({ key: requestKey, id: transferId, transfer: null, error: requestError });
-      } else if (["CONFLICT", "VALIDATION_ERROR"].includes(requestError?.code)) {
+        setResult({
+          key: requestKey,
+          id: transferId,
+          transfer: null,
+          error: requestError,
+        });
+      } else if (
+        ["CONFLICT", "VALIDATION_ERROR"].includes(requestError?.code)
+      ) {
         // Already reversed, or refused by a ledger rule: the page may be stale.
         setRefreshOnClose(requestError.code === "CONFLICT");
       }
@@ -133,7 +153,10 @@ export default function TransferDetails() {
 
     setIsReversing(false);
     setRefreshOnClose(false);
-    setNotice({ forId: String(transferId), reversalIds: reversals.map((item) => item.id) });
+    setNotice({
+      forId: String(transferId),
+      reversalIds: reversals.map((item) => item.id),
+    });
 
     if (isTransferEntity(reversed, transfer.id)) {
       setResult((current) => ({
@@ -181,7 +204,10 @@ export default function TransferDetails() {
           <p>{getTransferErrorMessage(error, t)}</p>
 
           {!isNotFound && (
-            <button type="button" onClick={() => setReloadKey((key) => key + 1)}>
+            <button
+              type="button"
+              onClick={() => setReloadKey((key) => key + 1)}
+            >
               {t("common.retry")}
             </button>
           )}
@@ -200,9 +226,11 @@ export default function TransferDetails() {
   const movementTransaction = getTransactionOfType(transfer, "transfer");
   const feeCategoryId = transfer.fee_category?.id ?? transfer.fee_category_id;
   const description = transfer.description ?? movementTransaction?.description;
-  const referenceNumber = transfer.reference_number ?? movementTransaction?.reference_number;
+  const referenceNumber =
+    transfer.reference_number ?? movementTransaction?.reference_number;
   const transactions = getTransferTransactions(transfer);
-  const shownNotice = notice && notice.forId === String(transferId) ? notice : null;
+  const shownNotice =
+    notice && notice.forId === String(transferId) ? notice : null;
 
   const money = (value) => formatMoney(value, transfer.currency_code, locale);
   const dateTime = (value) => formatDateTime(value, locale, timeZone);
@@ -216,7 +244,12 @@ export default function TransferDetails() {
     );
 
   const rows = [
-    ["transferNumber", <bdi key="id" dir="ltr">#{transfer.id}</bdi>],
+    [
+      "transferNumber",
+      <bdi key="id" dir="ltr">
+        #{transfer.id}
+      </bdi>,
+    ],
     [
       "status",
       <TransactionStatusBadge
@@ -227,9 +260,22 @@ export default function TransferDetails() {
     ],
     ["fromAccount", accountLink(fromAccount, transfer.from_account_id)],
     ["toAccount", accountLink(toAccount, transfer.to_account_id)],
-    ["amount", <bdi key="amount" dir="ltr">{money(transfer.amount)}</bdi>],
-    transfer.currency_code && ["currency", <bdi key="currency">{transfer.currency_code}</bdi>],
-    ["fee", <bdi key="fee" dir="ltr">{money(transfer.fee_amount ?? "0")}</bdi>],
+    [
+      "amount",
+      <bdi key="amount" dir="ltr">
+        <PrivateMoney>{money(transfer.amount)}</PrivateMoney>
+      </bdi>,
+    ],
+    transfer.currency_code && [
+      "currency",
+      <bdi key="currency">{transfer.currency_code}</bdi>,
+    ],
+    [
+      "fee",
+      <bdi key="fee" dir="ltr">
+        <PrivateMoney>{money(transfer.fee_amount ?? "0")}</PrivateMoney>
+      </bdi>,
+    ],
     withFee && [
       "feeCategory",
       feeCategoryId != null ? (
@@ -243,7 +289,9 @@ export default function TransferDetails() {
     description && ["description", <bdi key="description">{description}</bdi>],
     referenceNumber && [
       "referenceNumber",
-      <bdi key="reference" dir="ltr">{referenceNumber}</bdi>,
+      <bdi key="reference" dir="ltr">
+        {referenceNumber}
+      </bdi>,
     ],
     ["occurredAt", dateTime(transfer.occurred_at)],
     transfer.posted_at && ["postedAt", dateTime(transfer.posted_at)],
@@ -281,7 +329,11 @@ export default function TransferDetails() {
               </>
             )}
           </p>
-          <button type="button" onClick={() => setNotice(null)} aria-label={t("common.close")}>
+          <button
+            type="button"
+            onClick={() => setNotice(null)}
+            aria-label={t("common.close")}
+          >
             <LuX aria-hidden="true" />
           </button>
         </div>
@@ -303,9 +355,14 @@ export default function TransferDetails() {
             <span className="transfer-details__chip">
               {t("dashboard.transactions.types.transfer")}
             </span>
-            <TransactionStatusBadge status={transfer.status} labelsKey="dashboard.transfers.statuses" />
+            <TransactionStatusBadge
+              status={transfer.status}
+              labelsKey="dashboard.transfers.statuses"
+            />
             {withFee && (
-              <span className="transfer-details__chip">{t("dashboard.transfers.chips.withFee")}</span>
+              <span className="transfer-details__chip">
+                {t("dashboard.transfers.chips.withFee")}
+              </span>
             )}
           </div>
         </div>
@@ -332,7 +389,7 @@ export default function TransferDetails() {
           }`}
           dir="ltr"
         >
-          {money(transfer.amount)}
+          <PrivateMoney>{money(transfer.amount)}</PrivateMoney>
         </strong>
         <small>
           {dateTime(transfer.occurred_at)}
@@ -357,14 +414,22 @@ export default function TransferDetails() {
       )}
 
       {!isReversed && !canReverse && (
-        <p className="transfer-details__note transfer-details__note--info" role="note">
+        <p
+          className="transfer-details__note transfer-details__note--info"
+          role="note"
+        >
           <LuInfo aria-hidden="true" />
           <span>{t("dashboard.transfers.details.notPostedNote")}</span>
         </p>
       )}
 
-      <section className="transfer-details__panel" aria-labelledby="transfer-movement-title">
-        <h2 id="transfer-movement-title">{t("dashboard.transfers.details.movementTitle")}</h2>
+      <section
+        className="transfer-details__panel"
+        aria-labelledby="transfer-movement-title"
+      >
+        <h2 id="transfer-movement-title">
+          {t("dashboard.transfers.details.movementTitle")}
+        </h2>
         <p className="transfer-details__panel-hint">
           {t("dashboard.transfers.details.movementHint")}
         </p>
@@ -383,15 +448,20 @@ export default function TransferDetails() {
                 dir="ltr"
               >
                 {movement.direction === "out" ? "−" : "+"}
-                {money(movement.amount)}
+                <PrivateMoney>{money(movement.amount)}</PrivateMoney>
               </span>
             </li>
           ))}
         </ul>
       </section>
 
-      <section className="transfer-details__panel" aria-labelledby="transfer-details-title">
-        <h2 id="transfer-details-title">{t("dashboard.transfers.details.title")}</h2>
+      <section
+        className="transfer-details__panel"
+        aria-labelledby="transfer-details-title"
+      >
+        <h2 id="transfer-details-title">
+          {t("dashboard.transfers.details.title")}
+        </h2>
 
         <dl className="transfer-details__list">
           {rows.map(([key, value]) => (
@@ -404,7 +474,10 @@ export default function TransferDetails() {
       </section>
 
       {transactions.length > 0 && (
-        <section className="transfer-details__panel" aria-labelledby="transfer-transactions-title">
+        <section
+          className="transfer-details__panel"
+          aria-labelledby="transfer-transactions-title"
+        >
           <h2 id="transfer-transactions-title">
             {t("dashboard.transfers.details.transactionsTitle")}
           </h2>
@@ -416,10 +489,16 @@ export default function TransferDetails() {
             <table className="transfer-details__table">
               <thead>
                 <tr>
-                  <th scope="col">{t("dashboard.transfers.details.transactionNumber")}</th>
+                  <th scope="col">
+                    {t("dashboard.transfers.details.transactionNumber")}
+                  </th>
                   <th scope="col">{t("dashboard.transactions.fields.type")}</th>
-                  <th scope="col">{t("dashboard.transactions.fields.status")}</th>
-                  <th scope="col">{t("dashboard.transactions.fields.amount")}</th>
+                  <th scope="col">
+                    {t("dashboard.transactions.fields.status")}
+                  </th>
+                  <th scope="col">
+                    {t("dashboard.transactions.fields.amount")}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -446,13 +525,16 @@ export default function TransferDetails() {
                       <TransactionStatusBadge status={transaction.status} />
                     </td>
                     <td className="transfer-details__table-amount" dir="ltr">
-                      {transaction.amount != null
-                        ? formatMoney(
-                            transaction.amount,
-                            transaction.currency_code ?? transfer.currency_code,
-                            locale,
-                          )
-                        : "—"}
+                      <PrivateMoney>
+                        {transaction.amount != null
+                          ? formatMoney(
+                              transaction.amount,
+                              transaction.currency_code ??
+                                transfer.currency_code,
+                              locale,
+                            )
+                          : "—"}
+                      </PrivateMoney>
                     </td>
                   </tr>
                 ))}

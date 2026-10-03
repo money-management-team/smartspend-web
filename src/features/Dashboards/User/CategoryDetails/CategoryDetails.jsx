@@ -1,3 +1,4 @@
+import CategoryHistory from "./CategoryHistory";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -43,7 +44,11 @@ export default function CategoryDetails() {
   // match the current request, the page is loading.
   const [reloadKey, setReloadKey] = useState(0);
   const requestKey = `${categoryId}:${reloadKey}`;
-  const [result, setResult] = useState({ key: null, category: null, error: null });
+  const [result, setResult] = useState({
+    key: null,
+    category: null,
+    error: null,
+  });
   const [isEditing, setIsEditing] = useState(false);
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
   // Name shown in the "saved" notice, tied to the request it belongs to.
@@ -56,6 +61,7 @@ export default function CategoryDetails() {
     categoriesApi
       .get(categoryId, { signal: controller.signal })
       .then((response) => {
+        if (controller.signal.aborted) return;
         const category = response.data?.category;
 
         setResult(
@@ -77,7 +83,9 @@ export default function CategoryDetails() {
   }, [categoryId, requestKey]);
 
   const isLoading = result.key !== requestKey;
-  const { category, error } = isLoading ? { category: null, error: null } : result;
+  const { category, error } = isLoading
+    ? { category: null, error: null }
+    : result;
 
   // Once the category is gone for this user (404), show the not-available state.
   const markUnavailable = (requestError) => {
@@ -176,7 +184,10 @@ export default function CategoryDetails() {
           <p>{getCategoryErrorMessage(error, t)}</p>
 
           {!isNotFound && (
-            <button type="button" onClick={() => setReloadKey((key) => key + 1)}>
+            <button
+              type="button"
+              onClick={() => setReloadKey((key) => key + 1)}
+            >
               {t("common.retry")}
             </button>
           )}
@@ -193,7 +204,9 @@ export default function CategoryDetails() {
     defaultValue: category.type,
   });
   const kindLabel = t(
-    isSystem ? "dashboard.categories.kinds.system" : "dashboard.categories.kinds.custom",
+    isSystem
+      ? "dashboard.categories.kinds.system"
+      : "dashboard.categories.kinds.custom",
   );
   const statusLabel = t(
     isActive
@@ -237,16 +250,23 @@ export default function CategoryDetails() {
         <span className="category-details__icon-value" key="icon">
           {renderCategoryIcon(category)}
           <span>
-            {CATEGORY_ICONS.includes(category.icon)
-              ? t(`dashboard.categories.icons.${category.icon}`)
-              : <bdi dir="ltr">{category.icon}</bdi>}
+            {CATEGORY_ICONS.includes(category.icon) ? (
+              t(`dashboard.categories.icons.${category.icon}`)
+            ) : (
+              <bdi dir="ltr">{category.icon}</bdi>
+            )}
           </span>
         </span>
       ) : (
         t("dashboard.categories.details.defaultIcon")
       ),
     ],
-    category.slug && ["slug", <bdi key="slug" dir="ltr">{category.slug}</bdi>],
+    category.slug && [
+      "slug",
+      <bdi key="slug" dir="ltr">
+        {category.slug}
+      </bdi>,
+    ],
     category.created_at && ["createdAt", date(category.created_at)],
     category.updated_at && ["updatedAt", date(category.updated_at)],
   ].filter(Boolean);
@@ -258,7 +278,9 @@ export default function CategoryDetails() {
       {savedNotice.key === requestKey && (
         <div className="category-details__notice" role="status">
           <p dir="auto">
-            {t("dashboard.categories.updateSuccess", { name: savedNotice.name })}
+            {t("dashboard.categories.updateSuccess", {
+              name: savedNotice.name,
+            })}
           </p>
           <button
             type="button"
@@ -282,7 +304,9 @@ export default function CategoryDetails() {
           <h1 dir="auto">{category.name}</h1>
 
           <div className="category-details__chips">
-            <span className={`category-details__chip category-details__chip--${category.type}`}>
+            <span
+              className={`category-details__chip category-details__chip--${category.type}`}
+            >
               {typeLabel}
             </span>
             <span
@@ -322,7 +346,10 @@ export default function CategoryDetails() {
       </header>
 
       {isSystem && (
-        <p className="category-details__note category-details__note--system" role="note">
+        <p
+          className="category-details__note category-details__note--system"
+          role="note"
+        >
           <LuLock aria-hidden="true" />
           <span>{t("dashboard.categories.details.systemNote")}</span>
         </p>
@@ -335,8 +362,20 @@ export default function CategoryDetails() {
         </p>
       )}
 
-      <section className="category-details__panel" aria-labelledby="category-details-title">
-        <h2 id="category-details-title">{t("dashboard.categories.details.title")}</h2>
+      <CategoryHistory
+        key={category.id}
+        category={category}
+        locale={locale}
+        timeZone={timeZone}
+      />
+
+      <section
+        className="category-details__panel"
+        aria-labelledby="category-details-title"
+      >
+        <h2 id="category-details-title">
+          {t("dashboard.categories.details.title")}
+        </h2>
 
         <dl className="category-details__list">
           {rows.map(([key, value]) => (

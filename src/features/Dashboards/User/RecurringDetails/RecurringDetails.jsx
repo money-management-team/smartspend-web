@@ -1,3 +1,4 @@
+import PrivateMoney from "../Experience/PrivateMoney";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
@@ -75,7 +76,12 @@ export default function RecurringDetails() {
   // "edit" | "pause" | "resume" | "archive" | "confirm" | "skip"
   const [dialog, setDialog] = useState(null);
   // One-time message: { key, type, name, transactionId } for the current request.
-  const [notice, setNotice] = useState({ key: null, type: null, name: "", transactionId: null });
+  const [notice, setNotice] = useState({
+    key: null,
+    type: null,
+    name: "",
+    transactionId: null,
+  });
   // Bumped after every action, so the history is read again.
   const [historyKey, setHistoryKey] = useState(0);
   const saveRequestRef = useRef(null);
@@ -93,7 +99,11 @@ export default function RecurringDetails() {
         setResult(
           isRuleEntity(rule)
             ? { key: requestKey, rule, error: null }
-            : { key: requestKey, rule: null, error: new ApiError("", { code: "MALFORMED_RESPONSE" }) },
+            : {
+                key: requestKey,
+                rule: null,
+                error: new ApiError("", { code: "MALFORMED_RESPONSE" }),
+              },
         );
       })
       .catch((error) => {
@@ -125,21 +135,27 @@ export default function RecurringDetails() {
         const fresh = response?.data?.recurring_transaction;
         if (!isRuleEntity(fresh, recurringTransactionId)) return;
         setResult((current) =>
-          current.key === key && current.rule ? { ...current, rule: mergeRule(current.rule, fresh) } : current,
+          current.key === key && current.rule
+            ? { ...current, rule: mergeRule(current.rule, fresh) }
+            : current,
         );
       })
       .catch(() => {
         // The rule the write returned is still shown.
       })
       .finally(() => {
-        if (refreshControllerRef.current === controller) refreshControllerRef.current = null;
+        if (refreshControllerRef.current === controller)
+          refreshControllerRef.current = null;
       });
   };
 
   // Shows the rule a write returned, then refreshes it and the history.
   const applyRule = (nextRule) => {
     if (isRuleEntity(nextRule, recurringTransactionId)) {
-      setResult((current) => ({ ...current, rule: mergeRule(current.rule, nextRule) }));
+      setResult((current) => ({
+        ...current,
+        rule: mergeRule(current.rule, nextRule),
+      }));
       refreshRule();
     } else {
       reload();
@@ -170,7 +186,8 @@ export default function RecurringDetails() {
       try {
         response = await recurringTransactionsApi.update(rule.id, payload);
       } catch (requestError) {
-        if (["NOT_FOUND", "CONFLICT"].includes(requestError?.code)) staleRef.current = true;
+        if (["NOT_FOUND", "CONFLICT"].includes(requestError?.code))
+          staleRef.current = true;
         throw requestError;
       }
 
@@ -202,7 +219,9 @@ export default function RecurringDetails() {
     showNotice(
       `${action}Success`,
       response?.data?.recurring_transaction?.name ?? rule.name,
-      action === "confirm" ? (response?.data?.occurrence?.transaction_id ?? null) : null,
+      action === "confirm"
+        ? (response?.data?.occurrence?.transaction_id ?? null)
+        : null,
     );
   };
 
@@ -232,7 +251,11 @@ export default function RecurringDetails() {
         {backLink}
         <div className="recurring-details__state" role="alert">
           <h1>
-            {t(isNotFound ? "dashboard.recurring.details.notFoundTitle" : "dashboard.recurring.details.errorTitle")}
+            {t(
+              isNotFound
+                ? "dashboard.recurring.details.notFoundTitle"
+                : "dashboard.recurring.details.errorTitle",
+            )}
           </h1>
           <p>{getRecurringErrorMessage(error, t)}</p>
           {!isNotFound && (
@@ -253,9 +276,19 @@ export default function RecurringDetails() {
   const interval = Number(rule.interval) || 1;
 
   const money = (value, valueCurrency = currency) =>
-    value == null || value === "" ? "—" : <bdi dir="ltr">{formatMoney(value, valueCurrency || undefined, locale)}</bdi>;
-  const date = (value) => (value ? <bdi>{formatDate(toDateOnly(value) || value, locale)}</bdi> : "—");
-  const dateTime = (value) => (value ? <bdi>{formatDateTime(value, locale, timeZone)}</bdi> : "—");
+    value == null || value === "" ? (
+      "—"
+    ) : (
+      <bdi dir="ltr">
+        <PrivateMoney>
+          {formatMoney(value, valueCurrency || undefined, locale)}
+        </PrivateMoney>
+      </bdi>
+    );
+  const date = (value) =>
+    value ? <bdi>{formatDate(toDateOnly(value) || value, locale)}</bdi> : "—";
+  const dateTime = (value) =>
+    value ? <bdi>{formatDateTime(value, locale, timeZone)}</bdi> : "—";
   const linked = (entity, fallbackId, getPath) => {
     const id = entity?.id ?? fallbackId;
     const name = entity?.name ?? (id != null ? `#${id}` : null);
@@ -269,30 +302,80 @@ export default function RecurringDetails() {
     );
   };
 
-  const frequencyLabel = ["weekly", "monthly", "yearly"].includes(rule.frequency)
+  const frequencyLabel = ["weekly", "monthly", "yearly"].includes(
+    rule.frequency,
+  )
     ? t(`dashboard.recurring.every.${rule.frequency}`, { count: interval })
-    : translateEnum(t, i18n, "dashboard.recurring.frequencies", rule.frequency) || "—";
+    : translateEnum(
+        t,
+        i18n,
+        "dashboard.recurring.frequencies",
+        rule.frequency,
+      ) || "—";
 
   const rows = [
     ["name", <bdi key="name">{rule.name}</bdi>],
-    ["type", translateEnum(t, i18n, "dashboard.recurring.types", rule.type) || "—"],
+    [
+      "type",
+      translateEnum(t, i18n, "dashboard.recurring.types", rule.type) || "—",
+    ],
     ["amount", money(rule.amount)],
-    ["currency", <bdi key="currency" dir="ltr">{currency || "—"}</bdi>],
+    [
+      "currency",
+      <bdi key="currency" dir="ltr">
+        {currency || "—"}
+      </bdi>,
+    ],
     ["account", linked(rule.account, rule.account_id, getAccountDetailsPath)],
-    ["category", linked(rule.category, rule.category_id, getCategoryDetailsPath)],
+    [
+      "category",
+      linked(rule.category, rule.category_id, getCategoryDetailsPath),
+    ],
     ["frequency", frequencyLabel],
-    rule.anchor_day != null && ["anchorDay", <bdi key="anchor">{rule.anchor_day}</bdi>],
+    rule.anchor_day != null && [
+      "anchorDay",
+      <bdi key="anchor">{rule.anchor_day}</bdi>,
+    ],
     ["startDate", date(rule.start_date)],
-    ["endDate", rule.end_date ? date(rule.end_date) : t("dashboard.recurring.details.noEndDate")],
+    [
+      "endDate",
+      rule.end_date
+        ? date(rule.end_date)
+        : t("dashboard.recurring.details.noEndDate"),
+    ],
     [
       "maxOccurrences",
-      rule.max_occurrences != null ? <bdi key="max">{rule.max_occurrences}</bdi> : t("dashboard.recurring.details.unlimited"),
+      rule.max_occurrences != null ? (
+        <bdi key="max">{rule.max_occurrences}</bdi>
+      ) : (
+        t("dashboard.recurring.details.unlimited")
+      ),
     ],
-    ["processingMode", translateEnum(t, i18n, "dashboard.recurring.processingModes", rule.processing_mode) || "—"],
-    ["status", translateEnum(t, i18n, "dashboard.recurring.statuses", rule.status) || "—"],
-    ["nextDueDate", status === "archived" || status === "completed" ? "—" : date(rule.next_due_date)],
+    [
+      "processingMode",
+      translateEnum(
+        t,
+        i18n,
+        "dashboard.recurring.processingModes",
+        rule.processing_mode,
+      ) || "—",
+    ],
+    [
+      "status",
+      translateEnum(t, i18n, "dashboard.recurring.statuses", rule.status) ||
+        "—",
+    ],
+    [
+      "nextDueDate",
+      status === "archived" || status === "completed"
+        ? "—"
+        : date(rule.next_due_date),
+    ],
     ["lastProcessedAt", dateTime(rule.last_processed_at)],
-    rule.owner && ["owner", <bdi key="owner">{rule.owner.name ?? `#${rule.owner.id}`}</bdi>],
+    rule.owner && [
+      "owner",
+      <bdi key="owner">{rule.owner.name ?? `#${rule.owner.id}`}</bdi>,
+    ],
     rule.description && [
       "description",
       <span className="recurring-details__notes" dir="auto" key="description">
@@ -330,7 +413,9 @@ export default function RecurringDetails() {
       {notice.key === requestKey && (
         <div className="recurring-details__notice" role="status">
           <p dir="auto">
-            {t(`dashboard.recurring.notices.${notice.type}`, { name: notice.name })}
+            {t(`dashboard.recurring.notices.${notice.type}`, {
+              name: notice.name,
+            })}
             {notice.transactionId != null && (
               <>
                 {" "}
@@ -342,7 +427,14 @@ export default function RecurringDetails() {
           </p>
           <button
             type="button"
-            onClick={() => setNotice({ key: null, type: null, name: "", transactionId: null })}
+            onClick={() =>
+              setNotice({
+                key: null,
+                type: null,
+                name: "",
+                transactionId: null,
+              })
+            }
             aria-label={t("common.close")}
           >
             <LuX aria-hidden="true" />
@@ -354,33 +446,49 @@ export default function RecurringDetails() {
         <div className="recurring-details__identity">
           <h1 dir="auto">{rule.name}</h1>
           <div className="recurring-details__chips">
-            <span className={`recurring-details__type recurring-details__type--${type}`}>
+            <span
+              className={`recurring-details__type recurring-details__type--${type}`}
+            >
               {translateEnum(t, i18n, "dashboard.recurring.types", rule.type)}
             </span>
             <RecurringBadge kind="status" value={rule.status} />
             <RecurringBadge kind="mode" value={rule.processing_mode} />
-            <strong className={`recurring-details__amount recurring-details__amount--${type}`}>
+            <strong
+              className={`recurring-details__amount recurring-details__amount--${type}`}
+            >
               {type === "income" ? "+" : type === "expense" ? "-" : ""}
-              {money(rule.amount)}
+              <PrivateMoney>{money(rule.amount)}</PrivateMoney>
             </strong>
           </div>
         </div>
 
         <div className="recurring-details__actions">
           {actions.canEdit && (
-            <button type="button" className="recurring-details__action" onClick={() => setDialog("edit")}>
+            <button
+              type="button"
+              className="recurring-details__action"
+              onClick={() => setDialog("edit")}
+            >
               <LuPencil aria-hidden="true" />
               <span>{t("dashboard.recurring.actions.edit")}</span>
             </button>
           )}
           {actions.canPause && (
-            <button type="button" className="recurring-details__action" onClick={() => setDialog("pause")}>
+            <button
+              type="button"
+              className="recurring-details__action"
+              onClick={() => setDialog("pause")}
+            >
               <LuPause aria-hidden="true" />
               <span>{t("dashboard.recurring.actions.pause")}</span>
             </button>
           )}
           {actions.canResume && (
-            <button type="button" className="recurring-details__action" onClick={() => setDialog("resume")}>
+            <button
+              type="button"
+              className="recurring-details__action"
+              onClick={() => setDialog("resume")}
+            >
               <LuPlay aria-hidden="true" />
               <span>{t("dashboard.recurring.actions.resume")}</span>
             </button>
@@ -399,18 +507,28 @@ export default function RecurringDetails() {
       </header>
 
       {noteKey && (
-        <p className={`recurring-details__note recurring-details__note--${status}`} role="note">
+        <p
+          className={`recurring-details__note recurring-details__note--${status}`}
+          role="note"
+        >
           <LuInfo aria-hidden="true" />
           <span>{t(`dashboard.recurring.details.${noteKey}`)}</span>
         </p>
       )}
 
-      <section className="recurring-details__panel" aria-labelledby="recurring-next-title">
+      <section
+        className="recurring-details__panel"
+        aria-labelledby="recurring-next-title"
+      >
         <div className="recurring-details__panel-head">
-          <h2 id="recurring-next-title">{t("dashboard.recurring.nextOccurrence.title")}</h2>
+          <h2 id="recurring-next-title">
+            {t("dashboard.recurring.nextOccurrence.title")}
+          </h2>
           {openCount != null && (
             <span className="recurring-details__open-count">
-              {t("dashboard.recurring.nextOccurrence.openCount", { count: openCount })}
+              {t("dashboard.recurring.nextOccurrence.openCount", {
+                count: openCount,
+              })}
             </span>
           )}
         </div>
@@ -432,7 +550,14 @@ export default function RecurringDetails() {
             </div>
             <div className="recurring-details__stat">
               <dt>{t("dashboard.recurring.fields.amount")}</dt>
-              <dd>{money(next.amount ?? rule.amount, next.currency_code || currency)}</dd>
+              <dd>
+                <PrivateMoney>
+                  {money(
+                    next.amount ?? rule.amount,
+                    next.currency_code || currency,
+                  )}
+                </PrivateMoney>
+              </dd>
             </div>
             {next.attempts != null && (
               <div className="recurring-details__stat">
@@ -478,7 +603,11 @@ export default function RecurringDetails() {
               </button>
             )}
             {actions.canSkip && (
-              <button type="button" className="recurring-details__action" onClick={() => setDialog("skip")}>
+              <button
+                type="button"
+                className="recurring-details__action"
+                onClick={() => setDialog("skip")}
+              >
                 <LuSkipForward aria-hidden="true" />
                 <span>{t("dashboard.recurring.actions.skip")}</span>
               </button>
@@ -488,8 +617,13 @@ export default function RecurringDetails() {
         )}
       </section>
 
-      <section className="recurring-details__panel" aria-labelledby="recurring-details-title">
-        <h2 id="recurring-details-title">{t("dashboard.recurring.details.title")}</h2>
+      <section
+        className="recurring-details__panel"
+        aria-labelledby="recurring-details-title"
+      >
+        <h2 id="recurring-details-title">
+          {t("dashboard.recurring.details.title")}
+        </h2>
         <dl className="recurring-details__list">
           {rows.map(([key, value]) => (
             <div className="recurring-details__row" key={key}>
@@ -507,7 +641,9 @@ export default function RecurringDetails() {
         timeZone={timeZone}
       />
 
-      {dialog === "edit" && <RecurringForm rule={rule} onSave={handleSave} onClose={closeDialog} />}
+      {dialog === "edit" && (
+        <RecurringForm rule={rule} onSave={handleSave} onClose={closeDialog} />
+      )}
 
       {dialog && dialog !== "edit" && (
         <RecurringActionDialog

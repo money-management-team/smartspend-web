@@ -532,7 +532,12 @@ export function getApiErrorMessage(error, t) {
     return t("api.errors.workspaceUnavailable");
   }
 
-  return error?.message || t("api.errors.requestFailed");
+  if (error?.message) return error.message;
+  if (Number.isInteger(error?.status) && error.status > 0) {
+    return t("api.errors.httpStatus", { status: error.status });
+  }
+
+  return t("api.errors.requestFailed");
 }
 
 export function toMoneyString(value) {
