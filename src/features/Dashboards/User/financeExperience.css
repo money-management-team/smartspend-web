@@ -1,5 +1,9 @@
-/* SmartSpend financial workspace. All rules are scoped to the affected pages (Reports owns its own styles). */
-:is(.accounts-page, .transfers-page, .recurring-page, .ai-captures-page,
+/* Every selector below starts with `:root` on purpose. Pages are lazy
+   (routes/lazyPage.js), so their own CSS loads after this sheet and would win
+   equal-specificity ties; the extra `:root` keeps these shared styles on top
+   regardless of load order. Keep it on new rules.
+   SmartSpend financial workspace. All rules are scoped to the affected pages (Reports owns its own styles). */
+:root :is(.accounts-page, .transfers-page, .recurring-page, .ai-captures-page,
   .capture-details, .savings-goals-page, .savings-goal-details, .debts-page,
   .settings-page) {
   --fin-line: color-mix(in srgb, var(--color-primary) 10%, var(--color-border));
@@ -12,11 +16,15 @@
 }
 
 /* Identity-led hero surfaces */
-:is(.accounts-page .accounts-header, .transfers-page .transfers-page__header,
+:root :is(.accounts-page .accounts-header, .transfers-page .transfers-page__header,
   .recurring-page .recurring-header, .savings-goals-page .savings-goals-header,
   .debts-page .debts-header,
   .settings-page .settings-page__header, .ai-captures-page .ai-captures-page__header,
-  .savings-goal-details .savings-goal-details__header, .capture-details .capture-details__header) {
+  .savings-goal-details .savings-goal-details__header, .capture-details .capture-details__header,
+  .budgets-page .budgets-header, .categories-page .categories-page__header,
+  .notifications-page .notifications-header, .calendar-page .calendar-page__header,
+  .report-exports-page .report-exports-page__header, .imports-page > header,
+  .exp-page .exp-hero) {
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -32,19 +40,25 @@
   color: #ffffff;
   text-align: start;
 }
-:is(.accounts-page .accounts-header, .transfers-page .transfers-page__header,
+:root :is(.accounts-page .accounts-header, .transfers-page .transfers-page__header,
   .recurring-page .recurring-header, .savings-goals-page .savings-goals-header,
   .debts-page .debts-header,
-  .ai-captures-page .ai-captures-page__header) {
+  .ai-captures-page .ai-captures-page__header,
+  .budgets-page .budgets-header, .categories-page .categories-page__header,
+  .notifications-page .notifications-header,
+  .report-exports-page .report-exports-page__header, .exp-page .exp-hero) {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 20px;
 }
-:is(.accounts-header, .transfers-page__header, .recurring-header, .savings-goals-header,
+:root :is(.accounts-header, .transfers-page__header, .recurring-header, .savings-goals-header,
   .debts-header, .settings-page__header, .ai-captures-page__header,
-  .savings-goal-details__header, .capture-details__header)::after {
+  .savings-goal-details__header, .capture-details__header,
+  .budgets-header, .categories-page__header, .notifications-header,
+  .calendar-page__header, .report-exports-page__header, .exp-hero,
+  .imports-page > header)::after {
   content: "";
   position: absolute;
   z-index: -1;
@@ -57,9 +71,12 @@
   box-shadow: 0 0 0 42px rgba(255, 255, 255, .035), 0 0 0 88px rgba(255, 255, 255, .025);
   pointer-events: none;
 }
-:is(.accounts-header__copy, .transfers-page__copy, .recurring-header__copy,
+:root :is(.accounts-header__copy, .transfers-page__copy, .recurring-header__copy,
   .savings-goals-header__copy, .debts-header__copy,
-  .ai-captures-page__header > div:first-child)::before {
+  .ai-captures-page__header > div:first-child,
+  .budgets-header__copy, .categories-page__copy, .notifications-header__copy,
+  .calendar-page__header, .report-exports-page__header > div:first-child,
+  .imports-page > header)::before {
   content: "SMARTSPEND  /  FINANCE";
   display: inline-block;
   margin-block-end: 13px;
@@ -68,13 +85,18 @@
   font-weight: 800;
   letter-spacing: .16em;
 }
-:is(.accounts-header__copy, .transfers-page__copy, .recurring-header__copy,
+:root :is(.accounts-header__copy, .transfers-page__copy, .recurring-header__copy,
   .savings-goals-header__copy, .debts-header__copy,
-  .ai-captures-page__header > div:first-child) { position: relative; z-index: 1; min-width: 0; }
-:is(.accounts-header__copy, .transfers-page__copy, .recurring-header__copy,
+  .ai-captures-page__header > div:first-child,
+  .budgets-header__copy, .categories-page__copy, .notifications-header__copy,
+  .report-exports-page__header > div:first-child) { position: relative; z-index: 1; min-width: 0; }
+:root :is(.calendar-page__header, .imports-page > header, .exp-hero > div) { position: relative; z-index: 1; min-width: 0; }
+:root :is(.accounts-header__copy, .transfers-page__copy, .recurring-header__copy,
   .savings-goals-header__copy, .debts-header__copy,
-  .ai-captures-page__header > div:first-child) h1,
-:is(.settings-page__header, .savings-goal-details__header, .capture-details__header) h1 {
+  .ai-captures-page__header > div:first-child,
+  .budgets-header__copy, .categories-page__copy, .notifications-header__copy,
+  .report-exports-page__header > div:first-child) h1, :root :is(.settings-page__header, .savings-goal-details__header, .capture-details__header,
+  .calendar-page__header, .imports-page > header, .exp-hero) h1 {
   margin: 0;
   color: #fff;
   font-family: var(--font-heading);
@@ -82,13 +104,15 @@
   font-weight: 800;
   line-height: 1.2;
 }
-:is(.accounts-header__copy, .transfers-page__copy, .recurring-header__copy,
+:root :is(.accounts-header__copy, .transfers-page__copy, .recurring-header__copy,
   .savings-goals-header__copy, .debts-header__copy,
-  .ai-captures-page__header > div:first-child) p,
-.settings-page__header p { max-width: 58ch; margin: 10px 0 0; color: #d1e1ff; font-size: 14px; line-height: 1.75; }
-:is(.accounts-header__add, .transfers-page__add, .recurring-header__button--primary,
+  .ai-captures-page__header > div:first-child,
+  .budgets-header__copy, .categories-page__copy, .notifications-header__copy,
+  .report-exports-page__header > div:first-child) p, :root :is(.settings-page__header, .calendar-page__header, .imports-page > header, .exp-hero) p { max-width: 58ch; margin: 10px 0 0; color: #d1e1ff; font-size: 14px; line-height: 1.75; }
+:root :is(.accounts-header__add, .transfers-page__add, .recurring-header__button--primary,
   .savings-goals-header__button, .debts-header__button,
-  .ai-captures-page__refresh) {
+  .ai-captures-page__refresh, .budgets-header__button, .categories-page__add,
+  .report-exports-page__refresh) {
   position: relative;
   z-index: 1;
   min-height: 45px;
@@ -101,15 +125,16 @@
   font-weight: 750;
   transition: transform 200ms ease, box-shadow 200ms ease, background-color 200ms ease;
 }
-:is(.accounts-header__add, .transfers-page__add, .recurring-header__button--primary,
+:root :is(.accounts-header__add, .transfers-page__add, .recurring-header__button--primary,
   .savings-goals-header__button, .debts-header__button,
-  .ai-captures-page__refresh):hover:not(:disabled) {
+  .ai-captures-page__refresh, .budgets-header__button, .categories-page__add,
+  .report-exports-page__refresh):hover:not(:disabled) {
   transform: translateY(-2px);
   background: #e9f2ff;
   color: #123b79;
   box-shadow: 0 16px 34px rgba(4, 22, 54, .24);
 }
-.recurring-header__button--secondary {
+:root .recurring-header__button--secondary {
   position: relative;
   z-index: 1;
   min-height: 45px;
@@ -120,10 +145,46 @@
   background: rgba(255,255,255,.11);
   backdrop-filter: blur(10px);
 }
-.recurring-header__button--secondary:hover { color: #fff; background: rgba(255,255,255,.2); }
+:root .recurring-header__button--secondary:hover { color: #fff; background: rgba(255,255,255,.2); }
+
+/* Newly aligned headers: pieces that differ from the shared copy/button layout. */
+:root .calendar-page .calendar-page__note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 58ch;
+  margin: 14px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #b6d7ff;
+  font-size: 12.5px;
+}
+:root .calendar-page .calendar-page__note svg { flex: none; width: 15px; height: 15px; }
+:root .report-exports-page .report-exports-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-block-end: 10px;
+  color: #d1e1ff;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+}
+:root .report-exports-page .report-exports-page__back:hover { color: #ffffff; }
+:root .exp-page .exp-hero .exp-kicker { color: #b6d7ff; }
+:root .exp-page .exp-hero .exp-hero-icon {
+  position: relative;
+  z-index: 1;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, .25);
+  background: rgba(255, 255, 255, .11);
+}
+:root .imports-page > header h1,
+:root .exp-page .exp-hero h1 { font-family: var(--font-heading); }
 
 /* Shared controls, states and card rhythm */
-:is(.account-filters, .transfer-filters, .recurring-filters, .savings-goal-filters,
+:root :is(.account-filters, .transfer-filters, .recurring-filters, .savings-goal-filters,
   .debt-filters, .ai-captures-page__filters) {
   border: 1px solid var(--fin-line);
   border-radius: 19px;
@@ -131,19 +192,19 @@
   background: var(--color-surface);
   box-shadow: 0 10px 32px color-mix(in srgb, #14244a 5%, transparent);
 }
-:is(.transfer-filters, .recurring-filters, .savings-goal-filters, .debt-filters,
+:root :is(.transfer-filters, .recurring-filters, .savings-goal-filters, .debt-filters,
   .ai-captures-page__filters) :is(input, select) {
   min-height: 42px;
   border-radius: 10px;
   font-size: 13px;
   background: var(--color-surface);
 }
-:is(.transfer-filters, .recurring-filters, .savings-goal-filters, .debt-filters,
+:root :is(.transfer-filters, .recurring-filters, .savings-goal-filters, .debt-filters,
   .ai-captures-page__filters) :is(input, select):focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
-:is(.accounts-page__state, .transfers-page__state, .recurring-page__state,
+:root :is(.accounts-page__state, .transfers-page__state, .recurring-page__state,
   .savings-goals-page__state, .debts-page__state,
   .ai-captures-page__state) {
   border: 1px dashed var(--fin-line);
@@ -151,12 +212,12 @@
   padding: 35px;
   background: var(--color-surface);
 }
-:is(.accounts-page__state, .transfers-page__state, .recurring-page__state,
+:root :is(.accounts-page__state, .transfers-page__state, .recurring-page__state,
   .savings-goals-page__state, .debts-page__state,
   .ai-captures-page__state) > svg { display: block; width: 33px; height: 33px; margin: 0 auto 12px; color: var(--color-primary); }
 
 /* Accounts: active and archived live together without mixing balances. */
-.accounts-page__overview {
+:root .accounts-page__overview {
   position: relative;
   display: flex;
   align-items: center;
@@ -169,122 +230,122 @@
   background: linear-gradient(115deg, var(--color-surface), color-mix(in srgb, var(--color-primary) 5%, var(--color-surface)));
   box-shadow: var(--fin-shadow);
 }
-.accounts-page__overview-mark { display: grid; place-items: center; width: 56px; height: 56px; flex: none; border-radius: 17px; color: var(--color-primary); background: var(--primary-soft); }
-.accounts-page__overview-mark svg { width: 26px; height: 26px; }
-.accounts-page__overview > div:nth-child(2) { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 13px; row-gap: 2px; z-index: 1; }
-.accounts-page__overview span { width: 100%; color: var(--color-text-secondary); font-size: 12px; font-weight: 700; }
-.accounts-page__overview strong { color: var(--color-text-strong); font-family: var(--font-heading); font-size: 30px; line-height: 1.15; }
-.accounts-page__overview small { color: var(--color-text-secondary); line-height: 1.5; }
-.accounts-page__overview-art { position: absolute; inset-inline-end: 20px; width: 74px; height: 74px; color: var(--fin-glow); }
-.accounts-page__views { display: flex; gap: 7px; width: fit-content; max-width: 100%; margin-top: 24px; padding: 5px; border: 1px solid var(--fin-line); border-radius: 14px; background: var(--color-surface); overflow-x: auto; }
-.accounts-page__views button { display: inline-flex; align-items: center; gap: 9px; min-height: 40px; padding: 8px 16px; border: 0; border-radius: 10px; color: var(--color-text-secondary); background: transparent; font: inherit; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; }
-.accounts-page__views button.is-selected { color: var(--color-primary); background: var(--primary-soft); }
-.accounts-page__views svg { width: 16px; height: 16px; }
-.accounts-page__archive-hint { margin: 10px 0 0; color: var(--color-text-secondary); font-size: 13px; }
-.accounts-page .account-filters { margin-top: 19px; }
-.accounts-page__grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap: 17px; margin-top: 18px; }
-.accounts-page .account-card { min-height: 224px; border: 1px solid var(--fin-line); border-radius: 20px; padding: 21px; box-shadow: 0 10px 29px color-mix(in srgb, #14244a 7%, transparent); transition: transform 230ms ease, box-shadow 230ms ease, border-color 230ms ease; }
-.accounts-page .account-card:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--color-primary) 35%, var(--fin-line)); box-shadow: var(--fin-shadow); }
-.accounts-page .account-card::before { content: ""; position: absolute; inset-block-start: 0; inset-inline: 21px; height: 3px; border-radius: 0 0 8px 8px; background: var(--account-color, var(--color-primary)); }
-.accounts-page .account-card__icon { width: 49px; height: 49px; border-radius: 15px; }
-.accounts-page .account-card__identity strong { font-size: 15px; }
-.accounts-page .account-card__amount { font-family: var(--font-heading); font-size: clamp(21px, 2.1vw, 27px); }
-.accounts-page .account-card--archived { background: color-mix(in srgb, var(--color-surface) 84%, var(--surface-soft)); }
-.account-card__archived-label { display: inline-flex; align-items: center; gap: 8px; padding: 8px 11px; border-radius: 9px; color: var(--color-text-secondary); background: var(--surface-soft); font-size: 12px; font-weight: 700; }
-.account-card__archived-label svg { width: 15px; height: 15px; }
+:root .accounts-page__overview-mark { display: grid; place-items: center; width: 56px; height: 56px; flex: none; border-radius: 17px; color: var(--color-primary); background: var(--primary-soft); }
+:root .accounts-page__overview-mark svg { width: 26px; height: 26px; }
+:root .accounts-page__overview > div:nth-child(2) { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 13px; row-gap: 2px; z-index: 1; }
+:root .accounts-page__overview span { width: 100%; color: var(--color-text-secondary); font-size: 12px; font-weight: 700; }
+:root .accounts-page__overview strong { color: var(--color-text-strong); font-family: var(--font-heading); font-size: 30px; line-height: 1.15; }
+:root .accounts-page__overview small { color: var(--color-text-secondary); line-height: 1.5; }
+:root .accounts-page__overview-art { position: absolute; inset-inline-end: 20px; width: 74px; height: 74px; color: var(--fin-glow); }
+:root .accounts-page__views { display: flex; gap: 7px; width: fit-content; max-width: 100%; margin-top: 24px; padding: 5px; border: 1px solid var(--fin-line); border-radius: 14px; background: var(--color-surface); overflow-x: auto; }
+:root .accounts-page__views button { display: inline-flex; align-items: center; gap: 9px; min-height: 40px; padding: 8px 16px; border: 0; border-radius: 10px; color: var(--color-text-secondary); background: transparent; font: inherit; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+:root .accounts-page__views button.is-selected { color: var(--color-primary); background: var(--primary-soft); }
+:root .accounts-page__views svg { width: 16px; height: 16px; }
+:root .accounts-page__archive-hint { margin: 10px 0 0; color: var(--color-text-secondary); font-size: 13px; }
+:root .accounts-page .account-filters { margin-top: 19px; }
+:root .accounts-page__grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 290px), 1fr)); gap: 17px; margin-top: 18px; }
+:root .accounts-page .account-card { min-height: 224px; border: 1px solid var(--fin-line); border-radius: 20px; padding: 21px; box-shadow: 0 10px 29px color-mix(in srgb, #14244a 7%, transparent); transition: transform 230ms ease, box-shadow 230ms ease, border-color 230ms ease; }
+:root .accounts-page .account-card:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--color-primary) 35%, var(--fin-line)); box-shadow: var(--fin-shadow); }
+:root .accounts-page .account-card::before { content: ""; position: absolute; inset-block-start: 0; inset-inline: 21px; height: 3px; border-radius: 0 0 8px 8px; background: var(--account-color, var(--color-primary)); }
+:root .accounts-page .account-card__icon { width: 49px; height: 49px; border-radius: 15px; }
+:root .accounts-page .account-card__identity strong { font-size: 15px; }
+:root .accounts-page .account-card__amount { font-family: var(--font-heading); font-size: clamp(21px, 2.1vw, 27px); }
+:root .accounts-page .account-card--archived { background: color-mix(in srgb, var(--color-surface) 84%, var(--surface-soft)); }
+:root .account-card__archived-label { display: inline-flex; align-items: center; gap: 8px; padding: 8px 11px; border-radius: 9px; color: var(--color-text-secondary); background: var(--surface-soft); font-size: 12px; font-weight: 700; }
+:root .account-card__archived-label svg { width: 15px; height: 15px; }
 
 /* Transfers, recurring operations and AI receipts: each row scans as a complete unit. */
-.transfers-page .transfers-page__panel, .ai-captures-page .ai-captures-page__panel { border: 1px solid var(--fin-line); border-radius: 21px; padding: clamp(14px, 2vw, 22px); background: var(--color-surface); box-shadow: var(--fin-shadow); }
-.transfers-page .transfer-row, .recurring-page .recurring-row, .ai-captures-page .capture-row {
+:root .transfers-page .transfers-page__panel, :root .ai-captures-page .ai-captures-page__panel { border: 1px solid var(--fin-line); border-radius: 21px; padding: clamp(14px, 2vw, 22px); background: var(--color-surface); box-shadow: var(--fin-shadow); }
+:root .transfers-page .transfer-row, :root .recurring-page .recurring-row, :root .ai-captures-page .capture-row {
   border: 1px solid var(--fin-line); border-radius: 16px;
   background: var(--color-surface);
   box-shadow: 0 6px 20px color-mix(in srgb, #14244a 5%, transparent);
   transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
 }
-:is(.transfers-page .transfer-row, .recurring-page .recurring-row, .ai-captures-page .capture-row):hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--color-primary) 32%, var(--fin-line)); box-shadow: var(--fin-shadow); }
-.transfers-page .transfer-row__icon, .recurring-page .recurring-row__trend, .ai-captures-page .capture-row__icon { border-radius: 13px; }
-.recurring-page .recurring-section { border: 1px solid var(--fin-line); border-radius: 21px; padding: clamp(16px, 2vw, 24px); background: var(--color-surface); box-shadow: var(--fin-shadow); }
-.recurring-page .recurring-section__header h2, .transfers-page .transfers-page__panel-head h2 { font-family: var(--font-heading); font-size: 19px; }
-.ai-captures-page .ai-captures-page__header { margin-bottom: 2px; }
-.capture-details .capture-details__panel { border: 1px solid var(--fin-line); border-radius: 20px; box-shadow: var(--fin-shadow); }
-.capture-details .capture-details__identity h1 { color: #fff; }
+:root :is(.transfers-page .transfer-row, .recurring-page .recurring-row, .ai-captures-page .capture-row):hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--color-primary) 32%, var(--fin-line)); box-shadow: var(--fin-shadow); }
+:root .transfers-page .transfer-row__icon, :root .recurring-page .recurring-row__trend, :root .ai-captures-page .capture-row__icon { border-radius: 13px; }
+:root .recurring-page .recurring-section { border: 1px solid var(--fin-line); border-radius: 21px; padding: clamp(16px, 2vw, 24px); background: var(--color-surface); box-shadow: var(--fin-shadow); }
+:root .recurring-page .recurring-section__header h2, :root .transfers-page .transfers-page__panel-head h2 { font-family: var(--font-heading); font-size: 19px; }
+:root .ai-captures-page .ai-captures-page__header { margin-bottom: 2px; }
+:root .capture-details .capture-details__panel { border: 1px solid var(--fin-line); border-radius: 20px; box-shadow: var(--fin-shadow); }
+:root .capture-details .capture-details__identity h1 { color: #fff; }
 
 /* Savings goals and their progress stay readable in both themes. */
-.savings-goals-page .savings-goals-page__grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 325px), 1fr)); gap: 20px; }
-.savings-goals-page .saving-goal-card { border: 1px solid var(--fin-line); border-radius: 21px; padding: 23px; box-shadow: 0 11px 30px color-mix(in srgb, #14244a 6%, transparent); transition: transform 230ms ease, box-shadow 230ms ease, border-color 230ms ease; }
-.savings-goals-page .saving-goal-card:hover { transform: translateY(-4px); box-shadow: var(--fin-shadow); border-color: color-mix(in srgb, var(--color-primary) 34%, var(--fin-line)); }
-.savings-goals-page .saving-goal-card__content h2 { font-size: 17px; }
-.savings-goal-details .savings-goal-details__header { margin: 0; }
-.savings-goal-details .savings-goal-details__identity h1 { color: #fff; }
-.savings-goal-details .savings-goal-details__header :is(.savings-goal-details__chip, .savings-goal-details__action) { border-color: rgba(255,255,255,.32); color: #fff; background: rgba(255,255,255,.13); }
-.savings-goal-details .savings-goal-details__header .savings-goal-details__action--primary { color: #174589; background: #fff; }
-.savings-goal-details .savings-goal-details__stat, .savings-goal-details .savings-goal-details__panel { border: 1px solid var(--fin-line); border-radius: 19px; background: var(--color-surface); box-shadow: 0 10px 30px color-mix(in srgb, #14244a 6%, transparent); }
-.savings-goal-details .savings-goal-details__meter { border-radius: 18px; }
+:root .savings-goals-page .savings-goals-page__grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 325px), 1fr)); gap: 20px; }
+:root .savings-goals-page .saving-goal-card { border: 1px solid var(--fin-line); border-radius: 21px; padding: 23px; box-shadow: 0 11px 30px color-mix(in srgb, #14244a 6%, transparent); transition: transform 230ms ease, box-shadow 230ms ease, border-color 230ms ease; }
+:root .savings-goals-page .saving-goal-card:hover { transform: translateY(-4px); box-shadow: var(--fin-shadow); border-color: color-mix(in srgb, var(--color-primary) 34%, var(--fin-line)); }
+:root .savings-goals-page .saving-goal-card__content h2 { font-size: 17px; }
+:root .savings-goal-details .savings-goal-details__header { margin: 0; }
+:root .savings-goal-details .savings-goal-details__identity h1 { color: #fff; }
+:root .savings-goal-details .savings-goal-details__header :is(.savings-goal-details__chip, .savings-goal-details__action) { border-color: rgba(255,255,255,.32); color: #fff; background: rgba(255,255,255,.13); }
+:root .savings-goal-details .savings-goal-details__header .savings-goal-details__action--primary { color: #174589; background: #fff; }
+:root .savings-goal-details .savings-goal-details__stat, :root .savings-goal-details .savings-goal-details__panel { border: 1px solid var(--fin-line); border-radius: 19px; background: var(--color-surface); box-shadow: 0 10px 30px color-mix(in srgb, #14244a 6%, transparent); }
+:root .savings-goal-details .savings-goal-details__meter { border-radius: 18px; }
 
 /* Debts: currency summaries are separate, never combined across currencies. */
-.debts-page .debt-summary-card { border: 1px solid var(--fin-line); border-radius: 21px; box-shadow: var(--fin-shadow); overflow: hidden; }
-.debts-page .debt-summary-card__top { padding-bottom: 7px; }
-.debts-page .debts-page__list { margin-top: 32px; border: 1px solid var(--fin-line); border-radius: 22px; padding: clamp(16px, 2vw, 24px); background: var(--color-surface); box-shadow: var(--fin-shadow); }
-.debts-page .debts-page__list-title { margin: 0 0 16px; font-family: var(--font-heading); font-size: 21px; }
-.debts-page .debt-list { border: 1px solid var(--fin-line); border-radius: 16px; box-shadow: none; }
-.debts-page .debt-list__table thead th { padding-block: 15px; background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface)); font-weight: 700; }
-.debts-page .debt-list__table tbody tr { transition: background-color 180ms ease; }
+:root .debts-page .debt-summary-card { border: 1px solid var(--fin-line); border-radius: 21px; box-shadow: var(--fin-shadow); overflow: hidden; }
+:root .debts-page .debt-summary-card__top { padding-bottom: 7px; }
+:root .debts-page .debts-page__list { margin-top: 32px; border: 1px solid var(--fin-line); border-radius: 22px; padding: clamp(16px, 2vw, 24px); background: var(--color-surface); box-shadow: var(--fin-shadow); }
+:root .debts-page .debts-page__list-title { margin: 0 0 16px; font-family: var(--font-heading); font-size: 21px; }
+:root .debts-page .debt-list { border: 1px solid var(--fin-line); border-radius: 16px; box-shadow: none; }
+:root .debts-page .debt-list__table thead th { padding-block: 15px; background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface)); font-weight: 700; }
+:root .debts-page .debt-list__table tbody tr { transition: background-color 180ms ease; }
 
 /* Settings becomes a compact, accessible side navigation. */
-.settings-page .settings-page__header { display: block; min-height: 195px; }
-.settings-page__eyebrow { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 15px; color: #b9d7ff; font-size: 11px; font-weight: 800; letter-spacing: .12em; }
-.settings-page__eyebrow svg { width: 17px; height: 17px; }
-.settings-page__hero-mark { position: absolute; inset-inline-end: 7%; inset-block-start: 32%; display: grid; place-items: center; width: 86px; height: 86px; border: 1px solid rgba(255,255,255,.25); border-radius: 25px; background: rgba(255,255,255,.11); transform: rotate(-10deg); }
-.settings-page__hero-mark svg { width: 44px; height: 44px; transform: rotate(10deg); }
-.settings-page__layout { display: grid; grid-template-columns: 235px minmax(0, 1fr); align-items: start; gap: 22px; }
-.settings-page .settings-tabs { display: grid; align-items: stretch; gap: 7px; width: 100%; max-width: 100%; margin: 0; padding: 12px; direction: inherit; border: 1px solid var(--fin-line); border-radius: 19px; background: var(--color-surface); box-shadow: var(--fin-shadow); }
-.settings-page .settings-tab { display: flex; align-items: center; gap: 12px; min-height: 49px; width: 100%; padding: 10px 13px; border-radius: 12px; text-align: start; font-size: 13px; font-weight: 700; }
-.settings-page .settings-tab svg { width: 18px; height: 18px; flex: none; }
-.settings-page .settings-tab--active { color: var(--color-primary); background: var(--primary-soft); box-shadow: none; }
-.settings-page__content { min-width: 0; }
-.settings-page .profile-settings { margin: 0; border: 1px solid var(--fin-line); border-radius: 21px; padding: clamp(20px, 2.6vw, 32px); background: var(--color-surface); box-shadow: var(--fin-shadow); }
-.settings-page .profile-settings h2 { font-family: var(--font-heading); font-size: clamp(19px, 2vw, 24px); }
+:root .settings-page .settings-page__header { display: block; min-height: 195px; }
+:root .settings-page__eyebrow { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 15px; color: #b9d7ff; font-size: 11px; font-weight: 800; letter-spacing: .12em; }
+:root .settings-page__eyebrow svg { width: 17px; height: 17px; }
+:root .settings-page__hero-mark { position: absolute; inset-inline-end: 7%; inset-block-start: 32%; display: grid; place-items: center; width: 86px; height: 86px; border: 1px solid rgba(255,255,255,.25); border-radius: 25px; background: rgba(255,255,255,.11); transform: rotate(-10deg); }
+:root .settings-page__hero-mark svg { width: 44px; height: 44px; transform: rotate(10deg); }
+:root .settings-page__layout { display: grid; grid-template-columns: 235px minmax(0, 1fr); align-items: start; gap: 22px; }
+:root .settings-page .settings-tabs { display: grid; align-items: stretch; gap: 7px; width: 100%; max-width: 100%; margin: 0; padding: 12px; direction: inherit; border: 1px solid var(--fin-line); border-radius: 19px; background: var(--color-surface); box-shadow: var(--fin-shadow); }
+:root .settings-page .settings-tab { display: flex; align-items: center; gap: 12px; min-height: 49px; width: 100%; padding: 10px 13px; border-radius: 12px; text-align: start; font-size: 13px; font-weight: 700; }
+:root .settings-page .settings-tab svg { width: 18px; height: 18px; flex: none; }
+:root .settings-page .settings-tab--active { color: var(--color-primary); background: var(--primary-soft); box-shadow: none; }
+:root .settings-page__content { min-width: 0; }
+:root .settings-page .profile-settings { margin: 0; border: 1px solid var(--fin-line); border-radius: 21px; padding: clamp(20px, 2.6vw, 32px); background: var(--color-surface); box-shadow: var(--fin-shadow); }
+:root .settings-page .profile-settings h2 { font-family: var(--font-heading); font-size: clamp(19px, 2vw, 24px); }
 
 /* Focus and motion preferences */
-:is(.accounts-page, .transfers-page, .recurring-page, .ai-captures-page,
+:root :is(.accounts-page, .transfers-page, .recurring-page, .ai-captures-page,
   .capture-details, .savings-goals-page, .savings-goal-details, .debts-page,
   .settings-page) :is(button, a, input, select):focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
 @media (max-width: 1120px) {
-  .settings-page__layout { grid-template-columns: minmax(0, 1fr); }
-  .settings-page .settings-tabs { display: flex; overflow-x: auto; }
-  .settings-page .settings-tab { width: auto; flex: 1 0 auto; white-space: nowrap; }
+  :root .settings-page__layout { grid-template-columns: minmax(0, 1fr); }
+  :root .settings-page .settings-tabs { display: flex; overflow-x: auto; }
+  :root .settings-page .settings-tab { width: auto; flex: 1 0 auto; white-space: nowrap; }
 }
 @media (max-width: 700px) {
-  :is(.accounts-page, .transfers-page, .recurring-page, .ai-captures-page,
+  :root :is(.accounts-page, .transfers-page, .recurring-page, .ai-captures-page,
     .capture-details, .savings-goals-page, .savings-goal-details, .debts-page,
     .settings-page) { padding: 15px 14px 48px; }
-  :is(.accounts-page .accounts-header, .transfers-page .transfers-page__header,
+  :root :is(.accounts-page .accounts-header, .transfers-page .transfers-page__header,
     .recurring-page .recurring-header, .savings-goals-page .savings-goals-header,
     .debts-page .debts-header,
     .settings-page .settings-page__header, .ai-captures-page .ai-captures-page__header,
     .savings-goal-details .savings-goal-details__header, .capture-details .capture-details__header) { min-height: 0; padding: 22px; border-radius: 21px; }
-  .settings-page__hero-mark { display: none; }
-  .recurring-page .recurring-header__actions { width: 100%; flex-wrap: wrap; }
-  .recurring-page .recurring-header__actions > * { flex: 1 1 150px; justify-content: center; }
-  .accounts-page__overview-art { opacity: .35; }
-  .accounts-page__views { width: 100%; }
-  .accounts-page__views button { flex: 1; justify-content: center; }
-  .settings-page .settings-tabs { gap: 3px; padding: 6px; }
-  .settings-page .settings-tab { justify-content: center; min-width: max-content; min-height: 44px; }
+  :root .settings-page__hero-mark { display: none; }
+  :root .recurring-page .recurring-header__actions { width: 100%; flex-wrap: wrap; }
+  :root .recurring-page .recurring-header__actions > * { flex: 1 1 150px; justify-content: center; }
+  :root .accounts-page__overview-art { opacity: .35; }
+  :root .accounts-page__views { width: 100%; }
+  :root .accounts-page__views button { flex: 1; justify-content: center; }
+  :root .settings-page .settings-tabs { gap: 3px; padding: 6px; }
+  :root .settings-page .settings-tab { justify-content: center; min-width: max-content; min-height: 44px; }
 }
 @media (max-width: 780px) {
-  .debts-page .debt-list { overflow: visible; border: 0; background: transparent; }
-  .debts-page .debt-list__table { min-width: 0; border: 0; }
-  .debts-page .debt-list__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-  .debts-page .debt-list__table tbody { display: grid; gap: 13px; }
-  .debts-page .debt-list__table tbody tr { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; padding: 18px; border: 1px solid var(--fin-line); border-radius: 16px; background: var(--color-surface); box-shadow: 0 8px 22px color-mix(in srgb, #14244a 6%, transparent); }
-  .debts-page .debt-list__table :is(th, td) { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 4px; min-width: 0; padding: 0; border: 0; text-align: start; white-space: normal; }
-  .debts-page .debt-list__table .debt-list__party { grid-column: 1/-1; max-width: none; padding-bottom: 9px; border-bottom: 1px solid var(--fin-line); }
-  .debts-page .debt-list__table td::before { content: attr(data-label); display: block; color: var(--color-text-secondary); font-size: 11px; font-weight: 600; }
-  .debts-page .debt-list__table td.debt-list__amount { align-items: flex-start; }
+  :root .debts-page .debt-list { overflow: visible; border: 0; background: transparent; }
+  :root .debts-page .debt-list__table { min-width: 0; border: 0; }
+  :root .debts-page .debt-list__table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  :root .debts-page .debt-list__table tbody { display: grid; gap: 13px; }
+  :root .debts-page .debt-list__table tbody tr { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; padding: 18px; border: 1px solid var(--fin-line); border-radius: 16px; background: var(--color-surface); box-shadow: 0 8px 22px color-mix(in srgb, #14244a 6%, transparent); }
+  :root .debts-page .debt-list__table :is(th, td) { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 4px; min-width: 0; padding: 0; border: 0; text-align: start; white-space: normal; }
+  :root .debts-page .debt-list__table .debt-list__party { grid-column: 1/-1; max-width: none; padding-bottom: 9px; border-bottom: 1px solid var(--fin-line); }
+  :root .debts-page .debt-list__table td::before { content: attr(data-label); display: block; color: var(--color-text-secondary); font-size: 11px; font-weight: 600; }
+  :root .debts-page .debt-list__table td.debt-list__amount { align-items: flex-start; }
 }
 @media (prefers-reduced-motion: reduce) {
-  :is(.accounts-page, .transfers-page, .recurring-page, .ai-captures-page,
+  :root :is(.accounts-page, .transfers-page, .recurring-page, .ai-captures-page,
     .savings-goals-page, .debts-page, .settings-page) :is(.account-card, .transfer-row, .recurring-row, .capture-row, .saving-goal-card, button) { transition: none !important; transform: none !important; }
 }
 @keyframes fin-rise {
@@ -292,20 +353,20 @@
   to { opacity: 1; transform: translateY(0); }
 }
 @media (prefers-reduced-motion: no-preference) {
-  :is(.accounts-page .accounts-header, .transfers-page .transfers-page__header,
+  :root :is(.accounts-page .accounts-header, .transfers-page .transfers-page__header,
     .recurring-page .recurring-header, .savings-goals-page .savings-goals-header,
     .debts-page .debts-header,
     .settings-page .settings-page__header, .ai-captures-page .ai-captures-page__header,
     .savings-goal-details .savings-goal-details__header) { animation: fin-rise 550ms cubic-bezier(.2,.7,.25,1) backwards; }
-  :is(.accounts-page .account-card, .savings-goals-page .saving-goal-card,
+  :root :is(.accounts-page .account-card, .savings-goals-page .saving-goal-card,
     .debts-page .debt-summary-card) { animation: fin-rise 440ms cubic-bezier(.2,.7,.25,1) backwards; }
-  :is(.accounts-page .account-card, .savings-goals-page .saving-goal-card,
+  :root :is(.accounts-page .account-card, .savings-goals-page .saving-goal-card,
     .debts-page .debt-summary-card):nth-child(2) { animation-delay: 45ms; }
-  :is(.accounts-page .account-card, .savings-goals-page .saving-goal-card,
+  :root :is(.accounts-page .account-card, .savings-goals-page .saving-goal-card,
     .debts-page .debt-summary-card):nth-child(3) { animation-delay: 90ms; }
 }
 /* Keep the corresponding detail pages in the same visual family. */
-:is(.account-details, .transfer-details, .recurring-details, .debt-details) {
+:root :is(.account-details, .transfer-details, .recurring-details, .debt-details) {
   --fin-line: color-mix(in srgb, var(--color-primary) 10%, var(--color-border));
   --fin-shadow: 0 20px 48px color-mix(in srgb, #14244a 9%, transparent);
   max-width: 1320px;
@@ -313,7 +374,7 @@
   padding: clamp(16px, 2.7vw, 34px) clamp(16px, 3vw, 38px) 70px;
   box-sizing: border-box;
 }
-:is(.account-details .account-details__header, .transfer-details .transfer-details__header,
+:root :is(.account-details .account-details__header, .transfer-details .transfer-details__header,
   .recurring-details .recurring-details__header, .debt-details .debt-details__header) {
   position: relative;
   isolation: isolate;
@@ -327,7 +388,7 @@
   color: #fff;
   box-shadow: 0 18px 45px rgba(20,48,107,.18);
 }
-:is(.account-details__header, .transfer-details__header, .recurring-details__header, .debt-details__header)::after {
+:root :is(.account-details__header, .transfer-details__header, .recurring-details__header, .debt-details__header)::after {
   content: "";
   position: absolute;
   z-index: -1;
@@ -340,12 +401,12 @@
   box-shadow: 0 0 0 34px rgba(255,255,255,.04);
   pointer-events: none;
 }
-:is(.account-details, .transfer-details, .recurring-details, .debt-details) :is(.account-details__identity, .transfer-details__identity, .recurring-details__identity, .debt-details__identity) h1 { color: #fff; font-family: var(--font-heading); font-size: clamp(22px,2.6vw,32px); }
-:is(.account-details, .transfer-details, .recurring-details, .debt-details) :is(.account-details__panel, .transfer-details__panel, .recurring-details__panel, .debt-details__panel) { border: 1px solid var(--fin-line); border-radius: 19px; background: var(--color-surface); box-shadow: var(--fin-shadow); }
-:is(.account-details, .transfer-details, .recurring-details, .debt-details) :is(.account-details__header, .transfer-details__header, .recurring-details__header, .debt-details__header) :is(.account-details__chip, .transfer-details__chip, .recurring-details__type, .debt-details__chip, .account-details__action, .transfer-details__action, .recurring-details__action, .debt-details__action) { border-color: rgba(255,255,255,.28); color: #fff; background: rgba(255,255,255,.13); }
-:is(.account-details, .transfer-details, .recurring-details, .debt-details) :is(.account-details__header, .transfer-details__header, .recurring-details__header, .debt-details__header) :is(.account-details__action--archive, .debt-details__action--archive) { color: #ffe0e0; }
+:root :is(.account-details, .transfer-details, .recurring-details, .debt-details) :is(.account-details__identity, .transfer-details__identity, .recurring-details__identity, .debt-details__identity) h1 { color: #fff; font-family: var(--font-heading); font-size: clamp(22px,2.6vw,32px); }
+:root :is(.account-details, .transfer-details, .recurring-details, .debt-details) :is(.account-details__panel, .transfer-details__panel, .recurring-details__panel, .debt-details__panel) { border: 1px solid var(--fin-line); border-radius: 19px; background: var(--color-surface); box-shadow: var(--fin-shadow); }
+:root :is(.account-details, .transfer-details, .recurring-details, .debt-details) :is(.account-details__header, .transfer-details__header, .recurring-details__header, .debt-details__header) :is(.account-details__chip, .transfer-details__chip, .recurring-details__type, .debt-details__chip, .account-details__action, .transfer-details__action, .recurring-details__action, .debt-details__action) { border-color: rgba(255,255,255,.28); color: #fff; background: rgba(255,255,255,.13); }
+:root :is(.account-details, .transfer-details, .recurring-details, .debt-details) :is(.account-details__header, .transfer-details__header, .recurring-details__header, .debt-details__header) :is(.account-details__action--archive, .debt-details__action--archive) { color: #ffe0e0; }
 @media (max-width:700px) {
-  :is(.account-details, .transfer-details, .recurring-details, .debt-details) { padding: 15px 14px 48px; }
-  :is(.account-details .account-details__header, .transfer-details .transfer-details__header,
+  :root :is(.account-details, .transfer-details, .recurring-details, .debt-details) { padding: 15px 14px 48px; }
+  :root :is(.account-details .account-details__header, .transfer-details .transfer-details__header,
     .recurring-details .recurring-details__header, .debt-details .debt-details__header) { min-height: 0; padding: 22px; border-radius: 21px; }
 }
