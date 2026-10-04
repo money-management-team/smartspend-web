@@ -1,4 +1,3 @@
-import { useUnsavedChanges } from "../../../../../../hooks/useUnsavedChanges";
 import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -42,6 +41,8 @@ import {
 // styles come from the reverse dialog's stylesheet.
 import "../../../Accounts/components/AccountForm/AccountForm.css";
 import "../../../FinancialOperations/components/ReverseTransactionDialog/ReverseTransactionDialog.css";
+import useDiscardChanges from "../../../../../../components/UnsavedChanges/useDiscardChanges";
+import { isFormDirty } from "../../../../../../components/UnsavedChanges/unsavedChanges";
 import "./DebtForm.css";
 
 // Fields with their own input; errors for any other backend field (e.g.
@@ -97,12 +98,6 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
   const { t, i18n } = useTranslation();
   const locale = getDisplayLocale(i18n.language);
   const [form, setForm] = useState(emptyForm);
-
-  // Unsaved edits are guarded against closing, leaving the page and reloading.
-  const [initialSnapshot] = useState(() => JSON.stringify(form));
-  const { confirmDiscard, markSaved } = useUnsavedChanges(
-    JSON.stringify(form) !== initialSnapshot,
-  );
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [hint, setHint] = useState("");
@@ -168,8 +163,15 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
   /* ---------- Handlers ---------- */
 
   const close = () => {
-    if (!pendingRef.current && confirmDiscard()) onClose();
+    if (!pendingRef.current) onClose();
   };
+
+  // Values the form opened with: closing with other values asks first.
+  const [initialForm] = useState(form);
+  const { requestClose, discardDialog } = useDiscardChanges({
+    isDirty: isFormDirty(form, initialForm) && !isSaving,
+    onClose: close,
+  });
 
   const resetFeedback = (...fields) => {
     setErrors((current) => ({
@@ -219,7 +221,6 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
 
     try {
       await onSave(buildCreatePayload(values), { account: selectedAccount });
-      markSaved();
     } catch (error) {
       // 401 is handled by apiClient's session-expired flow.
       if (error?.code !== "UNAUTHENTICATED") {
@@ -285,9 +286,10 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
     <div
       className="account-form-modal"
       role="presentation"
-      onMouseDown={close}
-      onKeyDown={(event) => event.key === "Escape" && close()}
+      onMouseDown={requestClose}
+      onKeyDown={(event) => event.key === "Escape" && requestClose()}
     >
+      {discardDialog}
       <section
         className="account-form-modal__dialog debt-form"
         role="dialog"
@@ -299,7 +301,7 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
           <h2 id="debt-form-title">{t("dashboard.debts.form.title")}</h2>
           <button
             type="button"
-            onClick={close}
+            onClick={requestClose}
             disabled={isSaving}
             aria-label={t("common.close")}
           >
@@ -582,7 +584,7 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
           )}
 
           <footer>
-            <button type="button" onClick={close} disabled={isSaving}>
+            <button type="button" onClick={requestClose} disabled={isSaving}>
               {t("common.cancel")}
             </button>
             <button

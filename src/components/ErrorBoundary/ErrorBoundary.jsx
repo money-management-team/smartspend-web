@@ -1,17 +1,16 @@
 import { Component } from "react";
-import { useTranslation } from "react-i18next";
 
-import "./ErrorBoundary.css";
+import ErrorFallback from "./ErrorFallback";
 
 /*
- * Catches errors thrown while React renders (a broken component, a lazy chunk
- * that failed to load). It is NOT for API errors: those are caught by the
- * pages and shown with getApiErrorMessage.
+ * Catches unexpected rendering / lifecycle errors below it (a bug, a failed
+ * lazy-chunk download) and shows ErrorFallback instead of a blank page.
+ * Expected failures (API errors, validation) are not handled here: pages show
+ * those as their own states.
  *
- * `variant="app"` replaces the whole screen and offers reload / home;
- * `variant="page"` replaces only the page area, so the dashboard sidebar and
- * header stay usable. The boundary resets itself when `resetKey` changes
- * (the route), so moving to another page clears an error.
+ * `resetKey` clears the error when it changes, so a route-level boundary
+ * recovers as soon as the user navigates somewhere else. `variant="page"`
+ * renders inside a layout; "app" fills the screen.
  */
 export default class ErrorBoundary extends Component {
   state = { error: null };
@@ -20,83 +19,29 @@ export default class ErrorBoundary extends Component {
     return { error };
   }
 
-  componentDidUpdate(previous) {
-    if (this.state.error && previous.resetKey !== this.props.resetKey) {
-      this.setState({ error: null });
+  componentDidCatch(error, info) {
+    // Technical details are for developers only; users see the fallback.
+    if (import.meta.env.DEV) {
+      console.error("Unexpected UI error:", error, info.componentStack);
     }
   }
 
-  componentDidCatch(error, info) {
-    // Technical details go to the console for developers, never to the UI.
-    console.error("Unexpected render error:", error, info?.componentStack);
+  componentDidUpdate(previousProps) {
+    if (this.state.error && previousProps.resetKey !== this.props.resetKey) {
+      this.reset();
+    }
   }
 
-  retry = () => this.setState({ error: null });
+  reset = () => this.setState({ error: null });
 
   render() {
-    const { error } = this.state;
-    if (!error) return this.props.children;
+    if (!this.state.error) return this.props.children;
 
     return (
       <ErrorFallback
-        error={error}
-        variant={this.props.variant ?? "page"}
-        homePath={this.props.homePath ?? "/"}
-        onRetry={this.retry}
+        variant={this.props.variant ?? "app"}
+        onRetry={this.reset}
       />
     );
   }
-}
-
-function ErrorFallback({ error, variant, homePath, onRetry }) {
-  const { t } = useTranslation();
-
-  return (
-    <div
-      className={`error-boundary error-boundary--${variant}`}
-      role="alert"
-    >
-      <div className="error-boundary__card">
-        <span className="error-boundary__icon" aria-hidden="true">
-          !
-        </span>
-
-        <h1 className="error-boundary__title">{t("common.errorBoundary.title")}</h1>
-        <p className="error-boundary__text">
-          {t("common.errorBoundary.description")}
-        </p>
-
-        {import.meta.env.DEV && (
-          <pre className="error-boundary__details" dir="ltr">
-            {String(error?.message ?? error)}
-          </pre>
-        )}
-
-        <div className="error-boundary__actions">
-          <button
-            type="button"
-            className="error-boundary__button error-boundary__button--primary"
-            onClick={onRetry}
-          >
-            {t("common.retry")}
-          </button>
-          <button
-            type="button"
-            className="error-boundary__button"
-            onClick={() => window.location.reload()}
-          >
-            {t("common.errorBoundary.reload")}
-          </button>
-          {/* A full navigation: the React tree may be in a bad state. */}
-          <a className="error-boundary__button" href={homePath}>
-            {t(
-              variant === "app"
-                ? "common.errorBoundary.home"
-                : "common.errorBoundary.dashboard",
-            )}
-          </a>
-        </div>
-      </div>
-    </div>
-  );
 }

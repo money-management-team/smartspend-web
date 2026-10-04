@@ -1,5 +1,4 @@
 import PrivateMoney from "../Experience/PrivateMoney";
-import Loading from "../../../../components/Loading/Loading";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -9,6 +8,8 @@ import { resolveWorkspaceId } from "../api/dashboardApi";
 import { getApiErrorMessage } from "../api/apiClient";
 import { importsApi, newImportKey } from "../api/importsApi";
 import { PATH } from "../../../../routes/Path";
+import Loading from "../../../../components/Loading/Loading";
+import StateMessage from "../../../../components/StateMessage/StateMessage";
 import "./Imports.css";
 
 const FIELDS = [
@@ -77,10 +78,10 @@ export default function Imports() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(true);
-  // The first load (workspace, accounts, categories, batch) failed: show a
-  // retry instead of a half-empty page.
+  const [reloadCount, setReloadCount] = useState(0);
+  // Retry is only offered when the page data itself failed to load, not for
+  // an upload or review action that failed.
   const [loadFailed, setLoadFailed] = useState(false);
-  const [reloadKey, setReloadKey] = useState(0);
   const busyRef = useRef(false);
   const keys = useRef({});
 
@@ -171,21 +172,22 @@ export default function Imports() {
         },
       )
       .catch((failure) => {
-        if (failure.name === "AbortError") return;
-        setError(getApiErrorMessage(failure, t));
-        setLoadFailed(true);
+        if (failure.name !== "AbortError") {
+          setError(getApiErrorMessage(failure, t));
+          setLoadFailed(true);
+        }
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [importId, t, reloadKey]);
+  }, [importId, t, reloadCount]);
 
   const retryLoad = () => {
     setError("");
     setLoadFailed(false);
     setLoading(true);
-    setReloadKey((current) => current + 1);
+    setReloadCount((count) => count + 1);
   };
 
   useEffect(() => {
@@ -311,23 +313,17 @@ export default function Imports() {
         <p>{t(`${x}.subtitle`)}</p>
       </header>
       {error && (
-        <p role="alert" className="imports-page__error">
-          {error}
-        </p>
+        <StateMessage
+          tone="error"
+          className="imports-page__error"
+          message={error}
+          onRetry={loadFailed ? retryLoad : undefined}
+        />
       )}
       {notice && <p role="status">{notice}</p>}
-      {loadFailed && !loading && (
-        <button
-          type="button"
-          className="imports-page__retry"
-          onClick={retryLoad}
-        >
-          {t("common.retry")}
-        </button>
-      )}
       {loading ? (
         <Loading message={t(`${x}.loading`)} />
-      ) : loadFailed ? null : !importId ? (
+      ) : !importId ? (
         <>
           <form
             onSubmit={upload}
@@ -403,7 +399,11 @@ export default function Imports() {
               </label>
             </div>
             {!batches.length && (
-              <p>{listPage ? t(`${x}.empty`) : t(`${x}.loading`)}</p>
+              listPage ? (
+                <StateMessage message={t(`${x}.empty`)} />
+              ) : (
+                <Loading size="small" message={t(`${x}.loading`)} />
+              )
             )}
             {batches.map((item) => (
               <Link

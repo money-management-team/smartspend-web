@@ -1,4 +1,3 @@
-import { useUnsavedChanges } from "../../../../../../hooks/useUnsavedChanges";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuInfo, LuLock } from "react-icons/lu";
@@ -21,6 +20,8 @@ import {
 // styles come from the reverse dialog's stylesheet.
 import "../../../Accounts/components/AccountForm/AccountForm.css";
 import "../../../FinancialOperations/components/ReverseTransactionDialog/ReverseTransactionDialog.css";
+import useDiscardChanges from "../../../../../../components/UnsavedChanges/useDiscardChanges";
+import { isFormDirty } from "../../../../../../components/UnsavedChanges/unsavedChanges";
 import "./SavingsGoalForm.css";
 
 // Backend fields shown in the error block rather than under an input.
@@ -89,12 +90,6 @@ export default function SavingsGoalForm({ goal, onSave, onClose }) {
   const { t } = useTranslation();
   const isEditing = Boolean(goal);
   const [form, setForm] = useState(() => toFormValues(goal));
-
-  // Unsaved edits are guarded against closing, leaving the page and reloading.
-  const [initialSnapshot] = useState(() => JSON.stringify(form));
-  const { confirmDiscard, markSaved } = useUnsavedChanges(
-    JSON.stringify(form) !== initialSnapshot,
-  );
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -103,8 +98,15 @@ export default function SavingsGoalForm({ goal, onSave, onClose }) {
   const [today] = useState(getTodayInputValue);
 
   const close = () => {
-    if (!pendingRef.current && confirmDiscard()) onClose();
+    if (!pendingRef.current) onClose();
   };
+
+  // Values the form opened with: closing with other values asks first.
+  const [initialForm] = useState(form);
+  const { requestClose, discardDialog } = useDiscardChanges({
+    isDirty: isFormDirty(form, initialForm) && !isSaving,
+    onClose: close,
+  });
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -138,7 +140,6 @@ export default function SavingsGoalForm({ goal, onSave, onClose }) {
 
     try {
       await onSave(payload);
-      markSaved();
     } catch (error) {
       // 401 is handled by apiClient's session-expired flow.
       if (error?.code !== "UNAUTHENTICATED") {
@@ -160,9 +161,10 @@ export default function SavingsGoalForm({ goal, onSave, onClose }) {
     <div
       className="account-form-modal"
       role="presentation"
-      onMouseDown={close}
-      onKeyDown={(event) => event.key === "Escape" && close()}
+      onMouseDown={requestClose}
+      onKeyDown={(event) => event.key === "Escape" && requestClose()}
     >
+      {discardDialog}
       <section
         className="account-form-modal__dialog savings-goal-form"
         role="dialog"
@@ -178,7 +180,7 @@ export default function SavingsGoalForm({ goal, onSave, onClose }) {
                 : "dashboard.savingsGoals.form.createTitle",
             )}
           </h2>
-          <button type="button" onClick={close} disabled={isSaving} aria-label={t("common.close")}>
+          <button type="button" onClick={requestClose} disabled={isSaving} aria-label={t("common.close")}>
             ×
           </button>
         </header>
@@ -316,7 +318,7 @@ export default function SavingsGoalForm({ goal, onSave, onClose }) {
           )}
 
           <footer>
-            <button type="button" onClick={close} disabled={isSaving}>
+            <button type="button" onClick={requestClose} disabled={isSaving}>
               {t("common.cancel")}
             </button>
             <button type="submit" disabled={isSaving} aria-busy={isSaving || undefined}>

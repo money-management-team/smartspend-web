@@ -2,9 +2,10 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ApiError, getApiErrorMessage } from "../../../api/apiClient";
 import { authApi } from "../../../api/authApi";
-import { useUnsavedChanges } from "../../../../../../hooks/useUnsavedChanges";
 import { useAuthContext } from "../../../../../../contexts/auth/useAuthContext";
 import { useEmailVerification } from "../../../../../../contexts/emailVerification/useEmailVerification";
+import UnsavedChangesGuard from "../../../../../../components/UnsavedChanges/UnsavedChangesGuard";
+import { isFormDirty } from "../../../../../../components/UnsavedChanges/unsavedChanges";
 
 import "./ProfileSettings.css";
 
@@ -26,13 +27,13 @@ export default function ProfileSettings() {
   const [message, setMessage] = useState("");
   const [hasError, setHasError] = useState(false);
 
-  // Dirty = differs from what is saved (the session's user), so it clears by
-  // itself once a save updates it. The currency field is read-only.
-  const isDirty =
-    form.name !== (user?.name ?? "") ||
-    form.email !== (user?.email ?? "") ||
-    form.phone !== (user?.phone ?? "");
-  useUnsavedChanges(isDirty);
+  // The saved profile is the baseline: after a successful save `user` is
+  // updated, so the form is clean again and the guard stops warning.
+  const isDirty = isFormDirty(
+    form,
+    { name: user?.name, email: user?.email, phone: user?.phone },
+    ["name", "email", "phone"],
+  );
 
   const handleChange = (event) => {
     const {
@@ -94,6 +95,8 @@ export default function ProfileSettings() {
 
   return (
     <section className="profile-settings">
+      <UnsavedChangesGuard when={isDirty && !isSaving} />
+
       <header className="profile-settings__header">
         <h2>
           {t(

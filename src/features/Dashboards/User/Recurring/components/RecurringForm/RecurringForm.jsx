@@ -1,4 +1,3 @@
-import { useUnsavedChanges } from "../../../../../../hooks/useUnsavedChanges";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuInfo, LuLock } from "react-icons/lu";
@@ -33,6 +32,8 @@ import {
 // styles come from the reverse dialog's stylesheet.
 import "../../../Accounts/components/AccountForm/AccountForm.css";
 import "../../../FinancialOperations/components/ReverseTransactionDialog/ReverseTransactionDialog.css";
+import useDiscardChanges from "../../../../../../components/UnsavedChanges/useDiscardChanges";
+import { isFormDirty } from "../../../../../../components/UnsavedChanges/unsavedChanges";
 import "./RecurringForm.css";
 
 // Fields that have an input in each mode; errors on any other field are
@@ -84,12 +85,6 @@ export default function RecurringForm({ rule, presetType, onSave, onClose }) {
   const locale = getDisplayLocale(i18n.language);
   const isEditing = Boolean(rule);
   const [form, setForm] = useState(() => toFormValues(rule, presetType));
-
-  // Unsaved edits are guarded against closing, leaving the page and reloading.
-  const [initialSnapshot] = useState(() => JSON.stringify(form));
-  const { confirmDiscard, markSaved } = useUnsavedChanges(
-    JSON.stringify(form) !== initialSnapshot,
-  );
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -160,8 +155,15 @@ export default function RecurringForm({ rule, presetType, onSave, onClose }) {
   /* ---------- Changes ---------- */
 
   const close = () => {
-    if (!pendingRef.current && confirmDiscard()) onClose();
+    if (!pendingRef.current) onClose();
   };
+
+  // Values the form opened with: closing with other values asks first.
+  const [initialForm] = useState(form);
+  const { requestClose, discardDialog } = useDiscardChanges({
+    isDirty: isFormDirty(form, initialForm) && !isSaving,
+    onClose: close,
+  });
 
   const update = (changes) => {
     setForm((current) => ({ ...current, ...changes }));
@@ -207,7 +209,6 @@ export default function RecurringForm({ rule, presetType, onSave, onClose }) {
 
     try {
       await onSave(payload);
-      markSaved();
     } catch (error) {
       // 401 is handled by apiClient's session-expired flow.
       if (error?.code !== "UNAUTHENTICATED") {
@@ -232,9 +233,10 @@ export default function RecurringForm({ rule, presetType, onSave, onClose }) {
     <div
       className="account-form-modal"
       role="presentation"
-      onMouseDown={close}
-      onKeyDown={(event) => event.key === "Escape" && close()}
+      onMouseDown={requestClose}
+      onKeyDown={(event) => event.key === "Escape" && requestClose()}
     >
+      {discardDialog}
       <section
         className="account-form-modal__dialog recurring-form"
         role="dialog"
@@ -246,7 +248,7 @@ export default function RecurringForm({ rule, presetType, onSave, onClose }) {
           <h2 id="recurring-form-title">
             {t(isEditing ? "dashboard.recurring.form.editTitle" : "dashboard.recurring.form.createTitle")}
           </h2>
-          <button type="button" onClick={close} disabled={isSaving} aria-label={t("common.close")}>
+          <button type="button" onClick={requestClose} disabled={isSaving} aria-label={t("common.close")}>
             ×
           </button>
         </header>
@@ -607,7 +609,7 @@ export default function RecurringForm({ rule, presetType, onSave, onClose }) {
           )}
 
           <footer>
-            <button type="button" onClick={close} disabled={isSaving}>
+            <button type="button" onClick={requestClose} disabled={isSaving}>
               {t("common.cancel")}
             </button>
             <button

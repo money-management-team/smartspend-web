@@ -1,20 +1,21 @@
 import { Navigate, useLocation } from "react-router-dom";
 import Loading from "../components/Loading/Loading";
 import { useAuthContext } from "../contexts/auth/useAuthContext";
-import { getSigninPathFor } from "./returnTo";
-import { useReturnPath } from "./useReturnPath";
+import { PATH } from "./Path";
+import { getPostAuthPath, toReturnPath } from "./postAuthRedirect";
 
 export function RequireAuth({ children }) {
   const { initializing, isAuthenticated } = useAuthContext();
   const location = useLocation();
 
-  if (initializing) return <Loading message={false} />;
+  if (initializing) return <Loading variant="page" size="large" message={false} />;
 
   if (!isAuthenticated) {
     return (
       <Navigate
-        to={getSigninPathFor(location)}
+        to={PATH.AUTH.SIGNIN}
         replace
+        state={{ from: toReturnPath(location) }}
       />
     );
   }
@@ -24,10 +25,12 @@ export function RequireAuth({ children }) {
 
 export function GuestOnly({ children }) {
   const { initializing, isAuthenticated } = useAuthContext();
-  const returnPath = useReturnPath();
+  const location = useLocation();
 
-  if (initializing) return <Loading message={false} />;
-  if (isAuthenticated) return <Navigate to={returnPath} replace />;
+  if (initializing) return <Loading variant="page" size="large" message={false} />;
+  if (isAuthenticated) {
+    return <Navigate to={getPostAuthPath(location.state)} replace />;
+  }
 
   return children;
 }

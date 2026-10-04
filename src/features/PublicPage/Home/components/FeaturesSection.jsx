@@ -85,7 +85,7 @@ function FeatureVisual({ feature }) {
     return (
       <div className="feature-visual feature-visual--goal" aria-hidden="true">
         <div className="feature-goal-ring"><span>72%</span></div>
-        <div><strong>$3,600</strong><small>{t("home.sample.ofTotal")} <bdi>$5,000</bdi></small></div>
+        <div><strong>$3,600</strong><small>{t("home.sample.ofTotal", { amount: "$5,000" })}</small></div>
       </div>
     );
   }
@@ -103,16 +103,16 @@ function FeatureVisual({ feature }) {
     return (
       <div className="feature-visual feature-visual--alerts" aria-hidden="true">
         <span><LuBellRing /></span>
-        <div><strong>{t("home.sample.budgetAlert")}</strong><small>{t("home.sample.diningAt")}</small></div>
+        <div><strong>{t("home.sample.budgetAlert")}</strong><small>{t("home.sample.diningAt", { percent: 82 })}</small></div>
       </div>
     );
   }
 
   return (
     <div className="feature-visual feature-visual--budgets" aria-hidden="true">
-      <div className="feature-budget-row"><span>{t("home.sample.categories.home")}</span><b>64%</b></div>
+      <div className="feature-budget-row"><span>{t("home.sample.homeBudget")}</span><b>64%</b></div>
       <div className="feature-budget-track"><span /></div>
-      <div className="feature-budget-row"><span>{t("home.sample.categories.travel")}</span><b>38%</b></div>
+      <div className="feature-budget-row"><span>{t("home.sample.travelBudget")}</span><b>38%</b></div>
       <div className="feature-budget-track feature-budget-track--two"><span /></div>
     </div>
   );

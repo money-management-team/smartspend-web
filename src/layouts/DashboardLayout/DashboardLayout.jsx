@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Outlet } from "react-router-dom";
 
-import PageBoundary from "../../components/PageBoundary/PageBoundary";
-
+import ModalAccessibility from "../../components/ModalAccessibility/ModalAccessibility";
 import UnreadNotificationsProvider from "../../contexts/notifications/unreadNotificationsProvider";
+import RouteSuspense from "../../routes/RouteSuspense";
 import DashboardHeader from "./components/DashboardHeader/DashboardHeader";
 import DashboardSidebar from "./components/DashboardSidebar/DashboardSidebar";
 import EmailVerificationBanner from "./components/EmailVerificationBanner/EmailVerificationBanner";
@@ -44,6 +44,7 @@ export default function DashboardLayout() {
   return (
     <ExperienceProvider>
       <UnreadNotificationsProvider>
+        <ModalAccessibility />
         <DashboardWelcome />
         <div className="dashboard-layout">
           <DashboardSidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
@@ -65,9 +66,9 @@ export default function DashboardLayout() {
 
             <main className="dashboard-layout__content">
               <EmailVerificationBanner />
-              <PageBoundary homePath="/dashboard">
-          <Outlet />
-        </PageBoundary>
+              <RouteSuspense>
+                <Outlet />
+              </RouteSuspense>
             </main>
           </div>
         </div>

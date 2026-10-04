@@ -7,11 +7,11 @@ import { useResendVerificationEmail } from "../../../../contexts/emailVerificati
 
 import "./EmailVerificationBanner.css";
 
-const DISMISS_KEY_PREFIX = "emailVerificationBannerDismissed:";
+const DISMISSED_KEY = "smartspend:email-banner-dismissed";
 
-function readDismissed(key) {
+function readDismissed() {
   try {
-    return localStorage.getItem(key) === "1";
+    return sessionStorage.getItem(DISMISSED_KEY) === "1";
   } catch {
     return false;
   }
@@ -21,32 +21,31 @@ function readDismissed(key) {
  * Dashboard warning while GET /auth/email/status says `verified === false`.
  * `null` (verification doesn't apply) and `true` show nothing. After a
  * resend that turns out to be "already verified", the banner stays only to
- * show that confirmation until it is closed. The "X" button hides the warning
- * on every page; the choice is remembered per email address in localStorage.
+ * show that confirmation until it is closed.
  */
 export default function EmailVerificationBanner() {
   const { t } = useTranslation();
   const { user } = useAuthContext();
   const { status } = useEmailVerification();
   const { send, isSending, notice, clearNotice } = useResendVerificationEmail();
+  const [dismissed, setDismissed] = useState(readDismissed);
 
-  const email = status?.email ?? user?.email ?? "";
-  const dismissKey = `${DISMISS_KEY_PREFIX}${email}`;
-  const [dismissedKey, setDismissedKey] = useState(null);
-  const isDismissed = dismissedKey === dismissKey || readDismissed(dismissKey);
+  const isUnverified = status?.verified === false;
 
-  const isUnverified = status?.verified === false && !isDismissed;
-
+  if (dismissed && !notice) return null;
   if (!isUnverified && !notice) return null;
 
   const dismiss = () => {
     try {
-      localStorage.setItem(dismissKey, "1");
+      sessionStorage.setItem(DISMISSED_KEY, "1");
     } catch {
-      // Storage unavailable: hide for this page load only.
+      // Storage unavailable: the banner is still hidden for this page load.
     }
-    setDismissedKey(dismissKey);
+    setDismissed(true);
+    clearNotice();
   };
+
+  const email = status?.email ?? user?.email ?? "";
 
   return (
     <section
@@ -88,32 +87,19 @@ export default function EmailVerificationBanner() {
       </div>
 
       {isUnverified ? (
-        <>
-          <button
-            type="button"
-            className="email-verification-banner__action"
-            onClick={send}
-            disabled={isSending}
-            aria-busy={isSending || undefined}
-          >
-            {t(
-              isSending
-                ? "auth.emailVerification.sending"
-                : "auth.emailVerification.resend",
-            )}
-          </button>
-          <button
-            type="button"
-            className="email-verification-banner__dismiss"
-            onClick={dismiss}
-            aria-label={t("common.close")}
-            title={t("common.close")}
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M6 6l12 12M18 6 6 18" />
-            </svg>
-          </button>
-        </>
+        <button
+          type="button"
+          className="email-verification-banner__action"
+          onClick={send}
+          disabled={isSending}
+          aria-busy={isSending || undefined}
+        >
+          {t(
+            isSending
+              ? "auth.emailVerification.sending"
+              : "auth.emailVerification.resend",
+          )}
+        </button>
       ) : (
         <button
           type="button"
@@ -123,6 +109,18 @@ export default function EmailVerificationBanner() {
           {t("common.close")}
         </button>
       )}
+
+      <button
+        type="button"
+        className="email-verification-banner__dismiss"
+        onClick={dismiss}
+        aria-label={t("common.close")}
+        title={t("common.close")}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" />
+        </svg>
+      </button>
     </section>
   );
 }

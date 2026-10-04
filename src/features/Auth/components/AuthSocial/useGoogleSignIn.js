@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthContext } from "../../../../contexts/auth/useAuthContext";
 import { getApiErrorMessage } from "../../../Dashboards/User/api/apiClient";
-import { useReturnPath } from "../../../../routes/useReturnPath";
+import { getPostAuthPath } from "../../../../routes/postAuthRedirect";
 
 // Google credentials stay in memory and are dropped on cancellation/unmount.
 // Only the explicit policy action can resume a consent-required response.
@@ -15,7 +15,7 @@ export default function useGoogleSignIn({
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const returnPath = useReturnPath();
+  const location = useLocation();
   const { loginWithGoogle } = useAuthContext();
   const [busy, setBusy] = useState(false);
   const [needsConsent, setNeedsConsent] = useState(false);
@@ -48,7 +48,7 @@ export default function useGoogleSignIn({
       });
       if (!mounted.current || controller.signal.aborted) return;
       intent.current = null;
-      navigate(returnPath, { replace: true });
+      navigate(getPostAuthPath(location.state), { replace: true });
     } catch (error) {
       if (
         !mounted.current ||

@@ -181,7 +181,7 @@ export default function TransferDetails() {
     return (
       <div className="transfer-details">
         {backLink}
-        <Loading message={t("dashboard.transfers.details.loading")} />
+        <Loading variant="page" size="large" message={t("dashboard.transfers.details.loading")} />
       </div>
     );
   }

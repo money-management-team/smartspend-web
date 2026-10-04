@@ -599,7 +599,7 @@ export default function AiExpenseCaptureDetails() {
     return (
       <div className="capture-details">
         {backLink}
-        <Loading message={t("dashboard.aiCaptures.details.loading")} />
+        <Loading variant="page" size="large" message={t("dashboard.aiCaptures.details.loading")} />
       </div>
     );
   }

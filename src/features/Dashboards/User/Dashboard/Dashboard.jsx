@@ -128,7 +128,7 @@ export default function Dashboard() {
       />
 
       {isLoading && !data && (
-        <Loading message={t("dashboard.user.states.loading")} />
+        <Loading variant="page" size="large" message={t("dashboard.user.states.loading")} />
       )}
 
       {!isLoading && error && (

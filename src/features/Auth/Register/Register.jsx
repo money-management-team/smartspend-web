@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { useAuthContext } from "../../../contexts/auth/useAuthContext";
 import { PATH } from "../../../routes/Path";
-import { withReturnTo } from "../../../routes/returnTo";
-import { useReturnPath } from "../../../routes/useReturnPath";
 import { getApiErrorMessage } from "../../Dashboards/User/api/apiClient";
 
 import AuthAlert from "../components/AuthAlert/AuthAlert";
@@ -80,8 +78,6 @@ const featureIcons = [ShieldIcon, SparklesIcon, CardIcon];
 export default function Register() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { search } = useLocation();
-  const returnPath = useReturnPath();
   const { register } = useAuthContext();
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
@@ -130,7 +126,7 @@ export default function Register() {
     try {
       await register(toRegisterPayload(form));
 
-      navigate(returnPath, { replace: true });
+      navigate(PATH.USER.DASHBOARD, { replace: true });
     } catch (error) {
       if (error?.code === "VALIDATION_ERROR") {
         setErrors(toFormErrors(error.errors));
@@ -285,7 +281,7 @@ export default function Register() {
         <AuthSwitchPrompt
           prefix={t("auth.register.login.prefix")}
           linkLabel={t("auth.register.login.link")}
-          to={withReturnTo(PATH.AUTH.SIGNIN, search)}
+          to={PATH.AUTH.SIGNIN}
         />
       </section>
     </>

@@ -6,6 +6,8 @@ import {
   getAccountDetailsPath,
   getTransactionDetailsPath,
 } from "../../../../routes/Path";
+import Loading from "../../../../components/Loading/Loading";
+import StateMessage from "../../../../components/StateMessage/StateMessage";
 import { transactionsApi } from "../api/transactionsApi";
 import { accountsApi } from "../api/accountsApi";
 import { getApiErrorMessage } from "../api/apiClient";
@@ -39,7 +41,8 @@ export default function CategoryHistory({ category, locale, timeZone }) {
   const [accounts, setAccounts] = useState([]),
     [validation, setValidation] = useState(false);
   const [result, setResult] = useState({ key: null });
-  const key = `${category.id}:${JSON.stringify(state)}`;
+  const [reloadCount, setReloadCount] = useState(0);
+  const key = `${category.id}:${JSON.stringify(state)}:${reloadCount}`;
   useEffect(() => {
     const controller = new AbortController();
     accountsApi
@@ -214,19 +217,19 @@ export default function CategoryHistory({ category, locale, timeZone }) {
         </p>
       )}
       {busy ? (
-        <p className="exp-state" role="status">
-          {tx("loading")}
-        </p>
+        <Loading message={tx("loading")} />
       ) : result.error ? (
-        <p className="exp-error" role="alert">
-          {getApiErrorMessage(result.error, t)}
-        </p>
+        <StateMessage
+          tone="error"
+          message={getApiErrorMessage(result.error, t)}
+          onRetry={() => setReloadCount((count) => count + 1)}
+        />
       ) : (
         page && (
           <>
             <p className="exp-muted">{tx("total", { count: page.total })}</p>
             {!page.items.length ? (
-              <p className="exp-state">{tx("empty")}</p>
+              <StateMessage message={tx("empty")} />
             ) : (
               <div className="exp-table-wrap">
                 <table className="exp-table">

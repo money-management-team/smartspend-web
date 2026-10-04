@@ -4,7 +4,7 @@ import "./AuthLayout.css";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useThemeContext } from "../../contexts/theme/useThemeContext";
 import { PATH } from "../../routes/Path";
-import PageBoundary from "../../components/PageBoundary/PageBoundary";
+import RouteSuspense from "../../routes/RouteSuspense";
 import AuthAnimatedBackground from "./AuthAnimatedBackground";
 
 const AUTH_VARIANTS = {
@@ -110,9 +110,9 @@ export default function AuthLayout({ variant }) {
         className={`auth-card auth-card--${activeVariant}`}
         data-auth-page={activeVariant}
       >
-        <PageBoundary>
+        <RouteSuspense>
           <Outlet />
-        </PageBoundary>
+        </RouteSuspense>
       </main>
     </div>
   );

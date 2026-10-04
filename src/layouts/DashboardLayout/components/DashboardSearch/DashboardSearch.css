@@ -1,19 +1,20 @@
 /* =========================================
-   DASHBOARD SEARCH (pages)
+   DASHBOARD SEARCH
+   Page search in the header: a field with a result popup. Under 480px the
+   field collapses behind a button and opens over the whole header.
 ========================================= */
 
 .dashboard-search {
+  position: relative;
+
   width: 576px;
   max-width: 52%;
-
-  position: relative;
 }
 
 .dashboard-search__field {
   height: 40px;
-  padding: 0 13px;
+  padding-inline: 13px;
 
-  position: relative;
   display: flex;
   align-items: center;
   gap: 11px;
@@ -48,7 +49,6 @@
 .dashboard-search__field input {
   width: 100%;
   min-width: 0;
-
   padding: 0;
 
   border: 0;
@@ -61,15 +61,92 @@
   font-size: 13px;
 }
 
+/* The field itself shows the focus ring (see :focus-within above), so the bare
+   input must not add the global input focus box inside it. */
+.dashboard-search__field input:focus,
+.dashboard-search__field input:focus-visible {
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+  box-shadow: none;
+}
+
 .dashboard-search__field input::placeholder {
   color: var(--color-text-secondary);
 }
 
-.dashboard-search__panel {
+.dashboard-search__field input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.dashboard-search__clear,
+.dashboard-search__toggle {
+  display: grid;
+  place-items: center;
+
+  padding: 0;
+
+  border: 0;
+
+  color: var(--color-text-secondary);
+  background: transparent;
+
+  cursor: pointer;
+}
+
+.dashboard-search__clear {
+  width: 24px;
+  height: 24px;
+
+  flex: 0 0 24px;
+
+  border-radius: 50%;
+}
+
+.dashboard-search__clear:hover {
+  color: var(--color-text-strong);
+  background: var(--surface-soft);
+}
+
+.dashboard-search__clear svg {
+  width: 15px;
+  height: 15px;
+}
+
+.dashboard-search__clear:focus-visible,
+.dashboard-search__toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Only shown on very narrow screens. */
+.dashboard-search__toggle {
+  display: none;
+
+  width: 40px;
+  height: 40px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+
+  background: var(--color-surface);
+}
+
+.dashboard-search__toggle svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* =========================================
+   POPUP
+========================================= */
+
+.dashboard-search__popup {
   position: absolute;
-  inset-inline: 0;
-  top: calc(100% + 6px);
   z-index: 60;
+  inset-inline: 0;
+  inset-block-start: calc(100% + 8px);
 
   max-height: min(360px, 60vh);
   overflow-y: auto;
@@ -80,10 +157,10 @@
   border-radius: 16px;
 
   background: var(--color-surface);
-  box-shadow: var(--shadow-lg, 0 18px 40px rgba(15, 23, 42, 0.18));
+  box-shadow: 0 18px 44px color-mix(in srgb, #0b1b3f 18%, transparent);
 }
 
-.dashboard-search__panel ul {
+.dashboard-search__popup ul {
   margin: 0;
   padding: 0;
 
@@ -91,98 +168,80 @@
 }
 
 .dashboard-search__option {
-  min-height: 40px;
-  padding: 8px 12px;
+  min-height: 48px;
+  padding: 8px 10px;
 
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
 
-  border-radius: 10px;
-
-  color: var(--color-text-strong);
-  font-size: 13px;
+  border-radius: 11px;
 
   cursor: pointer;
 }
 
-.dashboard-search__option--active {
+.dashboard-search__option.is-active {
   background: var(--primary-soft);
-  color: var(--color-primary);
 }
 
-.dashboard-search__label {
+.dashboard-search__icon {
+  width: 32px;
+  height: 32px;
+
+  flex: 0 0 32px;
+  display: grid;
+  place-items: center;
+
+  border-radius: 10px;
+
+  color: var(--color-primary);
+  background: var(--surface-soft);
+}
+
+.dashboard-search__icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.dashboard-search__text {
   min-width: 0;
 
-  font-weight: 600;
-  overflow-wrap: anywhere;
+  display: grid;
+
+  text-align: start;
 }
 
-.dashboard-search__context {
-  flex: none;
+.dashboard-search__text strong {
+  overflow: hidden;
 
-  color: var(--color-text-muted);
-  font-size: 12px;
+  color: var(--color-text-strong);
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dashboard-search__text small {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .dashboard-search__empty {
   margin: 0;
-  padding: 14px 12px;
-
-  color: var(--color-text-muted);
-  font-size: 13px;
-  overflow-wrap: anywhere;
-}
-
-.dashboard-search__sr {
-  position: absolute;
-
-  width: 1px;
-  height: 1px;
-
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-.dashboard-search__toggle,
-.dashboard-search__close {
-  display: none;
-}
-
-.dashboard-search__close {
-  width: 32px;
-  height: 32px;
-
-  flex: none;
-  align-items: center;
-  justify-content: center;
-
-  padding: 0;
-
-  border: 0;
-  border-radius: 50%;
+  padding: 18px 14px;
 
   color: var(--color-text-secondary);
-  background: transparent;
-
-  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  text-align: center;
 }
 
-.dashboard-search__field > .dashboard-search__close svg {
-  width: 18px;
-  height: 18px;
-}
-
-.dashboard-search :is(button, input):focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-.dashboard-search__field input:focus-visible {
-  outline: 0;
-}
+/* =========================================
+   RESPONSIVE
+========================================= */
 
 @media (max-width: 1024px) {
   .dashboard-search {
@@ -197,55 +256,35 @@
   }
 }
 
-/* Very narrow screens: an icon button, and the field opens as a bar that
-   covers the header. */
+/* Collapsed behind a button; opened, the field covers the header bar. */
 @media (max-width: 480px) {
   .dashboard-search {
     width: auto;
-    margin-inline-start: auto;
+    flex: 0 0 auto;
   }
 
   .dashboard-search__toggle {
-    width: 40px;
-    height: 40px;
-
     display: grid;
-    place-items: center;
-
-    padding: 0;
-
-    border: 0;
-    border-radius: 50%;
-
-    color: var(--color-text-primary);
-    background: transparent;
-
-    cursor: pointer;
-  }
-
-  .dashboard-search__toggle svg {
-    width: 20px;
-    height: 20px;
   }
 
   .dashboard-search__field {
     display: none;
   }
 
-  .dashboard-search--compact-open .dashboard-search__field {
+  .dashboard-search--open .dashboard-search__field {
     position: fixed;
-    inset-inline: 10px;
-    top: 10px;
     z-index: 70;
+    inset-block-start: 10px;
+    inset-inline: 12px;
 
     display: flex;
+
+    height: 42px;
   }
 
-  .dashboard-search--compact-open .dashboard-search__close {
-    display: inline-flex;
-  }
-
-  .dashboard-search--compact-open .dashboard-search__panel {
-    max-height: calc(100vh - 80px);
+  .dashboard-search--open .dashboard-search__popup {
+    position: fixed;
+    inset-block-start: 60px;
+    inset-inline: 12px;
   }
 }

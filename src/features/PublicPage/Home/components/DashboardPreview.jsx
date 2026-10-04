@@ -1,4 +1,6 @@
 import { useTranslation } from "react-i18next";
+
+import { PRODUCT_PREVIEW_ID } from "../homeAnchors";
 import {
   LuBell,
   LuBrainCircuit,
@@ -13,18 +15,16 @@ import logo from "../../../../assets/smart-spend-logo.png";
 
 export default function DashboardPreview() {
   const { t, i18n } = useTranslation();
-  const locale = (i18n.resolvedLanguage || i18n.language || "en").slice(0, 2);
-  // Apr..Sep of an arbitrary year, named in the current language.
-  const months = Array.from({ length: 6 }, (_, index) =>
-    new Intl.DateTimeFormat(locale, { month: "short", timeZone: "UTC" }).format(
-      new Date(Date.UTC(2026, 3 + index, 1)),
-    ),
+  const chartMonths = Array.from({ length: 6 }, (_, index) =>
+    new Date(2026, 3 + index, 1).toLocaleDateString(i18n.language, {
+      month: "short",
+    }),
   );
 
   return (
     <section
       className="home-section dashboard-preview-section"
-      id="product-preview"
+      id={PRODUCT_PREVIEW_ID}
       tabIndex={-1}
     >
       <div className="home-container">
@@ -40,7 +40,6 @@ export default function DashboardPreview() {
             <div className="dashboard-browser__chrome">
               <div className="dashboard-browser__dots"><span /><span /><span /></div>
               <div className="dashboard-browser__url"><span>smartspend.app/dashboard</span></div>
-              <em className="home-sample-tag">{t("home.sample.label")}</em>
               <span className="dashboard-browser__status" />
             </div>
 
@@ -64,19 +63,19 @@ export default function DashboardPreview() {
                 </div>
 
                 <div className="dashboard-browser__summary">
-                  <article className="dashboard-summary-card dashboard-summary-card--primary">
+                  <article className="home-preview-card home-preview-card--primary">
                     <small>{t("home.preview.totalBalance")}</small>
                     <strong>$24,580.90</strong>
                     <span>+8.4% {t("home.dashboardPreview.vsLastMonth")}</span>
                   </article>
-                  <article className="dashboard-summary-card"><span className="dashboard-summary-card__icon dashboard-summary-card__icon--success">↑</span><small>{t("home.preview.income")}</small><strong>$5,400</strong></article>
-                  <article className="dashboard-summary-card"><span className="dashboard-summary-card__icon dashboard-summary-card__icon--danger">↓</span><small>{t("home.preview.expenses")}</small><strong>$3,120</strong></article>
-                  <article className="dashboard-summary-card"><span className="dashboard-summary-card__icon dashboard-summary-card__icon--blue"><LuPiggyBank /></span><small>{t("home.preview.savings")}</small><strong>$1,850</strong></article>
+                  <article className="home-preview-card"><span className="home-preview-card__icon home-preview-card__icon--success">↑</span><small>{t("home.preview.income")}</small><strong>$5,400</strong></article>
+                  <article className="home-preview-card"><span className="home-preview-card__icon home-preview-card__icon--danger">↓</span><small>{t("home.preview.expenses")}</small><strong>$3,120</strong></article>
+                  <article className="home-preview-card"><span className="home-preview-card__icon home-preview-card__icon--blue"><LuPiggyBank /></span><small>{t("home.preview.savings")}</small><strong>$1,850</strong></article>
                 </div>
 
                 <div className="dashboard-browser__content-grid">
                   <article className="dashboard-panel dashboard-panel--chart">
-                    <div className="dashboard-panel__head"><div><small>{t("home.dashboardPreview.cashFlow")}</small><strong><bdi>$2,280</bdi> {t("home.sample.net")}</strong></div><span>{t("home.sample.months")}</span></div>
+                    <div className="dashboard-panel__head"><div><small>{t("home.dashboardPreview.cashFlow")}</small><strong><bdi>{t("home.sample.net", { amount: "$2,280" })}</bdi></strong></div><span>{t("home.sample.sixMonths")}</span></div>
                     <div className="dashboard-large-chart" aria-hidden="true">
                       <span className="dashboard-large-chart__grid dashboard-large-chart__grid--one" />
                       <span className="dashboard-large-chart__grid dashboard-large-chart__grid--two" />
@@ -92,24 +91,24 @@ export default function DashboardPreview() {
                         <path d="M0 165 C65 154 92 104 150 122 S226 160 286 116 S365 52 420 82 S515 120 620 42" fill="none" stroke="#2563EB" strokeWidth="4" strokeLinecap="round" />
                       </svg>
                     </div>
-                    <div className="dashboard-chart-labels">{months.map((month) => <span key={month}>{month}</span>)}</div>
+                    <div className="dashboard-chart-labels">{chartMonths.map((month) => <span key={month}>{month}</span>)}</div>
                   </article>
 
                   <article className="dashboard-panel dashboard-panel--budget">
-                    <div className="dashboard-panel__head"><div><small>{t("home.preview.monthlyBudget")}</small><strong><bdi>77%</bdi> {t("home.sample.used")}</strong></div><span className="dashboard-panel__head-icon"><LuTarget /></span></div>
+                    <div className="dashboard-panel__head"><div><small>{t("home.preview.monthlyBudget")}</small><strong>{t("home.sample.used", { percent: 77 })}</strong></div><span className="dashboard-panel__head-icon"><LuTarget /></span></div>
                     <div className="dashboard-budget-ring"><span><strong><bdi>23%</bdi></strong><small>{t("home.sample.left")}</small></span></div>
-                    <div className="dashboard-budget-meta"><span><bdi>$1,860</bdi> {t("home.sample.spent")}</span><b>$2,400</b></div>
+                    <div className="dashboard-budget-meta"><span><bdi>{t("home.sample.spent", { amount: "$1,860" })}</bdi></span><b>$2,400</b></div>
                   </article>
 
                   <article className="dashboard-panel dashboard-panel--transactions">
                     <div className="dashboard-panel__head"><strong>{t("home.preview.recentTransactions")}</strong><span>{t("home.hero.visual.viewAll")}</span></div>
-                    <DashboardTransaction icon={<LuCreditCard />} name="Whole Foods" category={t("home.sample.categories.groceries")} amount="-$84.20" />
-                    <DashboardTransaction icon={<LuReceiptText />} name="Netflix" category={t("home.sample.categories.subscription")} amount="-$19.00" />
-                    <DashboardTransaction icon={<LuWalletCards />} name={t("home.sample.tx.salary")} category={t("home.sample.categories.income")} amount="+$4,200" positive />
+                    <DashboardTransaction icon={<LuCreditCard />} name={t("home.sample.wholeFoods")} category={t("home.sample.groceries")} amount="-$84.20" />
+                    <DashboardTransaction icon={<LuReceiptText />} name={t("home.sample.netflix")} category={t("home.sample.subscription")} amount="-$19.00" />
+                    <DashboardTransaction icon={<LuWalletCards />} name={t("home.sample.salary")} category={t("home.sample.incomeCategory")} amount="+$4,200" positive />
                   </article>
 
                   <article className="dashboard-panel dashboard-panel--ai">
-                    <div className="dashboard-panel__head"><strong><LuBrainCircuit /> {t("home.ai.badge")}</strong><span className="dashboard-ai-live">{t("home.sample.badge")}</span></div>
+                    <div className="dashboard-panel__head"><strong><LuBrainCircuit /> {t("home.ai.badge")}</strong><span className="dashboard-ai-live">{t("home.ai.live")}</span></div>
                     <p>{t("home.ai.recommendationText")}</p>
                     <div className="dashboard-ai-action">{t("home.ai.primary")} <span>↗</span></div>
                   </article>
@@ -128,7 +127,7 @@ function DashboardTransaction({ icon, name, category, amount, positive = false }
     <div className="dashboard-transaction-row">
       <span>{icon}</span>
       <div><strong>{name}</strong><small>{category}</small></div>
-      <b className={positive ? "is-positive" : ""}><bdi>{amount}</bdi></b>
+      <b className={positive ? "is-positive" : ""}>{amount}</b>
     </div>
   );
 }

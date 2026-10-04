@@ -1,15 +1,33 @@
 # Unsaved changes protection
 
-`hooks/useUnsavedChanges(isDirty)` returns `{ confirmDiscard, markSaved }`.
+## Pieces (`src/components/UnsavedChanges/`, `src/components/ConfirmDialog/`)
 
-- While dirty: closing or reloading the tab shows the browser prompt (`beforeunload`), and navigating to **another path** inside the app asks for confirmation (`useBlocker`; query-only changes are not a "leave"). The text is `common.unsavedChanges.message`, shown with `window.confirm`.
-- `confirmDiscard()`: for the close button, the backdrop and Escape of modal forms. True when clean or confirmed.
-- `markSaved()`: called right after a successful save so that a navigation in the same tick (or the page reloading) never prompts.
-- Needs a data router (`main.jsx`).
+| File | Role |
+| --- | --- |
+| `unsavedChanges.js` | `isFormDirty(current, baseline, fields?)`: compares after normalising (trim, `null` = `undefined` = `""`, numbers and booleans as text, lists by content), so formatting alone is never a change |
+| `UnsavedChangesGuard.jsx` | For page forms. While `when` is true: holds in-app navigation to another page (`useBlocker`) and asks first, and arms the browser's `beforeunload` prompt for closing or reloading the tab |
+| `useDiscardChanges.jsx` | For forms in a dialog. `requestClose()` asks before the X, Cancel, Escape or a click outside discards edits |
+| `ConfirmDialog.jsx` | The prompt (`role="alertdialog"`); the safe button has initial focus |
 
-## Where it is used
+`useBlocker` needs a data router; see the routing note in [error boundary](../error-handling/error-boundary.md#routing-note). A change of only the query string or hash on the same page (a filter, a tab) never prompts.
 
-- Modal forms: Account, Budget, Category, Debt (create and edit), Recurring, Savings goal, Transfer. Dirty = the form differs from a snapshot taken on mount (`JSON.stringify`). All of them change the form only from user input, so there are no false positives.
-- Settings > Profile: dirty = the form differs from the saved user, so it clears when a save updates the session. The currency field is read-only and ignored.
+## Rules
 
-Forms not yet covered (movement/payment/correction dialogs, the financial operation entry form) can adopt the same hook.
+- A form is dirty when its values differ from the saved baseline. After a successful save the baseline moves (Settings profile reads the updated user; dialog forms close), so the prompt stops without extra code.
+- Nothing is armed while a request is in flight (`isDirty && !isSaving`), and nothing is armed when the form is clean.
+- Editing a value back to the saved one makes the form clean again.
+
+## Where it is applied
+
+- **Page forms (`UnsavedChangesGuard`):** Settings → Profile (name, email, phone; baseline is the signed-in user) and Settings → Security change password (any field filled).
+- **Dialog forms (`useDiscardChanges`):** account, budget, category, debt (create, edit, payment), transfer, recurring rule, savings goal (create, goal movement) and transaction correction. Each captures its initial values on mount and compares them on close.
+
+Not covered: confirmation dialogs (archive, reverse, discard) and read-only screens have nothing to lose.
+
+## Translations
+
+`common.unsavedChanges.*` (EN and AR): title, message, discardMessage, stay, leave, keepEditing, discard.
+
+## Tests
+
+`tests/unsavedChanges.test.mjs` covers the dirty comparison. In a headless browser against a mocked API: leaving a dirty profile form is blocked, Stay keeps the page, Leave navigates, a clean form never prompts, the real tab navigation shows the browser prompt, and Escape on a dirty account dialog asks before discarding.

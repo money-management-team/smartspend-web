@@ -4,8 +4,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuthContext } from "../../../contexts/auth/useAuthContext";
 import { PATH } from "../../../routes/Path";
-import { withReturnTo } from "../../../routes/returnTo";
-import { useReturnPath } from "../../../routes/useReturnPath";
+import { getPostAuthPath } from "../../../routes/postAuthRedirect";
 import { getApiErrorMessage } from "../../Dashboards/User/api/apiClient";
 
 import AuthAlert from "../components/AuthAlert/AuthAlert";
@@ -32,8 +31,7 @@ const PROMO_CHIPS = [0, 1, 2];
 export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { search } = useLocation();
-  const returnPath = useReturnPath();
+  const location = useLocation();
   const { login } = useAuthContext();
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
@@ -80,7 +78,7 @@ export default function Login() {
         { remember: form.remember },
       );
 
-      navigate(returnPath, { replace: true });
+      navigate(getPostAuthPath(location.state), { replace: true });
     } catch (error) {
       if (error?.code === "VALIDATION_ERROR") setErrors(error.errors);
       setGeneralError(getApiErrorMessage(error, t));
@@ -186,7 +184,7 @@ export default function Login() {
         <AuthSwitchPrompt
           prefix={t("auth.login.register.prefix")}
           linkLabel={t("auth.login.register.link")}
-          to={withReturnTo(PATH.AUTH.REGISTER, search)}
+          to={PATH.AUTH.REGISTER}
         />
       </section>
     </>

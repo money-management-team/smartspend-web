@@ -9,13 +9,18 @@
     "notAvailable": "Not available",
     "errorBoundary": {
       "title": "Something went wrong",
-      "description": "An unexpected error stopped this screen from loading. Your data is safe. Try again, or reload the page.",
+      "message": "An unexpected error occurred. Your data is safe. Reload the page to continue, or go back to the dashboard.",
       "reload": "Reload page",
-      "home": "Go to home",
-      "dashboard": "Back to dashboard"
+      "dashboard": "Go to dashboard"
     },
     "unsavedChanges": {
-      "message": "You have unsaved changes. If you leave now, they will be lost. Leave anyway?"
+      "title": "Discard unsaved changes?",
+      "message": "You have changes that haven't been saved. If you leave this page, they will be lost.",
+      "discardMessage": "You have changes that haven't been saved. If you close this form, they will be lost.",
+      "stay": "Stay on page",
+      "leave": "Leave page",
+      "keepEditing": "Keep editing",
+      "discard": "Discard changes"
     }
   },
   "api": {
@@ -342,25 +347,35 @@
       "detail": "This version supports personal finance accounts. We will open business registration when its secure workflow is ready.",
       "personal": "Create a personal account",
       "back": "Back to account type",
-      "short": "Coming soon"
+      "short": "Coming soon",
+      "badge": "Under development",
+      "promo": {
+        "title": "Business accounts are on the way",
+        "subtitle": "We are building a secure workspace for teams, with the right roles and permissions.",
+        "chips": [
+          "Team workspace",
+          "Company budgets",
+          "Clear reports"
+        ]
+      },
+      "roadmap": {
+        "title": "What we are building",
+        "items": [
+          "Secure company registration",
+          "Team roles and permissions",
+          "Shared budgets and reports"
+        ]
+      }
     }
   },
   "dashboard": {
     "header": {
-      "searchPlaceholder": "Search pages...",
+      "searchPlaceholder": "Search pages and tools...",
       "userProfile": "User profile",
       "openMenu": "Open navigation menu",
       "lightMode": "Switch to light mode",
       "darkMode": "Switch to dark mode",
-      "switchLanguage": "Switch language",
-      "search": {
-        "label": "Search pages",
-        "open": "Open search",
-        "close": "Close search",
-        "results": "Matching pages",
-        "noResults": "No page matches \"{{query}}\".",
-        "count": "{{total}} pages found"
-      }
+      "switchLanguage": "Switch language"
     },
     "sidebar": {
       "tagline": "AI money management",
@@ -3518,6 +3533,36 @@
         "failed": "Failed",
         "reversed": "Reversed"
       }
+    },
+    "search": {
+      "label": "Search dashboard pages",
+      "open": "Open search",
+      "clear": "Clear search",
+      "results": "Matching pages",
+      "empty": "No page matches “{{query}}”. Try another word, such as accounts, budgets or reports.",
+      "keywords": {
+        "dashboard": "home overview summary balance main",
+        "accounts": "bank cash wallet card balances account",
+        "attention": "alerts warnings reminders issues needs review",
+        "financialOperations": "transactions income expense spending add transaction ledger payments",
+        "templates": "quick templates shortcuts repeat transaction",
+        "transfers": "transfer move money between accounts",
+        "recurring": "repeating subscriptions bills scheduled automatic",
+        "aiCaptures": "receipts invoices scan voice ai expense capture",
+        "imports": "import statement csv bank file upload",
+        "calendar": "dates schedule due upcoming agenda",
+        "categories": "category labels tags spending groups",
+        "budgets": "budget limit spending plan",
+        "savingsGoals": "savings saving goals target piggy bank",
+        "debts": "debt loans owe lent borrowed payments",
+        "reports": "reports analytics statistics charts pdf",
+        "exports": "export history download csv excel pdf",
+        "monthly": "monthly review summary month report",
+        "guide": "getting started guide help tutorial onboarding",
+        "aiAssistant": "ai assistant chat copilot insights forecast advice",
+        "notifications": "notifications alerts inbox messages bell",
+        "settings": "settings profile account password security language theme preferences"
+      }
     }
   },
   "home": {
@@ -3734,32 +3779,30 @@
       "rights": "All rights reserved."
     },
     "sample": {
-      "label": "Sample data",
-      "badge": "Sample",
-      "send": "Send (example)",
-      "months": "6 months",
-      "net": "net",
-      "used": "used",
+      "badge": "Sample data",
+      "aiSend": "Send",
+      "aiName": "Smart Spend AI",
+      "dining": "Dining",
+      "transport": "Transport",
+      "sixMonths": "6 months",
+      "net": "{{amount}} net",
+      "used": "{{percent}}% used",
       "left": "left",
-      "spent": "spent",
-      "ofTotal": "of",
-      "budgetAlert": "Budget alert",
-      "diningAt": "Dining is at 82%",
+      "spent": "{{amount}} spent",
+      "ofTotal": "of {{amount}}",
+      "salary": "Salary",
+      "wholeFoods": "Whole Foods",
+      "netflix": "Netflix",
+      "metroCard": "Metro Card",
+      "groceries": "Groceries",
+      "subscription": "Subscription",
+      "incomeCategory": "Income",
       "bank": "Bank",
       "wallet": "Wallet",
-      "categories": {
-        "dining": "Dining",
-        "transport": "Transport",
-        "home": "Home",
-        "travel": "Travel",
-        "groceries": "Groceries",
-        "subscription": "Subscription",
-        "income": "Income"
-      },
-      "tx": {
-        "salary": "Salary",
-        "metro": "Metro Card"
-      }
+      "budgetAlert": "Budget alert",
+      "diningAt": "Dining is at {{percent}}%",
+      "homeBudget": "Home",
+      "travelBudget": "Travel"
     }
   }
 }

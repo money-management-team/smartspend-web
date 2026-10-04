@@ -161,7 +161,7 @@ export default function CategoryDetails() {
     return (
       <div className="category-details">
         {backLink}
-        <Loading message={t("dashboard.categories.details.loading")} />
+        <Loading variant="page" size="large" message={t("dashboard.categories.details.loading")} />
       </div>
     );
   }

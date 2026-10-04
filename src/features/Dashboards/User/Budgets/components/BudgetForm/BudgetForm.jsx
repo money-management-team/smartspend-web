@@ -1,4 +1,3 @@
-import { useUnsavedChanges } from "../../../../../../hooks/useUnsavedChanges";
 import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -38,6 +37,8 @@ import {
 // styles come from the reverse dialog's stylesheet.
 import "../../../Accounts/components/AccountForm/AccountForm.css";
 import "../../../FinancialOperations/components/ReverseTransactionDialog/ReverseTransactionDialog.css";
+import useDiscardChanges from "../../../../../../components/UnsavedChanges/useDiscardChanges";
+import { isFormDirty } from "../../../../../../components/UnsavedChanges/unsavedChanges";
 import "./BudgetForm.css";
 
 // Backend fields shown in the error block rather than under an input.
@@ -124,12 +125,6 @@ export default function BudgetForm({ budget, onSave, onClose }) {
   const locale = getDisplayLocale(i18n.language);
   const isEditing = Boolean(budget);
   const [form, setForm] = useState(() => toFormValues(budget));
-
-  // Unsaved edits are guarded against closing, leaving the page and reloading.
-  const [initialSnapshot] = useState(() => JSON.stringify(form));
-  const { confirmDiscard, markSaved } = useUnsavedChanges(
-    JSON.stringify(form) !== initialSnapshot,
-  );
   const [errors, setErrors] = useState({});
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -196,8 +191,15 @@ export default function BudgetForm({ budget, onSave, onClose }) {
   /* ---------- Handlers ---------- */
 
   const close = () => {
-    if (!pendingRef.current && confirmDiscard()) onClose();
+    if (!pendingRef.current) onClose();
   };
+
+  // Values the form opened with: closing with other values asks first.
+  const [initialForm] = useState(form);
+  const { requestClose, discardDialog } = useDiscardChanges({
+    isDirty: isFormDirty(form, initialForm) && !isSaving,
+    onClose: close,
+  });
 
   const updateField = (name, value) => {
     setForm((current) => ({ ...current, [name]: value }));
@@ -233,7 +235,6 @@ export default function BudgetForm({ budget, onSave, onClose }) {
 
     try {
       await onSave(payload);
-      markSaved();
     } catch (error) {
       // 401 is handled by apiClient's session-expired flow.
       if (error?.code !== "UNAUTHENTICATED") {
@@ -265,9 +266,10 @@ export default function BudgetForm({ budget, onSave, onClose }) {
     <div
       className="account-form-modal"
       role="presentation"
-      onMouseDown={close}
-      onKeyDown={(event) => event.key === "Escape" && close()}
+      onMouseDown={requestClose}
+      onKeyDown={(event) => event.key === "Escape" && requestClose()}
     >
+      {discardDialog}
       <section
         className="account-form-modal__dialog budget-form"
         role="dialog"
@@ -285,7 +287,7 @@ export default function BudgetForm({ budget, onSave, onClose }) {
           </h2>
           <button
             type="button"
-            onClick={close}
+            onClick={requestClose}
             disabled={isSaving}
             aria-label={t("common.close")}
           >
@@ -551,7 +553,7 @@ export default function BudgetForm({ budget, onSave, onClose }) {
           )}
 
           <footer>
-            <button type="button" onClick={close} disabled={isSaving}>
+            <button type="button" onClick={requestClose} disabled={isSaving}>
               {t("common.cancel")}
             </button>
             <button

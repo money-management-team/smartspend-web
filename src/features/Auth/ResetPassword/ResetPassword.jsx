@@ -283,7 +283,7 @@ export default function ResetPassword() {
       </AuthPromo>
 
       <section className="auth-panel">
-        <AuthSteps current={3} />
+        <AuthSteps current={2} />
 
         <AuthHeading
           icon={<LockIcon />}

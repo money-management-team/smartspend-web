@@ -1,55 +1,54 @@
-
+import PublicInformationRoute from "../features/PublicPage/Information/PublicInformationRoute";
 import Home from "../features/PublicPage/Home/Home";
+import NotFound from "../features/PublicPage/NotFound/NotFound";
 
 import AuthLayout from "../layouts/AuthLayout/AuthLayout";
 import DashboardLayout from "../layouts/DashboardLayout/DashboardLayout";
 import PublicLayout from "../layouts/PublicLayout/PublicLayout";
 import { Navigate } from "react-router-dom";
-import { lazyPage } from "./lazyPage";
-import { LEGACY_VERIFY_CODE_PATH, PATH } from "./Path";
-import { GuestOnly, RequireAuth } from "./RouteGuards";
 
-/* Pages load on demand; Home and the layouts stay in the main bundle. */
-const PublicInformationRoute = lazyPage(() => import("../features/PublicPage/Information/PublicInformationRoute"));
-const AttentionCenter = lazyPage(() => import("../features/Dashboards/User/Experience/AttentionCenter"));
-const MonthlyReview = lazyPage(() => import("../features/Dashboards/User/Experience/MonthlyReview"));
-const QuickTemplates = lazyPage(() => import("../features/Dashboards/User/Experience/QuickTemplates"));
-const GettingStarted = lazyPage(() => import("../features/Dashboards/User/Experience/GettingStarted"));
-const AccountType = lazyPage(() => import("../features/Auth/AccountType/AccountType"));
-const CompanyUnavailable = lazyPage(() => import("../features/Auth/CompanyUnavailable/CompanyUnavailable"));
-const ForgotPassword = lazyPage(() => import("../features/Auth/ForgotPassword/ForgotPassword"));
-const Login = lazyPage(() => import("../features/Auth/Login/Login"));
-const PasswordChanged = lazyPage(() => import("../features/Auth/PasswordChanged/PasswordChanged"));
-const Register = lazyPage(() => import("../features/Auth/Register/Register"));
-const ResetPassword = lazyPage(() => import("../features/Auth/ResetPassword/ResetPassword"));
-const VerifyEmail = lazyPage(() => import("../features/Auth/VerifyEmail/VerifyEmail"));
-const AccountDetails = lazyPage(() => import("../features/Dashboards/User/AccountDetails/AccountDetails"));
-const Accounts = lazyPage(() => import("../features/Dashboards/User/Accounts/Accounts"));
-const AIAssistant = lazyPage(() => import("../features/Dashboards/User/AIAssistant/AIAssistant"));
-const Imports = lazyPage(() => import("../features/Dashboards/User/Imports/Imports"));
-const AiExpenseCaptureDetails = lazyPage(() => import("../features/Dashboards/User/AiExpenseCaptureDetails/AiExpenseCaptureDetails"));
-const AiExpenseCaptures = lazyPage(() => import("../features/Dashboards/User/AiExpenseCaptures/AiExpenseCaptures"));
-const BudgetDetails = lazyPage(() => import("../features/Dashboards/User/BudgetDetails/BudgetDetails"));
-const Budgets = lazyPage(() => import("../features/Dashboards/User/Budgets/Budgets"));
-const Calendar = lazyPage(() => import("../features/Dashboards/User/Calendar/Calendar"));
-const Categories = lazyPage(() => import("../features/Dashboards/User/Categories/Categories"));
-const CategoryDetails = lazyPage(() => import("../features/Dashboards/User/CategoryDetails/CategoryDetails"));
-const Dashboard = lazyPage(() => import("../features/Dashboards/User/Dashboard/Dashboard"));
-const DebtDetails = lazyPage(() => import("../features/Dashboards/User/DebtDetails/DebtDetails"));
-const Debts = lazyPage(() => import("../features/Dashboards/User/Debts/Debts"));
-const FinancialOperations = lazyPage(() => import("../features/Dashboards/User/FinancialOperations/FinancialOperations"));
-const Notifications = lazyPage(() => import("../features/Dashboards/User/Notifications/Notifications"));
-const Recurring = lazyPage(() => import("../features/Dashboards/User/Recurring/Recurring"));
-const RecurringDetails = lazyPage(() => import("../features/Dashboards/User/RecurringDetails/RecurringDetails"));
-const ReportExports = lazyPage(() => import("../features/Dashboards/User/ReportExports/ReportExports"));
-const Reports = lazyPage(() => import("../features/Dashboards/User/Reports/Reports"));
-const SavingsGoalDetails = lazyPage(() => import("../features/Dashboards/User/SavingsGoalDetails/SavingsGoalDetails"));
-const SavingsGoals = lazyPage(() => import("../features/Dashboards/User/SavingsGoals/SavingsGoals"));
-const Settings = lazyPage(() => import("../features/Dashboards/User/Settings/Settings"));
-const TransactionDetails = lazyPage(() => import("../features/Dashboards/User/TransactionDetails/TransactionDetails"));
-const TransferDetails = lazyPage(() => import("../features/Dashboards/User/TransferDetails/TransferDetails"));
-const Transfers = lazyPage(() => import("../features/Dashboards/User/Transfers/Transfers"));
-const NotFound = lazyPage(() => import("../features/PublicPage/NotFound/NotFound"));
+import {
+  AttentionCenter,
+  MonthlyReview,
+  QuickTemplates,
+  GettingStarted,
+  AccountType,
+  CompanyUnavailable,
+  ForgotPassword,
+  Login,
+  PasswordChanged,
+  Register,
+  ResetPassword,
+  VerifyEmail,
+  AccountDetails,
+  Accounts,
+  AIAssistant,
+  Imports,
+  AiExpenseCaptureDetails,
+  AiExpenseCaptures,
+  BudgetDetails,
+  Budgets,
+  Calendar,
+  Categories,
+  CategoryDetails,
+  Dashboard,
+  DebtDetails,
+  Debts,
+  FinancialOperations,
+  Notifications,
+  Recurring,
+  RecurringDetails,
+  ReportExports,
+  Reports,
+  SavingsGoalDetails,
+  SavingsGoals,
+  Settings,
+  TransactionDetails,
+  TransferDetails,
+  Transfers,
+} from "./lazyPages";
+import { PATH } from "./Path";
+import { GuestOnly, RequireAuth } from "./RouteGuards";
 
 /* =========================
    Public Routes
@@ -68,6 +67,13 @@ const routes = [
         path,
         element: <PublicInformationRoute pageKey={key.toLowerCase()} />,
       })),
+      /* Legacy demo page, removed. Verification is by the emailed link and the
+         dashboard banner, so old links go to the dashboard (sign-in first when
+         signed out, and back here afterwards). */
+      {
+        path: PATH.AUTH.VERIFY_CODE,
+        element: <Navigate to={PATH.USER.DASHBOARD} replace />,
+      },
       {
         path: "*",
         element: <NotFound />,
@@ -112,11 +118,6 @@ const guestRoutes = [
       {
         path: PATH.AUTH.FORGOT_PASSWORD,
         element: <ForgotPassword />,
-      },
-      {
-        // The OTP prototype was replaced by the emailed verification link.
-        path: LEGACY_VERIFY_CODE_PATH,
-        element: <Navigate to={PATH.AUTH.SIGNIN} replace />,
       },
       {
         path: PATH.AUTH.PASSWORD_CHANGED,

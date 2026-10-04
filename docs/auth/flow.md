@@ -71,7 +71,7 @@ The restore effect runs whenever `session.token` changes. `applyAuthData` record
 
 ## Password recovery flow
 
-The four recovery pages form a visual sequence. `AuthSteps` shows the current step (1 of 4 to 4 of 4).
+The three recovery pages form a visual sequence. `AuthSteps` shows the current step (1 of 3 to 3 of 3).
 
 The backend flow is link-based:
 
@@ -80,14 +80,13 @@ The backend flow is link-based:
 3. Reset Password reads `token` and `identifier` from that link and sends `POST /auth/reset-password`.
 4. On success the app goes to Password Changed, and the user signs in with the new password.
 
-The old Verify Code (step 2) prototype page was removed.
+There is no code-entry step: the old Verify Code demo page was removed (see the [overview](overview.md#routes)).
 
 | Step | Page | Submit behavior | Links |
 | --- | --- | --- | --- |
 | 1 | Forgot password | `POST /auth/forgot-password`, then shows the backend confirmation in place. No navigation, no session change ([details](forgot-password/implementation.md)) | Back → `/signin` |
-| 2 | Verify code | Logs the entered code; resend logs a message (not used by the link flow) | Edit phone number → `/forgot-password` |
-| 3 | Reset password | `POST /auth/reset-password` with the link's `token` and `identifier`. On success it clears any stored session and navigates to `/password-changed` ([details](reset-password/implementation.md)) | Back → `/signin`; unusable link → "Request a new link" → `/forgot-password` |
-| 4 | Password changed | No form | Primary button → `/signin` |
+| 2 | Reset password | `POST /auth/reset-password` with the link's `token` and `identifier`. On success it clears any stored session and navigates to `/password-changed` ([details](reset-password/implementation.md)) | Back → `/signin`; unusable link → "Request a new link" → `/forgot-password` |
+| 3 | Password changed | No form | Primary button → `/signin` |
 
 ## Session after a password reset
 

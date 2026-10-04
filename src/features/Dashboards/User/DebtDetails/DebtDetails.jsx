@@ -258,7 +258,7 @@ export default function DebtDetails() {
     return (
       <div className="debt-details">
         {backLink}
-        <Loading message={t("dashboard.debts.details.loading")} />
+        <Loading variant="page" size="large" message={t("dashboard.debts.details.loading")} />
       </div>
     );
   }

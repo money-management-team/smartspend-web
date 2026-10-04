@@ -8,7 +8,11 @@ import {
 } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-import { LuLogOut, LuChevronDown, LuX } from "react-icons/lu";
+import {
+  LuLogOut,
+  LuChevronDown,
+  LuX,
+} from "react-icons/lu";
 
 import logo from "../../../../assets/smart-spend-logo.png";
 
@@ -18,7 +22,7 @@ import { useUnreadNotifications } from "../../../../contexts/notifications/useUn
 import { getDisplayLocale } from "../../../../features/Dashboards/User/Accounts/accountHelpers";
 import { formatUnreadBadge } from "../../../../features/Dashboards/User/Notifications/notificationHelpers";
 import { PATH } from "../../../../routes/Path";
-import { getNavigation } from "../../navigation";
+import { getNavigation } from "../../dashboardNavigation";
 
 const linkMatchesExactly = (link, pathname) =>
   Boolean(link.end) ||
