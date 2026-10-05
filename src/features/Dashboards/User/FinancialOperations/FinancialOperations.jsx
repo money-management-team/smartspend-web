@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import { Link, Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { LuTriangleAlert, LuX } from "react-icons/lu";
 
-import AccountStep from "./components/AccountStep/AccountStep";
 import CaptureStep from "./components/CaptureStep/CaptureStep";
 import Ledger from "./components/Ledger/Ledger";
 import OperationsIntro from "./components/OperationsIntro/OperationsIntro";
@@ -55,8 +54,8 @@ const TODAY_PER_PAGE = 100;
 const TODAY_MAX_PAGES = 5;
 
 /*
- * Guided capture page: pick the account (step 1), pick an input method
- * (step 2), then confirm a receipt-style review before anything is recorded.
+ * Compact capture page: type, account and method sit in one toolbar,
+ * then the existing explicit review runs before anything is recorded.
  * The ledger below lists the same transactions with its own filters.
  */
 export default function FinancialOperations() {
@@ -70,9 +69,9 @@ export default function FinancialOperations() {
   const filters = useMemo(() => readFilters(searchParams), [searchParams]);
   const query = useMemo(() => filtersToQuery(filters), [filters]);
   const [initialType] = useState(() => searchParams.get("new") ?? "expense");
-  // A ?new= link asks for the form, so it opens on manual entry.
+  // Daily entry starts manually; a saved voice-capture link still resumes its workflow.
   const [initialMethod] = useState(() =>
-    searchParams.get("new") ? "manual" : "voice",
+    searchParams.get("voice_capture") && !searchParams.get("new") ? "voice" : "manual",
   );
   // Transfers moved to their own section; old ?new=transfer links follow.
   const wantsTransfer = searchParams.get("new") === "transfer";
@@ -263,6 +262,7 @@ export default function FinancialOperations() {
       block: "center",
     });
 
+    accountStepRef.current?.querySelector("select")?.focus({ preventScroll: true });
     return false;
   };
 
@@ -402,7 +402,6 @@ export default function FinancialOperations() {
           isLoading: today.key !== listReloadKey,
           currency: options.accounts[0]?.currency_code,
         }}
-        hasAccount={Boolean(selectedAccount)}
       />
 
       {notice && (
@@ -429,18 +428,8 @@ export default function FinancialOperations() {
         </div>
       )}
 
-      <div ref={accountStepRef}>
-        <AccountStep
-          accounts={options.accounts}
-          selectedAccountId={selectedAccountId}
-          onSelect={setChosenAccountId}
-          isLoading={isOptionsLoading}
-          error={isOptionsLoading ? null : options.error}
-          onRetry={() => setOptionsReloadKey((key) => key + 1)}
-        />
-      </div>
-
       <CaptureStep
+        accountSelectorRef={accountStepRef}
         account={selectedAccount}
         accounts={options.accounts}
         onCaptureConfirmed={refreshAfterMutation}
@@ -458,7 +447,9 @@ export default function FinancialOperations() {
         onReview={openReview}
       />
 
-      <SavedViews
+      <Ledger
+        savedViews={
+          <SavedViews
         scope="transactions"
         filters={Object.fromEntries(filtersToSearchParams(filters))}
         onApply={(values) =>
@@ -468,8 +459,7 @@ export default function FinancialOperations() {
           )
         }
       />
-
-      <Ledger
+        }
         page={isListLoading ? null : list.page}
         isLoading={isListLoading}
         error={isListLoading ? null : list.error}

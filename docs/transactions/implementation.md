@@ -9,32 +9,38 @@
 - **Reverse from the list** opens `ReverseTransactionDialog`; a success notice appears under the intro.
 - **Recording lives on the page, not in a form.** `recordOperation(operation)` builds the payload, owns the `Idempotency-Key` attempt and calls `createIncome` / `createExpense`; the review dialog only awaits it and shows the error if it throws. Keeping the attempt at page level means closing and reopening the review can't hand a retry a fresh key.
 
-## Guided layout
+## Compact daily-entry layout (2026-10-05)
 
-The page is a three-step flow above the ledger, all inside `DashboardLayout`:
+The page keeps the original API flows in a quieter, responsive layout:
 
 | Section | Component | What it does |
 | --- | --- | --- |
-| Intro | `OperationsIntro` | Hero copy, the four-step flow strip (steps 2–4 light up once an account is chosen) and today's expense total |
-| Step 1 | `AccountStep` | The active accounts as selectable cards (icon, name, type · last 4, balance). The selection is **derived**, not stored: an account that leaves the active list falls back to none, and a single account is already chosen |
-| Step 2 | `CaptureStep` | Method tabs (voice / receipt / manual) over one panel, plus the "nothing is recorded until you confirm" note |
-| Ledger | `Ledger` | The same list as before, now full width under a "Recent activity" heading |
+| Blue identity card | `OperationsIntro` | Page title, short explanation and the original per-currency total of today's expenses |
+| New transaction | `CaptureStep` | One row of native dropdowns: transaction type, active account, input method |
+| Account control | `AccountStep` | Active accounts by name and currency; the selected account's backend balance uses `PrivateMoney`. A single active account remains automatically selected |
+| Entry panel | `NewOperation`, `VoiceCaptureWorkflow`, `ReceiptCapture` | Only the selected method is mounted. Manual entry is the default; saved `voice_capture` links still reopen voice review |
+| Recent transactions | `Ledger` | Five rows initially. Show more opens the original 20-per-page list, filters, saved views and pagination |
+
+- The type dropdown controls manual expense/income entry. Voice and receipt workflows remain **expense-only**; their type control shows Expense and is disabled.
+- AI allowances appear only for voice/receipt, using the selected channel's quota. Quota fetching, reset, retry and enforcement rules are unchanged.
+- `AiInputAllowance` has an opt-in `compact` presentation. Without it, the existing receipt-retry page keeps its original markup and styling.
+- Quick templates use `ManualTemplateTools compact`: dropdown, explicit Apply, optional Save template and management link. The original eligibility, storage, limit, application and review rules are retained. Other consumers keep the default layout.
 
 - **Today's total** is a separate `GET /transactions` for today (`type=expense`, `status=posted`, `per_page` 100 — the backend's documented maximum; anything higher is rejected with a 422). It follows the paginator for up to 5 pages, so a busy day is totalled in full instead of stopping at the first page. Amounts of different currencies are **never** added together: each currency is totalled with `sumMoney` on its own, the largest group is shown and the rest are counted.
-- **Every method needs an account first.** `requireAccount()` is passed down; without a selection it shows a toast and scrolls step 1 into view.
+- **Every method needs an account first.** `requireAccount()` is passed down; without a selection it shows a toast and scrolls to and focuses the account dropdown.
 
-## Input methods (step 2)
+## Input methods
 
-| Method | Component | Backend |
+| Method | Component | Existing behavior preserved |
 | --- | --- | --- |
-| Manual entry | `NewOperation` | Collects the operation and opens the review dialog — it does **not** post |
-| Voice | `VoiceCapture` | None yet: the recorder runs locally and stopping it says so, with a link to manual entry. No operation is invented |
-| Receipt | `ReceiptCapture` | None yet: the image is picked locally, "Analyze" says the service isn't connected, with a link to manual entry |
+| Manual | `NewOperation` | Collects values and opens `ReviewOperationDialog`; only explicit confirmation posts money |
+| Voice | `VoiceCaptureWorkflow` | Existing secure recorder, upload, status polling, draft editing, confirmation and history |
+| Receipt | `ReceiptCapture` | Existing image validation/upload and review route; no direct transaction post from this panel |
 
 ## Manual entry (`NewOperation`)
 
-- Type chips: Expense / Income; the initial type comes from `?new=`. Transfers are recorded in their own section, with a link under the form.
-- Fields: amount (text, `inputMode="decimal"`, validated as a string, currency label from the chosen account), note → `description`, category (income: "No category" default; expense: explicit "Select a category"), date → `occurred_at` at `12:00:00`, reference number. The **account is not a field**: it comes from step 1 and is shown read-only.
+- Type dropdown in `CaptureStep`: Expense / Income; the initial type still comes from `?new=`. Changing type retains the entered form values. Transfers retain their own page and the link under the form.
+- Fields: amount (text, `inputMode="decimal"`, validated as a string, currency label from the chosen account), note → `description`, category (income: "No category" default; expense: explicit "Select a category"), date → `occurred_at` at `12:00:00`, reference number. The account comes from the dropdown above the form. Note and reference number are available under More details; hiding it does not remove an entered value from the review payload.
 - Client validation before the review opens: amount required / valid / > 0 / ≤ 4 decimals, expense category required. The account is enforced by `requireAccount()`.
 - On submit it calls `onReview(operation)` with an `onRecorded` callback that clears the form once the operation is actually recorded.
 
@@ -48,11 +54,11 @@ The page is a three-step flow above the ledger, all inside `DashboardLayout`:
 
 ## Transactions list (`Ledger` + `TransactionFilters`)
 
-- Header: "Recent activity" kicker, "Transactions" + total from the paginator, type chips.
-- Filters row: account, category (grouped by type), status, from/to dates, sort, "Clear filters".
-- Rows: type icon, title (description → category → type), meta (type · category · account · date), amount with +/− from the **type** (never computed), status badge for non-posted, chips (reversal entry / correction / transfer). The title is a `Link` stretched over the row (keyboard focus outlines it) and carries the list's query in router state for the back link. The reverse button (only when `canChangeTransaction`) sits above the link.
+- Header: Recent transactions + total. The collapsed view renders the first five rows from the existing server response. The expanded view retains the type filter as a select. Deep links with active filters, another sort or page > 1 open the full history immediately.
+- Filters and saved views open on demand in the full history: account, category (grouped by type), status, from/to dates, sort and Clear filters. All request/URL behavior is retained.
+- Rows: type icon, title (description → category → type), compact meta (account · date), amount with +/− from the **type** (never computed), status badge for non-posted, chips (reversal entry / correction / transfer). The title is a `Link` stretched over the row (keyboard focus outlines it) and carries the list's query in router state for the back link. The reverse button (only when `canChangeTransaction`) sits above the link.
 - States: loading, error (+ retry, + clear filters when filtered), empty (no transactions / no match + clear / empty page + first page).
-- Pagination footer: "Showing from–to of total", previous/next (arrows mirrored in RTL), "Page x of y".
+- Show more reveals the loaded page; server pagination then supplies all further pages. Show less returns a later page to page 1 and displays five rows. The original pagination summary and previous/next controls are preserved.
 
 ## Transaction details (`TransactionDetails.jsx`)
 
@@ -82,3 +88,5 @@ The page is a three-step flow above the ledger, all inside `DashboardLayout`:
 - Backend enum values without a translation (unknown source, entry role, type) are shown raw via `translateEnum`, which checks `i18n.exists` first so dev builds don't log missing keys.
 - Logical CSS properties, `text-align: start/end`, `<bdi>` around names/numbers, `dir="ltr"` on amounts and reference numbers, mirrored back/pagination arrows under `[dir="rtl"]`.
 - Paragraphs inside colored notices/errors set `color: inherit`, because `index.css` gives every `p` a text color.
+
+Daily manual entry shows only amount, category and date. Optional note and reference remain available under More details and still use the original review payload. The three primary fields sit in one row on desktop and two rows on phones.

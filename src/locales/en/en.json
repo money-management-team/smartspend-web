@@ -754,6 +754,23 @@
       }
     },
     "financialOperations": {
+      "ui": {
+        "applyTemplateShort": "Apply",
+        "saveTemplateShort": "Save template",
+        "heroKicker": "Your everyday money, made simple",
+        "heroDescription": "Quickly record income and expenses, and find your latest activity in one place.",
+        "newOperation": "New transaction",
+        "entryHint": "Choose the details, then review before confirming.",
+        "chooseAccount": "Choose an account",
+        "expensesOnly": "Voice and receipts capture expenses.",
+        "optionalDetails": "More details (optional)",
+        "transferLink": "Transfer between my accounts",
+        "allowanceDetails": "How are allowances counted?",
+        "recentTitle": "Recent transactions",
+        "recentHint": "Your latest 5 transactions. Open any transaction to see its details.",
+        "showMore": "Show more",
+        "showLess": "Show less"
+      },
       "title": "Financial operations",
       "subtitle": "Record income and expenses, and review your ledger.",
       "intro": {
@@ -2299,6 +2316,21 @@
       }
     },
     "reports": {
+      "ui": {
+        "heroDescription": "Choose a report and period to understand your money at a glance.",
+        "setupTitle": "What would you like to know?",
+        "setupHint": "Choose a report and period to see the results below.",
+        "periodLabel": "Period",
+        "customRange": "Custom period",
+        "advanced": "More options",
+        "savedViews": "Saved filters and review tools",
+        "resultTitle": "Report results",
+        "summaryTitle": "Key figures",
+        "summaryHint": "A summary of this period, with each currency shown separately.",
+        "detailsTitle": "All financial details",
+        "detailsHint": "Expand to see the remaining figures, grouped by currency.",
+        "periodDetails": "About this report"
+      },
       "title": "Reports",
       "subtitle": "Backend-calculated financial reports for any period, with every currency kept separate.",
       "tabs": {

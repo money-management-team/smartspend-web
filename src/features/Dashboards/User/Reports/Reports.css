@@ -32,7 +32,7 @@
 
 .reports-page__workspace {
   display: grid;
-  grid-template-columns: 232px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
   gap: 20px;
 }
@@ -276,3 +276,45 @@
     transition: none;
   }
 }
+
+/* 2026-10: one clear setup card, then the report across the full page width. */
+.reports-page { --report-gap: 22px; }
+.reports-page :is(input,select,button,summary,a):focus-visible { outline: 3px solid color-mix(in srgb,var(--color-primary) 55%,transparent); outline-offset: 3px; }
+.reports-page__setup { padding: 24px; border: 1px solid var(--report-line); border-radius: 18px; background: var(--color-surface); box-shadow: var(--shadow-xs); }
+.reports-page__setup-heading { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; margin-bottom: 20px; }
+.reports-page__setup-heading h2 { margin: 0; font-family: var(--font-heading); font-size: 20px; color: var(--color-text-strong); }
+.reports-page__setup-heading p { margin: 0; color: var(--color-text-muted); font-size: 12px; }
+.reports-page__saved-views { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--color-border); }
+.reports-page__saved-views > summary { display: flex; align-items: center; gap: 8px; width: fit-content; min-height: 32px; list-style: none; color: var(--color-text-muted); font-size: 12px; cursor: pointer; }
+.reports-page__saved-views > summary::-webkit-details-marker { display: none; }
+.reports-page__saved-views[open] > summary svg { transform: rotate(180deg); }
+.reports-page__saved-views > a { display: inline-block; margin-top: 12px; color: var(--color-primary); font-size: 12px; }
+.reports-page__result-heading { padding-top: 4px; }
+.reports-page__result-heading > span { display: block; margin-bottom: 6px; color: var(--color-primary); font-size: 11px; font-weight: 700; }
+.reports-page__result-heading h2 { margin: 0; font-family: var(--font-heading); font-size: 23px; color: var(--color-text-strong); }
+.reports-page__result-heading p { margin: 6px 0 0; color: var(--color-text-secondary); font-size: 12px; line-height: 1.7; }
+.reports-page__block-heading h3 { margin: 0; color: var(--color-text-strong); font-family: var(--font-heading); font-size: 18px; }
+.reports-page__block-heading p { margin: 5px 0 0; color: var(--color-text-muted); font-size: 12px; }
+.reports-page__details { border: 1px solid var(--report-line); border-radius: 16px; background: var(--color-surface); }
+.reports-page__details > summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 22px; list-style: none; cursor: pointer; }
+.reports-page__details > summary::-webkit-details-marker { display: none; }
+.reports-page__details summary strong { display: block; color: var(--color-text-strong); font-size: 14px; }
+.reports-page__details summary small { display: block; margin-top: 5px; color: var(--color-text-muted); font-size: 12px; }
+.reports-page__details > summary > svg { color: var(--color-text-muted); flex: none; }
+.reports-page__details[open] > summary > svg { transform: rotate(180deg); }
+.reports-page__details-content { padding: 0 16px 16px; }
+.reports-page__details-content > .report-section { border: 0; padding: 0; box-shadow: none; }
+.reports-page .report-highlight { padding: 20px; border-radius: 16px; box-shadow: none; }
+.reports-page .report-highlight__value { padding-top: 3px; font-size: clamp(22px,2.2vw,30px); }
+.reports-page .report-section { box-shadow: none; }
+@media (max-width: 640px) {
+  .reports-page { --report-gap: 18px; }
+  .reports-page__setup { padding: 18px; border-radius: 16px; }
+  .reports-page__setup-heading { margin-bottom: 18px; }
+  .reports-page__details > summary { padding: 16px 18px; }
+  .reports-page .report-highlight { padding: 15px 13px; }
+  .reports-page .report-highlight__value { font-size: clamp(18px,5vw,24px); }
+}
+
+/* An unpaired analytics card uses the available width rather than leaving a half row. */
+.reports-page .report-analytics > .report-section:last-child:nth-child(odd) { grid-column: 1 / -1; }

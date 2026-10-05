@@ -1,156 +1,61 @@
 import PrivateMoney from "../../../Experience/PrivateMoney";
-import { LuCheck } from "react-icons/lu";
+import { LuChevronDown } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-
-import Loading from "../../../../../../components/Loading/Loading";
 import { PATH } from "../../../../../../routes/Path";
 import { getApiErrorMessage } from "../../../api/apiClient";
-import {
-  getAccountColor,
-  getDisplayLocale,
-  isNegativeMoney,
-  renderAccountIcon,
-} from "../../../Accounts/accountHelpers";
+import { getDisplayLocale, isNegativeMoney } from "../../../Accounts/accountHelpers";
 import { formatMoney } from "../../../utils/formatters";
-
 import "./AccountStep.css";
 
-/*
- * Step 1: the account every operation on this page is booked on. The list is
- * the active accounts from GET /accounts; balances stay the backend's decimal
- * strings and are only formatted for display.
- */
-export default function AccountStep({
-  accounts,
-  selectedAccountId,
-  onSelect,
-  isLoading,
-  error,
-  onRetry,
-}) {
+// The same active-account selection, presented as one compact native control.
+export default function AccountStep({ accounts, selectedAccountId, onSelect,
+  isLoading, error, onRetry, selectorRef }) {
   const { t, i18n } = useTranslation();
-  const locale = getDisplayLocale(i18n.language);
-  const hasSelection = Boolean(selectedAccountId);
-
+  const selected = accounts.find((item) => String(item.id) === selectedAccountId);
   return (
-    <section
-      className={
-        hasSelection ? "account-step account-step--complete" : "account-step"
-      }
-      aria-labelledby="account-step-title"
-    >
-      <header className="step-heading">
-        <span className="step-heading__number" aria-hidden="true">
-          1
-        </span>
-
-        <div className="step-heading__copy">
-          <h2 id="account-step-title">
-            {t("dashboard.financialOperations.accountStep.title")}
-          </h2>
-          <p>{t("dashboard.financialOperations.accountStep.description")}</p>
+    <div className="account-step" ref={selectorRef}>
+      <label className="capture-selector">
+        <span>{t("dashboard.transactions.fields.account")}</span>
+        <div className="capture-selector__control">
+          <select id="operation-account" value={selectedAccountId}
+            onChange={(event) => onSelect(event.target.value)}
+            disabled={isLoading || accounts.length === 0}
+            aria-describedby={selected ? "operation-account-balance" : undefined}>
+            <option value="" disabled>
+              {t(isLoading ? "dashboard.financialOperations.accountStep.loading"
+                : "dashboard.financialOperations.ui.chooseAccount")}
+            </option>
+            {accounts.map((account) => (
+              <option key={account.id} value={String(account.id)}>
+                {account.name} · {account.currency_code}
+              </option>
+            ))}
+          </select>
+          <LuChevronDown aria-hidden="true" />
         </div>
-
-        {hasSelection && (
-          <span className="step-heading__done">
-            <LuCheck aria-hidden="true" />
-            {t("dashboard.financialOperations.accountStep.selected")}
-          </span>
-        )}
-      </header>
-
-      {isLoading && (
-        <Loading
-          message={t("dashboard.financialOperations.accountStep.loading")}
-        />
+      </label>
+      {selected && (
+        <p id="operation-account-balance" className="account-step__balance">
+          {t("dashboard.financialOperations.accountStep.balance")}
+          <bdi className={isNegativeMoney(selected.current_balance) ? "account-step__negative" : undefined}>
+            <PrivateMoney>{formatMoney(selected.current_balance, selected.currency_code,
+              getDisplayLocale(i18n.language))}</PrivateMoney>
+          </bdi>
+        </p>
       )}
-
       {!isLoading && error && (
-        <div
-          className="account-step__state account-step__state--error"
-          role="alert"
-        >
-          <p>{getApiErrorMessage(error, t)}</p>
-          <button type="button" onClick={onRetry}>
-            {t("common.retry")}
-          </button>
-        </div>
+        <p className="account-step__message" role="alert">
+          {getApiErrorMessage(error, t)} <button type="button" onClick={onRetry}>{t("common.retry")}</button>
+        </p>
       )}
-
       {!isLoading && !error && accounts.length === 0 && (
-        <div className="account-step__state">
-          <p>{t("dashboard.financialOperations.accountStep.empty")}</p>
-          <Link to={PATH.USER.ACCOUNTS}>
+        <p className="account-step__message">
+          {t("dashboard.financialOperations.accountStep.empty")} <Link to={PATH.USER.ACCOUNTS}>
             {t("dashboard.financialOperations.accountStep.addAccount")}
           </Link>
-        </div>
+        </p>
       )}
-
-      {!isLoading && !error && accounts.length > 0 && (
-        <div className="account-step__grid">
-          {accounts.map((account) => {
-            const color = getAccountColor(account);
-            const isSelected = String(account.id) === String(selectedAccountId);
-
-            return (
-              <button
-                type="button"
-                key={account.id}
-                aria-pressed={isSelected}
-                className={
-                  isSelected
-                    ? "account-option account-option--selected"
-                    : "account-option"
-                }
-                style={color ? { "--account-color": color } : undefined}
-                onClick={() => onSelect(String(account.id))}
-              >
-                <span className="account-option__icon" aria-hidden="true">
-                  {renderAccountIcon(account)}
-                </span>
-
-                <span className="account-option__copy">
-                  <strong dir="auto">{account.name}</strong>
-                  <small dir="ltr">
-                    {t(`dashboard.accounts.types.${account.type}`, {
-                      defaultValue: account.type,
-                    })}
-                    {account.last_four_digits &&
-                      ` •••• ${account.last_four_digits}`}
-                  </small>
-                </span>
-
-                <span className="account-option__balance">
-                  <small>
-                    {t("dashboard.financialOperations.accountStep.balance")}
-                  </small>
-                  <b
-                    className={
-                      isNegativeMoney(account.current_balance)
-                        ? "account-option__amount account-option__amount--negative"
-                        : "account-option__amount"
-                    }
-                    dir="ltr"
-                  >
-                    <PrivateMoney>
-                      {formatMoney(
-                        account.current_balance,
-                        account.currency_code,
-                        locale,
-                      )}
-                    </PrivateMoney>
-                  </b>
-                </span>
-
-                <span className="account-option__indicator" aria-hidden="true">
-                  {isSelected && <LuCheck />}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-    </section>
+    </div>
   );
 }

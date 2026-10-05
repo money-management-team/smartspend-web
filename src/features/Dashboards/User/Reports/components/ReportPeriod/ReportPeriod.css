@@ -77,3 +77,10 @@
 
   color: var(--color-primary);
 }
+
+.report-period { padding: 14px 18px; border: 1px solid var(--report-line); border-radius: 12px; background: var(--report-tile); }
+.report-period__details > summary { display: flex; align-items: center; gap: 6px; width: fit-content; min-height: 30px; list-style: none; color: var(--color-text-muted); font-size: 11px; cursor: pointer; }
+.report-period__details > summary::-webkit-details-marker { display: none; }
+.report-period__details[open] > summary svg:last-child { transform: rotate(180deg); }
+.report-period__details > dl { margin-top: 8px; margin-bottom: 12px; }
+.report-period__details > p + p { margin-top: 8px; }

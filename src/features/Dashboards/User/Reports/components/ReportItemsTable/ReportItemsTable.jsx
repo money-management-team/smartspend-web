@@ -118,9 +118,9 @@ export default function ReportItemsTable({ columns, rows, fallbackCurrency }) {
 
   return (
     <div className="report-items__scroll">
-      <table className="report-items">
-        <thead>
-          <tr>
+      <table className="report-items" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
             {visible.map((column) => (
               <th scope="col" key={column.id}>
                 {getFieldLabel(column.id, t, i18n)}
@@ -128,14 +128,14 @@ export default function ReportItemsTable({ columns, rows, fallbackCurrency }) {
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody role="rowgroup">
           {rows.map((row, index) => {
             const currency = getRowCurrency(row, fallbackCurrency);
 
             return (
-              <tr key={row.id ?? `${index}-${pickValue(row, ["name", "counterparty_name", "description"]) ?? ""}`}>
+              <tr role="row" key={row.id ?? `${index}-${pickValue(row, ["name", "counterparty_name", "description"]) ?? ""}`}>
                 {visible.map((column) => (
-                  <td key={column.id} className={column.primary ? "report-items__cell--primary" : ""}>
+                  <td role="cell" data-label={getFieldLabel(column.id, t, i18n)} key={column.id} className={column.primary ? "report-items__cell--primary" : ""}>
                     {column.primary ? (
                       <PrimaryCell column={column} row={row} />
                     ) : (
