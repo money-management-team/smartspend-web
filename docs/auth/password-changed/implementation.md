@@ -1,6 +1,6 @@
 # Password Changed — Implementation
 
-Recovery step 4 (success) at `/password-changed`: `src/features/Auth/PasswordChanged/PasswordChanged.jsx`. It has no page stylesheet.
+Recovery step 3 (success) at `/password-changed`: `src/features/Auth/PasswordChanged/PasswordChanged.jsx`. It has no page stylesheet.
 
 ## Structure
 
@@ -8,7 +8,7 @@ Recovery step 4 (success) at `/password-changed`: `src/features/Auth/PasswordCha
 AuthPromo (passwordChanged.promo.title / subtitle)      no extras
 
 section.auth-panel
-  AuthSteps current=4                                    all bars filled
+  AuthSteps current=3                                    all bars filled
   AuthHeading  tone="success", icon = CheckIcon (passwordChanged.title / subtitle)
   div.auth-form
     AuthButton to = PATH.AUTH.SIGNIN                     renders a router <Link> styled as the primary CTA

@@ -1,6 +1,6 @@
 # Email Verification — Implementation
 
-Confirming a user's email address. This is **not** the password-recovery Verify Code page (`/verify-code`), which is an unrelated, UI-only OTP screen.
+Confirming a user's email address. It is the only verification flow: the old UI-only `/verify-code` demo page was removed, and that URL now just redirects to the dashboard, where the banner below is shown while the email is unverified.
 
 It has three parts:
 
@@ -83,6 +83,7 @@ Used by the dashboard banner and by the verification page's error state.
 
 - It shows the title, the email (in `<bdi>`, so it stays LTR in Arabic, via `Trans`), and the resend button. Resend outcomes show as a line inside the banner (`role="status"` for success, `role="alert"` for errors, `dir="auto"`).
 - When a resend reports "already verified", the refreshed status hides the warning. The banner then stays in its green "done" style with the confirmation and a "Close" button, and disappears when closed.
+- An "X" button (`aria-label` = `common.close`) hides the banner. The choice is kept in `sessionStorage` under `smartspend:email-banner-dismissed`, so it stays hidden on every dashboard page and across reloads until the browser session ends (a new session shows it again while the email is unverified).
 - Styles: `EmailVerificationBanner.css`. It uses warning tokens (`--color-warning`, `--warning-soft`) and success tokens in the done state, logical layout, dark-theme text overrides, and stacks the button full-width at ≤640px.
 
 ## i18n

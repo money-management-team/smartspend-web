@@ -217,7 +217,7 @@ export default function TransactionDetails() {
     return (
       <div className="transaction-details">
         {backLink}
-        <Loading message={t("dashboard.transactions.details.loading")} />
+        <Loading variant="page" size="large" message={t("dashboard.transactions.details.loading")} />
       </div>
     );
   }

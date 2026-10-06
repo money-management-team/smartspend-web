@@ -27,13 +27,16 @@ ESLint uses the flat config with `eslint-plugin-react-hooks` v7 (recommended), w
 ## Architecture
 
 ### Bootstrapping and routing
-- `src/main.jsx` imports `./i18n` first (side-effect init), then wraps `<App/>` in `BrowserRouter > ThemeProvider > LanguageProvider > AuthProvider > EmailVerificationProvider`.
+- `src/main.jsx` imports `./i18n` first (side-effect init), then mounts a data router (`createBrowserRouter` with a single splat route) rendering `Root.jsx`: `ThemeProvider > LanguageProvider > ErrorBoundary > AuthProvider > EmailVerificationProvider > <App/>`. The data router exists for `useBlocker` (unsaved-changes prompts); the route table is still `Router.jsx` / `useRoutes`.
 - `src/routes/Routes.jsx` defines four route groups, all mounted at `/`, which `Router.jsx` merges via `useRoutes`:
   - **public**: `PublicLayout`, with `Home` and the catch-all `NotFound`.
   - **guest**: `GuestOnly` + `AuthLayout`, for signin, register, and the password flows.
   - **email-link**: `AuthLayout` with no guard, for pages opened from emails (reset password, verify email) that must work signed in or out.
   - **user**: `RequireAuth` + `DashboardLayout`, for everything under `/dashboard/*`.
 - Always reference URLs through the `PATH` constants in `src/routes/Path.js`.
+- Pages are lazy-loaded (`src/routes/lazyPages.js`, `RouteSuspense`); layouts, guards, Home and NotFound are not. CSS is deliberately one file (`build.cssCodeSplit: false`); see `docs/performance/code-splitting.md` before adding global class names.
+- After sign-in the user returns to the page they asked for: `RequireAuth` stores `state.from`, `getPostAuthPath` (`src/routes/postAuthRedirect.js`) validates it. See `docs/auth/post-auth-redirect.md`.
+- `/verify-code` no longer has a page (it redirects to the dashboard); email verification is the signed link plus the dashboard banner.
 - The guards in `RouteGuards.jsx` render `<Loading/>` while `AuthContext.initializing` is true.
 
 ### API layer (important)

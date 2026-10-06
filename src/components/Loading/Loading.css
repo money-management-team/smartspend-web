@@ -68,7 +68,8 @@
 }
 
 .loading--large {
-  --loading-size: 72px;
+  --loading-size: 92px;
+  --loading-ring: 3px;
 
   gap: 20px;
   font-size: var(--font-size-h3);
@@ -178,6 +179,26 @@
   animation: loading-pulse 1.1s ease-in-out infinite alternate;
 }
 
+/* Branded (large): the logo breathes inside the ring, with a light sweep. */
+.loading__logo {
+  position: absolute;
+  inset: 24%;
+
+  width: 52%;
+  height: 52%;
+
+  object-fit: contain;
+  user-select: none;
+
+  filter: drop-shadow(0 4px 12px color-mix(in srgb, var(--loading-from) 45%, transparent));
+
+  animation: loading-logo 1.8s ease-in-out infinite;
+}
+
+.loading--large .loading__halo {
+  inset: -35%;
+}
+
 /* =========================================
    MESSAGE
 ========================================= */
@@ -271,6 +292,19 @@
   }
 }
 
+@keyframes loading-logo {
+  0%,
+  100% {
+    opacity: 0.82;
+    transform: scale(0.94);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
 @keyframes loading-shimmer {
   from {
     background-position: 100% 0;
@@ -293,6 +327,7 @@
 
   .loading__halo,
   .loading__core,
+  .loading__logo,
   .loading__message {
     animation: none;
   }

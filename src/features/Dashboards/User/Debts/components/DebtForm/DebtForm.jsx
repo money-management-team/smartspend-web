@@ -41,6 +41,8 @@ import {
 // styles come from the reverse dialog's stylesheet.
 import "../../../Accounts/components/AccountForm/AccountForm.css";
 import "../../../FinancialOperations/components/ReverseTransactionDialog/ReverseTransactionDialog.css";
+import useDiscardChanges from "../../../../../../components/UnsavedChanges/useDiscardChanges";
+import { isFormDirty } from "../../../../../../components/UnsavedChanges/unsavedChanges";
 import "./DebtForm.css";
 
 // Fields with their own input; errors for any other backend field (e.g.
@@ -164,6 +166,13 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
     if (!pendingRef.current) onClose();
   };
 
+  // Values the form opened with: closing with other values asks first.
+  const [initialForm] = useState(form);
+  const { requestClose, discardDialog } = useDiscardChanges({
+    isDirty: isFormDirty(form, initialForm) && !isSaving,
+    onClose: close,
+  });
+
   const resetFeedback = (...fields) => {
     setErrors((current) => ({
       ...current,
@@ -277,9 +286,10 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
     <div
       className="account-form-modal"
       role="presentation"
-      onMouseDown={close}
-      onKeyDown={(event) => event.key === "Escape" && close()}
+      onMouseDown={requestClose}
+      onKeyDown={(event) => event.key === "Escape" && requestClose()}
     >
+      {discardDialog}
       <section
         className="account-form-modal__dialog debt-form"
         role="dialog"
@@ -291,7 +301,7 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
           <h2 id="debt-form-title">{t("dashboard.debts.form.title")}</h2>
           <button
             type="button"
-            onClick={close}
+            onClick={requestClose}
             disabled={isSaving}
             aria-label={t("common.close")}
           >
@@ -574,7 +584,7 @@ export default function DebtForm({ onSave, onOutdated, onClose }) {
           )}
 
           <footer>
-            <button type="button" onClick={close} disabled={isSaving}>
+            <button type="button" onClick={requestClose} disabled={isSaving}>
               {t("common.cancel")}
             </button>
             <button

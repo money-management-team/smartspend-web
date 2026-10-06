@@ -11,6 +11,17 @@ import {
 } from "react-icons/lu";
 
 import { AUTH_INTENT, getAccountTypePath } from "../../../../routes/Path";
+import { PRODUCT_PREVIEW_ID } from "../homeAnchors";
+
+// The product walkthrough on this page is the dashboard preview section.
+function scrollToPreview(event) {
+  const target = document.getElementById(PRODUCT_PREVIEW_ID);
+  if (!target) return;
+
+  event.preventDefault();
+  target.scrollIntoView({ block: "start" });
+  target.focus({ preventScroll: true });
+}
 
 export default function HeroSection() {
   const { t } = useTranslation();
@@ -45,14 +56,15 @@ export default function HeroSection() {
                 {t("home.hero.primaryButton")}
               </Link>
 
-              <button
-                type="button"
+              <a
+                href={`#${PRODUCT_PREVIEW_ID}`}
                 className="home-secondary-button"
+                onClick={scrollToPreview}
               >
                 <FiPlayCircle aria-hidden="true" />
 
                 {t("home.hero.watchDemo")}
-              </button>
+              </a>
             </div>
 
             <div className="hero-users hero-entrance hero-entrance--users">
@@ -148,6 +160,7 @@ function DashboardMock() {
         <span />
         <span />
         <span />
+        <em className="home-sample-badge">{t("home.sample.badge")}</em>
       </div>
 
       <div className="dashboard-mock__balance">
@@ -208,17 +221,17 @@ function DashboardMock() {
           </strong>
 
           <p className="dashboard-mock__tx-row is-positive">
-            <span>Salary</span>
+            <span>{t("home.sample.salary")}</span>
             <b><bdi>+$4,200</bdi></b>
           </p>
 
           <p className="dashboard-mock__tx-row">
-            <span>Whole Foods</span>
+            <span>{t("home.sample.wholeFoods")}</span>
             <b><bdi>-$84</bdi></b>
           </p>
 
           <p className="dashboard-mock__tx-row">
-            <span>Metro Card</span>
+            <span>{t("home.sample.metroCard")}</span>
             <b><bdi>-$24</bdi></b>
           </p>
         </div>

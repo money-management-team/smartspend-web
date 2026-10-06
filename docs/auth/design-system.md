@@ -52,7 +52,7 @@ All are in `src/features/Auth/components/`. Each has a co-located `.css` file, e
 | --- | --- | --- |
 | `AuthPromo` | All pages | Brand panel: logo, `title` (also its `aria-label`), `subtitle`, and `children` for page extras. Also provides `.auth-promo__chips` / `.auth-promo__chip` (a dot marker, or an inline SVG icon when present) |
 | `AuthHeading` | All pages | `h1` + subtitle. Optional decorative `icon` badge. `tone="success"` gives the green circular badge with a one-time pop-in |
-| `AuthSteps` | Recovery pages | 4 bars filled from inline-start. `current` is wider. Includes a screen-reader-only "Step X of Y" (`auth.common.step`) |
+| `AuthSteps` | Recovery pages | 3 bars filled from inline-start. `current` is wider. Includes a screen-reader-only "Step X of Y" (`auth.common.step`) |
 | `AuthField` | Login, Register, Forgot | Label (`htmlFor`), input, optional `icon` / `action` / `labelAction`, `errors` list with `aria-describedby`, `invalid`, `describedBy`. Other props go to the `<input>` |
 | `PasswordField` | Login, Register, Reset | `AuthField` + show/hide toggle (`aria-pressed`, `aria-controls`, label `auth.common.showPassword`) |
 | `AuthCheckbox` | Login, Register | Rounded-square custom checkbox. Label content is `children` (may contain a link). Optional `errors` |

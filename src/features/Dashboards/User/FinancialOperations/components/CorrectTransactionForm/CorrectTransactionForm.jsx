@@ -24,6 +24,8 @@ import {
 // block styles live with the reverse dialog.
 import "../../../Accounts/components/AccountForm/AccountForm.css";
 import "../ReverseTransactionDialog/ReverseTransactionDialog.css";
+import useDiscardChanges from "../../../../../../components/UnsavedChanges/useDiscardChanges";
+import { isFormDirty } from "../../../../../../components/UnsavedChanges/unsavedChanges";
 import "./CorrectTransactionForm.css";
 
 // Backend field → form field.
@@ -134,6 +136,10 @@ export default function CorrectTransactionForm({ transaction, onSave, onClose })
   const close = () => {
     if (!pendingRef.current) onClose();
   };
+  const { requestClose, discardDialog } = useDiscardChanges({
+    isDirty: isFormDirty(form, initial) && !isSaving,
+    onClose: close,
+  });
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -217,9 +223,10 @@ export default function CorrectTransactionForm({ transaction, onSave, onClose })
     <div
       className="account-form-modal"
       role="presentation"
-      onMouseDown={close}
-      onKeyDown={(event) => event.key === "Escape" && close()}
+      onMouseDown={requestClose}
+      onKeyDown={(event) => event.key === "Escape" && requestClose()}
     >
+      {discardDialog}
       <section
         className="account-form-modal__dialog correct-transaction-form"
         role="dialog"
@@ -229,7 +236,7 @@ export default function CorrectTransactionForm({ transaction, onSave, onClose })
       >
         <header>
           <h2 id="correct-transaction-title">{t("dashboard.transactions.correctForm.title")}</h2>
-          <button type="button" onClick={close} disabled={isSaving} aria-label={t("common.close")}>
+          <button type="button" onClick={requestClose} disabled={isSaving} aria-label={t("common.close")}>
             ×
           </button>
         </header>
@@ -405,7 +412,7 @@ export default function CorrectTransactionForm({ transaction, onSave, onClose })
             )}
 
             <footer>
-              <button type="button" onClick={close} disabled={isSaving}>
+              <button type="button" onClick={requestClose} disabled={isSaving}>
                 {t("common.cancel")}
               </button>
               <button type="submit" disabled={isSaving} aria-busy={isSaving || undefined}>

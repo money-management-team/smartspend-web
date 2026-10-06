@@ -35,6 +35,8 @@ import {
 // styles come from the reverse dialog's stylesheet.
 import "../../../Accounts/components/AccountForm/AccountForm.css";
 import "../../../FinancialOperations/components/ReverseTransactionDialog/ReverseTransactionDialog.css";
+import useDiscardChanges from "../../../../../../components/UnsavedChanges/useDiscardChanges";
+import { isFormDirty } from "../../../../../../components/UnsavedChanges/unsavedChanges";
 import "./DebtPaymentForm.css";
 
 // Fields with their own input; errors for any other backend field (e.g.
@@ -143,6 +145,13 @@ export default function DebtPaymentForm({
   const close = () => {
     if (!pendingRef.current) onClose();
   };
+
+  // Values the form opened with: closing with other values asks first.
+  const [initialForm] = useState(form);
+  const { requestClose, discardDialog } = useDiscardChanges({
+    isDirty: isFormDirty(form, initialForm) && !isSubmitting,
+    onClose: close,
+  });
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -255,9 +264,10 @@ export default function DebtPaymentForm({
     <div
       className="account-form-modal"
       role="presentation"
-      onMouseDown={close}
-      onKeyDown={(event) => event.key === "Escape" && close()}
+      onMouseDown={requestClose}
+      onKeyDown={(event) => event.key === "Escape" && requestClose()}
     >
+      {discardDialog}
       <section
         className="account-form-modal__dialog debt-payment-form"
         role="dialog"
@@ -276,7 +286,7 @@ export default function DebtPaymentForm({
           </div>
           <button
             type="button"
-            onClick={close}
+            onClick={requestClose}
             disabled={isSubmitting}
             aria-label={t("common.close")}
           >
@@ -492,7 +502,7 @@ export default function DebtPaymentForm({
             )}
 
             <footer>
-              <button type="button" onClick={close} disabled={isSubmitting}>
+              <button type="button" onClick={requestClose} disabled={isSubmitting}>
                 {t("common.cancel")}
               </button>
               <button

@@ -1,240 +1,4 @@
 /* =========================================
-   STEP 2 - CAPTURE CARD
-   Shared by the four input panels: the panel
-   shell, headings and buttons defined here
-   are reused by VoiceCapture, ReceiptCapture,
-   StatementCapture and NewOperation.
-========================================= */
-
-.capture-step {
-  margin-bottom: 30px;
-}
-
-
-.capture-card {
-  padding: 12px;
-
-  overflow: hidden;
-
-  border:
-    1px solid
-    var(--color-border);
-
-  border-radius:
-    var(--radius-xl);
-
-  background:
-    var(--color-surface);
-
-  box-shadow:
-    var(--shadow-card);
-}
-
-
-/* =========================================
-   METHOD TABS
-========================================= */
-
-.capture-card__tabs {
-  padding: 6px;
-
-  display: grid;
-
-  grid-template-columns:
-    repeat(3, minmax(0, 1fr));
-
-  gap: 7px;
-
-  border-radius:
-    var(--radius-lg);
-
-  background:
-    var(--color-surface-soft);
-}
-
-
-.capture-card__tab {
-  min-height: 72px;
-
-  padding:
-    10px
-    11px;
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 10px;
-
-  border:
-    1px solid transparent;
-
-  border-radius:
-    var(--radius-md);
-
-  color:
-    var(--color-text-secondary);
-
-  background: transparent;
-
-  font: inherit;
-
-  text-align: start;
-
-  cursor: pointer;
-
-  transition:
-    background var(--transition-normal),
-    color var(--transition-normal);
-}
-
-
-.capture-card__tab:hover {
-  background:
-    color-mix(in srgb, var(--color-surface) 70%, transparent);
-}
-
-
-.capture-card__tab--active {
-  border-color:
-    var(--color-border);
-
-  color:
-    var(--color-text-primary);
-
-  background:
-    var(--color-surface);
-
-  box-shadow:
-    var(--shadow-sm);
-}
-
-
-.capture-card__tab-icon {
-  width: 40px;
-  height: 40px;
-
-  flex: none;
-
-  display: grid;
-  place-items: center;
-
-  border-radius:
-    var(--radius-md);
-
-  color:
-    var(--color-text-muted);
-
-  background:
-    var(--color-surface-hover);
-
-  font-size: 18px;
-}
-
-
-.capture-card__tab--active .capture-card__tab-icon {
-  color: #ffffff;
-
-  background:
-    var(--gradient-primary);
-}
-
-
-.capture-card__tab-copy {
-  min-width: 0;
-}
-
-
-.capture-card__tab-copy strong {
-  display: block;
-
-  margin-bottom: 2px;
-
-  color: inherit;
-
-  font-size: 13px;
-
-  font-weight: 700;
-}
-
-
-.capture-card__tab-copy small {
-  display: block;
-
-  color:
-    var(--color-text-muted);
-
-  font-size: 11px;
-
-  line-height: 1.4;
-}
-
-
-/* =========================================
-   ACTIVE PANEL
-========================================= */
-
-.capture-card__panel {
-  padding-top: 12px;
-
-  animation:
-    capture-fade-in
-    200ms ease;
-}
-
-
-@keyframes capture-fade-in {
-  from {
-    opacity: 0;
-
-    transform: translateY(6px);
-  }
-
-  to {
-    opacity: 1;
-
-    transform: none;
-  }
-}
-
-
-.capture-card__secure {
-  margin: 0;
-
-  padding:
-    13px
-    10px
-    3px;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  gap: 7px;
-
-  color:
-    var(--color-text-muted);
-
-  font-size: 12px;
-
-  line-height: 1.6;
-
-  text-align: center;
-}
-
-
-.capture-card__secure svg {
-  flex: none;
-
-  color:
-    var(--color-success);
-
-  font-size: 15px;
-}
-
-
-/* =========================================
    SHARED PANEL SHELL
 ========================================= */
 
@@ -567,3 +331,28 @@
     font-size: 18px;
   }
 }
+
+/* Compact, page-specific capture workspace. */
+.capture-step { margin: 0; min-width: 0; }
+.capture-card { padding: 24px; border: 1px solid var(--color-border); border-radius: 18px; background: var(--color-surface); box-shadow: var(--shadow-xs); }
+.capture-card__heading { display: flex; align-items: center; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; margin-bottom: 20px; }
+.capture-card__heading h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-family: var(--font-heading); font-size: 20px; color: var(--color-text-strong); }
+.capture-card__heading h2 svg { color: var(--color-primary); font-size: 19px; }
+.capture-card__heading p { margin: 0; color: var(--color-text-muted); font-size: 12px; }
+.capture-card__selectors { display: grid; grid-template-columns: .85fr 1.15fr 1fr; gap: 18px; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--color-border); }
+.capture-selector { min-width: 0; display: grid; align-content: start; gap: 8px; color: var(--color-text-primary); font-size: 12px; font-weight: 700; }
+.capture-selector__control { position: relative; }
+.capture-selector select { appearance: none; width: 100%; min-width: 0; height: 46px; padding: 0 14px; padding-inline-end: 38px; border: 1px solid var(--color-border); border-radius: 11px; color: var(--color-text-primary); background: var(--surface-soft); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.capture-selector select:disabled { opacity: .7; cursor: default; }
+.capture-selector__control > svg { position: absolute; inset-inline-end: 14px; top: 50%; transform: translateY(-50%); color: var(--color-text-muted); pointer-events: none; }
+.capture-card__panel { min-width: 0; }
+.capture-card__secure { display: flex; align-items: center; justify-content: center; gap: 7px; padding-top: 16px; margin: 0; color: var(--color-text-muted); font-size: 11px; line-height: 1.7; }
+.capture-card__secure svg { flex: none; color: var(--color-success); font-size: 15px; }
+@media (max-width: 640px) {
+  .capture-card { padding: 18px; border-radius: 16px; }
+  .capture-card__selectors { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px 12px; margin-bottom: 20px; }
+  .capture-card__selectors > :last-child { grid-column: 1 / -1; }
+  .capture-card__heading { margin-bottom: 18px; }
+  .capture-card__heading p { font-size: 11px; }
+}
+@media (max-width: 360px) { .capture-card { padding: 14px; } .capture-card__selectors { grid-template-columns: minmax(0,1fr); } }

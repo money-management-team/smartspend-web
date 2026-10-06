@@ -8,6 +8,8 @@ import { resolveWorkspaceId } from "../api/dashboardApi";
 import { getApiErrorMessage } from "../api/apiClient";
 import { importsApi, newImportKey } from "../api/importsApi";
 import { PATH } from "../../../../routes/Path";
+import Loading from "../../../../components/Loading/Loading";
+import StateMessage from "../../../../components/StateMessage/StateMessage";
 import "./Imports.css";
 
 const FIELDS = [
@@ -76,6 +78,10 @@ export default function Imports() {
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(true);
+  const [reloadCount, setReloadCount] = useState(0);
+  // Retry is only offered when the page data itself failed to load, not for
+  // an upload or review action that failed.
+  const [loadFailed, setLoadFailed] = useState(false);
   const busyRef = useRef(false);
   const keys = useRef({});
 
@@ -166,14 +172,23 @@ export default function Imports() {
         },
       )
       .catch((failure) => {
-        if (failure.name !== "AbortError")
+        if (failure.name !== "AbortError") {
           setError(getApiErrorMessage(failure, t));
+          setLoadFailed(true);
+        }
       })
       .finally(() => {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [importId, t]);
+  }, [importId, t, reloadCount]);
+
+  const retryLoad = () => {
+    setError("");
+    setLoadFailed(false);
+    setLoading(true);
+    setReloadCount((count) => count + 1);
+  };
 
   useEffect(() => {
     if (importId || loading) return;
@@ -298,13 +313,16 @@ export default function Imports() {
         <p>{t(`${x}.subtitle`)}</p>
       </header>
       {error && (
-        <p role="alert" className="imports-page__error">
-          {error}
-        </p>
+        <StateMessage
+          tone="error"
+          className="imports-page__error"
+          message={error}
+          onRetry={loadFailed ? retryLoad : undefined}
+        />
       )}
       {notice && <p role="status">{notice}</p>}
       {loading ? (
-        <p role="status">{t(`${x}.loading`)}</p>
+        <Loading message={t(`${x}.loading`)} />
       ) : !importId ? (
         <>
           <form
@@ -381,7 +399,11 @@ export default function Imports() {
               </label>
             </div>
             {!batches.length && (
-              <p>{listPage ? t(`${x}.empty`) : t(`${x}.loading`)}</p>
+              listPage ? (
+                <StateMessage message={t(`${x}.empty`)} />
+              ) : (
+                <Loading size="small" message={t(`${x}.loading`)} />
+              )
             )}
             {batches.map((item) => (
               <Link

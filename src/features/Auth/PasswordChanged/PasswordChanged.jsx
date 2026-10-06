@@ -19,7 +19,7 @@ export default function PasswordChanged() {
       />
 
       <section className="auth-panel">
-        <AuthSteps current={4} />
+        <AuthSteps current={3} />
 
         <AuthHeading
           tone="success"

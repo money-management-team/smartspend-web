@@ -343,7 +343,7 @@ export default function SavingsGoalDetails() {
     return (
       <div className="savings-goal-details">
         {backLink}
-        <Loading message={t("dashboard.savingsGoals.details.loading")} />
+        <Loading variant="page" size="large" message={t("dashboard.savingsGoals.details.loading")} />
       </div>
     );
   }

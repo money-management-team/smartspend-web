@@ -1,7 +1,6 @@
 import { useExperience } from "../../../../features/Dashboards/User/Experience/useExperience";
 import { LuEye, LuEyeOff } from "react-icons/lu";
 import {
-  LuSearch,
   LuMoon,
   LuSun,
   LuBell,
@@ -16,6 +15,8 @@ import { useUnreadNotifications } from "../../../../contexts/notifications/useUn
 import { useThemeContext } from "../../../../contexts/theme/useThemeContext";
 import { getDisplayLocale } from "../../../../features/Dashboards/User/Accounts/accountHelpers";
 import { formatUnreadBadge } from "../../../../features/Dashboards/User/Notifications/notificationHelpers";
+
+import DashboardSearch from "../DashboardSearch/DashboardSearch";
 
 import "./DashboardHeader.css";
 import { Link } from "react-router-dom";
@@ -66,14 +67,7 @@ export default function DashboardHeader({
         <LuMenu aria-hidden="true" />
       </button>
 
-      <div className="dashboard-header__search">
-        <LuSearch />
-
-        <input
-          type="search"
-          placeholder={t("dashboard.header.searchPlaceholder")}
-        />
-      </div>
+      <DashboardSearch />
 
       <div className="dashboard-header__actions">
         <button

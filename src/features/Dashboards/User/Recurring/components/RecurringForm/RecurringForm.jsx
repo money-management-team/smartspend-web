@@ -32,6 +32,8 @@ import {
 // styles come from the reverse dialog's stylesheet.
 import "../../../Accounts/components/AccountForm/AccountForm.css";
 import "../../../FinancialOperations/components/ReverseTransactionDialog/ReverseTransactionDialog.css";
+import useDiscardChanges from "../../../../../../components/UnsavedChanges/useDiscardChanges";
+import { isFormDirty } from "../../../../../../components/UnsavedChanges/unsavedChanges";
 import "./RecurringForm.css";
 
 // Fields that have an input in each mode; errors on any other field are
@@ -156,6 +158,13 @@ export default function RecurringForm({ rule, presetType, onSave, onClose }) {
     if (!pendingRef.current) onClose();
   };
 
+  // Values the form opened with: closing with other values asks first.
+  const [initialForm] = useState(form);
+  const { requestClose, discardDialog } = useDiscardChanges({
+    isDirty: isFormDirty(form, initialForm) && !isSaving,
+    onClose: close,
+  });
+
   const update = (changes) => {
     setForm((current) => ({ ...current, ...changes }));
     setErrors((current) => {
@@ -224,9 +233,10 @@ export default function RecurringForm({ rule, presetType, onSave, onClose }) {
     <div
       className="account-form-modal"
       role="presentation"
-      onMouseDown={close}
-      onKeyDown={(event) => event.key === "Escape" && close()}
+      onMouseDown={requestClose}
+      onKeyDown={(event) => event.key === "Escape" && requestClose()}
     >
+      {discardDialog}
       <section
         className="account-form-modal__dialog recurring-form"
         role="dialog"
@@ -238,7 +248,7 @@ export default function RecurringForm({ rule, presetType, onSave, onClose }) {
           <h2 id="recurring-form-title">
             {t(isEditing ? "dashboard.recurring.form.editTitle" : "dashboard.recurring.form.createTitle")}
           </h2>
-          <button type="button" onClick={close} disabled={isSaving} aria-label={t("common.close")}>
+          <button type="button" onClick={requestClose} disabled={isSaving} aria-label={t("common.close")}>
             ×
           </button>
         </header>
@@ -599,7 +609,7 @@ export default function RecurringForm({ rule, presetType, onSave, onClose }) {
           )}
 
           <footer>
-            <button type="button" onClick={close} disabled={isSaving}>
+            <button type="button" onClick={requestClose} disabled={isSaving}>
               {t("common.cancel")}
             </button>
             <button

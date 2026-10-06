@@ -162,7 +162,7 @@ export default function AccountDetails() {
     return (
       <div className="account-details">
         {backLink}
-        <Loading message={false} />
+        <Loading variant="page" size="large" message={false} />
       </div>
     );
   }

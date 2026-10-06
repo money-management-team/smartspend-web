@@ -2,7 +2,7 @@ import SavedViews from "../Experience/SavedViews";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router-dom";
-import { LuFileDown, LuHistory } from "react-icons/lu";
+import { LuChevronDown, LuFileDown, LuHistory } from "react-icons/lu";
 
 import Loading from "../../../../components/Loading/Loading";
 import { PATH } from "../../../../routes/Path";
@@ -318,17 +318,10 @@ export default function Reports() {
     <div className="reports-page">
       <ReportsHeader
         icon={definition.icon}
-        title={getReportName(filters.report, t)}
-        description={t(`dashboard.reports.descriptions.${filters.report}`)}
-        period={exportPeriod}
+        title={t("dashboard.reports.title")}
+        description={t("dashboard.reports.ui.heroDescription")}
         actions={
           <>
-            <Link
-              to={PATH.USER.MONTHLY_REVIEW}
-              className="reports-page__history-link"
-            >
-              {t("experience:monthly")}
-            </Link>
             <Link
               to={PATH.USER.REPORT_EXPORTS}
               className="reports-page__history-link"
@@ -385,31 +378,23 @@ export default function Reports() {
       )}
 
       <div className="reports-page__workspace">
-        <aside className="reports-page__navigation">
-          <ReportTabs activeReport={filters.report} onChange={selectReport} />
-        </aside>
-
         <div className="reports-page__main">
-          <SavedViews
-            scope="reports"
-            filters={Object.fromEntries(reportFiltersToSearchParams(filters))}
-            onApply={(values) =>
-              setSearchParams(
-                reportFiltersToSearchParams(
-                  readReportFilters(new URLSearchParams(values), timeZone),
-                ),
-              )
-            }
-          />
-          <ReportFilters
-            key={filterKey}
-            filters={filters}
-            currencies={currencies}
-            showPerPage={showItems}
-            timeZone={timeZone}
-            onApply={applyFilters}
-            onReset={resetFilters}
-          />
+          <section className="reports-page__setup" aria-labelledby="report-setup-title">
+            <header className="reports-page__setup-heading">
+              <h2 id="report-setup-title">{t("dashboard.reports.ui.setupTitle")}</h2>
+              <p>{t("dashboard.reports.ui.setupHint")}</p>
+            </header>
+            <ReportFilters key={filterKey} filters={filters} currencies={currencies}
+              showPerPage={showItems} timeZone={timeZone} onApply={applyFilters} onReset={resetFilters}
+              reportSelector={<ReportTabs activeReport={filters.report} onChange={selectReport} />} />
+            <details className="reports-page__saved-views">
+              <summary>{t("dashboard.reports.ui.savedViews")}<LuChevronDown aria-hidden="true" /></summary>
+              <SavedViews scope="reports" filters={Object.fromEntries(reportFiltersToSearchParams(filters))}
+                onApply={(values) => setSearchParams(reportFiltersToSearchParams(
+                  readReportFilters(new URLSearchParams(values), timeZone)))} />
+              <Link to={PATH.USER.MONTHLY_REVIEW}>{t("experience:monthly")}</Link>
+            </details>
+          </section>
 
           <div className="reports-page__content" aria-busy={isLoading}>
             {isLoading && (
@@ -451,6 +436,11 @@ export default function Reports() {
 
             {report && (
               <>
+                <header className="reports-page__result-heading">
+                  <span>{t("dashboard.reports.ui.resultTitle")}</span>
+                  <h2>{getReportName(filters.report, t)}</h2>
+                  <p>{t(`dashboard.reports.descriptions.${filters.report}`)}</p>
+                </header>
                 <ReportPeriod
                   period={report.period}
                   previousPeriod={report.analytics.previous_period}
@@ -467,6 +457,10 @@ export default function Reports() {
                   </div>
                 ) : (
                   <>
+                    {report.summary.length > 0 && <div className="reports-page__block-heading">
+                      <h3>{t("dashboard.reports.ui.summaryTitle")}</h3>
+                      <p>{t("dashboard.reports.ui.summaryHint")}</p>
+                    </div>}
                     <ReportHighlights
                       rows={report.summary}
                       fields={definition.highlights ?? []}
@@ -480,11 +474,20 @@ export default function Reports() {
                       groupBy={report.filters?.group_by ?? filters.group_by}
                     />
 
-                    <ReportSummary
+                    <details className="reports-page__details" key={filters.report}>
+                      <summary>
+                        <span><strong>{t("dashboard.reports.ui.detailsTitle")}</strong>
+                          <small>{t("dashboard.reports.ui.detailsHint")}</small></span>
+                        <LuChevronDown aria-hidden="true" />
+                      </summary>
+                      <div className="reports-page__details-content">
+                        <ReportSummary
                       rows={report.summary}
                       groups={definition.summary}
                       title={t("dashboard.reports.sections.details")}
                     />
+                      </div>
+                    </details>
 
                     {showItems && (
                       <ReportSection

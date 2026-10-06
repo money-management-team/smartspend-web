@@ -48,3 +48,21 @@ All home styles, plus the public CTA and footer chrome, live in one file: `src/f
 
 - **Features section:** its eyebrow renders the raw key `HOME.FEATURES.EYEBROW` (the translation is missing).
 - **Features section on phones:** the heading overlaps its paragraph at around 390px.
+
+## Calls to action
+
+Every visible button on the page does something real:
+
+| Where | Control | Action |
+| --- | --- | --- |
+| Hero | Get started (`home-primary-button`) | `Link` to the account type page (register intent) |
+| Hero | Watch demo | `#dashboard-preview` anchor: scrolls to the product preview |
+| AI section | View insights (`ai-primary-button`) | `Link` to `PATH.USER.AI_ASSISTANT`; signed-out visitors sign in first and then arrive there ([redirect](../auth/post-auth-redirect.md)) |
+| AI section | See recommendations | `Link` to `PATH.PUBLIC.FEATURES` |
+| AI section mock composer | Send arrow | Decorative (`aria-hidden`), no longer a button |
+| Ready section | Primary / Contact | `Link`s to register and `PATH.PUBLIC.CONTACT` |
+| FAQ | Question buttons | Toggle the answer |
+
+## Sample data and translations
+
+The hero card, the dashboard preview, the AI example and the feature illustrations show example numbers. They are marked as examples (a "Sample data" tag on the hero card, "Illustrative example" on the AI card and the preview heading), and all their words come from `home.sample.*` (both locale files): category names, merchants, "6 months", "net", "used", "left", "spent", "Bank", "Wallet", the budget alert. Month labels on the preview chart come from `Intl` for the active language. The brand name "Smart Spend" and amounts are not translated. The preview's summary cards use `.home-preview-card` (formerly `.dashboard-summary-card`, which clashed with the dashboard).

@@ -6,7 +6,22 @@
     "save": "Save",
     "saving": "Saving...",
     "loading": "Loading...",
-    "notAvailable": "Not available"
+    "notAvailable": "Not available",
+    "errorBoundary": {
+      "title": "Something went wrong",
+      "message": "An unexpected error occurred. Your data is safe. Reload the page to continue, or go back to the dashboard.",
+      "reload": "Reload page",
+      "dashboard": "Go to dashboard"
+    },
+    "unsavedChanges": {
+      "title": "Discard unsaved changes?",
+      "message": "You have changes that haven't been saved. If you leave this page, they will be lost.",
+      "discardMessage": "You have changes that haven't been saved. If you close this form, they will be lost.",
+      "stay": "Stay on page",
+      "leave": "Leave page",
+      "keepEditing": "Keep editing",
+      "discard": "Discard changes"
+    }
   },
   "api": {
     "errors": {
@@ -133,23 +148,6 @@
       "promo": {
         "title": "Regain access safely",
         "subtitle": "We'll email you a secure link to reset your password quickly."
-      }
-    },
-    "verifyCode": {
-      "title": "Verify the code",
-      "subtitle": "A 4-digit code was sent to your registered phone. Enter it to continue.",
-      "codeSent": "Code sent to",
-      "digitLabel": "Digit {{index}} of {{total}}",
-      "resend": {
-        "prefix": "Didn't get the code?",
-        "link": "Resend"
-      },
-      "submit": "Confirm",
-      "editPhone": "Edit phone number",
-      "promo": {
-        "title": "Unmatched financial safety",
-        "subtitle": "We use the latest encryption to fully protect your data and transactions.",
-        "users": "Join 500K+ active users"
       }
     },
     "resetPassword": {
@@ -349,12 +347,30 @@
       "detail": "This version supports personal finance accounts. We will open business registration when its secure workflow is ready.",
       "personal": "Create a personal account",
       "back": "Back to account type",
-      "short": "Coming soon"
+      "short": "Coming soon",
+      "badge": "Under development",
+      "promo": {
+        "title": "Business accounts are on the way",
+        "subtitle": "We are building a secure workspace for teams, with the right roles and permissions.",
+        "chips": [
+          "Team workspace",
+          "Company budgets",
+          "Clear reports"
+        ]
+      },
+      "roadmap": {
+        "title": "What we are building",
+        "items": [
+          "Secure company registration",
+          "Team roles and permissions",
+          "Shared budgets and reports"
+        ]
+      }
     }
   },
   "dashboard": {
     "header": {
-      "searchPlaceholder": "Search transactions, accounts...",
+      "searchPlaceholder": "Search pages and tools...",
       "userProfile": "User profile",
       "openMenu": "Open navigation menu",
       "lightMode": "Switch to light mode",
@@ -738,6 +754,23 @@
       }
     },
     "financialOperations": {
+      "ui": {
+        "applyTemplateShort": "Apply",
+        "saveTemplateShort": "Save template",
+        "heroKicker": "Your everyday money, made simple",
+        "heroDescription": "Quickly record income and expenses, and find your latest activity in one place.",
+        "newOperation": "New transaction",
+        "entryHint": "Choose the details, then review before confirming.",
+        "chooseAccount": "Choose an account",
+        "expensesOnly": "Voice and receipts capture expenses.",
+        "optionalDetails": "More details (optional)",
+        "transferLink": "Transfer between my accounts",
+        "allowanceDetails": "How are allowances counted?",
+        "recentTitle": "Recent transactions",
+        "recentHint": "Your latest 5 transactions. Open any transaction to see its details.",
+        "showMore": "Show more",
+        "showLess": "Show less"
+      },
       "title": "Financial operations",
       "subtitle": "Record income and expenses, and review your ledger.",
       "intro": {
@@ -2283,6 +2316,21 @@
       }
     },
     "reports": {
+      "ui": {
+        "heroDescription": "Choose a report and period to understand your money at a glance.",
+        "setupTitle": "What would you like to know?",
+        "setupHint": "Choose a report and period to see the results below.",
+        "periodLabel": "Period",
+        "customRange": "Custom period",
+        "advanced": "More options",
+        "savedViews": "Saved filters and review tools",
+        "resultTitle": "Report results",
+        "summaryTitle": "Key figures",
+        "summaryHint": "A summary of this period, with each currency shown separately.",
+        "detailsTitle": "All financial details",
+        "detailsHint": "Expand to see the remaining figures, grouped by currency.",
+        "periodDetails": "About this report"
+      },
       "title": "Reports",
       "subtitle": "Backend-calculated financial reports for any period, with every currency kept separate.",
       "tabs": {
@@ -3517,6 +3565,36 @@
         "failed": "Failed",
         "reversed": "Reversed"
       }
+    },
+    "search": {
+      "label": "Search dashboard pages",
+      "open": "Open search",
+      "clear": "Clear search",
+      "results": "Matching pages",
+      "empty": "No page matches “{{query}}”. Try another word, such as accounts, budgets or reports.",
+      "keywords": {
+        "dashboard": "home overview summary balance main",
+        "accounts": "bank cash wallet card balances account",
+        "attention": "alerts warnings reminders issues needs review",
+        "financialOperations": "transactions income expense spending add transaction ledger payments",
+        "templates": "quick templates shortcuts repeat transaction",
+        "transfers": "transfer move money between accounts",
+        "recurring": "repeating subscriptions bills scheduled automatic",
+        "aiCaptures": "receipts invoices scan voice ai expense capture",
+        "imports": "import statement csv bank file upload",
+        "calendar": "dates schedule due upcoming agenda",
+        "categories": "category labels tags spending groups",
+        "budgets": "budget limit spending plan",
+        "savingsGoals": "savings saving goals target piggy bank",
+        "debts": "debt loans owe lent borrowed payments",
+        "reports": "reports analytics statistics charts pdf",
+        "exports": "export history download csv excel pdf",
+        "monthly": "monthly review summary month report",
+        "guide": "getting started guide help tutorial onboarding",
+        "aiAssistant": "ai assistant chat copilot insights forecast advice",
+        "notifications": "notifications alerts inbox messages bell",
+        "settings": "settings profile account password security language theme preferences"
+      }
     }
   },
   "home": {
@@ -3731,6 +3809,32 @@
         "privacy": "Privacy Policy"
       },
       "rights": "All rights reserved."
+    },
+    "sample": {
+      "badge": "Sample data",
+      "aiSend": "Send",
+      "aiName": "Smart Spend AI",
+      "dining": "Dining",
+      "transport": "Transport",
+      "sixMonths": "6 months",
+      "net": "{{amount}} net",
+      "used": "{{percent}}% used",
+      "left": "left",
+      "spent": "{{amount}} spent",
+      "ofTotal": "of {{amount}}",
+      "salary": "Salary",
+      "wholeFoods": "Whole Foods",
+      "netflix": "Netflix",
+      "metroCard": "Metro Card",
+      "groceries": "Groceries",
+      "subscription": "Subscription",
+      "incomeCategory": "Income",
+      "bank": "Bank",
+      "wallet": "Wallet",
+      "budgetAlert": "Budget alert",
+      "diningAt": "Dining is at {{percent}}%",
+      "homeBudget": "Home",
+      "travelBudget": "Travel"
     }
   }
 }

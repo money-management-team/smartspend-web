@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuthContext } from "../../../contexts/auth/useAuthContext";
 import { PATH } from "../../../routes/Path";
+import { getPostAuthPath } from "../../../routes/postAuthRedirect";
 import { getApiErrorMessage } from "../../Dashboards/User/api/apiClient";
 
 import AuthAlert from "../components/AuthAlert/AuthAlert";
@@ -30,6 +31,7 @@ const PROMO_CHIPS = [0, 1, 2];
 export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuthContext();
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
@@ -76,7 +78,7 @@ export default function Login() {
         { remember: form.remember },
       );
 
-      navigate(PATH.USER.DASHBOARD, { replace: true });
+      navigate(getPostAuthPath(location.state), { replace: true });
     } catch (error) {
       if (error?.code === "VALIDATION_ERROR") setErrors(error.errors);
       setGeneralError(getApiErrorMessage(error, t));

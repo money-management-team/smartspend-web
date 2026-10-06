@@ -4,9 +4,9 @@ import "./AuthSteps.css";
 
 /*
  * Progress bars for the password-recovery flow
- * (forgot → verify → reset → changed).
+ * (forgot → reset → changed).
  */
-export default function AuthSteps({ current, total = 4 }) {
+export default function AuthSteps({ current, total = 3 }) {
   const { t } = useTranslation();
 
   return (

@@ -34,7 +34,7 @@ Older page files still contain other values (700, 720, 860, 960, 1120 …). They
 - ≤1024px: sidebar is a drawer (`min(250px, 86vw)`), hidden with `visibility` when closed so it is skipped by keyboard and screen readers. An overlay button and the Escape key close it. The header menu button exposes `aria-expanded` / `aria-controls="dashboard-sidebar"`.
 - The sidebar close button used to be nested inside the brand `<Link>`, so closing also navigated home. It is now a sibling.
 - `__main` has `overflow-x: clip` as a safety net; it does not replace fixing real overflow (see below).
-- Header: at ≤480px the search field is dropped and `justify-content: space-between` keeps the menu at the inline start and actions at the inline end in both directions (an old RTL override that inverted this was removed).
+- Header: at ≤480px the search field collapses into a search button (it opens over the header; see [dashboard search](../dashboard-search/overview.md)) and `justify-content: space-between` keeps the menu at the inline start and actions at the inline end in both directions (an old RTL override that inverted this was removed).
 
 ## Overflow rules
 
@@ -58,3 +58,9 @@ Only logical properties are used in the new rules. Everything uses existing toke
 ## Verification
 
 A headless-Chrome audit (mocked API with long Arabic/English names and 11-digit amounts) measured element bounds on all 27 dashboard routes at 360, 390, 430, 768, 820, 1024, 1280, 1440 and 1920px, in ar/en and light/dark, and found no element outside the viewport (excluding intentional scrollers and the closed drawer).
+
+## Shared page hero
+
+The dark-blue hero card (eyebrow "SMARTSPEND / FINANCE", heading, subtitle, white action button) is defined once in `features/Dashboards/User/financeExperience.css`. Accounts, Transfers, Recurring, Savings Goals, Debts, Settings and AI Captures use it, and so do Budgets, Categories, Calendar, Notifications and Report Exports (`.budgets-header`, `.categories-page__header`, `.calendar-page__header`, `.notifications-header`, `.report-exports-page__header`). To bring another page in, add its header, copy and button selectors to those lists. Reports keeps its own header band, and Imports and the main Dashboard are unchanged.
+
+The same stylesheet gives every remaining dashboard page the Accounts frame (1320px max width, same padding) and extends the hero to Imports and the experience pages (`.exp-hero`: attention, monthly review, quick templates, getting started). Budget, Category and Transaction detail headers use the dark detail-page header shared with the Account, Transfer, Recurring and Debt details. Still bespoke: Dashboard (balance hero), Reports (own header band) and AI Assistant (chat layout).

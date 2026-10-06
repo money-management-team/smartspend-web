@@ -17,7 +17,7 @@ section.hero-section
         p                                      home.hero.description
         .hero-section__buttons
           Link.home-primary-button → PATH.AUTH.REGISTER
-          button.home-secondary-button         FiPlayCircle + watchDemo (no handler yet)
+          a.home-secondary-button[href=#dashboard-preview]   FiPlayCircle + watchDemo; scrolls to the dashboard preview section
         .hero-users                            3 decorative avatars + home.hero.users
       .hero-dashboard[aria-hidden]             decorative product preview
         DashboardMock
@@ -78,5 +78,5 @@ The home-page sweep in headless Chrome (1440, 1100, 820 and 390px, light/dark, e
 
 ## Known gaps
 
-- "Watch the demo" has no handler.
+- "Watch the demo" is a real link to the dashboard preview section (`#dashboard-preview`, id from `Home/homeAnchors.js`). There is no video, so it takes the visitor to the on-page product walkthrough; with JavaScript it scrolls there and focuses the section, without it the hash link still works.
 - Much of the earlier hero CSS targets markup that doesn't exist in `HeroSection.jsx` (`hero-visual`, `hero-float-card`, sparkline, `hero-cta`, …). It is inert. It was left in place because it is part of in-progress, uncommitted work in `Home.css`.

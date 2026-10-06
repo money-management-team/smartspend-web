@@ -36,9 +36,9 @@ export default function ReportComparison({ groups }) {
               )}
 
               <div className="report-comparison__scroll">
-                <table className="report-comparison__table">
-                  <thead>
-                    <tr>
+                <table className="report-comparison__table" role="table">
+                  <thead role="rowgroup">
+                    <tr role="row">
                       <th scope="col">{t("dashboard.reports.comparison.metric")}</th>
                       <th scope="col">{t("dashboard.reports.comparison.current")}</th>
                       <th scope="col">{t("dashboard.reports.comparison.previous")}</th>
@@ -46,23 +46,23 @@ export default function ReportComparison({ groups }) {
                       {showPercent && <th scope="col">{t("dashboard.reports.comparison.changePercent")}</th>}
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody role="rowgroup">
                     {group.metrics.map((metric) => {
                       const type = getValueType(metric.key, metric.current ?? metric.previous ?? metric.change);
                       const direction = getChangeDirection(metric);
                       const Icon = TREND_ICONS[direction];
 
                       return (
-                        <tr key={metric.key}>
+                        <tr key={metric.key} role="row">
                           <th scope="row">{getFieldLabel(metric.key, t, i18n)}</th>
-                          <td>
+                          <td data-label={t("dashboard.reports.comparison.current")} role="cell">
                             <ReportValue value={metric.current} type={type} currency={currency} />
                           </td>
-                          <td>
+                          <td data-label={t("dashboard.reports.comparison.previous")} role="cell">
                             <ReportValue value={metric.previous} type={type} currency={currency} />
                           </td>
                           {showChange && (
-                            <td>
+                            <td data-label={t("dashboard.reports.comparison.change")} role="cell">
                               <span className="report-comparison__change">
                                 {metric.change != null && <Icon aria-hidden="true" />}
                                 <ReportValue
@@ -74,7 +74,7 @@ export default function ReportComparison({ groups }) {
                             </td>
                           )}
                           {showPercent && (
-                            <td>
+                            <td data-label={t("dashboard.reports.comparison.changePercent")} role="cell">
                               <ReportValue value={metric.percent} type="percent" />
                             </td>
                           )}

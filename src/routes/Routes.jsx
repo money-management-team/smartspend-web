@@ -1,50 +1,52 @@
 import PublicInformationRoute from "../features/PublicPage/Information/PublicInformationRoute";
-import AttentionCenter from "../features/Dashboards/User/Experience/AttentionCenter";
-import MonthlyReview from "../features/Dashboards/User/Experience/MonthlyReview";
-import QuickTemplates from "../features/Dashboards/User/Experience/QuickTemplates";
-import GettingStarted from "../features/Dashboards/User/Experience/GettingStarted";
-import AccountType from "../features/Auth/AccountType/AccountType";
-import CompanyUnavailable from "../features/Auth/CompanyUnavailable/CompanyUnavailable";
-import ForgotPassword from "../features/Auth/ForgotPassword/ForgotPassword";
-import Login from "../features/Auth/Login/Login";
-import PasswordChanged from "../features/Auth/PasswordChanged/PasswordChanged";
-import Register from "../features/Auth/Register/Register";
-import ResetPassword from "../features/Auth/ResetPassword/ResetPassword";
-import VerifyCode from "../features/Auth/VerifyCode/VerifyCode";
-import VerifyEmail from "../features/Auth/VerifyEmail/VerifyEmail";
-import AccountDetails from "../features/Dashboards/User/AccountDetails/AccountDetails";
-import Accounts from "../features/Dashboards/User/Accounts/Accounts";
-import AIAssistant from "../features/Dashboards/User/AIAssistant/AIAssistant";
-import Imports from "../features/Dashboards/User/Imports/Imports";
-import AiExpenseCaptureDetails from "../features/Dashboards/User/AiExpenseCaptureDetails/AiExpenseCaptureDetails";
-import AiExpenseCaptures from "../features/Dashboards/User/AiExpenseCaptures/AiExpenseCaptures";
-import BudgetDetails from "../features/Dashboards/User/BudgetDetails/BudgetDetails";
-import Budgets from "../features/Dashboards/User/Budgets/Budgets";
-import Calendar from "../features/Dashboards/User/Calendar/Calendar";
-import Categories from "../features/Dashboards/User/Categories/Categories";
-import CategoryDetails from "../features/Dashboards/User/CategoryDetails/CategoryDetails";
-import Dashboard from "../features/Dashboards/User/Dashboard/Dashboard";
-import DebtDetails from "../features/Dashboards/User/DebtDetails/DebtDetails";
-import Debts from "../features/Dashboards/User/Debts/Debts";
-import FinancialOperations from "../features/Dashboards/User/FinancialOperations/FinancialOperations";
-import Notifications from "../features/Dashboards/User/Notifications/Notifications";
-import Recurring from "../features/Dashboards/User/Recurring/Recurring";
-import RecurringDetails from "../features/Dashboards/User/RecurringDetails/RecurringDetails";
-import ReportExports from "../features/Dashboards/User/ReportExports/ReportExports";
-import Reports from "../features/Dashboards/User/Reports/Reports";
-import SavingsGoalDetails from "../features/Dashboards/User/SavingsGoalDetails/SavingsGoalDetails";
-import SavingsGoals from "../features/Dashboards/User/SavingsGoals/SavingsGoals";
-import Settings from "../features/Dashboards/User/Settings/Settings";
-import TransactionDetails from "../features/Dashboards/User/TransactionDetails/TransactionDetails";
-import TransferDetails from "../features/Dashboards/User/TransferDetails/TransferDetails";
-import Transfers from "../features/Dashboards/User/Transfers/Transfers";
-
 import Home from "../features/PublicPage/Home/Home";
 import NotFound from "../features/PublicPage/NotFound/NotFound";
 
 import AuthLayout from "../layouts/AuthLayout/AuthLayout";
 import DashboardLayout from "../layouts/DashboardLayout/DashboardLayout";
 import PublicLayout from "../layouts/PublicLayout/PublicLayout";
+import { Navigate } from "react-router-dom";
+
+import {
+  AttentionCenter,
+  MonthlyReview,
+  QuickTemplates,
+  GettingStarted,
+  AccountType,
+  CompanyUnavailable,
+  ForgotPassword,
+  Login,
+  PasswordChanged,
+  Register,
+  ResetPassword,
+  VerifyEmail,
+  AccountDetails,
+  Accounts,
+  AIAssistant,
+  Imports,
+  AiExpenseCaptureDetails,
+  AiExpenseCaptures,
+  BudgetDetails,
+  Budgets,
+  Calendar,
+  Categories,
+  CategoryDetails,
+  Dashboard,
+  DebtDetails,
+  Debts,
+  FinancialOperations,
+  Notifications,
+  Recurring,
+  RecurringDetails,
+  ReportExports,
+  Reports,
+  SavingsGoalDetails,
+  SavingsGoals,
+  Settings,
+  TransactionDetails,
+  TransferDetails,
+  Transfers,
+} from "./lazyPages";
 import { PATH } from "./Path";
 import { GuestOnly, RequireAuth } from "./RouteGuards";
 
@@ -65,6 +67,13 @@ const routes = [
         path,
         element: <PublicInformationRoute pageKey={key.toLowerCase()} />,
       })),
+      /* Legacy demo page, removed. Verification is by the emailed link and the
+         dashboard banner, so old links go to the dashboard (sign-in first when
+         signed out, and back here afterwards). */
+      {
+        path: PATH.AUTH.VERIFY_CODE,
+        element: <Navigate to={PATH.USER.DASHBOARD} replace />,
+      },
       {
         path: "*",
         element: <NotFound />,
@@ -109,10 +118,6 @@ const guestRoutes = [
       {
         path: PATH.AUTH.FORGOT_PASSWORD,
         element: <ForgotPassword />,
-      },
-      {
-        path: PATH.AUTH.VERIFY_CODE,
-        element: <VerifyCode />,
       },
       {
         path: PATH.AUTH.PASSWORD_CHANGED,

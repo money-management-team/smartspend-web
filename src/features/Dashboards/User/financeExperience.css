@@ -1,4 +1,11 @@
 /* SmartSpend financial workspace. All rules are scoped to the affected pages (Reports owns its own styles). */
+/*
+ * Every rule below is nested in :root, which adds one class of specificity.
+ * Pages are lazy-loaded, so their own stylesheets are no longer guaranteed to
+ * come before this file in the cascade; the extra specificity makes these
+ * overrides win over a page's single-class rules whatever the load order.
+ */
+:root {
 :is(.accounts-page, .transfers-page, .recurring-page, .ai-captures-page,
   .capture-details, .savings-goals-page, .savings-goal-details, .debts-page,
   .settings-page) {
@@ -287,10 +294,6 @@
   :is(.accounts-page, .transfers-page, .recurring-page, .ai-captures-page,
     .savings-goals-page, .debts-page, .settings-page) :is(.account-card, .transfer-row, .recurring-row, .capture-row, .saving-goal-card, button) { transition: none !important; transform: none !important; }
 }
-@keyframes fin-rise {
-  from { opacity: .72; transform: translateY(9px); }
-  to { opacity: 1; transform: translateY(0); }
-}
 @media (prefers-reduced-motion: no-preference) {
   :is(.accounts-page .accounts-header, .transfers-page .transfers-page__header,
     .recurring-page .recurring-header, .savings-goals-page .savings-goals-header,
@@ -348,4 +351,220 @@
   :is(.account-details, .transfer-details, .recurring-details, .debt-details) { padding: 15px 14px 48px; }
   :is(.account-details .account-details__header, .transfer-details .transfer-details__header,
     .recurring-details .recurring-details__header, .debt-details .debt-details__header) { min-height: 0; padding: 22px; border-radius: 21px; }
+}
+
+/* Budgets, categories, calendar, notifications and export history share the same hero as Accounts. */
+:is(.budgets-page .budgets-header, .categories-page .categories-page__header,
+  .calendar-page .calendar-page__header, .notifications-page .notifications-header,
+  .report-exports-page .report-exports-page__header) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 176px;
+  margin: 0 0 22px;
+  padding: clamp(22px, 3vw, 36px);
+  border: 1px solid color-mix(in srgb, #ffffff 13%, #1c3e83);
+  border-radius: 27px;
+  background: radial-gradient(circle at 82% 8%, rgba(113, 179, 255, .35), transparent 29%),
+    radial-gradient(circle at 24% 120%, rgba(46, 105, 244, .3), transparent 44%),
+    linear-gradient(125deg, #102347, #193c7b 64%, #154f9f);
+  box-shadow: 0 20px 52px rgba(20, 48, 107, .19);
+  color: #ffffff;
+  text-align: start;
+}
+:is(.budgets-page .budgets-header, .categories-page .categories-page__header,
+  .notifications-page .notifications-header, .report-exports-page .report-exports-page__header) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+:is(.budgets-header, .categories-page__header, .calendar-page__header,
+  .notifications-header, .report-exports-page__header)::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 280px;
+  height: 280px;
+  inset-block-end: -190px;
+  inset-inline-end: -42px;
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 50%;
+  box-shadow: 0 0 0 42px rgba(255, 255, 255, .035), 0 0 0 88px rgba(255, 255, 255, .025);
+  pointer-events: none;
+}
+:is(.budgets-header__copy, .categories-page__copy, .notifications-header__copy,
+  .report-exports-page__header > div:first-child)::before,
+.calendar-page .calendar-page__header::before {
+  content: "SMARTSPEND  /  FINANCE";
+  display: block;
+  margin-block-end: 13px;
+  color: #b6d7ff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+:is(.budgets-header__copy, .categories-page__copy, .notifications-header__copy,
+  .report-exports-page__header > div:first-child) { position: relative; z-index: 1; min-width: 0; }
+:is(.budgets-page .budgets-header__copy, .categories-page .categories-page__copy,
+  .notifications-page .notifications-header__copy,
+  .report-exports-page .report-exports-page__header > div:first-child) h1,
+.calendar-page .calendar-page__header h1 {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: clamp(25px, 3vw, 37px);
+  font-weight: 800;
+  line-height: 1.2;
+}
+:is(.budgets-page .budgets-header__copy, .categories-page .categories-page__copy,
+  .notifications-page .notifications-header__copy,
+  .report-exports-page .report-exports-page__header > div:first-child) p,
+.calendar-page .calendar-page__header > p {
+  max-width: 58ch;
+  margin: 10px 0 0;
+  color: #d1e1ff;
+  font-size: 14px;
+  line-height: 1.75;
+}
+.calendar-page .calendar-page__header .calendar-page__note { color: #b6d7ff; }
+.report-exports-page .report-exports-page__back { color: #b6d7ff; }
+:is(.budgets-page .budgets-header__button, .categories-page .categories-page__add,
+  .report-exports-page .report-exports-page__refresh) {
+  position: relative;
+  z-index: 1;
+  min-height: 45px;
+  padding-inline: 18px;
+  border: 1px solid rgba(255,255,255,.8);
+  border-radius: 12px;
+  background: #ffffff;
+  color: #194a95;
+  box-shadow: 0 12px 30px rgba(4, 22, 54, .18);
+  font-weight: 750;
+  transition: transform 200ms ease, box-shadow 200ms ease, background-color 200ms ease;
+}
+:is(.budgets-page .budgets-header__button, .categories-page .categories-page__add,
+  .report-exports-page .report-exports-page__refresh):hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: #e9f2ff;
+  color: #123b79;
+  box-shadow: 0 16px 34px rgba(4, 22, 54, .24);
+}
+@media (max-width: 700px) {
+  :is(.budgets-page .budgets-header, .categories-page .categories-page__header,
+    .calendar-page .calendar-page__header, .notifications-page .notifications-header,
+    .report-exports-page .report-exports-page__header) { min-height: 0; padding: 22px; border-radius: 21px; }
+}
+
+/* Unified page frame: every remaining dashboard page uses the same width and padding as Accounts. */
+:is(.budgets-page, .categories-page, .calendar-page, .notifications-page,
+  .report-exports-page, .imports-page, .financial-operations-page,
+  .budget-details, .category-details, .transaction-details) {
+  --fin-line: color-mix(in srgb, var(--color-primary) 10%, var(--color-border));
+  --fin-shadow: 0 20px 48px color-mix(in srgb, #14244a 9%, transparent);
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
+  padding: clamp(16px, 2.7vw, 34px) clamp(16px, 3vw, 38px) 70px;
+  box-sizing: border-box;
+}
+@media (max-width: 700px) {
+  :is(.budgets-page, .categories-page, .calendar-page, .notifications-page,
+    .report-exports-page, .imports-page, .financial-operations-page,
+    .budget-details, .category-details, .transaction-details) { padding: 15px 14px 48px; }
+}
+
+/* Imports and the experience pages (attention, review, templates, getting started) get the hero too. */
+:is(.imports-page > header, .exp-hero) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 176px;
+  margin: 0 0 22px;
+  padding: clamp(22px, 3vw, 36px);
+  border: 1px solid color-mix(in srgb, #ffffff 13%, #1c3e83);
+  border-radius: 27px;
+  background: radial-gradient(circle at 82% 8%, rgba(113, 179, 255, .35), transparent 29%),
+    radial-gradient(circle at 24% 120%, rgba(46, 105, 244, .3), transparent 44%),
+    linear-gradient(125deg, #102347, #193c7b 64%, #154f9f);
+  box-shadow: 0 20px 52px rgba(20, 48, 107, .19);
+  color: #ffffff;
+  text-align: start;
+}
+.imports-page > header { display: flex; flex-direction: column; justify-content: center; }
+:is(.imports-page > header, .exp-hero)::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 280px;
+  height: 280px;
+  inset-block-end: -190px;
+  inset-inline-end: -42px;
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 50%;
+  box-shadow: 0 0 0 42px rgba(255, 255, 255, .035), 0 0 0 88px rgba(255, 255, 255, .025);
+  pointer-events: none;
+}
+.imports-page > header::before {
+  content: "SMARTSPEND  /  FINANCE";
+  margin-block-end: 13px;
+  color: #b6d7ff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+:is(.imports-page > header, .exp-hero) h1 {
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: clamp(25px, 3vw, 37px);
+  font-weight: 800;
+  line-height: 1.2;
+}
+:is(.imports-page > header, .exp-hero) p { max-width: 58ch; margin: 10px 0 0; color: #d1e1ff; font-size: 14px; line-height: 1.75; }
+.exp-hero :is(.exp-eyebrow, small, span:not(.exp-hero-icon)) { color: #b6d7ff; }
+.exp-hero .exp-hero-icon { color: #fff; background: rgba(255,255,255,.13); border-color: rgba(255,255,255,.28); }
+.exp-hero :is(button, a):not(:disabled) { position: relative; z-index: 1; }
+
+/* Budget, category and transaction detail headers match the other detail pages. */
+:is(.budget-details .budget-details__header, .category-details .category-details__header,
+  .transaction-details .transaction-details__header) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 145px;
+  padding: clamp(22px, 3vw, 34px);
+  border: 1px solid #31579a;
+  border-radius: 24px;
+  background: radial-gradient(circle at 86% 12%, rgba(117,185,255,.35), transparent 30%),
+    linear-gradient(125deg,#102347,#1b4387);
+  color: #fff;
+  box-shadow: 0 18px 45px rgba(20,48,107,.18);
+}
+:is(.budget-details__header, .category-details__header, .transaction-details__header)::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  width: 210px;
+  height: 210px;
+  inset-block-end: -138px;
+  inset-inline-end: -35px;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 50%;
+  box-shadow: 0 0 0 34px rgba(255,255,255,.04);
+  pointer-events: none;
+}
+:is(.budget-details, .category-details, .transaction-details) :is(.budget-details__identity, .category-details__identity, .transaction-details__identity) h1 { color: #fff; font-family: var(--font-heading); font-size: clamp(22px,2.6vw,32px); }
+:is(.budget-details, .category-details, .transaction-details) :is(.budget-details__header, .category-details__header, .transaction-details__header) :is(.budget-details__chip, .category-details__chip, .transaction-details__chip, .budget-details__action, .category-details__action, .transaction-details__action) { border-color: rgba(255,255,255,.28); color: #fff; background: rgba(255,255,255,.13); }
+:is(.budget-details, .category-details, .transaction-details) :is(.budget-details__panel, .category-details__panel, .transaction-details__panel) { border: 1px solid var(--fin-line); border-radius: 19px; background: var(--color-surface); box-shadow: var(--fin-shadow); }
+@media (max-width: 700px) {
+  :is(.budget-details .budget-details__header, .category-details .category-details__header,
+    .transaction-details .transaction-details__header, .imports-page > header, .exp-hero) { min-height: 0; padding: 22px; border-radius: 21px; }
+}
+}
+
+@keyframes fin-rise {
+  from { opacity: .72; transform: translateY(9px); }
+  to { opacity: 1; transform: translateY(0); }
 }

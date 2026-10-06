@@ -278,7 +278,7 @@ export default function BudgetDetails() {
     return (
       <div className="budget-details">
         {backLink}
-        <Loading message={t("dashboard.budgets.details.loading")} />
+        <Loading variant="page" size="large" message={t("dashboard.budgets.details.loading")} />
       </div>
     );
   }

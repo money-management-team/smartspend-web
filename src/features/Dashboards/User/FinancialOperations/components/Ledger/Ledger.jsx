@@ -1,5 +1,6 @@
+import { useState } from "react";
 import PrivateMoney from "../../../Experience/PrivateMoney";
-import { LuChevronLeft, LuChevronRight, LuUndo2 } from "react-icons/lu";
+import { LuChevronDown, LuChevronUp, LuChevronLeft, LuChevronRight, LuSlidersHorizontal, LuUndo2 } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
@@ -12,6 +13,7 @@ import { formatDate, formatMoney } from "../../../utils/formatters";
 import TransactionFilters from "../TransactionFilters/TransactionFilters";
 import TransactionStatusBadge from "../TransactionStatusBadge/TransactionStatusBadge";
 import {
+  DEFAULT_SORT,
   TYPE_FILTERS,
   canChangeTransaction,
   getAmountSign,
@@ -22,7 +24,6 @@ import {
   isReversalRecord,
   isTransferTransaction,
   renderTransactionIcon,
-  translateEnum,
 } from "../../transactionHelpers";
 
 import "./Ledger.css";
@@ -32,6 +33,7 @@ import "./Ledger.css";
  * page live in the URL; reversed transactions stay listed as history.
  */
 export default function Ledger({
+  savedViews,
   page,
   isLoading,
   error,
@@ -49,8 +51,14 @@ export default function Ledger({
   const { user, workspace } = useAuthContext();
   const locale = getDisplayLocale(i18n.language);
   const timeZone = user?.timezone ?? workspace?.timezone;
-  const items = page?.items ?? [];
   const filtered = hasActiveFilters(filters);
+  const [expanded, setExpanded] = useState(() => filtered || filters.page > 1 || filters.sort !== DEFAULT_SORT);
+  const allItems = page?.items ?? [];
+  const items = expanded ? allItems : allItems.slice(0, 5);
+  const collapse = () => {
+    setExpanded(false);
+    if (filters.page > 1) onPageChange(1);
+  };
 
   return (
     <section className="ledger" aria-labelledby="ledger-title">
@@ -61,51 +69,38 @@ export default function Ledger({
           </span>
 
           <h2 id="ledger-title">
-            {t("dashboard.transactions.title")}
+            {t(expanded ? "dashboard.transactions.title" : "dashboard.financialOperations.ui.recentTitle")}
             {page && !isLoading && (
               <span className="ledger__count">{page.total}</span>
             )}
           </h2>
         </div>
 
-        <div
-          className="ledger__filters"
-          role="group"
-          aria-label={t("dashboard.transactions.fields.type")}
-        >
-          {TYPE_FILTERS.map((item) => {
-            const isActive = (filters.type || "all") === item;
-
-            return (
-              <button
-                type="button"
-                key={item}
-                aria-pressed={isActive}
-                className={
-                  isActive
-                    ? "ledger__filter ledger__filter--active"
-                    : "ledger__filter"
-                }
-                onClick={() =>
-                  onFiltersChange({ type: item === "all" ? "" : item })
-                }
-              >
+        {expanded && <div className="ledger__header-actions">
+          <label className="ledger__type-control">
+            <span className="exp-sr-only">{t("dashboard.transactions.fields.type")}</span>
+            <select value={filters.type || "all"} onChange={(event) =>
+              onFiltersChange({ type: event.target.value === "all" ? "" : event.target.value })}>
+              {TYPE_FILTERS.map((item) => <option key={item} value={item}>
                 {t(`dashboard.transactions.filters.types.${item}`)}
-              </button>
-            );
-          })}
-        </div>
+              </option>)}
+            </select>
+          </label>
+          <button type="button" className="ledger__less" onClick={collapse}>
+            {t("dashboard.financialOperations.ui.showLess")}<LuChevronUp aria-hidden="true" />
+          </button>
+        </div>}
       </header>
+      {!expanded && <p className="ledger__description">{t("dashboard.financialOperations.ui.recentHint")}</p>}
+      {expanded && <details className="ledger__filter-options" open={filtered || undefined}>
+        <summary><LuSlidersHorizontal aria-hidden="true" />{t("dashboard.transactions.filters.label")}
+          <LuChevronDown aria-hidden="true" /></summary>
+        <TransactionFilters filters={filters} accounts={accounts} categories={categories}
+          onChange={onFiltersChange} onClear={onClearFilters} />
+        {savedViews}
+      </details>}
 
-      <TransactionFilters
-        filters={filters}
-        accounts={accounts}
-        categories={categories}
-        onChange={onFiltersChange}
-        onClear={onClearFilters}
-      />
-
-      <div className="ledger__list">
+      <div className="ledger__list" id="operation-ledger-list">
         {isLoading && (
           <Loading message={t("dashboard.transactions.states.loading")} />
         )}
@@ -156,7 +151,6 @@ export default function Ledger({
             const isReversed = transaction.status === "reversed";
             const amount = String(transaction.amount ?? "").replace(/^-/, "");
             const meta = [
-              transaction.category?.name,
               account?.name,
               formatDate(transaction.occurred_at, locale, timeZone),
             ].filter(Boolean);
@@ -185,18 +179,9 @@ export default function Ledger({
                     </strong>
                   </Link>
                   <small>
-                    {translateEnum(
-                      t,
-                      i18n,
-                      "dashboard.transactions.types",
-                      transaction.type,
-                    )}
-                    {meta.map((part, index) => (
-                      <span key={index}>
-                        {" · "}
-                        <bdi>{part}</bdi>
-                      </span>
-                    ))}
+                    {meta.map((part, index) => <span key={index}>
+                      {index > 0 && " · "}<bdi>{part}</bdi>
+                    </span>)}
                   </small>
                 </div>
 
@@ -261,7 +246,15 @@ export default function Ledger({
           })}
       </div>
 
-      {!isLoading && !error && page && page.lastPage > 1 && (
+      {!expanded && !isLoading && !error && page && (allItems.length > 5 || page.lastPage > 1) && (
+        <footer className="ledger__more-footer">
+          <button type="button" className="ledger__more" aria-expanded={expanded}
+            aria-controls="operation-ledger-list" onClick={() => setExpanded(true)}>
+            {t("dashboard.financialOperations.ui.showMore")}<LuChevronDown aria-hidden="true" />
+          </button>
+        </footer>
+      )}
+      {expanded && !isLoading && !error && page && page.lastPage > 1 && (
         <footer className="ledger__pagination">
           <span>
             {t("dashboard.transactions.pagination.summary", {

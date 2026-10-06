@@ -238,7 +238,7 @@ export default function RecurringDetails() {
     return (
       <div className="recurring-details">
         {backLink}
-        <Loading message={t("dashboard.recurring.details.loading")} />
+        <Loading variant="page" size="large" message={t("dashboard.recurring.details.loading")} />
       </div>
     );
   }

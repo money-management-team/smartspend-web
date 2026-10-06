@@ -16,6 +16,7 @@ export default function ManualTemplateTools({
   type,
   form,
   onApply,
+  compact = false,
 }) {
   const { t } = useTranslation("experience"),
     { preferences, update, workspaceId } = useExperience();
@@ -61,6 +62,40 @@ export default function ManualTemplateTools({
     setName("");
     setMessage(null);
   };
+  if (compact) return (
+    <section className="operation-templates" aria-label={t("templates")}>
+      <div className="operation-templates__bar">
+        {preferences.templates.length > 0 && (
+          <>
+            <label className="operation-templates__picker">
+              <span>{t("templates")}</span>
+              <select value={selected} onChange={(event) => {
+                setSelected(event.target.value);
+                setMessage(null);
+              }}>
+                <option value="">{t("chooseTemplate")}</option>
+                {preferences.templates.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+              </select>
+            </label>
+            <button type="button" disabled={!selected} onClick={apply}>{t("dashboard.financialOperations.ui.applyTemplateShort", { ns: "translation" })}</button>
+          </>
+        )}
+        <button type="button" className="operation-templates__save"
+          disabled={preferences.templates.length >= 20} aria-expanded={isSaving}
+          onClick={() => setSaving(!isSaving)}>{t("dashboard.financialOperations.ui.saveTemplateShort", { ns: "translation" })}</button>
+        {preferences.templates.length > 0 && <Link to={PATH.USER.QUICK_TEMPLATES}>{t("edit")}</Link>}
+      </div>
+      {isSaving && <div className="operation-templates__save-form">
+        <label><span className="exp-sr-only">{t("name")}</span>
+          <input value={name} onChange={(event) => setName(event.target.value)} maxLength={80} placeholder={t("name")} />
+        </label>
+        <button type="button" disabled={!name.trim()} onClick={save}>{t("save")}</button>
+        <p>{t("templateReview")}</p>
+      </div>}
+      {message && <p className={message === "templateApplied" ? "exp-success" : "exp-error"}
+        role="status">{t(message)}</p>}
+    </section>
+  );
   return (
     <section className="exp-template-mini" aria-label={t("templates")}>
       <div className="exp-toolbar">

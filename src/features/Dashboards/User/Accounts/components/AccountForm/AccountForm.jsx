@@ -11,6 +11,8 @@ import {
   getAccountErrorMessage,
 } from "../../accountHelpers";
 
+import useDiscardChanges from "../../../../../../components/UnsavedChanges/useDiscardChanges";
+import { isFormDirty } from "../../../../../../components/UnsavedChanges/unsavedChanges";
 import "./AccountForm.css";
 
 const toFormValues = (account) => ({
@@ -63,6 +65,13 @@ export default function AccountForm({ account, onSave, onClose }) {
   const close = () => {
     if (!isSaving) onClose();
   };
+
+  // Values the form opened with: closing with other values asks first.
+  const [initialForm] = useState(form);
+  const { requestClose, discardDialog } = useDiscardChanges({
+    isDirty: isFormDirty(form, initialForm) && !isSaving,
+    onClose: close,
+  });
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
@@ -117,9 +126,10 @@ export default function AccountForm({ account, onSave, onClose }) {
     <div
       className="account-form-modal"
       role="presentation"
-      onMouseDown={close}
-      onKeyDown={(event) => event.key === "Escape" && close()}
+      onMouseDown={requestClose}
+      onKeyDown={(event) => event.key === "Escape" && requestClose()}
     >
+      {discardDialog}
       <section
         className="account-form-modal__dialog"
         role="dialog"
@@ -135,7 +145,7 @@ export default function AccountForm({ account, onSave, onClose }) {
                 : "dashboard.accounts.form.createTitle",
             )}
           </h2>
-          <button type="button" onClick={close} aria-label={t("common.close")}>×</button>
+          <button type="button" onClick={requestClose} aria-label={t("common.close")}>×</button>
         </header>
 
         <form onSubmit={handleSubmit}>
@@ -223,7 +233,7 @@ export default function AccountForm({ account, onSave, onClose }) {
           {message && <p className="account-form-modal__error" role="alert">{message}</p>}
 
           <footer>
-            <button type="button" onClick={close} disabled={isSaving}>
+            <button type="button" onClick={requestClose} disabled={isSaving}>
               {t("common.cancel")}
             </button>
             <button type="submit" disabled={isSaving} aria-busy={isSaving || undefined}>
