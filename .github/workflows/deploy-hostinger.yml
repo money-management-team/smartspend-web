@@ -1,0 +1,155 @@
+name: Deploy SmartSpend Frontend
+
+on:
+  push:
+    branches:
+      - development
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: smartspend-frontend-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+      VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+
+    steps:
+      - name: Checkout development
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Validate production variables
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -n "$VITE_API_BASE_URL"
+          test -n "$VITE_GOOGLE_CLIENT_ID"
+
+          if [ "$VITE_API_BASE_URL" != "https://smartspend-api.anasalharazeen.com/api" ]; then
+            echo "ERROR: Unexpected production API URL."
+            exit 1
+          fi
+
+          echo "PRODUCTION_VARIABLES=OK"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build production frontend
+        run: npm run build
+
+      - name: Validate build
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -f dist/index.html
+
+          grep -R -F \
+            "https://smartspend-api.anasalharazeen.com/api" \
+            dist >/dev/null
+
+          grep -R -F \
+            "$VITE_GOOGLE_CLIENT_ID" \
+            dist >/dev/null
+
+          printf '%s\n' "$GITHUB_SHA" \
+            > "dist/deploy-revision-$GITHUB_SHA.txt"
+
+          echo "FRONTEND_BUILD=OK"
+
+      - name: Configure SSH
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.HOSTINGER_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+
+          install -m 700 -d ~/.ssh
+
+          printf '%s\n' "$SSH_PRIVATE_KEY" \
+            > ~/.ssh/smartspend_hostinger_actions
+
+          chmod 600 ~/.ssh/smartspend_hostinger_actions
+
+          printf '%s\n' "$SSH_KNOWN_HOSTS" \
+            > ~/.ssh/known_hosts
+
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Test Hostinger SSH
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ssh \
+            -i ~/.ssh/smartspend_hostinger_actions \
+            -p 65002 \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=15 \
+            u316277277@82.25.102.89 \
+            'echo HOSTINGER_SSH=OK'
+
+      - name: Prepare incoming release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ssh \
+            -i ~/.ssh/smartspend_hostinger_actions \
+            -p 65002 \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            u316277277@82.25.102.89 \
+            "rm -rf '/home/u316277277/deploy/smartspend-web/incoming/$GITHUB_SHA' && \
+             mkdir -p '/home/u316277277/deploy/smartspend-web/incoming/$GITHUB_SHA' && \
+             chmod 700 '/home/u316277277/deploy/smartspend-web/incoming/$GITHUB_SHA'"
+
+      - name: Upload production build
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rsync \
+            -az \
+            --delete \
+            -e "ssh -i ~/.ssh/smartspend_hostinger_actions -p 65002 -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes" \
+            dist/ \
+            "u316277277@82.25.102.89:/home/u316277277/deploy/smartspend-web/incoming/$GITHUB_SHA/"
+
+      - name: Deploy frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          ssh \
+            -i ~/.ssh/smartspend_hostinger_actions \
+            -p 65002 \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            u316277277@82.25.102.89 \
+            "/home/u316277277/deploy/smartspend-web/deploy.sh '$GITHUB_SHA'"
