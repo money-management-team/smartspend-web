@@ -9,6 +9,9 @@ import "./ConfirmDialog.css";
  * cancel. It renders in a portal and its events stop here, so a prompt opened
  * from inside another dialog never also closes that dialog.
  *
+ * Optional `children` render below the message (a summary, for example) and
+ * `busy` disables both buttons while the confirmed action is running.
+ *
  * Focus trapping, the inert background and focus restoration come from
  * ModalAccessibility, which treats this like every other dialog.
  */
@@ -20,6 +23,8 @@ export default function ConfirmDialog({
   onConfirm,
   onCancel,
   tone = "danger",
+  children,
+  busy = false,
 }) {
   const id = useId();
 
@@ -47,12 +52,14 @@ export default function ConfirmDialog({
       >
         <h2 id={`${id}-title`}>{title}</h2>
         <p id={`${id}-message`}>{message}</p>
+        {children}
 
         <div className="confirm-dialog__actions">
           <button
             type="button"
             className="confirm-dialog__button"
             onClick={onCancel}
+            disabled={busy}
             autoFocus
           >
             {cancelLabel}
@@ -61,6 +68,7 @@ export default function ConfirmDialog({
             type="button"
             className={`confirm-dialog__button confirm-dialog__button--${tone}`}
             onClick={onConfirm}
+            disabled={busy}
           >
             {confirmLabel}
           </button>

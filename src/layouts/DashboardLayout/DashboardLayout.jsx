@@ -6,6 +6,7 @@ import { Outlet } from "react-router-dom";
 
 import ModalAccessibility from "../../components/ModalAccessibility/ModalAccessibility";
 import UnreadNotificationsProvider from "../../contexts/notifications/unreadNotificationsProvider";
+import WhatsAppPendingProvider from "../../contexts/whatsappPending/WhatsAppPendingProvider";
 import RouteSuspense from "../../routes/RouteSuspense";
 import DashboardHeader from "./components/DashboardHeader/DashboardHeader";
 import DashboardSidebar from "./components/DashboardSidebar/DashboardSidebar";
@@ -41,9 +42,12 @@ export default function DashboardLayout() {
 
   // The unread notification count is shared by the header bell, the sidebar
   // and the Notifications page, so it is owned here, inside the signed-in area.
+  // The WhatsApp pending-review count follows the same idea (sidebar, Attention
+  // Center, draft inbox and Settings share one request).
   return (
     <ExperienceProvider>
       <UnreadNotificationsProvider>
+        <WhatsAppPendingProvider>
         <ModalAccessibility />
         <DashboardWelcome />
         <div className="dashboard-layout">
@@ -72,6 +76,7 @@ export default function DashboardLayout() {
             </main>
           </div>
         </div>
+        </WhatsAppPendingProvider>
       </UnreadNotificationsProvider>
     </ExperienceProvider>
   );

@@ -51,6 +51,11 @@ export const PATH = {
     AI_ASSISTANT: "/dashboard/ai-assistant",
     IMPORTS: "/dashboard/imports",
     IMPORT_DETAILS: "/dashboard/imports/:importId",
+    // Private, authenticated inbox of WhatsApp expense drafts (read-only for now).
+    WHATSAPP_DRAFTS: "/dashboard/whatsapp/drafts",
+    WHATSAPP_DRAFT_DETAILS: "/dashboard/whatsapp/drafts/:draftId",
+    // The link the backend sends in WhatsApp replies (config whatsapp.review_path).
+    WHATSAPP_REVIEW_LINK: "/whatsapp/drafts/:draftId",
     NOTIFICATIONS: "/dashboard/notifications",
     SETTING: "/dashboard/settings",
   },
@@ -64,6 +69,14 @@ export const AUTH_INTENT = {
 
 export const getAccountTypePath = (intent = AUTH_INTENT.REGISTER) =>
   `${PATH.AUTH.ACCOUNT_TYPE}?intent=${intent}`;
+
+/* The read-only page of one WhatsApp draft. */
+export const getWhatsAppDraftPath = (draftId) =>
+  PATH.USER.WHATSAPP_DRAFT_DETAILS.replace(":draftId", encodeURIComponent(draftId));
+
+/* A Settings tab by its key (profile | security | preferences | integrations). */
+export const getSettingsTabPath = (tab) =>
+  `${PATH.USER.SETTING}?tab=${encodeURIComponent(tab)}`;
 
 export const getAccountDetailsPath = (accountId) =>
   PATH.USER.ACCOUNT_DETAILS.replace(

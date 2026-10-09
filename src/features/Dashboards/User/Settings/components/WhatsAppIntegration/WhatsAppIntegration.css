@@ -1,0 +1,748 @@
+/* =========================================
+   WHATSAPP INTEGRATION (Settings → Integrations)
+   Prefix: wa-   Tokens only; WhatsApp green is an accent, never the base.
+========================================= */
+
+.wa-integration {
+  --wa-accent: #1fa855;
+  --wa-accent-soft: color-mix(in srgb, #1fa855 12%, transparent);
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  margin-top: 24px;
+}
+
+:root[data-theme="dark"] .wa-integration {
+  --wa-accent: #3ccf78;
+  --wa-accent-soft: color-mix(in srgb, #3ccf78 16%, transparent);
+}
+
+.wa-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Status card ---------- */
+
+.wa-card,
+.wa-panel {
+  box-sizing: border-box;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.wa-card {
+  display: flex;
+  gap: 18px;
+  padding: 22px;
+  animation: wa-rise 280ms ease both;
+}
+
+.wa-card__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  color: var(--wa-accent);
+  background: var(--wa-accent-soft);
+  font-size: 26px;
+}
+
+.wa-card--off .wa-card__icon {
+  color: var(--color-text-muted);
+  background: var(--color-surface-soft);
+}
+
+.wa-card__main {
+  min-width: 0;
+  flex: 1;
+}
+
+.wa-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.wa-card__head h2 {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-family: var(--font-heading);
+  font-size: 19px;
+  line-height: 1.3;
+}
+
+.wa-card__main > p {
+  margin: 8px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.wa-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-soft);
+}
+
+/* The dot keeps the state readable without relying on colour alone. */
+.wa-badge::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.wa-badge--on {
+  color: var(--color-success);
+  background: var(--success-soft);
+}
+
+.wa-badge--idle {
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+.wa-badge--off::before {
+  border-radius: 2px;
+}
+
+/* ---------- Intro ---------- */
+
+.wa-points {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wa-points li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-main);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.wa-points svg {
+  flex: none;
+  color: var(--wa-accent);
+  font-size: 18px;
+}
+
+.wa-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 14px 0 0;
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+
+.wa-note--lock svg {
+  flex: none;
+}
+
+/* ---------- Details ---------- */
+
+.wa-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 18px 0 0;
+}
+
+.wa-details > div {
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.wa-details dt {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.wa-details dd {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+  color: var(--color-text-strong);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.wa-previous {
+  display: grid;
+  gap: 2px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  color: var(--color-text-strong);
+  font-size: 14px;
+}
+
+.wa-previous small {
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+}
+
+/* ---------- Panels ---------- */
+
+.wa-panel {
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+  animation: wa-rise 260ms ease both;
+}
+
+.wa-panel h3 {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-family: var(--font-heading);
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.wa-panel p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.wa-panel--notice {
+  border-color: color-mix(in srgb, var(--color-warning) 40%, var(--color-border));
+}
+
+/* ---------- Stepper ---------- */
+
+.wa-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wa-steps__item {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  min-width: 0;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.wa-steps__dot {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  font-size: 12px;
+  font-weight: 700;
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+
+.wa-steps__item--current {
+  color: var(--color-text-strong);
+  font-weight: 600;
+}
+
+.wa-steps__item--current .wa-steps__dot {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: 0 0 0 4px var(--primary-soft);
+}
+
+.wa-steps__item--done .wa-steps__dot {
+  border-color: var(--wa-accent);
+  color: #fff;
+  background: var(--wa-accent);
+}
+
+.wa-steps__label {
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+
+/* ---------- Message to copy ---------- */
+
+.wa-number {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+
+.wa-number bdi {
+  color: var(--color-text-strong);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.wa-message {
+  display: grid;
+  gap: 8px;
+}
+
+.wa-message__label {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.wa-message__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.wa-message__text {
+  flex: 1 1 220px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+  color: var(--color-text-strong);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.wa-message__feedback,
+.wa-feedback {
+  min-height: 1.2em;
+  margin: 0;
+  color: var(--color-success);
+  font-size: 12.5px;
+}
+
+.wa-message__feedback {
+  color: var(--color-text-secondary);
+}
+
+.wa-feedback--page:empty {
+  display: none;
+}
+
+.wa-hint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+/* ---------- Progress / verified ---------- */
+
+.wa-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.wa-progress small {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.wa-spinner {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--primary-soft);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: wa-spin 900ms linear infinite;
+}
+
+.wa-verified {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: var(--success-soft);
+}
+
+.wa-verified > svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--color-success);
+  font-size: 22px;
+}
+
+.wa-verified h3 {
+  font-size: 15px;
+}
+
+.wa-verified p {
+  margin-top: 4px;
+}
+
+/* ---------- Form ---------- */
+
+.wa-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.wa-field > label,
+.wa-field > legend {
+  padding: 0;
+  color: var(--color-text-strong);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.wa-field select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-strong);
+  background: var(--surface-control, var(--color-surface));
+  font: inherit;
+  font-size: 14px;
+}
+
+.wa-segmented {
+  display: inline-flex;
+  width: max-content;
+  max-width: 100%;
+  padding: 3px;
+  gap: 2px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-soft);
+}
+
+.wa-segmented__option {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 96px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 9px;
+  color: var(--color-text-secondary);
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.wa-segmented__option input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.wa-segmented__option--on {
+  color: var(--color-text-strong);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  font-weight: 600;
+}
+
+.wa-segmented__option:focus-within {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ---------- Buttons ---------- */
+
+.wa-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.wa-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-strong);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.wa-button:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+}
+
+.wa-button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.wa-button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.wa-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.wa-button--primary {
+  border-color: transparent;
+  color: #fff;
+  background: var(--gradient-primary);
+}
+
+.wa-button--primary:hover:not(:disabled) {
+  background: var(--gradient-primary);
+  filter: brightness(1.06);
+}
+
+.wa-button--whatsapp {
+  border-color: transparent;
+  color: #fff;
+  background: #138a43;
+}
+
+.wa-button--whatsapp:hover:not(:disabled) {
+  background: #0f7a3a;
+}
+
+.wa-button--soft {
+  background: var(--primary-soft);
+  border-color: transparent;
+  color: var(--color-primary);
+}
+
+.wa-button--danger {
+  color: var(--color-danger);
+  border-color: color-mix(in srgb, var(--color-danger) 35%, var(--color-border));
+  background: transparent;
+}
+
+.wa-button--danger:hover:not(:disabled) {
+  background: var(--danger-soft);
+}
+
+.wa-unlink {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.wa-error {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  color: var(--color-danger);
+  background: var(--danger-soft);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes wa-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes wa-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wa-card,
+  .wa-panel,
+  .wa-steps__dot,
+  .wa-button,
+  .wa-segmented__option {
+    animation: none;
+    transition: none;
+  }
+
+  .wa-spinner {
+    animation-duration: 3s;
+  }
+}
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: 640px) {
+  .wa-card {
+    flex-direction: column;
+    gap: 14px;
+    padding: 18px;
+  }
+
+  .wa-panel {
+    padding: 18px;
+  }
+
+  .wa-unlink {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .wa-actions .wa-button,
+  .wa-message__row .wa-button,
+  .wa-integration > .wa-button {
+    width: 100%;
+  }
+
+  .wa-steps {
+    gap: 4px;
+  }
+
+  .wa-steps__item {
+    font-size: 11px;
+  }
+
+  .wa-segmented {
+    width: 100%;
+  }
+
+  .wa-segmented__option {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* ---------- RTL ---------- */
+
+[dir="rtl"] .wa-number bdi {
+  letter-spacing: 0;
+}
+
+/* ---------- Entry to the draft inbox ---------- */
+
+.wa-inbox {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 44px;
+  padding: 16px 18px;
+  box-sizing: border-box;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.wa-inbox:hover {
+  border-color: var(--color-primary);
+  background: var(--color-surface-hover);
+}
+
+.wa-inbox:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.wa-inbox__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  color: var(--color-primary);
+  background: var(--primary-soft);
+  font-size: 20px;
+}
+
+.wa-inbox__text {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 2px;
+}
+
+.wa-inbox__text strong {
+  color: var(--color-text-strong);
+  font-size: 14.5px;
+}
+
+.wa-inbox__text small {
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.wa-inbox__count {
+  flex: none;
+  min-width: 26px;
+  padding: 2px 9px;
+  border-radius: var(--radius-pill);
+  color: var(--color-primary);
+  background: var(--primary-soft);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.wa-inbox__chevron {
+  flex: none;
+  color: var(--color-text-muted);
+}
+
+[dir="rtl"] .wa-inbox__chevron {
+  transform: scaleX(-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wa-inbox {
+    transition: none;
+  }
+}

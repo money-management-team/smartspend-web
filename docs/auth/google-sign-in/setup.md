@@ -1,3 +1,5 @@
+> تحديث الاتساق (2026-10): الإنتاج الحالي: الفرونت `https://smartspend.anasalharazeen.com` والباك `https://smartspend-api.anasalharazeen.com`. استُبدلت الروابط القديمة (Vercel وLaravel Cloud) في هذا الملف. لم تُعدَّل إعدادات Google أو أي لوحة خارجية من هذا المستودع؛ يجب أن تطابق قيم Google Console هذه الروابط قبل الاعتماد عليها.
+
 # Google sign-in: local testing and production setup — 2026-10-03
 
 اقرأ هذا الملف قبل تغيير إعداد Google أو نصوص السياسات. يستخدم التكامل الحالي GIS popup وJavaScript callback مع التحقق من ID token في الباك، ثم Sanctum bearer token. لا يحتاج Google client secret أو callback redirect في الباك.
@@ -9,9 +11,9 @@
 | البيئة | الجمهور | الحالة | Authorized JavaScript origins |
 |---|---|---|---|
 | SmartSpend Development | External | Testing | http://localhost وhttp://localhost:5173 |
-| SmartSpend Production | External | In production | https://smartspend-web-nine.vercel.app |
+| SmartSpend Production | External | In production | https://smartspend.anasalharazeen.com |
 
-أنشئ Clients من نوع Web application. العنوان في origins بلا مسار ولا slash أخير. اترك Authorized redirect URIs فارغة لهذا التكامل. كل origin إضافي يحتاج تصريحاً صريحاً؛ روابط Vercel Preview لا تصبح مسموحة تلقائياً. الصلاحيات الأساسية فقط: openid وuserinfo.email وuserinfo.profile.
+أنشئ Clients من نوع Web application. العنوان في origins بلا مسار ولا slash أخير. اترك Authorized redirect URIs فارغة لهذا التكامل. كل origin إضافي يحتاج تصريحاً صريحاً؛ أي origin إضافي (مثل بيئة معاينة) لا يصبح مسموحاً تلقائياً. الصلاحيات الأساسية فقط: openid وuserinfo.email وuserinfo.profile.
 
 ## 2. الروابط العامة قبل Publish app
 
@@ -19,10 +21,10 @@ Google تطلب اسم تطبيق وبريد دعم ورابط صفحة رئيس
 
 الروابط بعد نشر هذا التعديل:
 
-- Homepage: https://smartspend-web-nine.vercel.app/
-- Privacy: https://smartspend-web-nine.vercel.app/privacy.html
-- Terms: https://smartspend-web-nine.vercel.app/terms.html
-- Authorized domain: smartspend-web-nine.vercel.app
+- Homepage: https://smartspend.anasalharazeen.com/
+- Privacy: https://smartspend.anasalharazeen.com/privacy.html
+- Terms: https://smartspend.anasalharazeen.com/terms.html
+- Authorized domain: smartspend.anasalharazeen.com
 
 افتح الروابط في نافذة خاصة وتحقق أن محتواها ظاهر دون حساب. الشروط اختيارية في إعداد Google، لكن الصفحتين منشورتان في هذا التعديل. أكمل App name وUser support email وDeveloper contact information بقيم فعلية. لا تضع رابط السياسة قبل نشر الصفحة.
 
@@ -37,7 +39,7 @@ Google تطلب اسم تطبيق وبريد دعم ورابط صفحة رئيس
 - npm run dev وnpm run build: يولّدان الصفحتين تلقائياً قبل بدء Vite أو البناء.
 - npm run legal:generate: تجديد الصفحات فقط، دون تشغيل السيرفر.
 
-لا تعدّل HTML الناتج يدوياً؛ البناء سيستبدله. حدّث النص في policyContent.js، وتاريخ السياسة عند تعديلها، ثم أعد التوليد. ملفات HTML الناتجة مستثناة من Git، لكن Vite ينسخها إلى dist عند البناء. ملف vercel.json الحالي يحافظ على SPA fallback؛ الملفات العامة موجودة فعلياً وتُخدم قبل rewrites.
+لا تعدّل HTML الناتج يدوياً؛ البناء سيستبدله. حدّث النص في policyContent.js، وتاريخ السياسة عند تعديلها، ثم أعد التوليد. ملفات HTML الناتجة مستثناة من Git، لكن Vite ينسخها إلى dist عند البناء. ملف vercel.json قديم من الاستضافة السابقة ولا يؤثر على Hostinger؛ الصفحتان تُنسخان إلى dist وتُخدمان كملفات ثابتة، أما SPA fallback على Hostinger فإعداده في الخادم خارج هذا المستودع.
 
 النص يصف وظائف الكود الحالي ويجب أن يطابق ممارسات الفريق الفعلية. بريد التواصل الحالي smartspend.ps@gmail.com مأخوذ من بيانات المشروع التي قدمها مالك المنصة. طلبات إزالة بيانات Google أو الربط عبر الدعم ليست endpoint حذف جديداً، وتتطلب إجراءً فعلياً من الفريق والتحقق من هوية صاحب الطلب. السجلات المالية والتدقيق لا تمحى تلقائياً بسحب إذن Google.
 
@@ -69,21 +71,21 @@ VITE_API_BASE_URL=http://localhost:8000/api
 ## 5. نشر صفحات السياسات واستكمال Google
 
 1. ثبت الملفات الجديدة والمعدلة، ثم نفذ npm run build وnpm run lint واختبارات Google والسياسات عند تغيير نصوصها أو الربط.
-2. ارفع التعديل على فرع الفرونت المعتمد للإنتاج في Vercel؛ لا تفترض أن اسم الفرع main دون مراجعة إعداد المشروع.
+2. الإنتاج يُنشر من فرع development عبر .github/workflows/deploy-hostinger.yml.
 3. انتظر نجاح Production deployment ثم افتح الروابط العامة الثلاثة في نافذة خاصة.
 4. أكمل Branding في Google بالقيم المذكورة أعلاه واضغط Save.
 5. افتح Audience، وتأكد من External، ثم Publish app حتى تصبح الحالة In production.
 6. Publish app يختلف عن Publish branding. لإظهار الاسم والشعار المعتمدين قد تطلب Google تحقق الملكية واعتماد Branding؛ تابع الحالة المعروضة ولا تفترض الموافقة.
 
-لإثبات ملكية موقع Vercel: أضف URL-prefix property في Google Search Console بنفس حساب مالك/محرر مشروع Google، وانسخ وسم HTML tag إلى head في index.html، وانشره ثم اضغط Verify. لا تكتب رمز تحقق افتراضياً ولا تحذف الوسم بعد نجاحه.
+لإثبات ملكية الموقع: أضف URL-prefix property في Google Search Console بنفس حساب مالك/محرر مشروع Google، وانسخ وسم HTML tag إلى head في index.html، وانشره ثم اضغط Verify. لا تكتب رمز تحقق افتراضياً ولا تحذف الوسم بعد نجاحه.
 
-## 6. Laravel Cloud بعد رفع الباك
+## 6. الباك إند بعد رفعه
 
 في البيئة المرتبطة بفرع develop، اضبط:
 
 ```dotenv
 GOOGLE_CLIENT_ID=YOUR_PRODUCTION_WEB_CLIENT_ID.apps.googleusercontent.com
-FRONTEND_URLS=https://smartspend-web-nine.vercel.app
+FRONTEND_URLS=https://smartspend.anasalharazeen.com
 ```
 
 احتفظ بأي origins أخرى لازمة. احفظ المتغيرات وأعد نشر البيئة. حافظ على APP_KEY وإعدادات قاعدة البيانات والصوت والفواتير والتخزين والـqueues القائمة. تعديل Google لا يضيف migration أو dependency إنتاج جديدة.
@@ -95,18 +97,18 @@ php artisan route:list --path=auth/google
 php artisan tinker --execute="dump(config('services.google.client_id')); dump(config('cors.allowed_origins'));"
 ```
 
-الأمران يثبتان المسار والإعدادات، لا يثبتان نجاح تسجيل Google الحقيقي. Laravel Cloud يحتاج redeploy بعد تعديل المتغيرات. لا تضف optimize:clear إلى Deploy Commands؛ config:cache مكانه البناء إذا كانت إعداداتك تستعمله.
+الأمران يثبتان المسار والإعدادات، لا يثبتان نجاح تسجيل Google الحقيقي. يلزم إعادة نشر الباك بعد تعديل المتغيرات. لا تضف optimize:clear إلى Deploy Commands؛ config:cache مكانه البناء إذا كانت إعداداتك تستعمله.
 
-## 7. Vercel بعد اكتمال إعداد الباك
+## 7. متغيرات بناء الفرونت (GitHub Actions)
 
-في Environment Variables لبيئة Production:
+في GitHub → Actions variables (يتحقق منها workflow النشر قبل البناء):
 
 ```dotenv
 VITE_GOOGLE_CLIENT_ID=YOUR_PRODUCTION_WEB_CLIENT_ID.apps.googleusercontent.com
-VITE_API_BASE_URL=https://smartspend-backend-staging-vjthdp.laravel.cloud/api
+VITE_API_BASE_URL=https://smartspend-api.anasalharazeen.com/api
 ```
 
-أعد Deploy؛ Vite يدمج القيم عند البناء. جرب الدومين الثابت المضاف إلى Google. تجربة الفرونت المحلي بمعرف التطوير مع باك الإنتاج بمعرف الإنتاج لا تعمل لأن audience مختلف.
+أعد النشر؛ Vite يدمج القيم عند البناء. جرب الدومين الثابت المضاف إلى Google. تجربة الفرونت المحلي بمعرف التطوير مع باك الإنتاج بمعرف الإنتاج لا تعمل لأن audience مختلف.
 
 ## 8. قبول التسجيل الفعلي
 

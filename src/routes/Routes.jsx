@@ -6,6 +6,7 @@ import AuthLayout from "../layouts/AuthLayout/AuthLayout";
 import DashboardLayout from "../layouts/DashboardLayout/DashboardLayout";
 import PublicLayout from "../layouts/PublicLayout/PublicLayout";
 import { Navigate } from "react-router-dom";
+import WhatsAppDraftLink from "../features/Dashboards/User/WhatsAppDrafts/WhatsAppDraftLink";
 
 import {
   AttentionCenter,
@@ -36,6 +37,8 @@ import {
   Debts,
   FinancialOperations,
   Notifications,
+  WhatsAppDrafts,
+  WhatsAppDraftDetails,
   Recurring,
   RecurringDetails,
   ReportExports,
@@ -264,6 +267,9 @@ const userRoutes = [
       },
       { path: PATH.USER.IMPORTS, element: <Imports /> },
       { path: PATH.USER.IMPORT_DETAILS, element: <Imports /> },
+      { path: PATH.USER.WHATSAPP_DRAFTS, element: <WhatsAppDrafts /> },
+      { path: PATH.USER.WHATSAPP_DRAFT_DETAILS, element: <WhatsAppDraftDetails /> },
+      { path: PATH.USER.WHATSAPP_REVIEW_LINK, element: <WhatsAppDraftLink /> },
       {
         path: PATH.USER.NOTIFICATIONS,
         element: <Notifications />,

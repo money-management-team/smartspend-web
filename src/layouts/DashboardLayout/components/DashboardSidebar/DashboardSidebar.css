@@ -619,3 +619,44 @@
   white-space: nowrap;
   border: 0;
 }
+
+
+/* ================================
+   WHATSAPP PENDING REVIEW
+   Calm, compact: a soft primary badge on the child link, and a small dot on
+   the group row while the group is collapsed. Never the red alert colour.
+================================ */
+
+.dashboard-sidebar__child-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dashboard-sidebar__child .dashboard-sidebar__badge {
+  flex: none;
+}
+
+.dashboard-sidebar__badge--calm {
+  min-width: 17px;
+  height: 17px;
+
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+.dashboard-sidebar__dot {
+  flex: none;
+
+  width: 7px;
+  height: 7px;
+  margin-inline-start: auto;
+
+  border-radius: 50%;
+
+  background: var(--color-primary);
+}
+
+.dashboard-sidebar__dot + .dashboard-sidebar__sr-only + .dashboard-sidebar__chevron {
+  margin-inline-start: 4px;
+}

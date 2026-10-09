@@ -122,6 +122,11 @@ export const experienceMessages = {
     commitments: "الالتزامات والمواعيد",
     budgetAlerts: "تنبيهات الميزانيات",
     receiptDrafts: "فواتير بانتظار المراجعة",
+    whatsappDrafts: "مسودات واتساب",
+    whatsappPendingLabel: "بانتظار المراجعة",
+    whatsappPendingHint: "مصروفات جُمعت من رسائلك على واتساب. لا يُسجَّل شيء حتى تؤكد كل واحد منها.",
+    whatsappReview: "مراجعة المسودات",
+    whatsappCountError: "تعذّر قراءة عدد مسودات واتساب.",
     voiceDrafts: "تسجيلات بانتظار المراجعة",
     attentionPeriod:
       "يعرض التقويم 30 يوماً سابقة و30 يوماً قادمة؛ تنبيهات الميزانيات حالية والمسودات جاهزة للمراجعة.",
@@ -323,6 +328,11 @@ export const experienceMessages = {
     commitments: "Commitments and dates",
     budgetAlerts: "Budget alerts",
     receiptDrafts: "Receipts awaiting review",
+    whatsappDrafts: "WhatsApp drafts",
+    whatsappPendingLabel: "waiting for review",
+    whatsappPendingHint: "Expenses collected from your WhatsApp messages. Nothing is recorded until you confirm each one.",
+    whatsappReview: "Review drafts",
+    whatsappCountError: "Couldn't read the number of WhatsApp drafts.",
     voiceDrafts: "Recordings awaiting review",
     attentionPeriod:
       "Calendar covers the previous and next 30 days; budget alerts are current and drafts are ready for review.",
