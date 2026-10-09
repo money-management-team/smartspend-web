@@ -26,6 +26,7 @@ export class ApiError extends Error {
       errors = {},
       retryAfter = null,
       code = "REQUEST_FAILED",
+      serverCode = null,
       payload = null,
       cause,
     } = {},
@@ -36,6 +37,10 @@ export class ApiError extends Error {
     this.errors = errors;
     this.retryAfter = retryAfter;
     this.code = code;
+    // The backend's own machine-readable `code` (e.g. "whatsapp_disabled"),
+    // when the error envelope carries one. `code` stays the status-derived
+    // class, so existing callers are unaffected.
+    this.serverCode = serverCode;
     this.payload = payload;
 
     if (cause !== undefined) this.cause = cause;
@@ -308,6 +313,7 @@ function createResponseError(response, result, auth) {
     errors: result?.errors ?? {},
     retryAfter: response.headers.get("Retry-After"),
     code: getErrorCode(response.status),
+    serverCode: typeof result?.code === "string" ? result.code : null,
     payload: result,
   });
 }
