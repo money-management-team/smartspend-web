@@ -27,7 +27,7 @@ import { PATH } from "../../routes/Path";
  * its path and everything below it, so a budget's details page keeps Budgets
  * (and the Planning group) active.
  */
-export function getNavigation(t, notificationsBadge) {
+export function getNavigation(t, notificationsBadge, whatsappBadge = null) {
   return [
     {
       id: "overview",
@@ -77,6 +77,11 @@ export function getNavigation(t, notificationsBadge) {
             {
               label: t("dashboard.sidebar.aiCaptures"),
               path: PATH.USER.AI_EXPENSE_CAPTURES,
+            },
+            {
+              label: t("dashboard.sidebar.whatsappDrafts"),
+              path: PATH.USER.WHATSAPP_DRAFTS,
+              badge: whatsappBadge,
             },
             { label: t("dashboard.imports.title"), path: PATH.USER.IMPORTS },
           ],

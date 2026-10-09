@@ -102,6 +102,7 @@ export const ACCOUNT_MOVEMENT_MESSAGES = {
       statement_import: "استيراد كشف",
       recurring_rule: "عملية متكررة",
       business_request: "طلب عمل",
+      whatsapp: "واتساب",
       system: "النظام",
     },
     roles: {
@@ -224,6 +225,7 @@ export const ACCOUNT_MOVEMENT_MESSAGES = {
       statement_import: "Statement import",
       recurring_rule: "Recurring operation",
       business_request: "Business request",
+      whatsapp: "WhatsApp",
       system: "System",
     },
     roles: {

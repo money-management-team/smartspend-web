@@ -1,19 +1,25 @@
 import DisplayPreferences from "../Experience/DisplayPreferences";
-import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { LuSettings2, LuShieldCheck } from "react-icons/lu";
 
 import SettingsTabs from "./components/SettingsTabs/SettingsTabs";
+import { SETTINGS_TABS } from "./components/SettingsTabs/tabKeys.js";
 import ProfileSettings from "./components/ProfileSettings/ProfileSettings";
 import ChangePassword from "./components/ChangePassword/ChangePassword";
 import Preferences from "./components/Preferences/Preferences";
+import WhatsAppIntegration from "./components/WhatsAppIntegration/WhatsAppIntegration";
 
 import "./Settings.css";
 
 export default function Settings() {
   const { t } = useTranslation();
 
-  const [activeTab, setActiveTab] = useState("profile");
+  // The tab lives in `?tab=` so a refresh or a shared link opens the same one.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get("tab");
+  const activeTab = SETTINGS_TABS.includes(requestedTab) ? requestedTab : "profile";
+  const setActiveTab = (tab) => setSearchParams({ tab }, { replace: true });
 
   return (
     <div className="settings-page">
@@ -35,6 +41,8 @@ export default function Settings() {
           {activeTab === "profile" && <ProfileSettings />}
 
           {activeTab === "security" && <ChangePassword />}
+
+          {activeTab === "integrations" && <WhatsAppIntegration />}
 
           {activeTab === "preferences" && (
             <>

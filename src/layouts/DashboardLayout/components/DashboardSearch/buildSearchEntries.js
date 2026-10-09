@@ -22,6 +22,7 @@ const KEYWORD_IDS = {
   [PATH.USER.TRANSFERS]: "transfers",
   [PATH.USER.RECURRING]: "recurring",
   [PATH.USER.AI_EXPENSE_CAPTURES]: "aiCaptures",
+  [PATH.USER.WHATSAPP_DRAFTS]: "whatsappDrafts",
   [PATH.USER.IMPORTS]: "imports",
   [PATH.USER.CALENDAR]: "calendar",
   [PATH.USER.CATEGORIES]: "categories",

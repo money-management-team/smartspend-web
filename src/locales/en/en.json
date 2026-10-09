@@ -406,7 +406,8 @@
       },
       "financialReports": "Financial reports",
       "reportExports": "Export history",
-      "close": "Close navigation menu"
+      "close": "Close navigation menu",
+      "whatsappDrafts": "WhatsApp drafts"
     },
     "user": {
       "common": {
@@ -1110,7 +1111,14 @@
         "recurring": "Recurring",
         "ai": "Smart capture",
         "api": "API",
-        "voice": "Voice recording"
+        "voice": "Voice recording",
+        "natural_language": "Natural language",
+        "receipt_ocr": "Receipt scan",
+        "statement_import": "Statement import",
+        "recurring_rule": "Recurring operation",
+        "business_request": "Business request",
+        "whatsapp": "WhatsApp",
+        "system": "System"
       },
       "entryRoles": {
         "income": "Income",
@@ -3079,7 +3087,8 @@
         "label": "Settings sections",
         "profile": "Profile",
         "security": "Security",
-        "preferences": "Preferences"
+        "preferences": "Preferences",
+        "integrations": "Integrations"
       },
       "profile": {
         "title": "Profile",
@@ -3145,6 +3154,128 @@
         "saving": "Saving…",
         "saved": "Preferences saved.",
         "aiSettings": "Manage AI privacy and preferences"
+      },
+      "whatsapp": {
+        "loading": "Checking WhatsApp…",
+        "privacy": "SmartSpend never posts an expense from a WhatsApp message on its own. Only the last digits of your number are ever shown.",
+        "status": {
+          "disabled": "Unavailable",
+          "notLinked": "Not connected",
+          "linked": "Connected"
+        },
+        "disabled": {
+          "title": "WhatsApp is unavailable right now",
+          "body": "WhatsApp expense capture is switched off at the moment, so you can't connect a number or change its settings until it's back.",
+          "previous": "Previously linked number",
+          "previousNote": "Shown for reference only. It isn't active while the service is unavailable.",
+          "drafts": "Drafts you already received from WhatsApp stay yours to review."
+        },
+        "intro": {
+          "title": "Capture expenses from WhatsApp",
+          "body": "Message SmartSpend on WhatsApp about something you bought and it appears here as a draft for you to review.",
+          "points": {
+            "a": "Connect once with a short verification message",
+            "b": "Messages become drafts, never posted automatically",
+            "c": "You review and confirm every expense in SmartSpend"
+          },
+          "connect": "Connect WhatsApp"
+        },
+        "flow": {
+          "label": "Connection steps",
+          "stepDone": "completed",
+          "steps": {
+            "start": "Start",
+            "send": "Send message",
+            "verify": "Verify",
+            "confirm": "Confirm"
+          },
+          "creating": "Preparing your link…",
+          "sendTitle": "Send this message on WhatsApp",
+          "sendBody": "From the phone you want to connect, send the message below to SmartSpend on WhatsApp.",
+          "serviceNumber": "SmartSpend number",
+          "message": "Your message",
+          "copy": "Copy message",
+          "copied": "Copied",
+          "copiedAnnounce": "Message copied to the clipboard.",
+          "copyFailed": "Couldn't copy automatically. The message is selected: copy it manually.",
+          "open": "Open WhatsApp",
+          "waiting": "Waiting for your message…",
+          "waitingHint": "This updates by itself. Keep this page open.",
+          "expires": "Valid until {{time}}",
+          "copyNote": "The message works once and isn't saved on this device.",
+          "verifiedTitle": "Number verified",
+          "verifiedBody": "We received your message from the number ending in {{digits}}. It isn't connected until you confirm.",
+          "verifiedBodyNoDigits": "We received your message. It isn't connected until you confirm.",
+          "confirm": "Connect this number",
+          "confirming": "Connecting…",
+          "cancel": "Cancel",
+          "close": "Close",
+          "expiredTitle": "This link has expired",
+          "expiredBody": "For your security a link only lasts a few minutes. Start again to get a new message.",
+          "cancelledTitle": "This link is no longer valid",
+          "cancelledBody": "A newer link was started or this one was cancelled. Start again to get a new message.",
+          "restart": "Start again",
+          "failedTitle": "We couldn't continue",
+          "retry": "Try again",
+          "success": "WhatsApp is now connected."
+        },
+        "connected": {
+          "title": "WhatsApp is connected",
+          "body": "Messages you send from your phone become drafts here, ready for your review.",
+          "number": "Connected number",
+          "language": "Reply language",
+          "account": "Default account",
+          "accountSet": "Selected account",
+          "noAccount": "None",
+          "linkedOn": "Connected on"
+        },
+        "prefs": {
+          "title": "Preferences",
+          "language": "Language for WhatsApp replies",
+          "languages": {
+            "ar": "العربية",
+            "en": "English"
+          },
+          "account": "Default account",
+          "accountHint": "Used when a message doesn't say which account the money came from.",
+          "accountsFailed": "Couldn't load your accounts. You can still change the language.",
+          "noDefault": "No default account",
+          "loadingAccounts": "Loading accounts…",
+          "unavailableAccount": "Account no longer available",
+          "save": "Save changes",
+          "saving": "Saving…",
+          "saved": "Preferences saved."
+        },
+        "unlink": {
+          "title": "Disconnect WhatsApp",
+          "body": "Stop receiving new WhatsApp drafts. Drafts you already received and your transactions are kept.",
+          "action": "Disconnect",
+          "working": "Disconnecting…",
+          "confirmTitle": "Disconnect WhatsApp?",
+          "confirmBody": "Messages from this number won't create new drafts anymore. Your existing drafts, expenses and history stay exactly as they are, and you can connect again at any time.",
+          "confirm": "Disconnect",
+          "cancel": "Keep connected",
+          "done": "WhatsApp was disconnected."
+        },
+        "errors": {
+          "disabled": "WhatsApp is unavailable right now. Please try again later.",
+          "forbidden": "You don't have permission to manage WhatsApp for this workspace.",
+          "challengeNotFound": "This link could not be found. Start again to get a new message.",
+          "createConflict": "Couldn't start a new link right now. Refresh the page and try again.",
+          "confirmConflict": "This number can't be connected. It may belong to another account, or the link expired or was already used. Start again to get a new message.",
+          "notLinked": "WhatsApp isn't connected anymore. Refresh the page to see its current state.",
+          "alreadyUnlinked": "WhatsApp was already disconnected. We've refreshed this page.",
+          "conflict": "This changed in the meantime. Refresh the page and try again.",
+          "invalidAccount": "That account can't be used for WhatsApp anymore. Choose another account.",
+          "invalidLanguage": "Choose Arabic or English.",
+          "validation": "Please check your selection and try again.",
+          "unsupported": "WhatsApp integration isn't available on this server yet."
+        },
+        "inbox": {
+          "title": "WhatsApp expense drafts",
+          "body": "Review what your WhatsApp messages collected. Available even when the connection is off.",
+          "pending": "waiting for review"
+        }
       }
     },
     "reportExports": {
@@ -3593,8 +3724,223 @@
         "guide": "getting started guide help tutorial onboarding",
         "aiAssistant": "ai assistant chat copilot insights forecast advice",
         "notifications": "notifications alerts inbox messages bell",
-        "settings": "settings profile account password security language theme preferences"
+        "settings": "settings profile account password security language theme preferences whatsapp integrations connect link messages",
+        "whatsappDrafts": "whatsapp drafts inbox expenses messages review pending"
       }
+    },
+    "whatsappDrafts": {
+      "title": "WhatsApp drafts",
+      "subtitle": "Expenses collected from your WhatsApp messages. A draft is not a transaction until it is confirmed.",
+      "pendingLabel": "waiting for review",
+      "summaryUnavailable": "Count unavailable",
+      "refresh": "Refresh",
+      "manage": "WhatsApp settings",
+      "loading": "Loading your drafts…",
+      "listLabel": "WhatsApp drafts",
+      "disabledNote": "WhatsApp is switched off right now, so no new messages are received. The drafts you already have are still here.",
+      "statuses": {
+        "collecting": "Being collected",
+        "ready_for_review": "Awaiting review",
+        "confirmed": "Confirmed",
+        "discarded": "Discarded",
+        "expired": "Expired"
+      },
+      "filters": {
+        "label": "Filter drafts",
+        "status": "Status",
+        "date": "Expense date",
+        "account": "Account",
+        "allAccounts": "All accounts",
+        "otherAccount": "Account #{{id}}",
+        "perPage": "Per page",
+        "reset": "Reset filters",
+        "accountsFailed": "Couldn't load your accounts, so the account filter is limited."
+      },
+      "row": {
+        "untitled": "WhatsApp draft #{{id}}",
+        "noDate": "No date",
+        "noAccount": "No account",
+        "noCategory": "No category",
+        "noAmount": "Amount not set"
+      },
+      "readiness": {
+        "complete": "Details complete",
+        "incomplete": "Needs attention ({{count}})"
+      },
+      "issues": {
+        "account_required": "Choose an account.",
+        "category_required": "Choose a category.",
+        "amount_required": "Add the amount.",
+        "amount_invalid": "The amount isn't valid.",
+        "account_unavailable": "The selected account isn't available in this workspace.",
+        "account_not_usable": "The selected account can't be used for an expense.",
+        "category_unavailable": "The selected category isn't available in this workspace.",
+        "category_not_usable": "The selected category must be an active expense category.",
+        "currency_mismatch": "The currency doesn't match the account's currency.",
+        "date_required": "Add the expense date.",
+        "time_unresolvable": "The time given doesn't exist on that date in the workspace time zone.",
+        "unknown": "This draft needs a closer look."
+      },
+      "empty": {
+        "pendingTitle": "No drafts waiting for review",
+        "pendingBody": "When you send an expense to SmartSpend on WhatsApp, it will show up here for you to review.",
+        "noneTitle": "No drafts with this status",
+        "noneBody": "Nothing matches this status right now.",
+        "filtered": "No drafts match these filters.",
+        "page": "This page has no drafts any more. The list changed."
+      },
+      "errors": {
+        "forbidden": "You don't have access to these WhatsApp drafts.",
+        "notFound": "This draft wasn't found, or it isn't available to you.",
+        "validation": "Those filters can't be used. Reset them and try again.",
+        "unauthenticated": "Your session has ended. Please sign in again."
+      },
+      "details": {
+        "navLabel": "Draft navigation",
+        "back": "Back to drafts",
+        "title": "WhatsApp draft",
+        "subtitle": "Read-only view of what was collected from WhatsApp.",
+        "financial": "Expense details",
+        "currency": "Currency",
+        "account": "Account",
+        "category": "Category",
+        "date": "Expense date",
+        "time": "Time",
+        "timezone": "Workspace time zone",
+        "description": "Description",
+        "notSet": "Not set",
+        "draftNote": "This is a draft. It becomes a transaction only after it is confirmed.",
+        "viewTransaction": "View the transaction",
+        "readiness": "Before it can be confirmed",
+        "incompleteIntro": "These items need attention first:",
+        "completeIntro": "The details look complete.",
+        "noIssues": "Nothing is missing in the details.",
+        "recheck": "The account balance and your permissions are checked again when a draft is confirmed.",
+        "about": "About this draft",
+        "reference": "Reference",
+        "source": "Source",
+        "events": {
+          "created_at": "Created",
+          "ready_for_review_at": "Ready for review",
+          "expires_at": "Review until",
+          "confirmed_at": "Confirmed",
+          "discarded_at": "Discarded",
+          "expired_at": "Expired"
+        }
+      },
+      "review": {
+        "subtitle": "Check the details, fix anything that's wrong, then confirm to record the expense.",
+        "formTitle": "Review and edit",
+        "unsaved": "Unsaved changes",
+        "amount": "Amount",
+        "currencyHint": "The currency comes from the selected account.",
+        "account": "Account",
+        "category": "Category",
+        "date": "Expense date",
+        "time": "Time",
+        "optional": "(optional)",
+        "clearTime": "Clear time",
+        "timeHint": "Local time in {{zone}}. Leave empty to use the start of the day.",
+        "timeHintNoZone": "Leave empty to use the start of the day.",
+        "description": "Description",
+        "choose": "Choose…",
+        "loading": "Loading…",
+        "unavailable": "Not available",
+        "saveNote": "Saving only updates the draft. No expense is recorded until you confirm.",
+        "save": "Save changes",
+        "saving": "Saving…",
+        "cancelEdit": "Cancel changes",
+        "fieldErrors": {
+          "amount_invalid": "Enter a positive amount with up to 4 decimals, like 25.50.",
+          "date_required": "The date can't be empty.",
+          "date_invalid": "Enter a real calendar date.",
+          "time_invalid": "Enter a valid time, like 14:30.",
+          "description_long": "The description is too long (500 characters at most).",
+          "server": "This value wasn't accepted. Check it and try again."
+        },
+        "fields": {
+          "account_id": "Account",
+          "category_id": "Category",
+          "amount": "Amount",
+          "description": "Description",
+          "transaction_date": "Expense date",
+          "transaction_time": "Time"
+        },
+        "conflictTitle": "This draft changed",
+        "conflictBody": "It was updated somewhere else while you were editing, so the latest version is shown. Nothing of yours was saved over it.",
+        "conflictMine": "Your unsaved edits to:",
+        "reapply": "Reapply my edits",
+        "discardMine": "Drop my edits",
+        "understood": "Got it",
+        "confirmTitle": "Confirm expense",
+        "confirmIntro": "Confirming records a real expense in your account and updates its balance.",
+        "confirm": "Confirm expense",
+        "confirming": "Confirming…",
+        "blocked": {
+          "conflict": "Review the latest version above before confirming.",
+          "dirty": "Save or cancel your changes before confirming.",
+          "forbidden": "You can't confirm this draft.",
+          "notReady": "Complete the items listed above first."
+        },
+        "uncertainTitle": "We couldn't confirm what happened",
+        "uncertainBody": "The connection was interrupted, so we don't know yet whether the expense was recorded. Please don't start over.",
+        "notRecordedYet": "As of the last check, the draft is still waiting and no expense was recorded.",
+        "unreadable": "We couldn't check the draft right now.",
+        "checking": "Checking…",
+        "checkStatus": "Check status",
+        "retrySame": "Try again",
+        "retryNote": "Trying again repeats the very same request, so it can't record the expense twice.",
+        "confirmedTitle": "Expense recorded",
+        "confirmedBody": "This draft was confirmed and is now a recorded expense.",
+        "transactionRef": "Transaction",
+        "reconciledNote": "We checked with the server and the expense is recorded.",
+        "viewTransaction": "View transaction",
+        "backToInbox": "Back to drafts",
+        "discardedTitle": "Draft discarded",
+        "discardedBody": "This draft was discarded. No expense was recorded and it can't be changed.",
+        "expiredTitle": "Draft expired",
+        "expiredBody": "The review period for this draft ended, so it can no longer be edited or confirmed.",
+        "collectingTitle": "Still being collected",
+        "collectingBody": "This draft is still being put together from your WhatsApp conversation. It can be reviewed once it's ready.",
+        "discardTitle": "Discard this draft",
+        "discardIntro": "Discarding removes the draft from your review list. It doesn't change any expense already recorded.",
+        "discard": "Discard draft",
+        "discarding": "Discarding…",
+        "notDiscarded": "The draft wasn't discarded. You can try again.",
+        "discardUncertain": "We couldn't confirm whether the draft was discarded.",
+        "dialog": {
+          "confirmTitle": "Record this expense?",
+          "confirmBody": "This creates a real expense and changes your account balance. Check the details first.",
+          "confirmAction": "Record expense",
+          "cancel": "Not yet",
+          "discardTitle": "Discard this draft?",
+          "discardBody": "The draft will be closed and can't be confirmed later. Expenses already recorded aren't affected.",
+          "discardAction": "Discard draft",
+          "keep": "Keep draft"
+        },
+        "errors": {
+          "forbidden": "You don't have permission to do that with this draft.",
+          "notFound": "This draft isn't available anymore.",
+          "unauthenticated": "Your session has ended. Please sign in again.",
+          "conflict": {
+            "save": "The draft changed before your edits were saved.",
+            "confirm": "The draft changed, so it wasn't confirmed. Review the latest version.",
+            "discard": "The draft changed, so it wasn't discarded.",
+            "generic": "The draft changed. Refresh and try again."
+          },
+          "insufficient": "The account doesn't have enough balance for this expense.",
+          "notReviewable": "This draft can't be changed anymore.",
+          "dateMissing": "The draft needs an expense date before it can be confirmed.",
+          "timeInvalid": "That time doesn't exist on that date in the workspace time zone, or is ambiguous. Choose another time.",
+          "account": "That account can't be used for this expense. Choose another one.",
+          "category": "That category can't be used. Choose an active expense category.",
+          "amount": "The amount isn't valid. Enter a positive amount.",
+          "validation": "Some details weren't accepted. Check them and try again.",
+          "uncertainConfirm": "The connection was interrupted, so we can't tell whether the expense was recorded.",
+          "inFlight": "A confirmation of this draft is already in progress. Please wait for it to finish."
+        }
+      },
+      "sidebarBadge": "WhatsApp drafts waiting for review: {{count}}"
     }
   },
   "home": {

@@ -8,7 +8,8 @@ import {
 // Public HTML stays readable without authentication, the API or JavaScript.
 // Generate from the same copy used by the existing consent dialog.
 const publicDirectory = new URL("../public/", import.meta.url);
-const website = "https://smartspend-web-nine.vercel.app";
+// Canonical origin of the production frontend (Hostinger).
+const website = "https://smartspend.anasalharazeen.com";
 const escapeHtml = (value) =>
   String(value).replace(/[&<>"']/g, (character) => ({
     "&": "&amp;",

@@ -19,6 +19,7 @@ import logo from "../../../../assets/smart-spend-logo.png";
 import "./DashboardSidebar.css";
 import { useAuthContext } from "../../../../contexts/auth/useAuthContext";
 import { useUnreadNotifications } from "../../../../contexts/notifications/useUnreadNotifications";
+import { useWhatsAppPending } from "../../../../contexts/whatsappPending/useWhatsAppPending";
 import { getDisplayLocale } from "../../../../features/Dashboards/User/Accounts/accountHelpers";
 import { formatUnreadBadge } from "../../../../features/Dashboards/User/Notifications/notificationHelpers";
 import { PATH } from "../../../../routes/Path";
@@ -163,6 +164,15 @@ function SidebarGroup({ group, isOpen, isActive, onToggle, onNavigate }) {
 
         <span className="dashboard-sidebar__label">{group.label}</span>
 
+        {!isOpen && group.children.some((child) => child.badge) && (
+          <>
+            <span className="dashboard-sidebar__dot" aria-hidden="true" />
+            <span className="dashboard-sidebar__sr-only">
+              {group.children.find((child) => child.badge).badge.label}
+            </span>
+          </>
+        )}
+
         <LuChevronDown
           className="dashboard-sidebar__chevron"
           aria-hidden="true"
@@ -181,7 +191,17 @@ function SidebarGroup({ group, isOpen, isActive, onToggle, onNavigate }) {
                   `dashboard-sidebar__child ${isChildActive ? "dashboard-sidebar__child--active" : ""}`
                 }
               >
-                {child.label}
+                <span className="dashboard-sidebar__child-label">{child.label}</span>
+
+                {child.badge && (
+                  <>
+                    <span className="dashboard-sidebar__badge dashboard-sidebar__badge--calm" aria-hidden="true">
+                      {child.badge.text}
+                    </span>
+
+                    <span className="dashboard-sidebar__sr-only">{child.badge.label}</span>
+                  </>
+                )}
               </NavLink>
             </li>
           ))}
@@ -202,6 +222,8 @@ export default function DashboardSidebar({ isOpen, onClose }) {
   const { logout } = useAuthContext();
   // Shared with the header bell (GET /notifications/unread-count).
   const { count: unreadCount } = useUnreadNotifications();
+  // Shared with the Attention Center, the inbox and Settings.
+  const { count: whatsappPending } = useWhatsAppPending();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const groups = useGroupChoices(pathname);
 
@@ -232,6 +254,12 @@ export default function DashboardSidebar({ isOpen, onClose }) {
           label: t("dashboard.notifications.bell.unread", {
             count: unreadCount,
           }),
+        }
+      : null,
+    whatsappPending > 0
+      ? {
+          text: formatUnreadBadge(whatsappPending, getDisplayLocale(i18n.language)),
+          label: t("dashboard.whatsappDrafts.sidebarBadge", { count: whatsappPending }),
         }
       : null,
   );

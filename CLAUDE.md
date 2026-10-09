@@ -16,7 +16,7 @@ npm run lint      # ESLint over the whole repo
 npx eslint src/path/to/File.jsx   # lint a single file
 ```
 
-There is no test framework configured.
+`npm test` runs the Node built-in runner over `tests/**/*.test.mjs` (API adapters and contracts, with `fetch` mocked; no framework dependency). UI tests render the real components in jsdom. See `docs/whatsapp/testing.md`.
 
 Environment variables (`.env`):
 - `VITE_API_BASE_URL`: the backend URL. If unset, `apiClient` falls back to `/api`. There is no Vite dev proxy.
@@ -74,6 +74,7 @@ Dashboard pages (e.g. `Budgets.jsx`) follow the same shape:
 - `components/Loading/Loading` is shown while loading.
 
 The personal dashboard pages use resource API modules. `AIAssistant` uses `aiCopilotApi` for conversations, insights, forecasts, feedback and privacy settings; see `docs/ai-copilot/integration.md`. `Imports` uses `importsApi` for statement review and posting; see `docs/imports/integration.md`. `Settings` uses `authApi` for Profile, Security and saved locale/timezone preferences; see `docs/settings/implementation.md`. Theme remains a browser preference.
+WhatsApp (linking, draft inbox and review, pending count) is documented in `docs/whatsapp/` (start with `integration-overview.md`). The pending-review count is owned by `WhatsAppPendingProvider` in `DashboardLayout`; read it with `useWhatsAppPending()` instead of calling the summary endpoint.
 The supplied backend has no company registration or business workspace creation flow. The company auth screens are legacy presentation work and must not be presented as a functional business product without a separate backend implementation.
 
 ### i18n and RTL

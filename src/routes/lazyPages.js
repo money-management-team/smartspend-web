@@ -35,6 +35,8 @@ export const Dashboard = lazy(() => import("../features/Dashboards/User/Dashboar
 export const DebtDetails = lazy(() => import("../features/Dashboards/User/DebtDetails/DebtDetails"));
 export const Debts = lazy(() => import("../features/Dashboards/User/Debts/Debts"));
 export const FinancialOperations = lazy(() => import("../features/Dashboards/User/FinancialOperations/FinancialOperations"));
+export const WhatsAppDrafts = lazy(() => import("../features/Dashboards/User/WhatsAppDrafts/WhatsAppDrafts"));
+export const WhatsAppDraftDetails = lazy(() => import("../features/Dashboards/User/WhatsAppDrafts/WhatsAppDraftDetails"));
 export const Notifications = lazy(() => import("../features/Dashboards/User/Notifications/Notifications"));
 export const Recurring = lazy(() => import("../features/Dashboards/User/Recurring/Recurring"));
 export const RecurringDetails = lazy(() => import("../features/Dashboards/User/RecurringDetails/RecurringDetails"));

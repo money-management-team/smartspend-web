@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { FaWhatsapp } from "react-icons/fa";
 import { LuCircleAlert, LuRefreshCw, LuScanLine, LuMic } from "react-icons/lu";
 import { PATH, getAiExpenseCapturePath } from "../../../../routes/Path";
 import { useAuthContext } from "../../../../contexts/auth/useAuthContext";
+import { useWhatsAppPending } from "../../../../contexts/whatsappPending/useWhatsAppPending";
 import { calendarApi } from "../api/calendarApi";
 import { aiExpenseCapturesApi } from "../api/aiExpenseCapturesApi";
 import { aiVoiceExpenseCapturesApi } from "../api/aiVoiceExpenseCapturesApi";
@@ -101,9 +103,50 @@ function DraftList({ title, result, voice = false, onRetry, t }) {
     </section>
   );
 }
+/*
+ * WhatsApp drafts waiting for review. The number is the backend's global count
+ * (shared with the sidebar; never counted from rows), it is shown whether or
+ * not WhatsApp is currently enabled, and the card is absent at zero so the
+ * page stays calm. A failed read shows a small note, not an empty page.
+ */
+function WhatsAppPending({ pending, locale, t }) {
+  if (pending.error) {
+    return (
+      <p className="exp-error" role="alert">
+        {t("whatsappCountError")}{" "}
+        <button className="exp-button exp-button--subtle" type="button" onClick={pending.refresh}>
+          {t("refresh")}
+        </button>
+      </p>
+    );
+  }
+
+  if (!(pending.count > 0)) return null;
+
+  return (
+    <section className="exp-card exp-whatsapp" aria-labelledby="exp-whatsapp-title">
+      <header className="exp-toolbar">
+        <FaWhatsapp aria-hidden="true" />
+        <h2 id="exp-whatsapp-title">{t("whatsappDrafts")}</h2>
+      </header>
+      <p className="exp-whatsapp__count" role="status">
+        <strong><bdi dir="ltr">{new Intl.NumberFormat(locale).format(pending.count)}</bdi></strong>{" "}
+        <span>{t("whatsappPendingLabel")}</span>
+      </p>
+      <p className="exp-muted">{t("whatsappPendingHint")}</p>
+      <Link className="exp-button exp-button--subtle" to={PATH.USER.WHATSAPP_DRAFTS}>
+        {t("whatsappReview")}
+      </Link>
+    </section>
+  );
+}
+
 export default function AttentionCenter() {
-  const { t } = useTranslation("experience"),
-    { workspace } = useAuthContext();
+  const { t, i18n } = useTranslation("experience"),
+    { workspace } = useAuthContext(),
+    pending = useWhatsAppPending();
+  const { ensureFresh } = pending;
+  useEffect(() => { ensureFresh(); }, [ensureFresh]);
   const [refresh, setRefresh] = useState(0),
     [filter, setFilter] = useState("all");
   const [result, setResult] = useState({ key: null, sections: {} });
@@ -165,7 +208,7 @@ export default function AttentionCenter() {
     return () => controller.abort();
   }, [key, today, workspace?.id]);
   const sections = result.key === key ? result.sections : {},
-    reload = () => setRefresh((value) => value + 1);
+    reload = () => { setRefresh((value) => value + 1); pending.refresh(); };
   const events = attentionEvents(
     sections.calendar?.page?.events ?? [],
     filter,
@@ -247,6 +290,7 @@ export default function AttentionCenter() {
         workspaceId={workspace?.id}
         variant="full"
       />
+      <WhatsAppPending pending={pending} locale={i18n.language?.startsWith("ar") ? "ar" : "en"} t={t} />
       <div className="exp-grid">
         <DraftList
           title={t("receiptDrafts")}

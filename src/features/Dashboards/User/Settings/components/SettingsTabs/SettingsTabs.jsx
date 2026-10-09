@@ -1,14 +1,12 @@
 import { useTranslation } from "react-i18next";
-import { LuLockKeyhole, LuSlidersHorizontal, LuUserRound } from "react-icons/lu";
+import { LuLockKeyhole, LuPlug, LuSlidersHorizontal, LuUserRound } from "react-icons/lu";
+
+import { SETTINGS_TABS } from "./tabKeys.js";
 
 import "./SettingsTabs.css";
 
-const tabs = [
-  "profile",
-  "security",
-  "preferences",
-];
-const icons = { profile: LuUserRound, security: LuLockKeyhole, preferences: LuSlidersHorizontal };
+const tabs = SETTINGS_TABS;
+const icons = { profile: LuUserRound, security: LuLockKeyhole, preferences: LuSlidersHorizontal, integrations: LuPlug };
 
 export default function SettingsTabs({
   activeTab,

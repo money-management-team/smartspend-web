@@ -567,3 +567,32 @@
     grid-column: 1/-1;
   }
 }
+
+/* WhatsApp pending-review item (Attention Center) */
+.exp-whatsapp .exp-toolbar svg {
+  color: #1fa855;
+  font-size: 20px;
+}
+
+:root[data-theme="dark"] .exp-whatsapp .exp-toolbar svg {
+  color: #3ccf78;
+}
+
+.exp-whatsapp__count {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+}
+
+.exp-whatsapp__count strong {
+  color: var(--color-text-strong);
+  font-family: var(--font-heading);
+  font-size: var(--font-size-value-lg, 30px);
+  line-height: 1;
+}
+
+.exp-whatsapp__count span {
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
