@@ -62,4 +62,4 @@ Key behaviors to exercise in TASK 09
 
 - Visual checks are manual (harness described in `testing.md`).
 - Unrelated, left alone: the existing 1.2 MB PDF chunk warning; the Arabic "Commitments and dates" heading wrapping letter by letter at 375 px in the Attention Center.
-- `.env` is a tracked file that points local development at a staging backend; it was not modified. Use `VITE_API_BASE_URL=/api` for isolated sessions.
+- Update (TASK 09B): the tracked `.env` used to point local development at a staging backend. It now holds `VITE_API_BASE_URL=/api`, and the dev server proxies to `http://127.0.0.1:8000` unless a remote target is named and confirmed. See `docs/dev-environment/local-api-target.md`. Real-backend results: `integration-verification.md`.

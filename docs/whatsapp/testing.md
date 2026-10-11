@@ -34,7 +34,7 @@ Tests cannot see layout (jsdom has none). For TASK 06 the real app was driven in
 
 ### Browser isolation checklist (any session that runs the real app)
 
-1. Serve with `VITE_API_BASE_URL=/api` (under git-bash with `MSYS_NO_PATHCONV=1`) and check the served `apiClient.js` shows it; the repo `.env` points at a real backend and is never edited.
+1. Serve with `VITE_API_BASE_URL=/api` (under git-bash with `MSYS_NO_PATHCONV=1`) and check the served `apiClient.js` shows it; since TASK 09B the repo `.env` is `/api` and the dev server proxies to `http://127.0.0.1:8000` by default (`docs/dev-environment/local-api-target.md`), but keep the check: it must show the value you intended.
 2. Start the browser with `--host-resolver-rules="MAP * ~NOTFOUND, EXCLUDE localhost"`.
 2b. Check the served `apiClient.js` contains `"VITE_API_BASE_URL": "/api"` before starting the browser.
 3. Intercept requests before navigating, answer every `/api` call from the mock, abort everything else.
@@ -48,3 +48,8 @@ Tests cannot see layout (jsdom has none). For TASK 06 the real app was driven in
 - `Settings.jsx` itself is not rendered in tests (it pulls auth-dependent tabs); `SettingsTabs` is tested, and the `?tab=` logic is covered only by lint and build.
 - Fixtures mirror the backend source at `b7ca549`; the live API was never called, and no real WhatsApp/Meta linking was exercised.
 - `transactionsApi.js` has no test here.
+
+
+## Real-backend runs
+
+TASK 09A ran the real app against a real Laravel and a disposable MySQL (HTTP checks, browser flows, concurrency). Method, results and gaps: `integration-verification.md`. The backend side of the MySQL isolation is in the backend repository, `docs/testing/MYSQL_TEST_ISOLATION.md`.
