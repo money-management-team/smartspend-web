@@ -97,11 +97,27 @@ test("Arabic and English have matching policy and welcome copy without executabl
     assert.deepEqual(keys(accessMessages.ar), keys(accessMessages.en));
     for (const messages of Object.values(accessMessages)) {
       assert.equal(messages.termsSections.length, 6);
-      assert.equal(messages.privacySections.length, 6);
+      assert.equal(messages.privacySections.length, 8);
       assert.ok(
         messages.termsSections.every((item) => item.title && item.body),
       );
       assert.ok(!JSON.stringify(messages).includes("<script"));
+
+      // Hosting reflects the current provider; the old hosts are gone.
+      const privacy = JSON.stringify(messages.privacySections);
+      assert.ok(privacy.includes("Hostinger"));
+      assert.ok(!/Laravel Cloud|Vercel/.test(privacy));
+      // WhatsApp disclosures: Meta, encryption at rest, contact for deletion,
+      // and the web-only confirmation in both the policy and the terms.
+      const whatsapp = messages.privacySections.filter((item) =>
+        /WhatsApp/.test(item.title),
+      );
+      assert.equal(whatsapp.length, 2);
+      assert.ok(whatsapp.some((item) => item.body.includes("Meta")));
+      assert.ok(whatsapp.some((item) => item.body.includes("smartspend.ps@gmail.com")));
+      assert.ok(
+        messages.termsSections.some((item) => item.body.includes("WhatsApp")),
+      );
     }
   } finally {
     await server.close();

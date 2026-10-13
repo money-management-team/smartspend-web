@@ -55,10 +55,30 @@ RewriteRule ^ /index.html [L]
 
 Fixed (technical consistency): the public legal page generator canonical origin is now `https://smartspend.anasalharazeen.com` (the pages are generated at build time and git-ignored); `.env.example` and `docs/auth/google-sign-in/setup.md` no longer point at Vercel or Laravel Cloud (production URLs are the Hostinger ones). No OAuth or Google Console setting was changed; the Console must be checked to match.
 
-Left unchanged and needing approval:
+Policy update (2026-10-13), written from owner-approved decisions; all of it is in `policyContent.js`, so the consent dialog and the generated `privacy.html` / `terms.html` match:
 
-- `policyContent.js` (Arabic and English) still says SmartSpend uses hosting such as "Laravel Cloud and Vercel". That no longer matches the Hostinger deployment, but it is a published factual claim about data processors, so it was not edited.
-- The Privacy Policy and Terms say nothing about WhatsApp or Meta: that messages sent to SmartSpend on WhatsApp are processed through Meta's WhatsApp Business platform, what is stored (masked last digits, a protected identifier, message-derived drafts and their retention), and consent for being contacted. These disclosures must be written and approved by the owner or legal counsel before WhatsApp is enabled for users. The backend retention settings to base them on are in `config/whatsapp.php` and the handover document; they are not restated here.
+- **Hosting.** "Laravel Cloud and Vercel" was replaced with Hostinger as the provider that hosts the current production environment. It is introduced as one of the service providers, not the only one.
+- **New privacy section "WhatsApp integration".** It covers:
+  - linking is opt-in and confirmed from the signed-in account;
+  - only text messages and button replies are received, to create expense drafts;
+  - drafts only, and a transaction is posted only after web confirmation;
+  - the linked number is encrypted at rest, with a protected lookup identifier and its last digits;
+  - message content is currently not sent to AI services (other AI features are unchanged);
+  - interactions are user-initiated, with no unsolicited marketing.
+- **New privacy section "Meta, retention and deleting WhatsApp data".** It covers:
+  - messages go through Meta's WhatsApp Business Platform, which handles them under its own terms;
+  - retention is described in general terms only, with no durations published: raw content is kept for a limited period, then removed;
+  - expired drafts are not deleted;
+  - unlinking is not deletion;
+  - deletion requests go to the support email, with ownership verification and subject to retention requirements.
+- **Terms, section "Review and confirmation".** WhatsApp creates financial drafts only.
+- **Not stated, deliberately.** These are left for separate legal review if needed:
+  - exact retention durations (they are backend settings and may change);
+  - response deadlines;
+  - legal bases, jurisdiction, GDPR or other compliance claims;
+  - age restrictions;
+  - Meta's legal role (processor or controller).
+- **Keeping the policy true.** If the WhatsApp integration starts using AI, sends proactive messages, or changes what it stores, these sections must be updated first. `tests/accessExperience.test.mjs` guards the section count, the hosting text and the WhatsApp disclosures.
 
 ## 5. TASK 09 checklist
 
