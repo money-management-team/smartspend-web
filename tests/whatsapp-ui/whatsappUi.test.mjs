@@ -857,3 +857,49 @@ describe("experience redesign", () => {
     assert.deepEqual(i18n.missingKeys, []);
   });
 });
+
+describe("open the SmartSpend chat", () => {
+  const chatLink = () => view.container.querySelector("a.wa-button--chat");
+
+  it("linked with a public number: one primary link to the real chat, greeting pre-filled, safe attributes", async () => {
+    await mount(makeApi({ integration: { ...LINKED, public_number: "970592535047" } }));
+    const link = chatLink();
+
+    assert.ok(link.closest(".wa-hero"), "the first thing a linked user sees");
+    assert.equal(link.getAttribute("href"), `https://wa.me/970592535047?text=${encodeURIComponent(t("connected.chatGreeting"))}`);
+    assert.equal(link.target, "_blank");
+    assert.equal(link.rel, "noopener noreferrer");
+    assert.match(link.textContent, new RegExp(t("connected.openChat")));
+    assert.match(link.querySelector(".wa-sr-only").textContent, new RegExp(t("connected.newTab").replace(/[()]/g, "\$&")));
+    const pagePrimary = [...view.container.querySelectorAll(".wa-button--primary")].filter((node) => !node.closest(".wa-prefs"));
+    assert.deepEqual(pagePrimary, [link], "one primary page action (the form keeps its own Save)");
+    assert.doesNotMatch(text(), new RegExp(t("connected.openHint")), "the fallback hint is not repeated");
+  });
+
+  it("Arabic label and greeting", async () => {
+    await mount(makeApi({ integration: { ...LINKED, public_number: "970592535047" } }), { lng: "ar" });
+
+    assert.equal(chatLink().textContent.includes("فتح محادثة SmartSpend"), true);
+    assert.equal(chatLink().getAttribute("href"), `https://wa.me/970592535047?text=${encodeURIComponent("مرحبا")}`);
+  });
+
+  it("no usable number: no button, the text hint instead", async () => {
+    for (const public_number of [undefined, null, "0592535047", "+970592535047"]) {
+      await mount(makeApi({ integration: { ...LINKED, public_number } }));
+      assert.equal(chatLink(), null, String(public_number));
+      assert.match(text(), new RegExp(t("connected.openHint")));
+      await view.unmount();
+      view = null;
+    }
+  });
+
+  it("never offered before linking or while disabled, even when the backend sends a number", async () => {
+    for (const state of [NOT_LINKED, DISABLED]) {
+      await mount(makeApi({ integration: { ...state, public_number: "970592535047" } }));
+      assert.equal(chatLink(), null, state.state);
+      assert.equal([...view.container.querySelectorAll("a")].some((a) => a.href.startsWith("https://wa.me/")), false);
+      await view.unmount();
+      view = null;
+    }
+  });
+});

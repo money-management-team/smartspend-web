@@ -27,7 +27,7 @@ import { WhatsAppFaq, WhatsAppHowItWorks, WhatsAppTrustNote } from "./WhatsAppGu
 import WhatsAppLinkFlow from "./WhatsAppLinkFlow.jsx";
 import WhatsAppPreferences from "./WhatsAppPreferences.jsx";
 import { formatLinkedDate, maskedDigits } from "./whatsappFormat.js";
-import { getWhatsAppErrorMessage } from "./whatsappLinking.js";
+import { buildWhatsAppChatLink, getWhatsAppErrorMessage } from "./whatsappLinking.js";
 import { useWhatsAppPending } from "../../../../../../contexts/whatsappPending/useWhatsAppPending.js";
 import { useWhatsAppAvailability } from "./useWhatsAppAvailability.js";
 import { useWhatsAppLinking } from "./useWhatsAppLinking.js";
@@ -281,12 +281,31 @@ export default function WhatsAppIntegration({ api = whatsappApi, accounts, creat
     </button>
   ) : null;
 
+  // Linked: one tap to the real SmartSpend chat, with the greeting ready to
+  // send. Only offered when the backend gives a usable number.
+  const chatLink = linked ? buildWhatsAppChatLink(availability.data.public_number, t(`${x}.connected.chatGreeting`)) : null;
+  const chatAction = chatLink ? (
+    <>
+      <a
+        className="wa-button wa-button--primary wa-button--lg wa-button--chat"
+        href={chatLink}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <FaWhatsapp aria-hidden="true" />
+        {t(`${x}.connected.openChat`)}
+        <span className="wa-sr-only"> {t(`${x}.connected.newTab`)}</span>
+      </a>
+      <p className="wa-hero__hint">{t(`${x}.connected.openChatHint`)}</p>
+    </>
+  ) : null;
+
   return (
     <div className="wa-integration" data-state={state}>
       <p className="wa-feedback wa-feedback--page" role="status">{notice}</p>
       {actionError && <p className="wa-error" role="alert">{actionError}</p>}
 
-      <Hero state={state} compact={linked} action={connectAction} />
+      <Hero state={state} compact={linked} action={connectAction ?? chatAction} />
 
       {state === "disabled" && <Disabled integration={integration} />}
 
@@ -314,7 +333,7 @@ export default function WhatsAppIntegration({ api = whatsappApi, accounts, creat
               <h3 id="wa-status-title">{t(`${x}.connected.title`)}</h3>
               <p>{t(`${x}.connected.body`)}</p>
               <Details integration={integration} language={language} />
-              <p className="wa-hint"><LuSmartphone aria-hidden="true" />{t(`${x}.connected.openHint`)}</p>
+              {!chatLink && <p className="wa-hint"><LuSmartphone aria-hidden="true" />{t(`${x}.connected.openHint`)}</p>}
             </div>
           </section>
 

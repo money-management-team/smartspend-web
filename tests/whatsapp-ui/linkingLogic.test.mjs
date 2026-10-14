@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import { ApiError } from "../../src/features/Dashboards/User/api/apiClient.js";
 import { whatsappApi } from "../../src/features/Dashboards/User/api/whatsappApi.js";
 import {
-  POLL_INTERVAL_MS, buildWhatsAppDeepLink, copyTextToClipboard, createChallengePoller,
+  POLL_INTERVAL_MS, buildWhatsAppChatLink, buildWhatsAppDeepLink, copyTextToClipboard, createChallengePoller,
   getWhatsAppErrorMessage, initialLinkState, isEligibleDefaultAccount, linkReducer,
 } from "../../src/features/Dashboards/User/Settings/components/WhatsAppIntegration/whatsappLinking.js";
 import { formatLinkedDate, maskedDigits } from "../../src/features/Dashboards/User/Settings/components/WhatsAppIntegration/whatsappFormat.js";
@@ -405,11 +405,11 @@ describe("Arabic and English copy", () => {
     assert.equal(ar.size, en.length);
   });
 
-  it("Arabic copy is written in Arabic (only language names may stay Latin)", () => {
+  it("Arabic copy is written in Arabic (only language names and the SmartSpend brand may stay Latin)", () => {
     for (const [key, value] of ar) {
       if (key === "prefs.languages.en") continue;
       assert.match(value, /[؀-ۿ]/, key);
-      assert.doesNotMatch(value.replace(/{{\w+}}/g, ""), /[A-Za-z]{3,}/, key);
+      assert.doesNotMatch(value.replace(/{{\w+}}/g, "").replace(/\bSmartSpend\b/g, ""), /[A-Za-z]{3,}/, key);
     }
   });
 
@@ -418,5 +418,19 @@ describe("Arabic and English copy", () => {
     assert.ok(locales.ar.dashboard.settings.tabs.integrations);
     assert.match(locales.en.dashboard.search.keywords.settings, /whatsapp/);
     assert.match(locales.ar.dashboard.search.keywords.settings, /whatsapp/);
+  });
+});
+
+describe("chat link for a linked user", () => {
+  it("builds wa.me from the backend digits with the greeting pre-filled", () => {
+    assert.equal(buildWhatsAppChatLink("970592535047", "مرحبا"), `https://wa.me/970592535047?text=${encodeURIComponent("مرحبا")}`);
+    assert.equal(buildWhatsAppChatLink("15551234567", "Hi"), "https://wa.me/15551234567?text=Hi");
+    assert.equal(buildWhatsAppChatLink("15551234567", "  "), "https://wa.me/15551234567");
+  });
+
+  it("refuses anything that is not international digits, so no broken link is shown", () => {
+    for (const value of [null, undefined, "", "+970592535047", "0592535047", "1234567", "1234567890123456", "97059x535047", "970 59 253 5047", "https://evil.example", 970592535047]) {
+      assert.equal(buildWhatsAppChatLink(value, "Hi"), null, String(value));
+    }
   });
 });

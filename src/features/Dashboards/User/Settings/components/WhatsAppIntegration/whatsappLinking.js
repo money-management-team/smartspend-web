@@ -222,6 +222,18 @@ export function buildWhatsAppDeepLink(publicNumber, message) {
 }
 
 /**
+ * wa.me link to the SmartSpend chat for a linked user, from the backend's
+ * `public_number` (international digits only). `greeting` is pre-filled so
+ * one tap on Send opens the menu. Null for anything that is not such a
+ * number, so a broken link is never rendered.
+ */
+export function buildWhatsAppChatLink(publicNumber, greeting) {
+  if (typeof publicNumber !== "string" || !/^[1-9]\d{7,14}$/.test(publicNumber)) return null;
+  const text = typeof greeting === "string" && greeting.trim() ? `?text=${encodeURIComponent(greeting.trim())}` : "";
+  return `https://wa.me/${publicNumber}${text}`;
+}
+
+/**
  * Copies text. Resolves true on success. On failure the caller shows the
  * text for manual selection; nothing is stored.
  */

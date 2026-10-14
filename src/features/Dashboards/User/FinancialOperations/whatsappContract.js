@@ -315,8 +315,18 @@ export function parseWhatsAppAvailability(response) {
       can_manage_link: capabilities.can_manage_link,
       can_review_drafts: capabilities.can_review_drafts,
     },
+    public_number: parsePublicNumber(data.public_number),
     integration: parseIntegration(data.integration),
   };
+}
+
+/*
+ * SmartSpend's own WhatsApp number for a wa.me link: international digits
+ * only (8 to 15, no leading 0), as the backend normalises it. Anything else,
+ * or an older backend without the field, is null: no link is offered.
+ */
+function parsePublicNumber(value) {
+  return typeof value === "string" && /^[1-9]\d{7,14}$/.test(value) ? value : null;
 }
 
 export function parseIntegrationResponse(response) {

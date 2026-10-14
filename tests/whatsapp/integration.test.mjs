@@ -237,3 +237,24 @@ describe("no sensitive persistence", () => {
     assert.equal(JSON.stringify(stubs.sessionStorage.dump()).includes(TOKEN), false);
   });
 });
+
+describe("public_number in availability", () => {
+
+  it("keeps a valid number and ignores anything else, including an older backend without it", async () => {
+    for (const [value, expected] of [
+      ["970592535047", "970592535047"],
+      [undefined, null],
+      [null, null],
+      ["+970592535047", null],
+      ["0592535047", null],
+      ["970 59 253 5047", null],
+      [970592535047, null],
+      ["javascript:alert(1)", null],
+    ]) {
+      mockFetch(() => ({ body: envelope({ ...availability(), public_number: value }) }));
+      const parsed = parseWhatsAppAvailability(await whatsappApi.getIntegration());
+      assert.equal(parsed.public_number, expected, String(value));
+      assert.equal(parsed.state, "linked", "the rest of the contract is unaffected");
+    }
+  });
+});

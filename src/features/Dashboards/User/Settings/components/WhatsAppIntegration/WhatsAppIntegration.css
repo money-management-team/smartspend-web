@@ -1657,3 +1657,74 @@
     justify-self: stretch;
   }
 }
+
+/* ---------- Open the SmartSpend chat (linked) ---------- */
+
+.wa-button--chat {
+  position: relative;
+  padding-inline-start: 10px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--wa-cyan) 35%, transparent), transparent 60%),
+    var(--gradient-primary);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--wa-cyan) 14%, transparent),
+    0 14px 30px -16px var(--color-primary);
+}
+
+.wa-button--chat:hover {
+  box-shadow:
+    0 0 0 5px color-mix(in srgb, var(--wa-cyan) 20%, transparent),
+    0 18px 34px -16px var(--color-primary);
+  transform: translateY(-1px);
+}
+
+/* The WhatsApp mark sits in a small white disc: identified, not dominant. */
+.wa-button--chat > svg {
+  box-sizing: content-box;
+  padding: 6px;
+  border-radius: 50%;
+  color: var(--wa-accent);
+  background: #fff;
+  font-size: 18px;
+}
+
+.wa-hero__hint {
+  flex-basis: 100%;
+  margin: 2px 0 0;
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+@container (max-width: 560px) {
+  .wa-hero__actions .wa-button--chat {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wa-button--chat:hover {
+    transform: none;
+  }
+}
+
+/*
+ * Connection facts: 2 × 2 by default; one row of four only where the status
+ * card is wide enough (full width, or beside the drafts card on a wide page),
+ * so they never break 3 + 1.
+ */
+.wa-details {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@container (min-width: 600px) and (max-width: 819px) {
+  .wa-details {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@container (min-width: 1100px) {
+  .wa-details {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

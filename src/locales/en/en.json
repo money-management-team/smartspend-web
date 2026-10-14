@@ -3228,7 +3228,11 @@
           "accountSet": "Selected account",
           "noAccount": "None",
           "linkedOn": "Connected on",
-          "openHint": "Open the SmartSpend chat on WhatsApp and send “Hi” to start."
+          "openHint": "Open the SmartSpend chat on WhatsApp and send “Hi” to start.",
+          "openChat": "Open SmartSpend on WhatsApp",
+          "openChatHint": "Opens WhatsApp with “Hi” ready. Tap Send to get the menu.",
+          "chatGreeting": "Hi",
+          "newTab": "(opens WhatsApp in a new tab)"
         },
         "prefs": {
           "title": "Preferences",
