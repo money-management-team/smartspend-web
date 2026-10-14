@@ -2,16 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { FaWhatsapp } from "react-icons/fa";
-import {
-  LuChevronRight,
-  LuCircleCheck,
-  LuInbox,
-  LuLock,
-  LuMessageSquareText,
-  LuSettings2,
-  LuShieldCheck,
-  LuSmartphone,
-} from "react-icons/lu";
+import { LuChevronDown, LuInbox, LuLock, LuSettings2, LuSmartphone } from "react-icons/lu";
 
 import ConfirmDialog from "../../../../../../components/ConfirmDialog/ConfirmDialog.jsx";
 import StateMessage from "../../../../../../components/StateMessage/StateMessage.jsx";
@@ -23,7 +14,7 @@ import {
   parseIntegrationResponse,
 } from "../../../FinancialOperations/whatsappContract.js";
 import WhatsAppChatPreview from "./WhatsAppChatPreview.jsx";
-import { WhatsAppFaq, WhatsAppHowItWorks, WhatsAppTrustNote } from "./WhatsAppGuide.jsx";
+import { WhatsAppHelp, WhatsAppSafetyRow, WhatsAppUsageSteps } from "./WhatsAppGuide.jsx";
 import WhatsAppLinkFlow from "./WhatsAppLinkFlow.jsx";
 import WhatsAppPreferences from "./WhatsAppPreferences.jsx";
 import { formatLinkedDate, maskedDigits } from "./whatsappFormat.js";
@@ -43,40 +34,102 @@ const BADGE = {
 };
 
 /*
- * The page header: what the integration does, where the user stands, and the
- * one primary action for that state (passed as `action`). A linked user gets
- * the compact form: the value is known, the chat example moves into the
- * folded "how it works".
+ * Page introduction, small on purpose: the Settings page already has the
+ * large header, so this only names the feature and shows where the user
+ * stands.
  */
-function Hero({ state, compact, action }) {
+function Intro({ state }) {
   const { t } = useTranslation();
   const [tone, badge] = BADGE[state];
 
   return (
-    <section className={`wa-hero${compact ? " wa-hero--compact" : ""}`} aria-labelledby="wa-hero-title">
-      <div className="wa-hero__copy">
-        <div className="wa-hero__top">
-          <span className="wa-hero__eyebrow"><FaWhatsapp aria-hidden="true" />{t(`${x}.hero.eyebrow`)}</span>
-          <span className={`wa-badge wa-badge--${tone}`}>{t(`${x}.${badge}`)}</span>
+    <header className="wa-intro">
+      <span className="wa-intro__mark" aria-hidden="true"><FaWhatsapp /></span>
+      <div className="wa-intro__text">
+        <h2>{t(`${x}.page.title`)}</h2>
+        <p>{t(`${x}.page.subtitle`)}</p>
+      </div>
+      <span className={`wa-badge wa-badge--${tone}`}>{t(`${x}.${badge}`)}</span>
+    </header>
+  );
+}
+
+/*
+ * The draft inbox. `action` is the button form used in the connection card;
+ * otherwise it is a quiet row. It depends on `can_review_drafts`, not on the
+ * link state: drafts already received stay reviewable. The count is the
+ * shared backend count (no request of its own), shown only when non-zero.
+ */
+function DraftsLink({ language, variant = "row", primary = false }) {
+  const { t } = useTranslation();
+  const { count, ensureFresh } = useWhatsAppPending();
+  useEffect(() => { ensureFresh(); }, [ensureFresh]);
+
+  const label = variant === "action" ? t(`${x}.inbox.action`) : t(`${x}.inbox.title`);
+  const className = variant === "action"
+    ? `wa-inbox wa-button ${primary ? "wa-button--primary" : "wa-button--secondary"}`
+    : "wa-inbox wa-inbox--row";
+
+  return (
+    <Link className={className} to={PATH.USER.WHATSAPP_DRAFTS}>
+      <LuInbox className="wa-inbox__icon" aria-hidden="true" />
+      <span className="wa-inbox__label">{label}</span>
+      {typeof count === "number" && count > 0 && (
+        <span className="wa-inbox__count">
+          <bdi dir="ltr">{new Intl.NumberFormat(language).format(count)}</bdi>
+          <span className="wa-sr-only"> {t(`${x}.inbox.pending`)}</span>
+        </span>
+      )}
+    </Link>
+  );
+}
+
+function ConnectionCard({ integration, chatLink, canReviewDrafts, language }) {
+  const { t } = useTranslation();
+  const digits = maskedDigits(integration?.phone_last_digits);
+  const linkedOn = integration ? formatLinkedDate(integration.linked_at, language) : null;
+
+  return (
+    <section className="wa-card wa-connection" aria-labelledby="wa-connection-title">
+      <div className="wa-connection__info">
+        <span className="wa-connection__icon" aria-hidden="true">
+          <FaWhatsapp />
+          <span className="wa-connection__dot" />
+        </span>
+        <div className="wa-connection__text">
+          <h3 id="wa-connection-title">{t(`${x}.connected.title`)}</h3>
+          <p>{t(`${x}.connected.body`)}</p>
+          {(digits || linkedOn) && (
+            <dl className="wa-meta">
+              {digits && (
+                <div><dt>{t(`${x}.connected.number`)}</dt><dd><bdi dir="ltr">{digits}</bdi></dd></div>
+              )}
+              {linkedOn && <div><dt>{t(`${x}.connected.linkedOn`)}</dt><dd>{linkedOn}</dd></div>}
+            </dl>
+          )}
         </div>
-        <h2 id="wa-hero-title">{t(`${x}.intro.title`)}</h2>
-        <p className="wa-hero__lead">{t(`${x}.intro.body`)}</p>
-
-        {!compact && (
-          <ul className="wa-points">
-            <li><LuMessageSquareText aria-hidden="true" />{t(`${x}.intro.points.a`)}</li>
-            <li><LuShieldCheck aria-hidden="true" />{t(`${x}.intro.points.b`)}</li>
-            <li><LuCircleCheck aria-hidden="true" />{t(`${x}.intro.points.c`)}</li>
-          </ul>
-        )}
-
-        {action && <div className="wa-actions wa-hero__actions">{action}</div>}
       </div>
 
-      {!compact && (
-        <div className="wa-hero__art">
-          <WhatsAppChatPreview />
-        </div>
+      <div className="wa-connection__actions">
+        {chatLink && (
+          <a
+            className="wa-button wa-button--primary wa-button--chat"
+            href={chatLink}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <FaWhatsapp aria-hidden="true" />
+            {t(`${x}.connected.openChat`)}
+            <span className="wa-sr-only"> {t(`${x}.connected.newTab`)}</span>
+          </a>
+        )}
+        {canReviewDrafts && <DraftsLink language={language} variant="action" primary={!chatLink} />}
+      </div>
+
+      {!chatLink && (
+        <p className="wa-hint wa-connection__hint">
+          <LuSmartphone aria-hidden="true" />{t(`${x}.connected.openHint`)}
+        </p>
       )}
     </section>
   );
@@ -86,77 +139,17 @@ function OnboardingSteps() {
   const { t } = useTranslation();
 
   return (
-    <section className="wa-panel wa-onboarding" aria-labelledby="wa-onboarding-title">
-      <h3 id="wa-onboarding-title">{t(`${x}.onboarding.title`)}</h3>
-      <ol className="wa-onboarding__steps">
-        {["a", "b", "c"].map((step, index) => (
-          <li key={step}>
-            <span className="wa-onboarding__number" aria-hidden="true">{index + 1}</span>
-            <span>
-              <strong>{t(`${x}.onboarding.steps.${step}.title`)}</strong>
-              <small>{t(`${x}.onboarding.steps.${step}.body`)}</small>
-            </span>
-          </li>
-        ))}
-      </ol>
-      <p className="wa-note wa-note--lock"><LuLock aria-hidden="true" />{t(`${x}.privacy`)}</p>
-    </section>
-  );
-}
-
-function Details({ integration, language }) {
-  const { t } = useTranslation();
-  const digits = maskedDigits(integration.phone_last_digits);
-  const linkedOn = formatLinkedDate(integration.linked_at, language);
-  const accountName = integration.default_account?.name ?? null;
-
-  return (
-    <dl className="wa-details">
-      {digits && (
-        <div><dt>{t(`${x}.connected.number`)}</dt><dd><bdi dir="ltr">{digits}</bdi></dd></div>
-      )}
-      {integration.language && (
-        <div>
-          <dt>{t(`${x}.connected.language`)}</dt>
-          <dd>{t(`${x}.prefs.languages.${integration.language}`, { defaultValue: integration.language })}</dd>
-        </div>
-      )}
-      <div>
-        <dt>{t(`${x}.connected.account`)}</dt>
-        <dd>{accountName ?? (integration.default_account_id != null
-          ? t(`${x}.connected.accountSet`)
-          : t(`${x}.connected.noAccount`))}</dd>
-      </div>
-      {linkedOn && <div><dt>{t(`${x}.connected.linkedOn`)}</dt><dd>{linkedOn}</dd></div>}
-    </dl>
-  );
-}
-
-/*
- * Entry to the draft inbox. It depends on `can_review_drafts`, not on whether
- * WhatsApp is enabled or linked: drafts already received stay reviewable. The
- * count is the backend's global pending count, never a count of loaded rows.
- */
-function DraftsEntry({ language, featured = false }) {
-  const { t } = useTranslation();
-  const { count, ensureFresh } = useWhatsAppPending();
-  useEffect(() => { ensureFresh(); }, [ensureFresh]);
-
-  return (
-    <Link className={`wa-inbox${featured ? " wa-inbox--featured" : ""}`} to={PATH.USER.WHATSAPP_DRAFTS}>
-      <span className="wa-inbox__icon" aria-hidden="true"><LuInbox /></span>
-      <span className="wa-inbox__text">
-        <strong>{t(`${x}.inbox.title`)}</strong>
-        <small>{t(`${x}.inbox.body`)}</small>
-      </span>
-      {typeof count === "number" && (
-        <span className={`wa-inbox__count${count > 0 ? " wa-inbox__count--active" : ""}`}>
-          <bdi dir="ltr">{new Intl.NumberFormat(language).format(count)}</bdi>
-          <span className="wa-sr-only"> {t(`${x}.inbox.pending`)}</span>
-        </span>
-      )}
-      <LuChevronRight className="wa-inbox__chevron" aria-hidden="true" />
-    </Link>
+    <ol className="wa-steps-mini" aria-label={t(`${x}.onboarding.title`)}>
+      {["a", "b", "c"].map((step, index) => (
+        <li key={step}>
+          <span className="wa-steps-mini__number" aria-hidden="true">{index + 1}</span>
+          <span>
+            <strong>{t(`${x}.onboarding.steps.${step}.title`)}</strong>
+            <small>{t(`${x}.onboarding.steps.${step}.body`)}</small>
+          </span>
+        </li>
+      ))}
+    </ol>
   );
 }
 
@@ -165,16 +158,16 @@ function Disabled({ integration }) {
   const digits = integration?.linked ? maskedDigits(integration.phone_last_digits) : null;
 
   return (
-    <section className="wa-panel wa-panel--muted wa-disabled" aria-labelledby="wa-disabled-title">
+    <section className="wa-card wa-disabled" aria-labelledby="wa-disabled-title">
       <h3 id="wa-disabled-title">{t(`${x}.disabled.title`)}</h3>
       <p>{t(`${x}.disabled.body`)}</p>
       {digits && (
-        <div className="wa-previous">
+        <p className="wa-previous">
           <span>{t(`${x}.disabled.previous`)} <bdi dir="ltr">{digits}</bdi></span>
           <small>{t(`${x}.disabled.previousNote`)}</small>
-        </div>
+        </p>
       )}
-      <p className="wa-note">{t(`${x}.disabled.drafts`)}</p>
+      <p className="wa-hint">{t(`${x}.disabled.drafts`)}</p>
     </section>
   );
 }
@@ -186,16 +179,13 @@ function Skeleton() {
   return (
     <div className="wa-integration wa-integration--loading" role="status" aria-busy="true">
       <span className="wa-sr-only">{t(`${x}.loading`)}</span>
-      <div className="wa-skeleton wa-skeleton--hero" aria-hidden="true">
-        <span className="wa-skeleton__line wa-skeleton__line--short" />
-        <span className="wa-skeleton__line wa-skeleton__line--title" />
-        <span className="wa-skeleton__line" />
-        <span className="wa-skeleton__line wa-skeleton__line--mid" />
-        <span className="wa-skeleton__pill" />
+      <div className="wa-skeleton wa-skeleton--intro" aria-hidden="true">
+        <span className="wa-skeleton__block" />
+        <span className="wa-skeleton__lines"><span /><span /></span>
       </div>
-      <div className="wa-skeleton wa-skeleton--row" aria-hidden="true">
-        <span className="wa-skeleton__line wa-skeleton__line--mid" />
-        <span className="wa-skeleton__line" />
+      <div className="wa-skeleton wa-skeleton--card" aria-hidden="true">
+        <span className="wa-skeleton__lines"><span /><span /><span /></span>
+        <span className="wa-skeleton__button" />
       </div>
     </div>
   );
@@ -211,6 +201,7 @@ export default function WhatsAppIntegration({ api = whatsappApi, accounts, creat
   const [unlinking, setUnlinking] = useState(false);
   const [notice, setNotice] = useState("");
   const [actionError, setActionError] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const unlinkingRef = useRef(false);
   const flowRef = useRef(null);
 
@@ -245,6 +236,7 @@ export default function WhatsAppIntegration({ api = whatsappApi, accounts, creat
     } catch (error) {
       const kind = classifyWhatsAppError(error);
       setActionError(getWhatsAppErrorMessage(error, t, "unlink"));
+      setSettingsOpen(true); // the failed action lives there: keep it in view
       if (kind === "disabled" || kind === "conflict") reload();
     } finally {
       unlinkingRef.current = false;
@@ -269,126 +261,128 @@ export default function WhatsAppIntegration({ api = whatsappApi, accounts, creat
 
   const { state, capabilities, integration } = availability.data;
   const language = i18n.language;
-  const linked = state === "linked" && Boolean(integration);
-
-  const connectAction = state === "not_linked" && capabilities.can_link && !flowOpen ? (
-    <button
-      type="button"
-      className="wa-button wa-button--primary wa-button--lg"
-      onClick={() => { setNotice(""); link.start(); }}
-    >
-      <FaWhatsapp aria-hidden="true" />{t(`${x}.intro.connect`)}
-    </button>
-  ) : null;
-
-  // Linked: one tap to the real SmartSpend chat, with the greeting ready to
-  // send. Only offered when the backend gives a usable number.
-  const chatLink = linked ? buildWhatsAppChatLink(availability.data.public_number, t(`${x}.connected.chatGreeting`)) : null;
-  const chatAction = chatLink ? (
-    <>
-      <a
-        className="wa-button wa-button--primary wa-button--lg wa-button--chat"
-        href={chatLink}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        <FaWhatsapp aria-hidden="true" />
-        {t(`${x}.connected.openChat`)}
-        <span className="wa-sr-only"> {t(`${x}.connected.newTab`)}</span>
-      </a>
-      <p className="wa-hero__hint">{t(`${x}.connected.openChatHint`)}</p>
-    </>
-  ) : null;
+  const connected = state === "linked";
+  const chatLink = connected
+    ? buildWhatsAppChatLink(availability.data.public_number, t(`${x}.connected.chatGreeting`))
+    : null;
+  const canManage = connected && Boolean(integration) && capabilities.can_manage_link;
+  const settingsSummary = canManage
+    ? [
+        integration.language ? t(`${x}.prefs.languages.${integration.language}`, { defaultValue: integration.language }) : null,
+        integration.default_account?.name ?? (integration.default_account_id == null ? t(`${x}.connected.noAccount`) : null),
+      ].filter(Boolean).join(" · ")
+    : "";
 
   return (
     <div className="wa-integration" data-state={state}>
+      <Intro state={state} />
+
       <p className="wa-feedback wa-feedback--page" role="status">{notice}</p>
       {actionError && <p className="wa-error" role="alert">{actionError}</p>}
 
-      <Hero state={state} compact={linked} action={connectAction ?? chatAction} />
-
-      {state === "disabled" && <Disabled integration={integration} />}
-
-      {state === "not_linked" && (flowOpen ? (
-        <div className="wa-flow" ref={flowRef} tabIndex={-1}>
-          <WhatsAppLinkFlow
-            state={link.state}
-            onConfirm={link.confirm}
-            onCancel={link.cancel}
-            onRestart={link.start}
-          />
-        </div>
-      ) : (
-        <OnboardingSteps />
-      ))}
-
-      {linked && (
-        <div className="wa-connected">
-          <section className="wa-panel wa-status" aria-labelledby="wa-status-title">
-            <span className="wa-status__icon" aria-hidden="true">
-              <FaWhatsapp />
-              <span className="wa-status__pulse" />
-            </span>
-            <div className="wa-status__main">
-              <h3 id="wa-status-title">{t(`${x}.connected.title`)}</h3>
-              <p>{t(`${x}.connected.body`)}</p>
-              <Details integration={integration} language={language} />
-              {!chatLink && <p className="wa-hint"><LuSmartphone aria-hidden="true" />{t(`${x}.connected.openHint`)}</p>}
-            </div>
-          </section>
-
-          {capabilities.can_review_drafts && <DraftsEntry language={language} featured />}
-        </div>
+      {state === "disabled" && (
+        <>
+          <Disabled integration={integration} />
+          {capabilities.can_review_drafts && <DraftsLink language={language} />}
+        </>
       )}
 
-      {/* With WhatsApp off, the inbox is the one thing left to do, so it stays near the top. */}
-      {state === "disabled" && capabilities.can_review_drafts && <DraftsEntry language={language} />}
-
-      <WhatsAppTrustNote />
-
-      {state !== "disabled" && <WhatsAppHowItWorks collapsed={linked} />}
-
-      {linked && capabilities.can_manage_link && (
-        <section className="wa-section wa-manage" aria-labelledby="wa-manage-title">
-          <header className="wa-section__head">
-            <h3 id="wa-manage-title"><LuSettings2 aria-hidden="true" />{t(`${x}.manage.title`)}</h3>
-            <p>{t(`${x}.manage.body`)}</p>
-          </header>
-
-          <WhatsAppPreferences
-            key={integration.generation}
-            integration={integration}
-            api={api}
-            accounts={accounts}
-            onSaved={(updated) => { replaceIntegration(updated); refresh(); }}
-            onDisabled={reload}
-          />
-
-          <div className="wa-unlink">
-            <div>
-              <h4>{t(`${x}.unlink.title`)}</h4>
-              <p>{t(`${x}.unlink.body`)}</p>
-            </div>
-            <button
-              type="button"
-              className="wa-button wa-button--danger"
-              onClick={() => setConfirmUnlink(true)}
-              disabled={unlinking}
-              aria-busy={unlinking}
-            >
-              {unlinking ? t(`${x}.unlink.working`) : t(`${x}.unlink.action`)}
-            </button>
+      {state === "not_linked" && (
+        <section className="wa-card wa-onboard" aria-labelledby="wa-onboard-title">
+          <div className="wa-onboard__main">
+            {flowOpen ? (
+              <div className="wa-flow" ref={flowRef} tabIndex={-1}>
+                <h3 id="wa-onboard-title" className="wa-sr-only">{t(`${x}.onboarding.title`)}</h3>
+                <WhatsAppLinkFlow
+                  state={link.state}
+                  onConfirm={link.confirm}
+                  onCancel={link.cancel}
+                  onRestart={link.start}
+                />
+              </div>
+            ) : (
+              <>
+                <span className="wa-onboard__eyebrow">{t(`${x}.hero.eyebrow`)}</span>
+                <h3 id="wa-onboard-title">{t(`${x}.intro.title`)}</h3>
+                <p className="wa-onboard__lead">{t(`${x}.intro.body`)}</p>
+                {capabilities.can_link && (
+                  <div className="wa-onboard__cta">
+                    <button
+                      type="button"
+                      className="wa-button wa-button--primary wa-button--lg"
+                      onClick={() => { setNotice(""); link.start(); }}
+                    >
+                      <FaWhatsapp aria-hidden="true" />{t(`${x}.intro.connect`)}
+                    </button>
+                  </div>
+                )}
+                <OnboardingSteps />
+                <p className="wa-hint wa-hint--lock"><LuLock aria-hidden="true" />{t(`${x}.privacy`)}</p>
+              </>
+            )}
+          </div>
+          <div className="wa-onboard__art">
+            <WhatsAppChatPreview />
           </div>
         </section>
       )}
 
-      <WhatsAppFaq />
+      {connected && (
+        <>
+          <ConnectionCard
+            integration={integration}
+            chatLink={chatLink}
+            canReviewDrafts={capabilities.can_review_drafts}
+            language={language}
+          />
+          <WhatsAppUsageSteps />
+        </>
+      )}
 
-      {/*
-        Everywhere else the inbox stays reachable, last: before linking (drafts
-        from an earlier link), or if the backend says linked without details.
-      */}
-      {!linked && state !== "disabled" && capabilities.can_review_drafts && <DraftsEntry language={language} />}
+      <WhatsAppSafetyRow />
+
+      {canManage && (
+        <details
+          className="wa-fold wa-settings"
+          open={settingsOpen}
+          onToggle={(event) => setSettingsOpen(event.currentTarget.open)}
+        >
+          <summary>
+            <span className="wa-fold__title"><LuSettings2 aria-hidden="true" />{t(`${x}.settings.title`)}</span>
+            {settingsSummary && <span className="wa-fold__meta">{settingsSummary}</span>}
+            <LuChevronDown className="wa-fold__chevron" aria-hidden="true" />
+          </summary>
+          <div className="wa-fold__body">
+            <WhatsAppPreferences
+              key={integration.generation}
+              integration={integration}
+              api={api}
+              accounts={accounts}
+              onSaved={(updated) => { replaceIntegration(updated); refresh(); }}
+              onDisabled={reload}
+            />
+            <div className="wa-unlink">
+              <p>
+                <strong>{t(`${x}.unlink.title`)}</strong>
+                <span>{t(`${x}.unlink.body`)}</span>
+              </p>
+              <button
+                type="button"
+                className="wa-button wa-button--danger"
+                onClick={() => setConfirmUnlink(true)}
+                disabled={unlinking}
+                aria-busy={unlinking}
+              >
+                {unlinking ? t(`${x}.unlink.working`) : t(`${x}.unlink.action`)}
+              </button>
+            </div>
+          </div>
+        </details>
+      )}
+
+      {state === "not_linked" && capabilities.can_review_drafts && <DraftsLink language={language} />}
+
+      <WhatsAppHelp />
 
       {confirmUnlink && (
         <ConfirmDialog
