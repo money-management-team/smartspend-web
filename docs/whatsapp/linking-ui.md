@@ -10,7 +10,9 @@ All under `src/features/Dashboards/User/Settings/components/WhatsAppIntegration/
 
 | File | Role |
 | --- | --- |
-| `WhatsAppIntegration.jsx` | Container. Reads availability, renders the three states, owns unlink and its dialog. Props `api`, `accounts`, `createPoller` default to the real adapters (test seams). |
+| `WhatsAppIntegration.jsx` | Container. Reads availability, renders the hero, the state-specific body, the guide and the FAQ, owns unlink and its dialog. Props `api`, `accounts`, `createPoller` default to the real adapters (test seams). |
+| `WhatsAppChatPreview.jsx` | Static, labelled example of the v2 WhatsApp conversation (no controls). |
+| `WhatsAppGuide.jsx` | Trust note, "how it works" (open or folded) and the FAQ. |
 | `WhatsAppLinkFlow.jsx` | Stepper, message + copy, waiting, verified, expired/cancelled/failed. |
 | `WhatsAppPreferences.jsx` | Reply language and default account. |
 | `useWhatsAppAvailability.js` | `GET /integrations/whatsapp` with the keyed-request pattern; `reload` (shows loading), `refresh` (background), `replaceIntegration`. |
@@ -23,9 +25,11 @@ Also changed: `Settings.jsx` (URL tab), `SettingsTabs.jsx` + `tabKeys.js`, `rout
 
 ## States (from the backend, never inferred)
 
-- **disabled** (`state: "disabled"`): calm unavailable card, no buttons. If an old link exists its masked digits are shown as information with a note that it is inactive. Historical drafts are mentioned in text only; there is no link to a draft screen (not built yet).
-- **not_linked**: introduction, three-point explanation, "no expense is posted automatically", and **Connect WhatsApp** (only when `capabilities.can_link`).
-- **linked**: status, masked number, reply language, default account (name when the backend sends it), linked date. Preferences and Disconnect appear only when `capabilities.can_manage_link`.
+- **disabled** (`state: "disabled"`): hero without an action, a calm unavailable panel (masked digits of an old link shown as information only), the draft inbox link, the trust note and the FAQ. No buttons.
+- **not_linked**: hero with **Connect WhatsApp** (only when `capabilities.can_link`), the three onboarding steps (replaced by the linking flow once started), trust note, open "how it works", FAQ, then the draft inbox link.
+- **linked**: compact hero, status with masked number, reply language, default account (name when the backend sends it) and linked date, the featured draft inbox card, trust note, folded "how it works", **Manage link** (preferences and Disconnect, only when `capabilities.can_manage_link`), FAQ.
+
+Layout, copy and design rules are in `experience-design.md`.
 
 ## Linking flow
 
@@ -69,4 +73,4 @@ Confirm dialog (existing `ConfirmDialog`, safe choice focused first) → `DELETE
 
 ## Draft inbox entry
 
-Below the state card, a "WhatsApp expense drafts" row links to `/dashboard/whatsapp/drafts` whenever `capabilities.can_review_drafts` is true (also when disabled or never linked). It shows the shared backend pending count (`useWhatsAppPending`, one request for the whole dashboard; omitted if it cannot be read). See `docs/whatsapp/draft-inbox.md`.
+A "WhatsApp expense drafts" card (featured beside the status when linked, near the top when disabled, last otherwise) links to `/dashboard/whatsapp/drafts` whenever `capabilities.can_review_drafts` is true (also when disabled or never linked). It shows the shared backend pending count (`useWhatsAppPending`, one request for the whole dashboard; omitted if it cannot be read). See `docs/whatsapp/draft-inbox.md`.

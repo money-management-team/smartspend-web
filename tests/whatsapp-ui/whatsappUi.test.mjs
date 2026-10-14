@@ -756,3 +756,104 @@ describe("Settings navigation", () => {
     assert.deepEqual(changes, ["integrations"]);
   });
 });
+
+describe("experience redesign", () => {
+  const primaryButtons = () => [...view.container.querySelectorAll(".wa-button--primary")].filter((node) => !node.closest(".wa-prefs"));
+  const faqItems = () => view.container.querySelectorAll(".wa-faq details");
+
+  it("not linked: one primary action, the three onboarding steps, the open guide and the example chat", async () => {
+    await mount(makeApi({ integration: NOT_LINKED }));
+
+    assert.deepEqual(primaryButtons().map((node) => node.textContent.trim()), [t("intro.connect")]);
+    assert.equal(view.container.querySelectorAll(".wa-onboarding__steps li").length, 3);
+    assert.equal(view.container.querySelectorAll(".wa-how__step").length, 5);
+    assert.equal(view.container.querySelector("details#wa-how"), null, "the guide is open for new users");
+    assert.ok(view.container.querySelector(".wa-hero .wa-chat"));
+    assert.match(text(), new RegExp(t("trust.title")));
+    assert.equal(faqItems().length, 6);
+  });
+
+  it("the example chat is labelled, described and has nothing to click", async () => {
+    await mount(makeApi({ integration: NOT_LINKED }));
+    const chat = view.container.querySelector(".wa-chat");
+
+    assert.equal(chat.tagName, "FIGURE");
+    assert.equal(chat.getAttribute("aria-label"), t("preview.description"));
+    assert.equal(chat.querySelector(".wa-chat__label").textContent, t("preview.label"));
+    assert.equal(chat.querySelector(".wa-chat__phone").getAttribute("aria-hidden"), "true");
+    assert.equal(chat.querySelectorAll("button, a, input, select, [tabindex]").length, 0);
+  });
+
+  it("starting the link replaces the onboarding with the flow and moves focus to it", async () => {
+    await mount(makeApi());
+    await click(button(t("intro.connect")));
+    await flush();
+
+    assert.equal(view.container.querySelector(".wa-onboarding"), null);
+    assert.equal(primaryButtons().some((node) => node.textContent.trim() === t("intro.connect")), false);
+    assert.equal(document.activeElement, view.container.querySelector(".wa-flow"));
+
+    await click(button(t("flow.cancel")));
+    assert.ok(view.container.querySelector(".wa-onboarding"), "cancel returns to the onboarding");
+  });
+
+  it("linked: compact header, status and drafts first, guide folded, management last", async () => {
+    await mount(makeApi({ integration: LINKED, pending: 2 }));
+
+    assert.ok(view.container.querySelector(".wa-hero--compact"));
+    assert.equal(view.container.querySelector(".wa-hero .wa-chat"), null);
+    assert.equal(view.container.querySelector(".wa-onboarding"), null);
+    assert.equal(primaryButtons().length, 0, "the drafts card is the next step, not a button");
+    assert.ok(view.container.querySelector(".wa-connected a.wa-inbox--featured"));
+    assert.equal(view.container.querySelector(".wa-inbox__count--active bdi").textContent, "2");
+    assert.equal(view.container.querySelector("details#wa-how").open, false);
+    assert.match(text(), new RegExp(t("connected.openHint")));
+
+    const order = [...view.container.querySelector(".wa-integration").children].map((node) => node.className);
+    const index = (name) => order.findIndex((className) => className.split(" ").includes(name));
+    assert.ok(index("wa-connected") < index("wa-trust"));
+    assert.ok(index("wa-trust") < index("wa-manage"));
+    assert.ok(index("wa-manage") < index("wa-faq"));
+    assert.ok(view.container.querySelector(".wa-manage form.wa-prefs"));
+    assert.ok(view.container.querySelector(".wa-manage .wa-unlink button"));
+  });
+
+  it("disabled: no guide steps, but the trust note and the FAQ remain, with no extra controls", async () => {
+    await mount(makeApi({ integration: DISABLED }));
+
+    assert.equal(view.container.querySelector(".wa-how"), null);
+    assert.equal(view.container.querySelector(".wa-chat") !== null, true, "the example still explains the feature");
+    assert.match(text(), new RegExp(t("trust.title")));
+    assert.equal(faqItems().length, 6);
+    assertOnlyInboxLink();
+  });
+
+  it("linked without integration details still offers the inbox and no management", async () => {
+    await mount(makeApi({ integration: { ...LINKED, integration: null } }));
+
+    assert.equal(view.container.querySelector("a.wa-inbox").getAttribute("href"), "/dashboard/whatsapp/drafts");
+    assert.equal(view.container.querySelector(".wa-manage"), null);
+    assert.equal(button(t("intro.connect")), undefined);
+  });
+
+  it("loading shows an announced skeleton, never a blank page", async () => {
+    const api = makeApi();
+    api.getIntegration = () => new Promise(() => {});
+    i18n = await createI18n("en");
+    view = await render(withI18n(i18n, h(MemoryRouter, null, h(WhatsAppPendingProvider, { api, userId: "u1" }, h(WhatsAppIntegration, { api, accounts: makeAccounts() })))));
+
+    const status = view.container.querySelector(".wa-integration--loading[role=status]");
+    assert.ok(status);
+    assert.equal(status.getAttribute("aria-busy"), "true");
+    assert.equal(status.textContent, t("loading"));
+  });
+
+  it("Arabic: the guide and the example are Arabic, amounts stay left-to-right", async () => {
+    await mount(makeApi({ integration: NOT_LINKED }), { lng: "ar" });
+
+    assert.match(view.container.querySelector(".wa-chat").textContent, /تسجيل مصروف/);
+    assert.equal(view.container.querySelector(".wa-chat bdi").dir, "ltr");
+    assert.match(view.container.querySelector(".wa-how").textContent, /[؀-ۿ]/);
+    assert.deepEqual(i18n.missingKeys, []);
+  });
+});

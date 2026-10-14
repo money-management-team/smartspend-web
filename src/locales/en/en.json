@@ -3171,12 +3171,12 @@
           "drafts": "Drafts you already received from WhatsApp stay yours to review."
         },
         "intro": {
-          "title": "Capture expenses from WhatsApp",
-          "body": "Message SmartSpend on WhatsApp about something you bought and it appears here as a draft for you to review.",
+          "title": "Record expenses on WhatsApp, review them in SmartSpend",
+          "body": "A faster way to log everyday spending. Send the details on WhatsApp and we'll prepare a draft for you to review before it counts.",
           "points": {
-            "a": "Connect once with a short verification message",
+            "a": "Link once with a short message",
             "b": "Messages become drafts, never posted automatically",
-            "c": "You review and confirm every expense in SmartSpend"
+            "c": "You confirm every expense"
           },
           "connect": "Connect WhatsApp"
         },
@@ -3221,13 +3221,14 @@
         },
         "connected": {
           "title": "WhatsApp is connected",
-          "body": "Messages you send from your phone become drafts here, ready for your review.",
+          "body": "Your number is ready. Record expenses on WhatsApp and they arrive here as drafts waiting for your review.",
           "number": "Connected number",
           "language": "Reply language",
           "account": "Default account",
           "accountSet": "Selected account",
           "noAccount": "None",
-          "linkedOn": "Connected on"
+          "linkedOn": "Connected on",
+          "openHint": "Open the SmartSpend chat on WhatsApp and send “Hi” to start."
         },
         "prefs": {
           "title": "Preferences",
@@ -3273,8 +3274,110 @@
         },
         "inbox": {
           "title": "WhatsApp expense drafts",
-          "body": "Review what your WhatsApp messages collected. Available even when the connection is off.",
+          "body": "Review and confirm your drafts. Nothing is charged before you confirm.",
           "pending": "waiting for review"
+        },
+        "hero": {
+          "eyebrow": "WhatsApp × SmartSpend"
+        },
+        "onboarding": {
+          "title": "Link in three steps",
+          "steps": {
+            "a": {
+              "title": "Tap “Connect WhatsApp”",
+              "body": "We prepare a verification message just for you."
+            },
+            "b": {
+              "title": "Send it from your phone",
+              "body": "From the WhatsApp number you want to link."
+            },
+            "c": {
+              "title": "Confirm here",
+              "body": "We recognise your number, and you confirm the link."
+            }
+          }
+        },
+        "trust": {
+          "title": "No money moves from WhatsApp",
+          "body": "WhatsApp only creates drafts. No transaction is recorded and no balance changes until you review and confirm the draft yourself in SmartSpend."
+        },
+        "how": {
+          "title": "How to record an expense on WhatsApp",
+          "subtitle": "Five short steps, mostly single taps.",
+          "toggle": "How do I record an expense on WhatsApp?",
+          "accountNote": "The account is picked automatically from your default account. You can change it with “Edit” before saving, or while reviewing the draft.",
+          "steps": {
+            "open": {
+              "title": "Open the SmartSpend chat",
+              "body": "Send “Hi” from your linked number."
+            },
+            "choose": {
+              "title": "Tap “Record expense”",
+              "body": "From the buttons in the chat."
+            },
+            "amount": {
+              "title": "Pick the amount and category",
+              "body": "Choose from the list or type the amount. A note is optional."
+            },
+            "save": {
+              "title": "Save it as a draft",
+              "body": "The chat replies with a link to the draft."
+            },
+            "review": {
+              "title": "Review and confirm in SmartSpend",
+              "body": "Nothing is charged before you confirm."
+            }
+          }
+        },
+        "preview": {
+          "label": "Example",
+          "title": "SmartSpend",
+          "subtitle": "WhatsApp chat",
+          "description": "An example WhatsApp chat: you tap “Record expense”, then 50 ₪ and Transport, and the draft is saved without charging anything.",
+          "hi": "Hi",
+          "menu": "Welcome. What would you like to do?",
+          "expense": "Record expense",
+          "drafts": "My drafts",
+          "help": "Help",
+          "category": "Transport",
+          "summaryTitle": "Review expense",
+          "summaryLine": "50.00 ₪ · Transport",
+          "save": "Save as draft",
+          "saved": "Expense saved as a draft",
+          "savedNote": "No money has moved yet."
+        },
+        "faq": {
+          "title": "Common questions",
+          "items": {
+            "debit": {
+              "q": "Is the amount charged as soon as I record it on WhatsApp?",
+              "a": "No. WhatsApp only creates a draft. The transaction is recorded and the balance changes only when you review and confirm the draft in SmartSpend while signed in."
+            },
+            "where": {
+              "q": "Where do I find the expenses I recorded?",
+              "a": "In “WhatsApp drafts” in the sidebar, or from the drafts card on this page. WhatsApp also replies with a direct link to every draft you save."
+            },
+            "review": {
+              "q": "Can I review an expense before it counts?",
+              "a": "Yes. You can change the amount, account, category, date and note, then confirm or delete the draft."
+            },
+            "account": {
+              "q": "Which account is the expense recorded in?",
+              "a": "Your WhatsApp default account set on this page, otherwise your default account in SmartSpend. You can change it before confirming."
+            },
+            "disconnect": {
+              "q": "How do I unlink my WhatsApp number?",
+              "a": "Use “Disconnect” under Manage link on this page. Your drafts and transactions stay as they are, and you can link again at any time."
+            },
+            "expired": {
+              "q": "What if the linking message has expired?",
+              "a": "A linking message only lasts a few minutes, for your security. Tap “Start again” to get a new message, then send it from your phone."
+            }
+          }
+        },
+        "manage": {
+          "title": "Manage link",
+          "body": "Reply language and default account, or unlink the number."
         }
       }
     },
@@ -3787,7 +3890,8 @@
         "noneTitle": "No drafts with this status",
         "noneBody": "Nothing matches this status right now.",
         "filtered": "No drafts match these filters.",
-        "page": "This page has no drafts any more. The list changed."
+        "page": "This page has no drafts any more. The list changed.",
+        "howTo": "How to record from WhatsApp"
       },
       "errors": {
         "forbidden": "You don't have access to these WhatsApp drafts.",

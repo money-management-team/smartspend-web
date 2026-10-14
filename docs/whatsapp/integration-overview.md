@@ -7,7 +7,7 @@ How the WhatsApp pieces fit together after TASK 04–08. Backend reference: `mon
 | Layer | Where | Doc |
 | --- | --- | --- |
 | Adapter and contract | `api/whatsappApi.js`, `FinancialOperations/whatsappContract.js` | `api-integration.md` |
-| Linking and settings | `Settings/components/WhatsAppIntegration/` | `linking-ui.md` |
+| Linking and settings | `Settings/components/WhatsAppIntegration/` | `linking-ui.md`, `experience-design.md` |
 | Draft inbox | `WhatsAppDrafts/WhatsAppDrafts.jsx` | `draft-inbox.md` |
 | Draft review (edit, confirm, discard) | `WhatsAppDrafts/WhatsAppDraftDetails.jsx` + hook | `draft-review.md` |
 | Shared pending count | `contexts/whatsappPending/` | this file |

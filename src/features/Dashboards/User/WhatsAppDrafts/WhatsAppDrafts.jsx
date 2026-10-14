@@ -282,6 +282,12 @@ export default function WhatsAppDrafts({ api = whatsappApi, accounts: accountsCl
               <>
                 <h2>{t(`${x}.empty.${filters.status === DEFAULT_DRAFT_STATUS ? "pendingTitle" : "noneTitle"}`)}</h2>
                 <p>{t(`${x}.empty.${filters.status === DEFAULT_DRAFT_STATUS ? "pendingBody" : "noneBody"}`)}</p>
+                {filters.status === DEFAULT_DRAFT_STATUS && (
+                  <Link className="wad-button wad-button--ghost" to={getSettingsTabPath("integrations")}>
+                    <FaWhatsapp aria-hidden="true" />
+                    {t(`${x}.empty.howTo`)}
+                  </Link>
+                )}
               </>
             )}
           </div>

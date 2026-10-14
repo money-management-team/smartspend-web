@@ -205,6 +205,8 @@ describe("listing", () => {
     assert.equal(rows().length, 0);
     assert.equal(view.container.querySelector("[role=alert]"), null);
     assert.match(text(), new RegExp(t("empty.pendingTitle")));
+    const howTo = [...view.container.querySelectorAll(".wad-state a")].find((a) => a.textContent === t("empty.howTo"));
+    assert.equal(howTo.getAttribute("href"), "/dashboard/settings?tab=integrations", "the empty inbox points to the WhatsApp guide");
   });
 
   it("a user with no manageable workspace gets the same empty page", async () => {
