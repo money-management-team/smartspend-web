@@ -28,7 +28,7 @@ The WhatsApp tab explains the feature and runs it. Behaviour (APIs, linking, pre
 
 ## Content rules
 
-- Arabic first. Arabic strings write the brand as «سمارت سبند», except «SmartSpend» in the page title, the chat button and the safety row, as the owner specified. This is the only Latin allowed (tested). English mirrors the Arabic.
+- Arabic first. The brand is written «SmartSpend» everywhere in the WhatsApp interface, in Arabic as in English (owner decision, 2026-10-14). It is the only Latin allowed in the Arabic copy (tested). English mirrors the Arabic.
 - The "no money moves" rule appears once per page (the safety row), plus the FAQ.
 - The chat example (`WhatsAppChatPreview`) uses the backend's v2 wording. It is shown only before linking, as a `<figure>` labelled "Example": its inner markup is `aria-hidden`, a one-sentence `aria-label` describes it, and it contains no controls.
 - **Open SmartSpend on WhatsApp**: `https://wa.me/<public_number>?text=<greeting>`, built by `buildWhatsAppChatLink` from `data.public_number` of `GET /integrations/whatsapp` (backend `docs/whatsapp/PUBLIC_NUMBER.md`). It opens a new tab with `noopener noreferrer` and an announced "opens in a new tab". It is never hard-coded and never shown before linking or while disabled.

@@ -407,7 +407,7 @@ describe("Arabic and English copy", () => {
 
   it("Arabic copy is written in Arabic (only language names and the SmartSpend brand may stay Latin)", () => {
     for (const [key, value] of ar) {
-      if (key === "prefs.languages.en") continue;
+      if (key === "prefs.languages.en" || value === "SmartSpend") continue; // a language name, or the brand alone
       assert.match(value, /[؀-ۿ]/, key);
       assert.doesNotMatch(value.replace(/{{\w+}}/g, "").replace(/\bSmartSpend\b/g, ""), /[A-Za-z]{3,}/, key);
     }

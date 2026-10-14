@@ -908,3 +908,50 @@ describe("layout v2", () => {
     assert.equal(settings(), null);
   });
 });
+
+describe("layout v2: coverage carried over from the first redesign", () => {
+  const chat = () => view.container.querySelector("a.wa-button--chat");
+
+  it("the example chat is labelled, described and has nothing to click", async () => {
+    await mount(makeApi({ integration: NOT_LINKED }));
+    const figure = view.container.querySelector(".wa-chat");
+
+    assert.equal(figure.tagName, "FIGURE");
+    assert.equal(figure.getAttribute("aria-label"), t("preview.description"));
+    assert.equal(figure.querySelector(".wa-chat__label").textContent, t("preview.label"));
+    assert.equal(figure.querySelector(".wa-chat__phone").getAttribute("aria-hidden"), "true");
+    assert.equal(figure.querySelectorAll("button, a, input, select, [tabindex]").length, 0);
+  });
+
+  it("Arabic: onboarding, example and usage are Arabic, the brand is SmartSpend, amounts stay left-to-right", async () => {
+    await mount(makeApi({ integration: NOT_LINKED }), { lng: "ar" });
+    assert.match(view.container.querySelector(".wa-onboard").textContent, /تسجيل مصروف/);
+    assert.match(view.container.querySelector(".wa-intro h2").textContent, /^واتساب SmartSpend$/);
+    assert.equal(view.container.querySelector(".wa-chat bdi").dir, "ltr");
+    assert.doesNotMatch(text(), /سمارت سبند/, "one brand spelling");
+    assert.deepEqual(i18n.missingKeys, []);
+    await view.unmount();
+    view = null;
+
+    await mount(makeApi({ integration: LINKED }), { lng: "ar" });
+    assert.match(view.container.querySelector(".wa-usage").textContent, /راجع المسودة/);
+    assert.doesNotMatch(text(), /سمارت سبند/);
+  });
+
+  it("no usable number in the response: no chat button, the hint instead, for every unusable value", async () => {
+    for (const public_number of [undefined, null, "", "0592535047", "+970592535047", "970 59 253 5047", "javascript:alert(1)"]) {
+      await mount(makeApi({ integration: { ...LINKED, public_number } }));
+      assert.equal(chat(), null, String(public_number));
+      assert.match(text(), new RegExp(t("connected.openHint")), String(public_number));
+      assert.equal([...view.container.querySelectorAll("a")].some((a) => a.href.startsWith("https://wa.me/")), false);
+      await view.unmount();
+      view = null;
+    }
+  });
+
+  it("with the chat button the fallback hint is not repeated", async () => {
+    await mount(makeApi({ integration: { ...LINKED, public_number: "970592535047" } }));
+    assert.ok(chat());
+    assert.doesNotMatch(text(), new RegExp(t("connected.openHint")));
+  });
+});
