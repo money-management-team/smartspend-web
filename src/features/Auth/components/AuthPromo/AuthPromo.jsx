@@ -1,4 +1,4 @@
-import logo from "../../../../assets/smart-spend-logo.png";
+import logo from "../../../../assets/smartspend-logo-256.png";
 
 import "./AuthPromo.css";
 
