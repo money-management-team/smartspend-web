@@ -13,6 +13,19 @@ All six auth pages share one visual system. The sign-in page was the reference, 
 
 Login, Forgot Password, and Password Changed have no page stylesheet at all.
 
+## Landing refresh
+
+`src/layouts/AuthLayout/AuthRefresh.css`, loaded by `AuthLayout` after `AuthLayout.css`, aligns every auth screen with the home page (landing) without changing any component file:
+
+- It redefines the global tokens (`--color-*`, `--primary`, `--gradient-primary`, `--input-focus-ring`, `--font-body`, …) and the `--auth-*` tokens **on `.auth-shell`**. The landing's navy / blue / cyan palette and surfaces reach the shared components, and the dashboard, landing and PDFs are not touched.
+- Type: IBM Plex Sans Arabic (RTL) and Plus Jakarta Sans (LTR), using the landing's bundled woff2 faces (`Home/styles/fonts.css`, imported by `AuthLayout.jsx` and `Home.jsx`).
+- The brand panel is the landing's night panel in both themes. The header and panel use `smartspend-logo-256.png`.
+- Controls: 48px inputs with a 14px radius and the landing focus ring, pill primary button with a single hover sheen, pill social buttons, and a blue→cyan step bar. Keyboard focus uses `--auth-focus`.
+- Motion: a 420ms arrival of each form panel. It is off under `prefers-reduced-motion`, along with the sheen and transitions.
+- Specificity: every selector carries one class more than the component rule it refines, because lazy page stylesheets have no fixed order in the single CSS bundle.
+
+Put new auth colours in the tokens of `AuthRefresh.css`, not in component files.
+
 ## Auth tokens
 
 The tokens are defined on `.auth-card`, with a `:root[data-theme="dark"] .auth-card` override block. They are derived from the global tokens (mostly `color-mix()`), so the brand palette stays in `index.css`.

@@ -6,7 +6,7 @@
  * Order: reset, fonts, tokens, base, layout utilities, components, sections, motion.
  */
 @import "./preflight.css";
-@import "./fonts.css";
+/* fonts.css is imported from Home.jsx (and AuthLayout.jsx), so the faces ship once. */
 @import "./tokens.css";
 @import "./base.css";
 @import "./gravity-stars.css";

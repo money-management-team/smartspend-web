@@ -1,6 +1,9 @@
 import { useLanguageContext } from "../../contexts/language/useLanguageContext";
-import logo from "../../assets/smart-spend-logo.png";
+import logo from "../../assets/smartspend-logo-256.png";
+// The landing's font faces (IBM Plex Sans Arabic, Plus Jakarta Sans) for the auth refresh.
+import "../../features/PublicPage/Home/styles/fonts.css";
 import "./AuthLayout.css";
+import "./AuthRefresh.css";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useThemeContext } from "../../contexts/theme/useThemeContext";
 import { PATH } from "../../routes/Path";

@@ -4,6 +4,7 @@ import { CircleCheck, X } from "lucide-react";
 // Rules from the previous home stylesheet that the navbar, footer and other public pages still use.
 // Imported first so they keep their place in the single CSS bundle.
 import "./publicShared.css";
+import "./styles/fonts.css";
 import "./styles/landing.css";
 
 import Business from "./components/Business";
