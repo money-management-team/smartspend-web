@@ -1,0 +1,20 @@
+/*
+ * SmartSpend landing styles (home page).
+ * Everything is scoped under .smartspend-landing, and document-level rules key on
+ * html[data-motion], which exists only while the landing is mounted. The app
+ * bundles one global stylesheet, so nothing here may reach other screens.
+ * Order: reset, fonts, tokens, base, layout utilities, components, sections, motion.
+ */
+@import "./preflight.css";
+@import "./fonts.css";
+@import "./tokens.css";
+@import "./base.css";
+@import "./gravity-stars.css";
+@import "./components.css";
+@import "./header.css";
+@import "./hero.css";
+@import "./demo.css";
+@import "./sections.css";
+@import "./motion.css";
+@import "./signature.css";
+@import "./integration.css";

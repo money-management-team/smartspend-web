@@ -19,7 +19,7 @@ All styles are global. Many page and component stylesheets share class names and
 Two follow-ups were needed to keep the result identical to before:
 
 - `features/Dashboards/User/financeExperience.css` overrides page styles and used to be bundled after them. Its rules are now nested in `:root { ... }` (one extra class of specificity) so they win over a page's single-class rules whatever the order. `@keyframes` stays outside the block.
-- The home page preview and the dashboard summary cards both used `.dashboard-summary-card`. The home page copy is now `.home-preview-card`, so the two no longer override each other depending on load order.
+- The home page preview and the dashboard summary cards both used `.dashboard-summary-card`. The home page copy became `.home-preview-card`, so the two no longer override each other depending on load order. (The current home page, the landing design, scopes all its rules under `.smartspend-landing`; see [home overview](../home/overview.md).)
 
 When adding a page: add it to `lazyPages.js`, keep its stylesheet imported by the page as usual, and avoid class names that another feature already uses.
 
