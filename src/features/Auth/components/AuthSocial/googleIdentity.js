@@ -97,6 +97,34 @@ export function createGoogleIdentityLoader({
   return { load, subscribe, configured };
 }
 
+// Google's supported width range for the rendered button (px).
+export const GOOGLE_BUTTON_MIN_WIDTH = 200;
+export const GOOGLE_BUTTON_MAX_WIDTH = 400;
+
+/*
+ * Options for google.accounts.id.renderButton, from the app's theme and
+ * language. Only documented options: a large pill, Google's dark style in dark
+ * mode and its outlined style in light mode, the button text locale, and a
+ * width clamped to what Google supports.
+ */
+export function getGoogleButtonOptions({ theme, language, width, state }) {
+  const available = Math.round(Number(width) || 0);
+  return {
+    type: "standard",
+    theme: theme === "dark" ? "filled_black" : "outline",
+    size: "large",
+    text: "continue_with",
+    shape: "pill",
+    logo_alignment: "left",
+    width: Math.min(
+      GOOGLE_BUTTON_MAX_WIDTH,
+      Math.max(GOOGLE_BUTTON_MIN_WIDTH, available || 300),
+    ),
+    locale: String(language || "en").toLowerCase().startsWith("ar") ? "ar" : "en",
+    state,
+  };
+}
+
 const loader = createGoogleIdentityLoader({ clientId: GOOGLE_CLIENT_ID });
 export const isGoogleConfigured = loader.configured;
 export const loadGoogleIdentity = loader.load;
