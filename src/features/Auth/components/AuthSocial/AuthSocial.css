@@ -22,24 +22,37 @@
   font-size: 12px;
   white-space: nowrap;
 }
+/* minmax(0, 1fr): Google's fixed-width button must not widen the column, so the
+   slot keeps following the form and a narrower window re-renders it narrower. */
 .auth-social__google {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
-  min-height: 44px;
+  min-height: 40px;
 }
+/*
+ * Holds Google's rendered button (40px tall at size "large", 200–400px wide).
+ * No background or padding of our own. color-scheme: light matches the
+ * scheme of Google's button document: when the page runs in dark mode and the
+ * schemes differ, the browser paints an opaque white backdrop behind the
+ * iframe, which showed as a white rectangle around the pill.
+ */
 .auth-social__google-slot {
   display: flex;
   justify-content: center;
-  width: 100%;
-  max-width: 400px;
-  min-height: 44px;
   align-items: center;
+  width: 100%;
+  min-width: 0;
+  max-width: 400px;
+  min-height: 40px;
+  color-scheme: light;
+  background: none;
 }
 .auth-social__google-slot[hidden] {
   display: none;
 }
 .auth-social__button {
-  min-height: 44px;
+  min-height: 40px;
   width: 100%;
   max-width: 400px;
   padding: 10px 16px;

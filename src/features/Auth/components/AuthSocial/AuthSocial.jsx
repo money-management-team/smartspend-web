@@ -1,7 +1,9 @@
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useThemeContext } from "../../../../contexts/theme/useThemeContext";
 import { GoogleIcon } from "../AuthIcons";
 import {
+  getGoogleButtonOptions,
   isGoogleConfigured,
   loadGoogleIdentity,
   setGoogleCredentialHandler,
@@ -17,6 +19,7 @@ export default function AuthSocial({
   disabled = false,
 }) {
   const { t, i18n } = useTranslation("access");
+  const { theme } = useThemeContext();
   const slotRef = useRef(null);
   const pendingRef = useRef(false);
   const [status, setStatus] = useState(
@@ -47,27 +50,20 @@ export default function AuthSocial({
     loadGoogleIdentity()
       .then((googleId) => {
         if (cancelled) return;
+        // Re-rendered on resize, and (through the effect) on language or theme change.
         const render = () => {
           if (cancelled) return;
-          const width = Math.min(
-            400,
-            Math.round(slot.clientWidth || slot.parentElement.clientWidth) ||
-              300,
-          );
-          if (lastWidth === width) return;
-          lastWidth = width;
+          const options = getGoogleButtonOptions({
+            theme,
+            language: locale,
+            width: slot.clientWidth || slot.parentElement.clientWidth,
+            state: subscription.state,
+          });
+          if (lastWidth === options.width) return;
+          lastWidth = options.width;
           slot.replaceChildren();
           try {
-            googleId.renderButton(slot, {
-              type: "standard",
-              theme: "outline",
-              size: "large",
-              text: "continue_with",
-              shape: "pill",
-              width,
-              locale,
-              state: subscription.state,
-            });
+            googleId.renderButton(slot, options);
             setStatus(slot.firstElementChild ? "ready" : "unavailable");
           } catch {
             setStatus("unavailable");
@@ -88,7 +84,7 @@ export default function AuthSocial({
       observer?.disconnect();
       slot.replaceChildren();
     };
-  }, [enabled, locale, attempt]);
+  }, [enabled, locale, theme, attempt]);
 
   return (
     <div className="auth-social">

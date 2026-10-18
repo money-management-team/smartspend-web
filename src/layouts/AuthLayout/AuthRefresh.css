@@ -408,8 +408,29 @@
   box-shadow: none;
 }
 
+/* Social sign-in: hairline divider and spacing on the form's rhythm. */
+.auth-shell .auth-social {
+  margin-top: 26px;
+}
+
+.auth-shell .auth-social__divider {
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.auth-shell .auth-social__divider span {
+  background: linear-gradient(90deg, transparent, var(--border-strong) 30%, var(--border-strong) 70%, transparent);
+}
+
+.auth-shell .auth-social__divider small {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+/* Same 40px as Google's large button, so loading / fallback never shifts the form. */
 .auth-shell .auth-social__button {
-  min-height: 48px;
+  min-height: 40px;
   border-color: var(--auth-control-border);
   background: var(--color-surface);
   transition:

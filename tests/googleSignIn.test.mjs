@@ -1,7 +1,35 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createServer } from "vite";
-import { createGoogleIdentityLoader } from "../src/features/Auth/components/AuthSocial/googleIdentity.js";
+import {
+  createGoogleIdentityLoader,
+  getGoogleButtonOptions,
+} from "../src/features/Auth/components/AuthSocial/googleIdentity.js";
+
+test("the Google button follows the app theme and language with supported options only", () => {
+  const dark = getGoogleButtonOptions({ theme: "dark", language: "ar", width: 324, state: "s1" });
+  assert.deepEqual(dark, {
+    type: "standard",
+    theme: "filled_black",
+    size: "large",
+    text: "continue_with",
+    shape: "pill",
+    logo_alignment: "left",
+    width: 324,
+    locale: "ar",
+    state: "s1",
+  });
+  const light = getGoogleButtonOptions({ theme: "light", language: "en-US", width: 400, state: "s2" });
+  assert.equal(light.theme, "outline");
+  assert.equal(light.locale, "en");
+  assert.equal(light.state, "s2");
+});
+
+test("the Google button width stays within Google's supported 200–400px", () => {
+  for (const [available, expected] of [[640, 400], [400, 400], [323.6, 324], [264, 264], [150, 200], [0, 300], [undefined, 300]]) {
+    assert.equal(getGoogleButtonOptions({ theme: "light", language: "en", width: available }).width, expected, `width ${available}`);
+  }
+});
 
 function environment() {
   const scripts = [],
