@@ -1,0 +1,195 @@
+/*
+ * Landing page: components.css from the approved SmartSpend landing design (Edition 03.2),
+ * scoped under .smartspend-landing so it cannot reach other screens. Keyframes carry a
+ * landing- prefix because the production build ships one global stylesheet.
+ */
+/* ---------- Brand ---------- */
+.smartspend-landing .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--text); }
+.smartspend-landing .brand .logo { object-fit: contain; flex-shrink: 0; }
+.smartspend-landing .brand-sm .logo { width: 30px; height: 30px; }
+.smartspend-landing .brand-sm .wordmark { font-size: 19px; }
+.smartspend-landing .brand-md .logo { width: 38px; height: 38px; }
+.smartspend-landing .brand-md .wordmark { font-size: 24px; }
+.smartspend-landing .brand-lg { gap: 14px; }
+.smartspend-landing .brand-lg .logo { width: 54px; height: 54px; }
+.smartspend-landing .brand-lg .wordmark { font-size: 32px; }
+.smartspend-landing .wordmark { font-family: var(--font-en); font-weight: 700; letter-spacing: -.035em; line-height: 1; white-space: nowrap; }
+.smartspend-landing .wordmark > span { font-weight: 600; background: var(--wordmark-accent); -webkit-background-clip: text; background-clip: text; color: transparent; padding-inline-end: .04em; }
+
+/* ---------- Typography ---------- */
+.smartspend-landing .eyebrow { display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 600; line-height: 1.7; color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent-line); }
+.smartspend-landing .eyebrow > i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 10px currentColor; flex-shrink: 0; }
+html[lang='en'] .smartspend-landing .eyebrow { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; padding-block: 7px; line-height: 1.4; }
+
+.smartspend-landing .heading { font-size: clamp(2rem, 1.15rem + 3vw, 3.4rem); line-height: 1.1; }
+html[lang='ar'] .smartspend-landing .heading { font-size: clamp(1.95rem, 1.2rem + 2.6vw, 3.2rem); line-height: 1.42; font-weight: 600; }
+.smartspend-landing .heading-line { display: block; }
+.smartspend-landing .heading-accent { display: inline-block; color: var(--text-2); }
+html[lang='en'] .smartspend-landing .heading-accent { font-family: var(--font-en-serif); font-style: italic; font-weight: 400; letter-spacing: -.01em; font-size: 1.1em; line-height: 1.05; }
+html[lang='ar'] .smartspend-landing .heading-accent { font-weight: 300; line-height: 1.42; }
+
+.smartspend-landing .lede { margin-top: 22px; max-width: 600px; font-size: clamp(16px, .95rem + .3vw, 18px); line-height: 1.95; color: var(--text-2); }
+html[lang='en'] .smartspend-landing .lede { line-height: 1.65; }
+.smartspend-landing .fine-print { display: block; margin-top: 14px; font-size: 13px; line-height: 1.8; color: var(--text-3); }
+
+.smartspend-landing .section { position: relative; padding-block: clamp(96px, 11vw, 168px); }
+.smartspend-landing .section + .section::before { content: ''; position: absolute; top: 0; left: 50%; width: min(100% - var(--gutter) * 2, var(--container)); height: 1px; transform: translateX(-50%); background: linear-gradient(90deg, transparent, var(--line-strong) 25%, var(--line-strong) 75%, transparent); }
+.smartspend-landing .section-intro { max-width: 760px; margin-bottom: clamp(48px, 6vw, 80px); }
+.smartspend-landing .section-intro .heading { margin-top: 22px; }
+.smartspend-landing .section-intro-center { margin-inline: auto; text-align: center; }
+.smartspend-landing .section-intro-center .lede { margin-inline: auto; }
+
+/* ---------- Buttons ---------- */
+.smartspend-landing .btn {
+  --btn-h: 56px;
+  position: relative; isolation: isolate;
+  display: inline-flex; align-items: center; justify-content: center; gap: 14px;
+  min-height: var(--btn-h); padding-block: 7px; padding-inline: 26px 8px;
+  border-radius: 999px; font-size: 15px; font-weight: 600; line-height: 1.3; white-space: nowrap;
+  transition: transform .5s var(--ease-spring), box-shadow .5s var(--ease-spring), background-color .3s var(--ease-out), color .3s var(--ease-out);
+}
+html[lang='ar'] .smartspend-landing .btn { font-weight: 700; }
+.smartspend-landing .btn:not(:has(.btn-icon)) { padding-inline: 24px; gap: 10px; }
+.smartspend-landing .btn:active { transform: scale(.98); }
+.smartspend-landing .btn-icon { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; transition: transform .6s var(--ease-spring), background-color .3s var(--ease-out); }
+.smartspend-landing .btn:hover .btn-icon, .smartspend-landing .review-btn:hover .btn-icon { transform: translate(calc(var(--dir) * 3px), -1px) scale(1.06); }
+.smartspend-landing .btn-primary { color: #fff; background: linear-gradient(180deg, #2d6cf0, #2259df); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .24), 0 0 0 1px rgba(37, 99, 235, .55), 0 14px 34px -14px rgba(37, 99, 235, .75); }
+.smartspend-landing .btn-primary:hover { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 0 0 1px rgba(59, 130, 246, .8), 0 18px 44px -14px rgba(37, 99, 235, .9); }
+.smartspend-landing .btn-primary .btn-icon { background: rgba(255, 255, 255, .16); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18); }
+.smartspend-landing .btn-ghost { color: var(--text); background: var(--shell); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.smartspend-landing .btn-ghost:hover { background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent-line); }
+.smartspend-landing .btn-ghost .btn-icon { background: var(--accent-soft); color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent-line); }
+.smartspend-landing .btn-light { color: var(--brand-navy); background: #eef3fc; box-shadow: inset 0 1px 0 #fff, 0 12px 30px -16px rgba(0, 0, 0, .6); }
+.smartspend-landing .btn-light:hover { background: #fff; }
+.smartspend-landing .btn-light .btn-icon { background: rgba(7, 20, 43, .07); }
+.smartspend-landing .btn-sm { --btn-h: 44px; font-size: 13.5px; gap: 10px; padding-inline: 18px 5px; }
+.smartspend-landing .btn-sm:not(:has(.btn-icon)) { padding-inline: 18px; gap: 8px; }
+.smartspend-landing .btn-sm .btn-icon { width: 34px; height: 34px; }
+.smartspend-landing .btn-block { width: 100%; }
+
+.smartspend-landing .icon-btn { width: 44px; height: 44px; display: inline-grid; place-items: center; border-radius: 50%; color: var(--text-2); flex-shrink: 0; transition: background-color .3s var(--ease-out), color .3s var(--ease-out); }
+.smartspend-landing .icon-btn:hover { background: var(--accent-soft); color: var(--text); }
+.smartspend-landing .pill-btn { min-width: 44px; height: 44px; padding-inline: 12px; border-radius: 999px; display: inline-grid; place-items: center; font-family: var(--font-num); font-size: 13px; font-weight: 700; color: var(--text-2); transition: background-color .3s var(--ease-out), color .3s var(--ease-out); }
+.smartspend-landing .pill-btn:hover { background: var(--accent-soft); color: var(--text); }
+.smartspend-landing .pill-btn [lang='ar'] { font-family: var(--font-ar); font-size: 14px; font-weight: 600; line-height: 1; }
+
+.smartspend-landing .text-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; font-size: 14.5px; font-weight: 600; color: var(--accent); transition: gap .5s var(--ease-spring), color .3s var(--ease-out); }
+.smartspend-landing .text-link:hover { gap: 12px; color: var(--text); }
+
+/* ---------- Badges ---------- */
+.smartspend-landing .sample-badge { display: inline-flex; align-items: center; gap: 7px; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; line-height: 1.7; color: var(--text-2); background: var(--shell); box-shadow: inset 0 0 0 1px var(--line-strong); white-space: nowrap; }
+.smartspend-landing .sample-badge > i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+html[lang='en'] .smartspend-landing .sample-badge { font-size: 11.5px; letter-spacing: .02em; }
+.smartspend-landing .menu-tag { display: inline-flex; align-items: center; padding: 1px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; line-height: 1.7; color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent-line); white-space: nowrap; }
+
+/* ---------- Double-bezel enclosure ---------- */
+.smartspend-landing .bezel { padding: var(--bezel-pad); border-radius: var(--radius-xl); background: var(--shell); box-shadow: inset 0 0 0 1px var(--shell-line), var(--shadow-float); min-width: 0; }
+.smartspend-landing .bezel-core { position: relative; border-radius: calc(var(--radius-xl) - var(--bezel-pad)); background: var(--surface); box-shadow: var(--core-highlight), inset 0 0 0 1px var(--line); overflow: hidden; min-width: 0; }
+
+.smartspend-landing .tile { min-width: 0; padding: 24px; border-radius: var(--radius-lg); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+:root[data-theme='light'] .smartspend-landing .tile { background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line), inset 0 1px 0 #fff; }
+.smartspend-landing .tile-label { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-2); line-height: 1.6; }
+.smartspend-landing .tile-label .lucide { color: var(--accent); }
+.smartspend-landing .tile-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.smartspend-landing .tile-head h3 { font-size: 16.5px; line-height: 1.5; }
+.smartspend-landing .tile-head > span { font-size: 12.5px; color: var(--text-3); }
+.smartspend-landing .tile-note { margin-top: 4px; font-size: 13.5px; color: var(--text-3); line-height: 1.7; }
+
+.smartspend-landing .tx-icon { width: 42px; height: 42px; flex-shrink: 0; display: grid; place-items: center; border-radius: 13px; color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent-line); }
+.smartspend-landing .tx-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.smartspend-landing .tx-text > strong { font-size: 15px; font-weight: 600; line-height: 1.6; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.smartspend-landing .tx-text > small { font-size: 12.5px; color: var(--text-3); line-height: 1.6; }
+
+/* ---------- Progress ---------- */
+.smartspend-landing .progress { display: block; width: 100%; height: 6px; border-radius: 99px; overflow: hidden; background: var(--line-strong); }
+.smartspend-landing .progress > span { display: block; width: 100%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--brand-blue), var(--brand-cyan)); transform-origin: left center; transition: transform .9s var(--ease-spring); }
+html[dir='rtl'] .smartspend-landing .progress > span { transform-origin: right center; background: linear-gradient(270deg, var(--brand-blue), var(--brand-cyan)); }
+.smartspend-landing .progress-warn > span, html[dir='rtl'] .smartspend-landing .progress-warn > span { background: var(--warn); }
+
+/* ---------- Segmented control with a sliding thumb ---------- */
+.smartspend-landing .segmented { position: relative; display: inline-grid; grid-template-columns: repeat(var(--count), minmax(0, 1fr)); padding: 4px; border-radius: 999px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); min-width: 0; }
+.smartspend-landing .segmented-full { display: grid; width: 100%; }
+.smartspend-landing .segmented-thumb { position: absolute; top: 4px; bottom: 4px; inset-inline-start: 4px; width: calc((100% - 8px) / var(--count)); border-radius: 999px; background: var(--surface-3); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), inset 0 0 0 1px var(--line-strong), 0 6px 16px -8px rgba(0, 0, 0, .6); transform: translateX(calc(var(--active) * 100% * var(--dir))); transition: transform .6s var(--ease-spring); }
+:root[data-theme='light'] .smartspend-landing .segmented-thumb { background: #fff; box-shadow: inset 0 0 0 1px var(--line), 0 6px 16px -8px rgba(20, 50, 110, .35); }
+.smartspend-landing .segmented > button { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 8px 18px; border-radius: 999px; font-size: 14px; font-weight: 600; color: var(--text-3); white-space: nowrap; transition: color .3s var(--ease-out); min-width: 0; }
+.smartspend-landing .segmented > button:hover { color: var(--text-2); }
+.smartspend-landing .segmented > button[aria-selected='true'] { color: var(--text); }
+.smartspend-landing .segmented > button[aria-selected='true'] .lucide { color: var(--accent); }
+
+/* ---------- Chips ---------- */
+.smartspend-landing .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.smartspend-landing .chip { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 16px; border-radius: 999px; font-size: 14px; font-weight: 500; line-height: 1.5; color: var(--text-2); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line-strong); text-align: start; transition: color .3s var(--ease-out), background-color .3s var(--ease-out), box-shadow .3s var(--ease-out); }
+.smartspend-landing .chip:hover { color: var(--text); box-shadow: inset 0 0 0 1px var(--accent-line); }
+.smartspend-landing .chip[aria-pressed='true'] { color: var(--text); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent-line); }
+.smartspend-landing .chip .lucide { color: var(--text-3); }
+.smartspend-landing .chip[aria-pressed='true'] .lucide { color: var(--accent); }
+
+/* ---------- Form fields ---------- */
+.smartspend-landing .field label, .smartspend-landing .text-capture > label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; color: var(--text-2); line-height: 1.6; }
+.smartspend-landing .field input, .smartspend-landing .field select, .smartspend-landing .text-capture > input {
+  width: 100%; min-width: 0; min-height: 52px; padding: 12px 16px; border-radius: 14px;
+  font-size: 16px; line-height: 1.5; color: var(--text); background: var(--surface-2);
+  border: 1px solid var(--line-strong); outline: none;
+  transition: border-color .3s var(--ease-out), box-shadow .3s var(--ease-out);
+}
+.smartspend-landing .field input::placeholder, .smartspend-landing .text-capture > input::placeholder { color: var(--text-3); opacity: 1; }
+.smartspend-landing .field input:focus-visible, .smartspend-landing .field select:focus-visible, .smartspend-landing .text-capture > input:focus-visible { border-color: var(--brand-blue-bright); box-shadow: 0 0 0 4px rgba(59, 130, 246, .2); }
+.smartspend-landing .field input[aria-invalid='true'] { border-color: #e7798a; }
+.smartspend-landing .field select { appearance: none; padding-inline-end: 44px; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238496b0' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; }
+html[dir='rtl'] .smartspend-landing .field select { background-position: left 16px center; }
+.smartspend-landing .field select option { background: var(--surface); color: var(--text); }
+.smartspend-landing .field-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.smartspend-landing .field-hint { margin-top: -6px; font-size: 13px; color: var(--text-3); line-height: 1.7; }
+.smartspend-landing .form-error { padding: 10px 14px; border-radius: 12px; font-size: 13.5px; line-height: 1.8; color: var(--danger-text); background: var(--danger-soft); }
+
+/* ---------- Dialog ---------- */
+.smartspend-landing .dialog-backdrop { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; background: var(--backdrop); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); animation: landing-fade-in .3s var(--ease-out); }
+.smartspend-landing .dialog { width: min(560px, 100%); max-height: calc(100dvh - 40px); overflow-y: auto; padding: 28px; border-radius: 1.75rem; background: var(--surface); box-shadow: var(--core-highlight), inset 0 0 0 1px var(--line-strong), 0 50px 120px -40px rgba(0, 0, 0, .7); outline: none; animation: landing-dialog-in .55s var(--ease-spring); }
+.smartspend-landing .dialog-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.smartspend-landing .dialog-heading h2 { font-size: 24px; line-height: 1.35; }
+.smartspend-landing .dialog-heading .icon-btn { margin-inline-end: -8px; box-shadow: inset 0 0 0 1px var(--line); }
+.smartspend-landing .dialog-description { margin-top: 14px; font-size: 15.5px; color: var(--text-2); }
+.smartspend-landing .dialog-badge { margin-top: 16px; }
+.smartspend-landing .dialog-list { margin-top: 20px; }
+.smartspend-landing .dialog-list > li { display: flex; gap: 14px; padding-block: 16px; border-top: 1px solid var(--line); }
+.smartspend-landing .dialog-list strong { display: block; font-size: 15px; line-height: 1.6; }
+.smartspend-landing .dialog-list p { font-size: 14px; color: var(--text-2); margin-top: 2px; }
+.smartspend-landing .dialog-bullets { margin-top: 16px; }
+.smartspend-landing .dialog-bullets > li { position: relative; margin-top: 12px; padding-inline-start: 22px; font-size: 15px; color: var(--text-2); }
+.smartspend-landing .dialog-bullets > li::before { content: ''; position: absolute; inset-inline-start: 4px; top: .8em; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.smartspend-landing .dialog-brand { display: flex; margin-top: 22px; }
+.smartspend-landing .dialog-cta { margin-top: 24px; }
+
+.smartspend-landing .expense-form { margin-top: 22px; display: flex; flex-direction: column; gap: 18px; }
+.smartspend-landing .demo-account { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: var(--radius-md); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+.smartspend-landing .demo-account > div { flex: 1; min-width: 0; }
+.smartspend-landing .demo-account > div > strong { display: block; font-size: 15px; line-height: 1.6; }
+.smartspend-landing .demo-account > div > span { display: block; font-size: 13px; color: var(--text-3); line-height: 1.6; }
+.smartspend-landing .form-submit { margin-top: 4px; }
+.smartspend-landing .form-note { text-align: center; font-size: 13px; color: var(--text-3); line-height: 1.8; }
+
+/* ---------- Toast ---------- */
+.smartspend-landing .toast { position: fixed; z-index: 90; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; width: max-content; max-width: calc(100vw - 32px); padding: 8px 8px 8px 18px; padding-inline: 18px 8px; border-radius: 22px; font-size: 14px; line-height: 1.6; background: var(--glass); backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4); box-shadow: inset 0 0 0 1px var(--glass-line), 0 24px 60px -24px rgba(0, 0, 0, .55); animation: landing-toast-in .6s var(--ease-spring); }
+.smartspend-landing .toast > .lucide { color: var(--accent); }
+.smartspend-landing .toast > a { color: var(--accent); font-weight: 600; white-space: nowrap; padding: 8px 4px; }
+.smartspend-landing .toast > .icon-btn { width: 36px; height: 36px; }
+
+/* Optical kerning for display punctuation in English. Arabic punctuation is left untouched. */
+html[lang='en'] .smartspend-landing .punct { margin-inline-start: -.11em; }
+
+/* ---------- Arabic type scale (IBM Plex Sans Arabic) ----------
+ * Plex reads smaller than Cairo at the same size, so reading text steps up
+ * half a size. Weights: 600 statements, 300 accents, 500 interface, 400 reading.
+ */
+html[lang='ar'] .smartspend-landing .btn { font-weight: 600; }
+html[lang='ar'] .smartspend-landing .lede { font-size: clamp(16.5px, 1rem + .3vw, 19px); line-height: 1.95; }
+html[lang='ar'] .smartspend-landing .eyebrow { font-size: 13.5px; font-weight: 500; }
+html[lang='ar'] .smartspend-landing .sample-badge, html[lang='ar'] .smartspend-landing .menu-tag { font-weight: 500; }
+html[lang='ar'] .smartspend-landing .nav-link { font-size: 14.5px; }
+html[lang='ar'] .smartspend-landing .tile-label { font-size: 14.5px; }
+html[lang='ar'] .smartspend-landing .tile-head h3 { font-size: 17px; }
+html[lang='ar'] .smartspend-landing .tx-text > strong { font-weight: 500; font-size: 15.5px; }
+html[lang='ar'] .smartspend-landing .tx-text > small, html[lang='ar'] .smartspend-landing .fine-print { font-size: 13.5px; }
+html[lang='ar'] .smartspend-landing .chip, html[lang='ar'] .smartspend-landing .segmented > button { font-size: 14.5px; }
+html[lang='ar'] .smartspend-landing .dialog-heading h2 { font-weight: 600; }
+html[lang='ar'] .smartspend-landing .dialog-description, html[lang='ar'] .smartspend-landing .dialog-bullets > li { font-size: 16px; }

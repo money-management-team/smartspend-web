@@ -1,0 +1,63 @@
+/*
+ * Landing page: motion.css from the approved SmartSpend landing design (Edition 03.2),
+ * scoped under .smartspend-landing so it cannot reach other screens. Keyframes carry a
+ * landing- prefix because the production build ships one global stylesheet.
+ */
+/*
+ * Purposeful motion. Everything here animates transform, opacity or SVG dash
+ * offsets only, runs once per appearance, and is switched off by
+ * html[data-motion='off'] (the toggle or the device preference).
+ */
+
+/* Section intros: eyebrow, heading and lede arrive in sequence rather than as one block. */
+html[data-motion='on'] .smartspend-landing .section-intro[data-reveal]:not([data-shown]) { opacity: 1; transform: none; }
+html[data-motion='on'] .smartspend-landing .section-intro[data-reveal]:not([data-shown]) > * { opacity: 0; transform: translateY(26px); }
+.smartspend-landing .section-intro[data-reveal] > * { transition: opacity .9s var(--ease-out), transform 1.1s var(--ease-out); }
+.smartspend-landing .section-intro[data-reveal] > :nth-child(2) { transition-delay: 90ms; }
+.smartspend-landing .section-intro[data-reveal] > :nth-child(3) { transition-delay: 180ms; }
+
+/* Data draws itself in when its panel first appears, and again when a tab is reopened. */
+.smartspend-landing [data-shown] .chart-bar { animation: landing-grow-y 1.2s var(--ease-spring) backwards; animation-delay: calc(var(--n, 0) * 70ms + 150ms); }
+.smartspend-landing [data-shown] .chart-col:nth-child(2) { --n: 0; }
+.smartspend-landing [data-shown] .chart-col:nth-child(3) { --n: 1; }
+.smartspend-landing [data-shown] .chart-col:nth-child(4) { --n: 2; }
+.smartspend-landing [data-shown] .chart-col:nth-child(5) { --n: 3; }
+.smartspend-landing [data-shown] .chart-value { animation: landing-fade-in .6s var(--ease-out) backwards; animation-delay: calc(var(--n, 0) * 70ms + 650ms); }
+.smartspend-landing [data-shown] .progress > span { animation: landing-grow-x 1.3s var(--ease-spring) backwards; animation-delay: .25s; }
+.smartspend-landing [data-shown] .goal-ring-value { animation: landing-ring-draw 1.6s var(--ease-spring) backwards; animation-delay: .2s; }
+.smartspend-landing [data-shown] .sketch-budget i { animation: landing-grow-x 1.4s var(--ease-spring) backwards; }
+.smartspend-landing [data-shown] .sketch-budget > span:nth-child(2) i { animation-delay: .08s; }
+.smartspend-landing [data-shown] .sketch-budget > span:nth-child(3) i { animation-delay: .16s; }
+.smartspend-landing [data-shown] .sketch-budget > span:nth-child(4) i { animation-delay: .24s; }
+.smartspend-landing [data-shown] .sketch-goal .arc { animation: landing-arc-draw 1.6s var(--ease-spring) backwards; animation-delay: .15s; }
+.smartspend-landing [data-shown] .sketch-report .line:not(.line-ghost) { stroke-dasharray: 1; animation: landing-line-draw 1.8s var(--ease-out) backwards; animation-delay: .15s; }
+.smartspend-landing .sketch-budget i { transform-origin: left center; }
+html[dir='rtl'] .smartspend-landing .sketch-budget i { transform-origin: right center; }
+
+/* A changed figure settles into place, so the update is noticed without a count-up. */
+.smartspend-landing .num-tick { animation: landing-tick .7s var(--ease-spring); }
+
+/* Primary buttons: a single pass of light on hover. */
+.smartspend-landing .btn-primary { overflow: hidden; }
+.smartspend-landing .btn-primary::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(105deg, transparent 32%, rgba(255, 255, 255, .24) 50%, transparent 68%); transform: translateX(-120%); transition: transform 1s var(--ease-out); }
+.smartspend-landing .btn-primary:hover::before { transform: translateX(120%); }
+html[dir='rtl'] .smartspend-landing .btn-primary::before { transform: translateX(120%); }
+html[dir='rtl'] .smartspend-landing .btn-primary:hover::before { transform: translateX(-120%); }
+.smartspend-landing .btn:hover { transform: translateY(-1px); }
+.smartspend-landing .btn:active { transform: translateY(0) scale(.98); }
+
+/* Navigation marks the section being read. */
+.smartspend-landing .nav-link { position: relative; }
+.smartspend-landing .nav-link[aria-current='location'] { color: var(--text); }
+.smartspend-landing .nav-link::after { content: ''; position: absolute; left: 50%; bottom: 5px; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); transform: translateX(-50%) scale(0); transition: transform .5s var(--ease-spring); }
+.smartspend-landing .nav-link[aria-current='location']::after { transform: translateX(-50%) scale(1); }
+
+@keyframes landing-grow-y { from { transform: scaleY(0); } }
+@keyframes landing-grow-x { from { transform: scaleX(0); } }
+@keyframes landing-ring-draw { from { stroke-dashoffset: 276.46; } }
+@keyframes landing-arc-draw { from { stroke-dashoffset: 301.6; } }
+@keyframes landing-line-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes landing-tick { from { opacity: .35; transform: translateY(.16em); } to { opacity: 1; transform: none; } }
+
+html[data-motion='off'] .smartspend-landing .btn:hover, html[data-motion='off'] .smartspend-landing .btn:active { transform: none; }
+html[data-motion='off'] .smartspend-landing .btn-primary::before { display: none; }

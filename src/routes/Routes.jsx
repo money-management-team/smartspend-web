@@ -58,14 +58,21 @@ import { GuestOnly, RequireAuth } from "./RouteGuards";
 ========================= */
 
 const routes = [
+  /* The home page brings its own header and footer (the landing design). */
   {
     path: "/",
-    element: <PublicLayout />,
+    element: <PublicLayout variant="landing" />,
     children: [
       {
         index: true,
         element: <Home />,
       },
+    ],
+  },
+  {
+    path: "/",
+    element: <PublicLayout />,
+    children: [
       ...Object.entries(PATH.PUBLIC).map(([key, path]) => ({
         path,
         element: <PublicInformationRoute pageKey={key.toLowerCase()} />,

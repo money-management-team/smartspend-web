@@ -30,7 +30,7 @@ ESLint uses the flat config with `eslint-plugin-react-hooks` v7 (recommended), w
 ### Bootstrapping and routing
 - `src/main.jsx` imports `./i18n` first (side-effect init), then mounts a data router (`createBrowserRouter` with a single splat route) rendering `Root.jsx`: `ThemeProvider > LanguageProvider > ErrorBoundary > AuthProvider > EmailVerificationProvider > <App/>`. The data router exists for `useBlocker` (unsaved-changes prompts); the route table is still `Router.jsx` / `useRoutes`.
 - `src/routes/Routes.jsx` defines four route groups, all mounted at `/`, which `Router.jsx` merges via `useRoutes`:
-  - **public**: `PublicLayout`, with `Home` and the catch-all `NotFound`.
+  - **public**: `PublicLayout`, with `Home` and the catch-all `NotFound`. `Home` is mounted under `PublicLayout variant="landing"`, which leaves out the shared navbar and footer (the landing has its own); the other public pages keep them.
   - **guest**: `GuestOnly` + `AuthLayout`, for signin, register, and the password flows.
   - **email-link**: `AuthLayout` with no guard, for pages opened from emails (reset password, verify email) that must work signed in or out.
   - **user**: `RequireAuth` + `DashboardLayout`, for everything under `/dashboard/*`.
@@ -101,10 +101,10 @@ The supplied backend has no company registration or business workspace creation 
 - `ThemeProvider` sets `data-theme` on `<html>` and persists it to localStorage `theme`.
 - Use tokens instead of hard-coded colors (`--color-primary`, `--color-surface`, `--color-text-strong`, `--primary-soft`, `--gradient-primary`, `--font-heading`, …). Write theme-specific rules as `:root[data-theme="dark"] .selector`.
 - Dashboard pages: `DashboardLayout.css` owns the page gutter and max-width (`--dashboard-*` tokens); page roots must not set their own outer `max-width`/padding. Use `minmax(0, 1fr)` for single-column grids. Shared responsive fixes live in `layouts/DashboardLayout/dashboardPrimitives.css`; see `docs/dashboard-layout/responsive-system.md`.
-- Fonts: Tajawal for headings and large financial values; Cairo for the UI.
-- `src/features/PublicPage/Home/Home.css` is large and layered: later "FINAL …" sections override earlier rules for the same selectors, so search the whole file before changing a property.
-- `Home.jsx` adds `home-reveal*` classes to section selectors at runtime (IntersectionObserver) and drives the parallax CSS variables.
-- Honor `prefers-reduced-motion`; `Home.css` has a global reduced-motion block.
+- Fonts: Tajawal for headings and large financial values; Cairo for the UI. The home page (landing) is the exception: IBM Plex Sans Arabic, Plus Jakarta Sans and Instrument Serif, bundled as woff2 in `src/assets/fonts`.
+- The home page is the landing design, with its own scoped styles: every rule in `src/features/PublicPage/Home/styles/` sits under `.smartspend-landing` (document-level rules key on `html[data-motion]`, present only while the page is mounted) and keyframes carry a `landing-` prefix. Keep it that way, since the CSS ships as one global file. Copy lives in the `landing` i18next namespace (`landingMessages.js`). See `docs/home/overview.md`.
+- `Home/publicShared.css` holds the rules of the previous home stylesheet that the public navbar, footer and information pages still use.
+- Honor `prefers-reduced-motion`; the landing also has its own motion switch (`html[data-motion="off"]`).
 
 ### Report PDFs
 - PDF report exports are built in the browser with `@react-pdf/renderer` (`features/Dashboards/User/Reports/pdf/`, lazy-loaded from `Reports.jsx`); CSV / Excel stay on the backend export queue. See `docs/reports/pdf-export.md`.

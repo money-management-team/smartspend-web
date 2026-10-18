@@ -1,0 +1,86 @@
+/*
+ * Landing page reset.
+ *
+ * The approved design was built on Tailwind's preflight (v4.3). This is the
+ * same reset, scoped to .smartspend-landing. Every selector goes through
+ * :where(), so it outranks the app's global element rules in index.css
+ * (h1–h6, p, a, label, inputs…) without outranking any landing rule.
+ * A few lines (marked "app") neutralise global rules the design never had.
+ */
+
+.smartspend-landing {
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  tab-size: 4;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.smartspend-landing :where(*),
+.smartspend-landing ::after,
+.smartspend-landing ::before,
+.smartspend-landing ::backdrop,
+.smartspend-landing ::file-selector-button {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: 0 solid;
+}
+
+.smartspend-landing :where(hr) { height: 0; color: inherit; border-top-width: 1px; }
+.smartspend-landing :where(abbr[title]) { text-decoration: underline dotted; }
+
+/* app: headings and paragraphs take their colour and family from the page, not from index.css. */
+.smartspend-landing :where(h1, h2, h3, h4, h5, h6) { font-size: inherit; font-weight: inherit; color: inherit; font-family: inherit; }
+.smartspend-landing :where(p, small, label) { color: inherit; font-family: inherit; }
+
+.smartspend-landing :where(a) { color: inherit; text-decoration: inherit; }
+/* app: index.css recolours every a:hover. */
+.smartspend-landing :where(a):hover { color: inherit; }
+
+.smartspend-landing :where(b, strong) { font-weight: bolder; }
+.smartspend-landing :where(code, kbd, samp, pre) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 1em;
+}
+.smartspend-landing :where(small) { font-size: 80%; }
+.smartspend-landing :where(sub, sup) { font-size: 75%; line-height: 0; position: relative; vertical-align: baseline; }
+.smartspend-landing :where(sub) { bottom: -0.25em; }
+.smartspend-landing :where(sup) { top: -0.5em; }
+.smartspend-landing :where(table) { text-indent: 0; border-color: inherit; border-collapse: collapse; }
+.smartspend-landing :where(progress) { vertical-align: baseline; }
+.smartspend-landing :where(summary) { display: list-item; }
+.smartspend-landing :where(ol, ul, menu) { list-style: none; }
+.smartspend-landing :where(img, svg, video, canvas, audio, iframe, embed, object) { display: block; vertical-align: middle; }
+.smartspend-landing :where(img, video) { max-width: 100%; height: auto; }
+
+.smartspend-landing :where(button, input, select, optgroup, textarea),
+.smartspend-landing ::file-selector-button {
+  font: inherit;
+  font-feature-settings: inherit;
+  font-variation-settings: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  border-radius: 0;
+  background-color: transparent;
+  opacity: 1;
+}
+/* app: index.css adds a focus ring to every focused field; the landing draws its own. */
+.smartspend-landing :where(input, select, textarea):focus { box-shadow: none; }
+
+.smartspend-landing :where(select:is([multiple], [size])) optgroup { font-weight: bolder; }
+.smartspend-landing :where(select:is([multiple], [size])) optgroup option { padding-inline-start: 20px; }
+.smartspend-landing ::file-selector-button { margin-inline-end: 4px; }
+.smartspend-landing ::placeholder { opacity: 1; }
+@supports (not (-webkit-appearance: -apple-pay-button)) or (contain-intrinsic-size: 1px) {
+  .smartspend-landing ::placeholder { color: color-mix(in oklab, currentcolor 50%, transparent); }
+}
+.smartspend-landing :where(textarea) { resize: vertical; }
+.smartspend-landing ::-webkit-search-decoration { -webkit-appearance: none; }
+.smartspend-landing :where(button, input:where([type='button'], [type='reset'], [type='submit'])),
+.smartspend-landing ::file-selector-button { appearance: button; }
+.smartspend-landing ::-webkit-inner-spin-button,
+.smartspend-landing ::-webkit-outer-spin-button { height: auto; }
+.smartspend-landing :where([hidden]:not([hidden='until-found'])) { display: none !important; }
+
+/* app: index.css forces white selected text; the landing keeps the text colour. */
+.smartspend-landing ::selection { color: inherit; }

@@ -1,122 +1,82 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
+import { CircleCheck, X } from "lucide-react";
 
-import HeroSection from "./components/HeroSection";
-import FeaturesSection from "./components/FeaturesSection";
-import AISection from "./components/AISection";
-import StepsSection from "./components/StepsSection";
-import SecuritySection from "./components/SecuritySection";
-import DashboardPreview from "./components/DashboardPreview";
-import FAQSection from "./components/FAQSection";
-import HomeBackgroundDecor from "./components/HomeBackgroundDecor";
+// Rules from the previous home stylesheet that the navbar, footer and other public pages still use.
+// Imported first so they keep their place in the single CSS bundle.
+import "./publicShared.css";
+import "./styles/landing.css";
 
-import "./Home.css";
-import Ready from "./components/Ready";
+import Business from "./components/Business";
+import Capture from "./components/Capture";
+import { FinalCTA, LandingFooter } from "./components/Closing";
+import ExpenseDialog from "./components/ExpenseDialog";
+import FAQ from "./components/FAQ";
+import Features from "./components/Features";
+import Hero from "./components/Hero";
+import InfoDialog from "./components/InfoDialog";
+import Insights from "./components/Insights";
+import LandingHeader from "./components/LandingHeader";
+import ProductDemo from "./components/ProductDemo";
+import Ribbon from "./components/Ribbon";
+import { SectionLink } from "./components/Shared";
+import Trust from "./components/Trust";
+import { HOME_SECTIONS } from "./homeAnchors";
+import { useLanding } from "./landingContext";
+import LandingProvider from "./LandingProvider";
+import { useSpotlight } from "./useSpotlight";
 
-const revealGroups = [
-  { selector: ".home-section-header", variant: "fade-up", stagger: 0 },
-  { selector: ".feature-card", variant: "scale-in", stagger: 70 },
-  { selector: ".ai-home-section__content", variant: "from-start", stagger: 0 },
-  { selector: ".ai-workspace", variant: "from-end", stagger: 0 },
-  { selector: ".step-card", variant: "fade-up", stagger: 85 },
-  { selector: ".security-section__content", variant: "from-start", stagger: 0 },
-  { selector: ".security-card", variant: "from-end", stagger: 65 },
-  { selector: ".dashboard-stage", variant: "fade-in", stagger: 0 },
-  { selector: ".faq-section__intro", variant: "from-start", stagger: 0 },
-  { selector: ".faq-item", variant: "fade-up", stagger: 55 },
-];
+/**
+ * Narrative: what SmartSpend is (hero) → how it helps (demo, features)
+ * → how it works (capture, assistant) → why to trust it (control, business roadmap)
+ * → what to do next (FAQ, call to action).
+ *
+ * Expenses added in the demos live in this component's state only: no API
+ * call, no real transaction, and they reset on reload.
+ */
+function LandingPage() {
+  const { t } = useLanding();
+  useSpotlight();
+  const [entries, setEntries] = useState([]);
+  const [expenseOpen, setExpenseOpen] = useState(false);
+  const [info, setInfo] = useState(null);
+  const [notification, setNotification] = useState(0);
+  useEffect(() => {
+    if (!notification) return undefined;
+    const timer = window.setTimeout(() => setNotification(0), 5000);
+    return () => window.clearTimeout(timer);
+  }, [notification]);
+  const addExpense = (expense) => {
+    setEntries((current) => [...current, { ...expense, id: Date.now() + Math.random() }]);
+    setNotification((value) => value + 1);
+  };
+
+  return <>
+    <a className="skip-link" href={`#${HOME_SECTIONS.MAIN}`}>{t("skipLink")}</a>
+    <LandingHeader />
+    <main id={HOME_SECTIONS.MAIN}>
+      <Hero />
+      <Ribbon />
+      <ProductDemo entries={entries} onExpense={() => setExpenseOpen(true)} />
+      <Features />
+      <Capture onAdd={addExpense} />
+      <Insights entries={entries} />
+      <Trust onOpen={() => setInfo("control")} />
+      <Business onOpen={() => setInfo("business")} />
+      <FAQ />
+      <FinalCTA />
+    </main>
+    <LandingFooter onOpen={setInfo} />
+    <ExpenseDialog open={expenseOpen} onClose={() => setExpenseOpen(false)} onAdd={addExpense} />
+    <InfoDialog info={info} onClose={() => setInfo(null)} />
+    {notification > 0 && <div className="toast" role="status" key={notification}>
+      <CircleCheck size={17} />
+      <span>{t("toast.added")}</span>
+      <SectionLink section={HOME_SECTIONS.EXPERIENCE} onClick={() => setNotification(0)}>{t("toast.view")}</SectionLink>
+      <button className="icon-btn" onClick={() => setNotification(0)} aria-label={t("toast.dismiss")}><X size={15} /></button>
+    </div>}
+  </>;
+}
 
 export default function Home() {
-  const pageRef = useRef(null);
-
-  useEffect(() => {
-    const page = pageRef.current;
-    if (!page) return undefined;
-
-    const elements = revealGroups.flatMap(({ selector, stagger, variant }) =>
-      Array.from(page.querySelectorAll(selector)).map((element, index) => {
-        element.classList.add("home-reveal", `home-reveal--${variant}`);
-        element.style.setProperty("--reveal-delay", `${index * stagger}ms`);
-        return element;
-      }),
-    );
-
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    if (reduceMotion || !("IntersectionObserver" in window)) {
-      elements.forEach((element) => element.classList.add("is-visible"));
-      return undefined;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add("is-visible");
-          observer.unobserve(entry.target);
-        });
-      },
-      { rootMargin: "0px 0px -8% 0px", threshold: 0.1 },
-    );
-
-    elements.forEach((element) => observer.observe(element));
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const page = pageRef.current;
-    if (!page) return undefined;
-
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const precisePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
-
-    if (reduceMotion.matches || !precisePointer.matches) return undefined;
-
-    let animationFrame = 0;
-
-    const updateParallax = (event) => {
-      const x = (event.clientX / window.innerWidth - 0.5) * 16;
-      const y = (event.clientY / window.innerHeight - 0.5) * 11;
-
-      window.cancelAnimationFrame(animationFrame);
-      animationFrame = window.requestAnimationFrame(() => {
-        page.style.setProperty("--home-parallax-x", `${x.toFixed(2)}px`);
-        page.style.setProperty("--home-parallax-y", `${y.toFixed(2)}px`);
-        page.style.setProperty("--home-parallax-x-inverse", `${(-x * 0.68).toFixed(2)}px`);
-        page.style.setProperty("--home-parallax-y-inverse", `${(-y * 0.68).toFixed(2)}px`);
-      });
-    };
-
-    const resetParallax = () => {
-      page.style.setProperty("--home-parallax-x", "0px");
-      page.style.setProperty("--home-parallax-y", "0px");
-      page.style.setProperty("--home-parallax-x-inverse", "0px");
-      page.style.setProperty("--home-parallax-y-inverse", "0px");
-    };
-
-    page.addEventListener("pointermove", updateParallax, { passive: true });
-    page.addEventListener("pointerleave", resetParallax);
-
-    return () => {
-      window.cancelAnimationFrame(animationFrame);
-      page.removeEventListener("pointermove", updateParallax);
-      page.removeEventListener("pointerleave", resetParallax);
-    };
-  }, []);
-
-  return (
-    <div ref={pageRef} className="home-page">
-      <HomeBackgroundDecor />
-
-      <main>
-        <HeroSection />
-        <FeaturesSection />
-        <AISection />
-        <StepsSection />
-        <SecuritySection />
-        <DashboardPreview />
-        <FAQSection />
-        <Ready />
-      </main>
-    </div>
-  );
+  return <LandingProvider><LandingPage /></LandingProvider>;
 }

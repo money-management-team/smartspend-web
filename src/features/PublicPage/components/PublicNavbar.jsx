@@ -7,6 +7,7 @@ import logo from "../../../assets/smart-spend-logo.png";
 import { useAuthContext } from "../../../contexts/auth/useAuthContext";
 import { useThemeContext } from "../../../contexts/theme/useThemeContext";
 import { AUTH_INTENT, getAccountTypePath, PATH } from "../../../routes/Path";
+import { getHomeSectionPath, HOME_SECTIONS } from "../Home/homeAnchors";
 
 import "./PublicChrome.css";
 
@@ -39,15 +40,15 @@ export default function PublicNavbar() {
           className="home-navbar__links"
           aria-label={isArabic ? "التنقل الرئيسي" : "Main navigation"}
         >
-          <Link to={`${PATH.HOME}#features`}>{t("home.nav.features")}</Link>
+          <Link to={getHomeSectionPath(HOME_SECTIONS.FEATURES)}>{t("home.nav.features")}</Link>
 
-          <Link to={`${PATH.HOME}#how-it-works`}>
+          <Link to={getHomeSectionPath(HOME_SECTIONS.CAPTURE)}>
             {t("home.nav.howItWorks")}
           </Link>
 
-          <Link to={`${PATH.HOME}#security`}>{t("home.nav.security")}</Link>
+          <Link to={getHomeSectionPath(HOME_SECTIONS.TRUST)}>{t("home.nav.security")}</Link>
 
-          <Link to={`${PATH.HOME}#faq`}>{t("home.nav.faq")}</Link>
+          <Link to={getHomeSectionPath(HOME_SECTIONS.FAQ)}>{t("home.nav.faq")}</Link>
         </nav>
 
         <div className="home-navbar__actions">

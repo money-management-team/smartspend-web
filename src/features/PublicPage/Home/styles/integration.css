@@ -1,0 +1,14 @@
+/*
+ * Landing additions that exist only in the app, not in the standalone design.
+ */
+
+/* index.css always scrolls smoothly; the landing's motion switch turns that off too. */
+html[data-motion='off'] { scroll-behavior: auto; }
+
+/* Help and policy links in the footer's bottom row. */
+.smartspend-landing .footer-legal { display: flex; flex-wrap: wrap; align-items: center; column-gap: 20px; }
+.smartspend-landing .footer-legal a { display: inline-flex; align-items: center; min-height: 44px; color: var(--text-2); transition: color .3s var(--ease-out); }
+.smartspend-landing .footer-legal a:hover { color: var(--text); }
+
+/* Signed-out visitors get "Sign in" under the main action in the mobile menu. */
+.smartspend-landing .menu-sheet-foot { display: grid; gap: 10px; }
