@@ -165,3 +165,41 @@
     transition: none;
   }
 }
+
+/* Switch to paying from several accounts (priority / at-confirmation). */
+.confirm-installment__split {
+  justify-self: start;
+
+  min-height: 34px;
+  padding: 0 12px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  border: 1px dashed var(--color-border);
+  border-radius: 999px;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.confirm-installment__split:hover:not(:disabled) {
+  border-color: var(--color-primary);
+}
+
+.confirm-installment__split:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.confirm-installment__split svg {
+  width: 14px;
+  height: 14px;
+}

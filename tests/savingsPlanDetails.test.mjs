@@ -84,7 +84,8 @@ const installment = (id, over = {}) => ({
 
 // 1 confirmed, 2 partly reversed, 3 skipped, 4 overdue + postponed, 5–8 open.
 const installments = () => [
-  installment(1, { status: "fulfilled", fulfilled_amount: "312.5000", effective_amount: "312.5000", confirmed_amount: "312.5000" }),
+  // Confirmed from one account: the backend names its single goal movement.
+  installment(1, { status: "fulfilled", fulfilled_amount: "312.5000", effective_amount: "312.5000", confirmed_amount: "312.5000", fulfilled_goal_movement_id: 601 }),
   installment(2, {
     status: "fulfilled",
     reversal_state: "partially_reversed",
@@ -404,7 +405,14 @@ describe("Goal details smart plan", () => {
     assert.match(health, /Skipped installments: 1/);
     assert.match(health, /Partly reversed installments: 1/);
 
-    assert.match(rowFor(view, 2).textContent, /Partly reversed.*Paid.*200\.00.*Reversed.*112\.50.*Short by.*112\.50/);
+    // Partly reversed: only a multi-account installment can be, so it also
+    // offers to reverse its remaining payments.
+    const partly = rowFor(view, 2).textContent;
+    for (const part of [/Partly reversed/, /Paid ₪200\.00/, /Reversed ₪112\.50/, /Short by ₪112\.50/, /Paid from several accounts/]) {
+      assert.match(partly, part);
+    }
+    assert.ok(rowFor(view, 2).querySelector(".installment-timeline__action--reverse"));
+    assert.equal(rowFor(view, 1).querySelector(".installment-timeline__action--reverse"), null);
     assert.match(rowFor(view, 3).textContent, /Skipped.*Not saved/);
     const overdue = rowFor(view, 4);
     assert.ok(overdue.classList.contains("installment-timeline__row--overdue"));
@@ -424,14 +432,20 @@ describe("Goal details smart plan", () => {
     await view.unmount();
   });
 
-  it("hides installment actions while the goal is paused", async () => {
+  it("hides confirm, postpone and skip while the goal is paused", async () => {
     serve({
       "GET /savings-goals/1": { savings_goal: goal({ status: "paused" }) },
       "GET /savings-goals/1/plan": planData({ health: { executable: false } }),
     });
     const view = await renderDetails();
 
-    assert.equal(view.container.querySelector(".installment-timeline__actions"), null);
+    // Open installments wait; nothing can be confirmed, postponed or skipped.
+    for (const sequence of [4, 5, 6, 7]) {
+      assert.equal(rowFor(view, sequence).querySelector(".installment-timeline__actions"), null);
+    }
+    // Reversing a multi-account payment takes money out, like a withdrawal,
+    // which a paused goal allows (the backend has no status gate for it).
+    assert.ok(rowFor(view, 2).querySelector(".installment-timeline__action--reverse"));
     assert.match(panel(view).textContent, /On hold/);
     await view.unmount();
   });

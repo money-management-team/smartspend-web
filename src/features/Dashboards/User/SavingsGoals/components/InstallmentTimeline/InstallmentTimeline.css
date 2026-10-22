@@ -355,3 +355,21 @@
     transition: none;
   }
 }
+
+/* Reversing a multi-account installment's payments: a quiet caution action. */
+.installment-timeline__action--reverse {
+  min-height: 30px;
+  font-size: 11px;
+  color: color-mix(in srgb, var(--color-warning) 80%, var(--color-text-primary));
+}
+
+.installment-timeline__action--reverse:hover {
+  border-color: color-mix(in srgb, var(--color-warning) 45%, var(--color-border));
+  color: color-mix(in srgb, var(--color-warning) 90%, var(--color-text-primary));
+}
+
+@media (max-width: 640px) {
+  .installment-timeline__actions--compact-text .installment-timeline__action {
+    flex: none;
+  }
+}

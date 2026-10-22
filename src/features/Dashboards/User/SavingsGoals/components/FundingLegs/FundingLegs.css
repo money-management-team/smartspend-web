@@ -1,0 +1,170 @@
+.funding-legs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.funding-legs__list {
+  margin: 0;
+  padding: 0;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+
+  list-style: none;
+  counter-reset: funding-leg;
+}
+
+.funding-legs__row {
+  min-width: 0;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--color-surface);
+}
+
+.funding-legs__row--checked {
+  border-color: var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 6%, var(--color-surface));
+}
+
+.funding-legs__row--reversed {
+  background: var(--surface-soft);
+}
+
+.funding-legs__static,
+.account-form-modal__dialog .funding-legs__select {
+  min-height: 48px;
+  padding: 9px 12px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.account-form-modal__dialog .funding-legs__select {
+  cursor: pointer;
+}
+
+.account-form-modal__dialog .funding-legs__select input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  flex: none;
+  accent-color: var(--color-warning);
+}
+
+.account-form-modal__dialog .funding-legs__select:has(input:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+
+.funding-legs__route {
+  min-width: 0;
+  flex: 1;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+}
+
+.funding-legs__account {
+  min-width: 0;
+  overflow: hidden;
+
+  color: var(--color-text-primary);
+
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.funding-legs__arrow {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  color: var(--color-text-muted);
+}
+
+[dir="rtl"] .funding-legs__arrow {
+  transform: scaleX(-1);
+}
+
+.funding-legs__goal {
+  min-width: 0;
+  overflow: hidden;
+
+  color: var(--color-text-secondary);
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.funding-legs__detail {
+  flex-basis: 100%;
+
+  color: var(--color-text-muted);
+
+  font-size: 11px;
+}
+
+.funding-legs__amount {
+  flex: none;
+
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+
+  color: var(--color-text-strong);
+
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.funding-legs__amount s {
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.funding-legs__state {
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.funding-legs__total {
+  margin: 2px 0 0;
+  padding: 10px 12px;
+
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+
+  border-top: 1px dashed var(--color-border);
+
+  color: var(--color-text-secondary);
+
+  font-size: 13px;
+}
+
+.funding-legs__total strong {
+  color: var(--color-text-strong);
+
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 800;
+}

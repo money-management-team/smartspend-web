@@ -1871,7 +1871,8 @@
         "resumeSuccess": "“{{name}}” was resumed. Its status is now: {{status}}.",
         "archiveSuccess": "“{{name}}” was archived. Its account and history are kept.",
         "viewGoal": "View goal",
-        "installmentSuccess": "Installment confirmed for “{{name}}”. The money moved into the goal's savings account."
+        "installmentSuccess": "Installment confirmed for “{{name}}”. The money moved into the goal's savings account.",
+        "installmentReversalSuccess": "Payments reversed for “{{name}}”. The money went back to the source accounts."
       },
       "form": {
         "createTitle": "New savings goal",
@@ -2113,10 +2114,13 @@
             "skip": "Skip",
             "confirmNamed": "Confirm installment {{number}}",
             "postponeNamed": "Postpone installment {{number}}",
-            "skipNamed": "Skip installment {{number}}"
+            "skipNamed": "Skip installment {{number}}",
+            "reverse": "Reverse payments",
+            "reverseNamed": "Reverse payments of installment {{number}}"
           },
           "showAll": "Show all {{count}} installments",
-          "showLess": "Show fewer"
+          "showLess": "Show fewer",
+          "multiAccount": "Paid from several accounts"
         },
         "health": {
           "title": "Plan health",
@@ -2175,7 +2179,60 @@
             "at_confirmation": "You choose an eligible account each time you confirm."
           },
           "priority": "Priority {{number}}",
-          "allocatedLater": "Confirming an installment split across several accounts isn't available here yet."
+          "allocatedLater": "Confirming an installment split across several accounts isn't available here yet.",
+          "confirm": {
+            "title": "Pay from several accounts",
+            "approveTitle": "Approve this breakdown",
+            "loading": "Working out the breakdown…",
+            "reviewAgain": "Nothing moved. The breakdown below has been checked again; review it before approving.",
+            "breakdownTitle": "Where the money comes from",
+            "modeHints": {
+              "allocated": "Your plan splits every installment by fixed shares, so this breakdown can't be changed here.",
+              "priority": "Proposed in your plan's order. You can change the split across the plan's accounts.",
+              "at_confirmation": "Choose the accounts and how much each one pays. Together they must equal the amount to move.",
+              "single": "This installment comes from your plan's account."
+            },
+            "account": "Account",
+            "chooseAccount": "Choose an account…",
+            "available": "Available",
+            "amount": "Amount",
+            "removeLeg": "Remove part {{number}}",
+            "addLeg": "Add an account",
+            "remaining": "Left to allocate:",
+            "allocated": "Fully allocated",
+            "remainingUnknown": "Enter valid amounts to see what's left",
+            "checkFirst": "Check this split with SmartSpend before approving it.",
+            "validation": {
+              "legsRequired": "Add at least one account.",
+              "tooManyLegs": "Use at most {{max}} accounts.",
+              "accountRequired": "Choose an account for every part.",
+              "duplicateAccount": "Each account can be used once.",
+              "amountInvalid": "Every part needs a positive amount with up to four decimals.",
+              "totalMismatch": "The parts must add up to exactly the amount to move."
+            },
+            "problems": {
+              "insufficient_balance": "One of these accounts doesn't have enough balance for its part.",
+              "exceeds_remaining": "This is more than what's left to reach the goal.",
+              "breakdown_invalid": "This split doesn't follow your plan's funding rules.",
+              "account_not_eligible": "One of these accounts can't fund this goal (archived, another currency, or not yours to use)."
+            },
+            "shortBy": "Short by",
+            "changeSplit": "Change the split",
+            "check": "Check this split",
+            "review": "Review and approve",
+            "back": "Back",
+            "approveLead": "{{count}} separate transfers will move these exact amounts into the goal:",
+            "total": "Total into the goal",
+            "facts": {
+              "separate": "Each account is debited with exactly its part, as a separate transfer ({{count}} in all).",
+              "together": "All parts succeed together or none of them happens.",
+              "recheck": "Balances are checked again at the moment you approve."
+            },
+            "approve": "I approve moving these exact amounts from these accounts.",
+            "submit": "Confirm and move money",
+            "running": "Moving money…",
+            "retry": "Try again"
+          }
         },
         "schedule": {
           "title": "Schedule",
@@ -2214,7 +2271,8 @@
           "statement": "A real transfer into the goal's savings account. Nothing is deducted until you confirm.",
           "running": "Confirming…",
           "retry": "Try again",
-          "submit": "Confirm and move money"
+          "submit": "Confirm and move money",
+          "split": "Pay from several accounts instead"
         },
         "postpone": {
           "eyebrow": "Installment {{number}}",
@@ -2276,13 +2334,69 @@
             "savings_installment_funding_unsupported": "This plan splits each installment across several accounts, which can't be confirmed here yet.",
             "savings_installment_postpone_limit_reached": "This installment has been postponed the most times allowed ({{max}}). Revise the plan to change its schedule.",
             "savings_installment_schedule_conflict": "That date reaches the next installment. The latest date allowed is {{date}}.",
-            "savings_installment_beyond_target_date": "That date is after the goal's target date ({{date}})."
+            "savings_installment_beyond_target_date": "That date is after the goal's target date ({{date}}).",
+            "savings_installment_intent_invalid": "This breakdown isn't the one that was checked. Check it again before confirming.",
+            "savings_installment_breakdown_invalid": "This split doesn't follow your plan's funding rules.",
+            "savings_installment_leg_already_reversed": "One of these payments was already reversed.",
+            "savings_installment_not_multi_leg": "This installment was paid from a single account; reverse it from the goal's activity.",
+            "savings_installment_nothing_to_reverse": "There's nothing left to reverse for this installment.",
+            "savings_installment_legs_changed": "The installment's payments changed.",
+            "savings_installment_leg_requires_domain_reversal": "This payment is part of an installment; reverse it from the installment.",
+            "savings_plan_accounts_changed": "The plan's funding accounts changed."
           }
         },
         "invite": {
           "title": "Turn this goal into a smart plan",
           "body": "Compare Easy, Balanced and Intensive schedules built from what's left and your recent cash flow. Nothing moves until you confirm each installment.",
           "action": "Create a smart plan"
+        },
+        "legs": {
+          "reversed": "Reversed"
+        },
+        "reverse": {
+          "eyebrow": "Installment {{number}}",
+          "title": "Reverse payments",
+          "keep": "Keep them",
+          "submit": "Reverse",
+          "running": "Reversing…",
+          "retry": "Try again",
+          "unknownOutcome": "We couldn't confirm whether the reversal happened. The installment has been checked again; trying again is safe and won't reverse anything twice.",
+          "reviewAgain": "The payments changed, so nothing was reversed. Review the current state and choose again.",
+          "facts": {
+            "scheduled": "Scheduled",
+            "confirmed": "Originally paid",
+            "effective": "Still in the goal",
+            "reversed": "Already reversed"
+          },
+          "paymentsTitle": "Payments",
+          "scopeLabel": "What to reverse",
+          "scope": {
+            "all": "All remaining payments",
+            "some": "Choose payments"
+          },
+          "summaryAll": "Reversing every remaining payment",
+          "summarySome": "Reversing the chosen payments: {{count}}",
+          "validation": {
+            "chooseLeg": "Choose at least one payment.",
+            "reasonShort": "Give a reason of at least {{min}} characters.",
+            "reasonLong": "Use at most {{max}} characters."
+          },
+          "reason": "Reason",
+          "reasonHint": "Required, at least {{min}} characters. Saved with the reversal.",
+          "points": {
+            "returns": "The money goes back to each payment's own account.",
+            "history": "The original payments stay in the history, marked as reversed.",
+            "noReplan": "No other installment changes; the plan's health shows any gap."
+          },
+          "acknowledge": "I understand this moves money out of the goal.",
+          "loading": "Reading this installment's payments…",
+          "currentTitle": "Current payment",
+          "confirmedOn": "Confirmed",
+          "reversedOn": "Reversed",
+          "singleAccount": "This installment was paid from a single account. Reverse it from the goal's activity.",
+          "nothingLeft": "Nothing is left to reverse for this installment.",
+          "historyTitle": "Earlier confirmations",
+          "historyHint": "Kept for your records. These payments can't be chosen."
         }
       },
       "smartPlanWizard": {

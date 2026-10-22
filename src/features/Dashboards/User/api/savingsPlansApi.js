@@ -11,7 +11,13 @@ const WRITE_FIELDS = {
   confirm: ["expected_plan_version", "expected_lock_version", "from_account_id", "amount"],
   postpone: ["expected_plan_version", "expected_lock_version", "new_date", "reason"],
   skip: ["expected_plan_version", "expected_lock_version", "reason"],
+  "confirm-accounts": ["expected_plan_version", "expected_lock_version", "amount", "legs", "confirmation_intent"],
+  "reverse-legs": ["expected_lock_version", "reason", "leg_ids", "all"],
 };
+
+// Each leg's amount as a 4-decimal string, exactly as previewed.
+const toLegs = (legs) =>
+  legs.map((leg) => ({ account_id: Number(leg.account_id), amount: toMoneyString(leg.amount) }));
 
 function pickBody(payload, fields) {
   const body = {};
@@ -22,6 +28,7 @@ function pickBody(payload, fields) {
 
   // Exactly the amount the preview showed, as a 4-decimal string.
   if (body.amount !== undefined) body.amount = toMoneyString(body.amount);
+  if (Array.isArray(body.legs)) body.legs = toLegs(body.legs);
 
   return body;
 }
@@ -133,4 +140,53 @@ export const savingsPlansApi = {
   // Marks this installment skipped. No money; the target is unchanged.
   skip: (goalId, installmentId, payload, idempotencyKey) =>
     writeInstallment(goalId, installmentId, "skip", payload, idempotencyKey),
+
+  /*
+   * Read only, owner only: the exact amount from each account. With no
+   * body the backend proposes the breakdown (allocated: the plan's shares;
+   * priority: filled in the plan's order); `{ amount, legs }` checks the
+   * user's own split. → `data.funding_preview`: the confirmation preview's
+   * fields plus `funding { amount, legs[], shortfall_amount, problem }` and
+   * `confirmation_intent` (only when confirmable). Moves nothing.
+   */
+  fundingPreview: (goalId, installmentId, body = {}, options = {}) =>
+    apiRequest(`${installmentPath(goalId, installmentId)}/funding-preview`, {
+      method: "POST",
+      body: {
+        ...(body.amount !== undefined ? { amount: toMoneyString(body.amount) } : {}),
+        ...(Array.isArray(body.legs) ? { legs: toLegs(body.legs) } : {}),
+      },
+      signal: options.signal,
+    }),
+
+  /*
+   * Read only, owner only: the payments behind one installment.
+   * → `data.installment`, `data.current_confirmation` (the confirmation
+   * paying it now, or null) with its `funding_legs`, `data.funding_legs`
+   * (the same legs), `data.history` (earlier cycles, newest first, never
+   * actionable) and `data.reversal` { eligible, effective_leg_ids,
+   * expected_lock_version } — the only ids and the version reverse-legs
+   * accepts. 404 outside the user's scope, 403 for another member.
+   */
+  getFundingLegs: (goalId, installmentId, options = {}) =>
+    apiRequest(`${installmentPath(goalId, installmentId)}/funding-legs`, { signal: options.signal }),
+
+  /*
+   * Pays one installment from several accounts in one transaction, exactly
+   * as previewed: expected versions, amount, legs and the preview's
+   * `confirmation_intent`, unchanged. Moves money. → 201 with `installment`,
+   * `funding_legs`, `reversal`, `savings_goal`, `balance`, `plan_health`.
+   */
+  confirmAccounts: (goalId, installmentId, payload, idempotencyKey) =>
+    writeInstallment(goalId, installmentId, "confirm-accounts", payload, idempotencyKey),
+
+  /*
+   * Reverses the named payments (`leg_ids`) or every live one (`all: true`)
+   * of a multi-account installment, all or nothing. Needs `reason` and the
+   * installment's `expected_lock_version`. Moves money back to the source
+   * accounts. → the same envelope as confirmAccounts plus
+   * `previously_effective_amount`.
+   */
+  reverseLegs: (goalId, installmentId, payload, idempotencyKey) =>
+    writeInstallment(goalId, installmentId, "reverse-legs", payload, idempotencyKey),
 };

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { LuArrowRight, LuInfo, LuShieldCheck, LuTriangleAlert } from "react-icons/lu";
+import { LuArrowRight, LuInfo, LuShieldCheck, LuSplit, LuTriangleAlert } from "react-icons/lu";
 
 import { ApiError } from "../../../api/apiClient";
 import { savingsPlansApi } from "../../../api/savingsPlansApi";
@@ -35,6 +35,9 @@ import "./ConfirmInstallmentDialog.css";
  * shows whether it went through (an unchanged preview resubmits the same
  * key). `onOutdated` tells the page to refetch the plan when the dialog
  * closes.
+ *
+ * `onSplit` (priority and at-confirmation plans) offers to pay the
+ * installment from several accounts instead, in FundingBreakdownDialog.
  */
 export default function ConfirmInstallmentDialog({
   goal,
@@ -45,6 +48,7 @@ export default function ConfirmInstallmentDialog({
   onConfirmed,
   onOutdated,
   onClose,
+  onSplit,
 }) {
   const { t, i18n } = useTranslation();
   const prefix = "dashboard.savingsGoals.smartPlan.confirm";
@@ -276,6 +280,13 @@ export default function ConfirmInstallmentDialog({
               );
             })}
           </fieldset>
+        )}
+
+        {onSplit && !blocker && (
+          <button type="button" className="confirm-installment__split" onClick={onSplit} disabled={isRunning}>
+            <LuSplit aria-hidden="true" />
+            <span>{t(`${prefix}.split`)}</span>
+          </button>
         )}
 
         {canConfirm && (

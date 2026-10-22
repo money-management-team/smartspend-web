@@ -12,6 +12,8 @@ import { formatDate, formatMoney } from "../../../utils/formatters";
 import { getGoalSmartPlanPath } from "../../../../../../routes/Path";
 import { getGoalCurrency, getGoalProgress, getGoalStatus } from "../../savingsGoalHelpers";
 import {
+  EDITABLE_FUNDING_MODES,
+  canReverseLegs,
   formatAllocation,
   getFrequencyLabel,
   getSmartPlanErrorMessage,
@@ -21,9 +23,11 @@ import {
 } from "../../smartPlanHelpers";
 import { canHaveActivePlan } from "../../smartSavings";
 import ConfirmInstallmentDialog from "../ConfirmInstallmentDialog/ConfirmInstallmentDialog";
+import FundingBreakdownDialog from "../FundingBreakdownDialog/FundingBreakdownDialog";
 import InstallmentTimeline from "../InstallmentTimeline/InstallmentTimeline";
 import PlanHealth from "../PlanHealth/PlanHealth";
 import PostponeInstallmentDialog from "../PostponeInstallmentDialog/PostponeInstallmentDialog";
+import ReverseLegsDialog from "../ReverseLegsDialog/ReverseLegsDialog";
 import SkipInstallmentDialog from "../SkipInstallmentDialog/SkipInstallmentDialog";
 
 import "./SmartPlanPanel.css";
@@ -40,10 +44,16 @@ import "./SmartPlanPanel.css";
  * (money moved, goal paused or resumed) and after each installment action;
  * the last plan stays visible while it refreshes, with actions disabled.
  *
- * `onInstallmentConfirmed(data)` hands the confirmation's response to the
- * page, which shows the goal it returns and refreshes the activity.
+ * `onInstallmentConfirmed(data)` / `onInstallmentReversed(data)` hand a
+ * confirmation's or reversal's response to the page, which shows the goal
+ * it returns and refreshes the activity.
+ *
+ * Multi-account payments: an allocated plan confirms through
+ * FundingBreakdownDialog; priority and at-confirmation plans keep the
+ * single-account dialog, which can switch to it. ReverseLegsDialog reads an
+ * installment's payments fresh (GET …/funding-legs) every time it opens.
  */
-export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallmentConfirmed }) {
+export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallmentConfirmed, onInstallmentReversed }) {
   const { t, i18n } = useTranslation();
   const locale = getDisplayLocale(i18n.language);
   const currency = getGoalCurrency(goal);
@@ -53,7 +63,7 @@ export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallme
   const [reloadCount, setReloadCount] = useState(0);
   const lookupKey = canHaveActivePlan(goal) ? `${goalId}|${refreshKey}|${reloadCount}` : null;
   const [result, setResult] = useState({ key: null, goalId: null, data: null, error: null, flexible: false });
-  // { type: "confirm" | "postpone" | "skip", installmentId }
+  // { type: "confirm" | "fund" | "postpone" | "skip" | "reverse", installmentId }
   const [dialog, setDialog] = useState(null);
   // One-time message after a postpone / skip: { action, sequence, date }.
   const [notice, setNotice] = useState(null);
@@ -199,12 +209,18 @@ export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallme
   const dialogInstallment = dialog
     ? plan.installments.find((installment) => String(installment.id) === String(dialog.installmentId))
     : null;
-  const dialogIsOpen = isOpenInstallment(dialogInstallment);
+  // A dialog is shown only while its installment still allows it.
+  const dialogIsOpen =
+    dialog?.type === "reverse" ? canReverseLegs(dialogInstallment) : isOpenInstallment(dialogInstallment);
+  const canReverse = !isRefreshing;
+
   const closeDialog = () => setDialog(null);
 
   const handleAction = (type, installment) => {
     setNotice(null);
-    setDialog({ type, installmentId: installment.id });
+    // An allocated plan always splits each installment across its accounts.
+    const resolved = type === "confirm" && plan.funding_mode === "allocated" ? "fund" : type;
+    setDialog({ type: resolved, installmentId: installment.id });
   };
 
   const handleScheduleDone = (outcome) => {
@@ -217,6 +233,12 @@ export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallme
     setDialog(null);
     setNotice(null);
     onInstallmentConfirmed(response);
+  };
+
+  const handleReversed = (response) => {
+    setDialog(null);
+    setNotice(null);
+    onInstallmentReversed(response);
   };
 
   const dialogProps = {
@@ -330,6 +352,7 @@ export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallme
             plan={plan}
             health={health}
             canAct={canAct}
+            canReverse={canReverse}
             onAction={handleAction}
             money={money}
             day={day}
@@ -385,7 +408,21 @@ export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallme
       </div>
 
       {dialogIsOpen && dialog.type === "confirm" && (
-        <ConfirmInstallmentDialog {...dialogProps} onConfirmed={handleConfirmed} />
+        <ConfirmInstallmentDialog
+          {...dialogProps}
+          onConfirmed={handleConfirmed}
+          onSplit={
+            EDITABLE_FUNDING_MODES.includes(plan.funding_mode)
+              ? () => setDialog({ type: "fund", installmentId: dialog.installmentId })
+              : undefined
+          }
+        />
+      )}
+      {dialogIsOpen && dialog.type === "fund" && (
+        <FundingBreakdownDialog {...dialogProps} mode={plan.funding_mode} onConfirmed={handleConfirmed} />
+      )}
+      {dialogIsOpen && dialog.type === "reverse" && (
+        <ReverseLegsDialog {...dialogProps} onReversed={handleReversed} />
       )}
       {dialogIsOpen && dialog.type === "postpone" && (
         <PostponeInstallmentDialog {...dialogProps} timeZone={timeZone} onDone={handleScheduleDone} />

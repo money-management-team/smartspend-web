@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { LuCalendarArrowUp, LuCheck, LuSkipForward } from "react-icons/lu";
+import { LuCalendarArrowUp, LuCheck, LuRotateCcw, LuSkipForward } from "react-icons/lu";
 
 import { translateEnum } from "../../../FinancialOperations/transactionHelpers";
 import {
+  canReverseLegs,
   getInstallmentState,
+  isMultiAccountInstallment,
   getOverdueInstallmentIds,
   getVisibleInstallments,
   isOpenInstallment,
@@ -26,9 +28,11 @@ const ACTIONS = [
  *
  * Open installments offer Confirm / Postpone / Skip while `canAct`; the
  * actions only open dialogs, which re-check everything with the backend.
+ * Installments paid from several accounts can have their payments reversed
+ * (`canReverse`); single-account ones keep the existing transfer reversal.
  * `money(value)` / `day(value)` render an amount / a Y-m-d date.
  */
-export default function InstallmentTimeline({ plan, health, canAct, onAction, money, day }) {
+export default function InstallmentTimeline({ plan, health, canAct, canReverse = false, onAction, money, day }) {
   const { t, i18n } = useTranslation();
   const [showAll, setShowAll] = useState(false);
   const prefix = "dashboard.savingsGoals.smartPlan.timeline";
@@ -114,6 +118,10 @@ export default function InstallmentTimeline({ plan, health, canAct, onAction, mo
                     </span>
                   )}
 
+                  {isMultiAccountInstallment(installment) && (
+                    <span className="installment-timeline__note">{t(`${prefix}.multiAccount`)}</span>
+                  )}
+
                   {state === "skipped" && (
                     <span className="installment-timeline__note">{t(`${prefix}.skippedNote`)}</span>
                   )}
@@ -128,6 +136,20 @@ export default function InstallmentTimeline({ plan, health, canAct, onAction, mo
                 )}
                 <small>{t(`${prefix}.scheduled`)}</small>
               </div>
+
+              {canReverse && canReverseLegs(installment) && (
+                <div className="installment-timeline__actions installment-timeline__actions--compact-text">
+                  <button
+                    type="button"
+                    className="installment-timeline__action installment-timeline__action--reverse"
+                    onClick={() => onAction("reverse", installment)}
+                    aria-label={t(`${prefix}.actions.reverseNamed`, { number: installment.sequence })}
+                  >
+                    <LuRotateCcw aria-hidden="true" />
+                    <span>{t(`${prefix}.actions.reverse`)}</span>
+                  </button>
+                </div>
+              )}
 
               {isOpen && canAct && (
                 // Full buttons where action is expected (the next or an

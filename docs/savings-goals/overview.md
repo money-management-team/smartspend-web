@@ -86,6 +86,7 @@ Savings goals (GET /savings-goals, filtered + paginated)
 | `…/SavingsGoals/components/ConfirmInstallmentDialog/`, `PostponeInstallmentDialog/`, `SkipInstallmentDialog/`, `PlanDialog/` | Installment dialogs and their shared shell |
 | `src/features/Dashboards/User/SmartPlanWizard/` | Smart plan creation wizard: page, `smartPlanWizardHelpers.js`, and the `WizardStepper`, `GoalStep`, `PlanStep`, `PlanOptionCard`, `FundingStep`, `ReviewStep` components |
 | `…/SavingsGoals/smartSavingsFlag.js` | The `VITE_SMART_SAVINGS_ENABLED` gate, import-free for the route table |
+| `…/SavingsGoals/components/FundingBreakdownDialog/`, `ReverseLegsDialog/`, `FundingLegs/` | Multi-account confirmation, payment reversal, and the shared payment list |
 | `…/SavingsGoals/smartPlanHelpers.js`, `useInstallmentWrite.js` | Plan parsing, timeline states, postpone bounds, write-error classification; installment write + idempotency |
 | `src/locales/{en,ar}/*.json` → `dashboard.savingsGoals.*` | All copy |
 

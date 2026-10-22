@@ -30,6 +30,10 @@ There is intentionally no `delete` wrapper: `DELETE` archives, and `archive` say
 | `POST` | `…/planned-contributions/{installment}/confirm` | `confirm(id, installmentId, payload, idempotencyKey)` | `data.contribution`, `data.installment`, `data.savings_goal`, `data.balance`, `data.plan_health` (201). **Moves money** |
 | `POST` | `…/planned-contributions/{installment}/postpone` | `postpone(id, installmentId, payload, idempotencyKey)` | `data.installment`, `data.result` (`money_moved: false`), `data.plan_health` |
 | `POST` | `…/planned-contributions/{installment}/skip` | `skip(id, installmentId, payload, idempotencyKey)` | same shape as postpone |
+| `POST` | `…/planned-contributions/{installment}/funding-preview` | `fundingPreview(id, installmentId, { amount?, legs? }, { signal })` | `data.funding_preview`: the confirmation preview plus `funding { amount, legs[], shortfall_amount, problem }` and `confirmation_intent` (only when confirmable). Read only |
+| `GET` | `…/planned-contributions/{installment}/funding-legs` | `getFundingLegs(id, installmentId, { signal })` | `data.installment`, `data.current_confirmation` (or null), `data.funding_legs`, `data.history` (earlier cycles, newest first), `data.reversal` { eligible, effective_leg_ids, expected_lock_version }. Read only; owner only (403), 404 out of scope |
+| `POST` | `…/planned-contributions/{installment}/confirm-accounts` | `confirmAccounts(id, installmentId, payload, idempotencyKey)` | 201 with `installment`, `funding_legs`, `reversal`, `savings_goal`, `balance`, `plan_health`. **Moves money** |
+| `POST` | `…/planned-contributions/{installment}/reverse-legs` | `reverseLegs(id, installmentId, payload, idempotencyKey)` | Same envelope plus `previously_effective_amount`. **Moves money back** |
 | `POST` | `/savings-plans/preview` | `previewProposal(body, { signal })` | `data.plan_options` for a goal not yet created. Read only |
 | `GET` | `/savings-goals/{id}/plan-options` | `getOptions(id, query, { signal })` | `data.plan_options` for an existing goal. Read only |
 | `POST` | `/savings-goals/with-plan` | `createWithGoal(body, idempotencyKey)` | 201, the `GET …/plan` envelope. Goal + account + plan atomically |
@@ -38,6 +42,7 @@ There is intentionally no `delete` wrapper: `DELETE` archives, and `archive` say
 - Every installment write requires an `Idempotency-Key` header, plus `expected_plan_version` and `expected_lock_version`.
 - `confirm` also takes `from_account_id` and `amount`, which is the preview's `suggested_amount` as a 4-decimal string.
 - `postpone` takes `new_date` (`Y-m-d`).
+- `confirm-accounts` sends `expected_plan_version`, `expected_lock_version`, `amount`, `legs[{ account_id, amount }]` and the preview's `confirmation_intent` unchanged. `reverse-legs` sends `reason` (3–500 characters), `expected_lock_version` and `leg_ids[]` or `all: true`. `GET …/funding-legs` returns the payments the reversal dialog shows and sends; see [smart-plans.md](smart-plans.md).
 - Plan creation sends `intensity`, `frequency`, `interval`, `start_date?`, both fingerprints and `funding { mode, sources[{ account_id, allocation_bps? }] }` (sources in priority order); `with-plan` nests them under `plan` beside the goal fields. A changed option is 409 `savings_plan_option_stale` with `verdict` and `current_option`.
 - A 409 carries the backend's `code` in `ApiError.serverCode` and its context (e.g. `latest_allowed_date`, `current_lock_version`) in `ApiError.payload`.
 

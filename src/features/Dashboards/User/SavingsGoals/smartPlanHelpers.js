@@ -1,7 +1,7 @@
 import { getDisplayLocale } from "../Accounts/accountHelpers";
 import { getApiErrorMessage } from "../api/apiClient";
 import { UNKNOWN_OUTCOME_CODES } from "../Transfers/transferHelpers";
-import { formatDate } from "../utils/formatters";
+import { formatDate, subtractMoney, sumMoney } from "../utils/formatters";
 
 /*
  * Pure helpers for the smart plan on a goal's page. Every amount and date is
@@ -210,6 +210,168 @@ export function buildConfirmPayload(confirmation, accountId) {
   };
 }
 
+/* ---------- Multi-account funding ---------- */
+
+export const MAX_FUNDING_LEGS = 5;
+// Breakdown problems the funding preview reports (`funding.problem`).
+export const FUNDING_PROBLEMS = [
+  "breakdown_required",
+  "insufficient_balance",
+  "exceeds_remaining",
+  "breakdown_invalid",
+  "account_not_eligible",
+];
+// Plans whose installments can be split across accounts by the user.
+export const EDITABLE_FUNDING_MODES = ["priority", "at_confirmation"];
+
+const MONEY = /^\d+(\.\d{1,4})?$/;
+const isZeroMoney = (value) => /^-?0*(\.0*)?$/.test(String(value ?? "").trim());
+
+/** `data.funding_preview` for `installmentId`, or null. */
+export function readFundingPreview(preview, installmentId) {
+  if (
+    !preview ||
+    typeof preview !== "object" ||
+    String(preview.installment?.id) !== String(installmentId) ||
+    !preview.funding ||
+    !Array.isArray(preview.funding.legs) ||
+    !Array.isArray(preview.accounts)
+  ) {
+    return null;
+  }
+
+  return preview;
+}
+
+/** The legs as the user's editable rows: `{ account_id, amount }` strings. */
+export const toDraftLegs = (legs) =>
+  (legs ?? []).map((leg) => ({ account_id: String(leg.account_id), amount: String(leg.amount ?? "") }));
+
+/**
+ * What the user's own split still needs, exactly: `total − Σ legs` as a
+ * 4-decimal string (BigInt minor units, never floats). Null when an amount
+ * can't be read.
+ */
+export function remainingToAllocate(total, legs) {
+  if (!MONEY.test(String(total ?? "")) || legs.some((leg) => !MONEY.test(String(leg.amount).trim()))) return null;
+  return subtractMoney(total, sumMoney(legs.map((leg) => String(leg.amount).trim())));
+}
+
+/*
+ * The user's split, checked before asking the backend: an account per leg,
+ * no account twice, at most five legs, positive amounts with up to four
+ * decimals, adding up to exactly the installment amount. The backend
+ * checks balances, eligibility and the plan's rules again.
+ */
+export function validateDraftLegs(legs, total) {
+  if (legs.length === 0) return "legsRequired";
+  if (legs.length > MAX_FUNDING_LEGS) return "tooManyLegs";
+  if (legs.some((leg) => !leg.account_id)) return "accountRequired";
+  if (new Set(legs.map((leg) => String(leg.account_id))).size !== legs.length) return "duplicateAccount";
+  if (legs.some((leg) => !MONEY.test(String(leg.amount).trim()) || isZeroMoney(leg.amount))) return "amountInvalid";
+
+  const remaining = remainingToAllocate(total, legs);
+  if (remaining === null) return "amountInvalid";
+  if (!isZeroMoney(remaining)) return "totalMismatch";
+
+  return null;
+}
+
+/** Identifies one requested breakdown: any edit makes its preview stale. */
+export const getBreakdownKey = (amount, legs) =>
+  JSON.stringify({ amount: amount ?? null, legs: legs ? legs.map((leg) => [String(leg.account_id), String(leg.amount).trim()]) : null });
+
+/**
+ * POST …/confirm-accounts: exactly what the preview showed and signed —
+ * versions, amount, legs in the order shown, and `confirmation_intent`
+ * unchanged.
+ */
+export function buildConfirmAccountsPayload(preview) {
+  return {
+    expected_plan_version: preview.savings_plan.plan_version,
+    expected_lock_version: preview.installment.lock_version,
+    amount: preview.funding.amount,
+    legs: preview.funding.legs.map((leg) => ({ account_id: leg.account_id, amount: leg.amount })),
+    confirmation_intent: preview.confirmation_intent,
+  };
+}
+
+/* ---------- Reversal ---------- */
+
+/*
+ * A plan installment paid through confirm-accounts has no single goal
+ * movement (`fulfilled_goal_movement_id` stays null; its payments are link
+ * rows). Only those are reversed through …/reverse-legs; a single-account
+ * confirmation keeps the existing transaction reversal.
+ */
+export const isMultiAccountInstallment = (installment) =>
+  installment?.status === "fulfilled" &&
+  installment.fulfilled_goal_movement_id == null &&
+  installment.savings_plan_id != null;
+
+/** Something left to reverse: a multi-account installment still holding money. */
+export const canReverseLegs = (installment) =>
+  isMultiAccountInstallment(installment) &&
+  installment.effective_amount != null &&
+  !isZeroMoney(installment.effective_amount);
+
+/**
+ * `data` of GET …/funding-legs for `installmentId`, or null. Each leg
+ * carries `selectable`: true only for an effective leg of the current
+ * confirmation whose id the backend lists in `reversal.effective_leg_ids`
+ * (and only while reversal is eligible). History legs never are.
+ */
+export function readFundingLegs(data, installmentId) {
+  if (
+    !data ||
+    typeof data !== "object" ||
+    String(data.installment?.id) !== String(installmentId) ||
+    !data.reversal ||
+    !Array.isArray(data.reversal.effective_leg_ids) ||
+    !Array.isArray(data.history)
+  ) {
+    return null;
+  }
+
+  const eligible = data.reversal.eligible === true;
+  const selectableIds = new Set(eligible ? data.reversal.effective_leg_ids.map(String) : []);
+  const current = data.current_confirmation;
+
+  return {
+    installment: data.installment,
+    reversal: {
+      eligible,
+      effectiveLegIds: data.reversal.effective_leg_ids,
+      lockVersion: data.reversal.expected_lock_version,
+    },
+    current: current
+      ? {
+          ...current,
+          funding_legs: (current.funding_legs ?? []).map((leg) => ({
+            ...leg,
+            selectable: leg.is_effective === true && selectableIds.has(String(leg.id)),
+          })),
+        }
+      : null,
+    history: data.history.map((cycle) => ({
+      ...cycle,
+      funding_legs: (cycle.funding_legs ?? []).map((leg) => ({ ...leg, selectable: false })),
+    })),
+  };
+}
+
+export const REVERSAL_REASON_MIN = 3;
+export const REVERSAL_REASON_MAX = 500;
+
+/** POST …/reverse-legs: the chosen legs, or all live ones. */
+export function buildReversePayload({ reason, lockVersion, legIds }) {
+  return {
+    reason: reason.trim(),
+    expected_lock_version: lockVersion,
+    ...(legIds ? { leg_ids: legIds.map(Number) } : { all: true }),
+  };
+}
+
 /* ---------- Writes ---------- */
 
 // 409s about the date the user chose: the dialog stays as it is and the
@@ -241,6 +403,8 @@ export function classifyPlanWriteError(error) {
   return "final";
 }
 
+const WRITE_CONTEXTS = ["confirm", "postpone", "skip", "reverse", "create"];
+
 /** A 409's context value (e.g. `latest_allowed_date`), from the error body. */
 export const getConflictContext = (error, key) => error?.payload?.[key] ?? null;
 
@@ -266,7 +430,9 @@ export function getSmartPlanErrorMessage(error, t, i18n, context = "load") {
   if (error?.code === "NOT_FOUND") {
     return t(context === "load" ? `${prefix}.planGone` : `${prefix}.installmentGone`);
   }
-  if (context !== "load" && UNKNOWN_OUTCOME_CODES.includes(error?.code)) {
+  // "Did it go through?" only means something for a write; a failed read
+  // (load, preview) falls through to the plain network / server wording.
+  if (WRITE_CONTEXTS.includes(context) && UNKNOWN_OUTCOME_CODES.includes(error?.code)) {
     return t(context === "confirm" ? `${prefix}.unknownOutcomeMoney` : `${prefix}.unknownOutcome`);
   }
 

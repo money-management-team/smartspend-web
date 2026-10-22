@@ -712,6 +712,7 @@ export default function SavingsGoalDetails({ smartSavingsEnabled = SMART_SAVINGS
           refreshKey={`${requestKey}:${activityKey}:${goal.status}`}
           timeZone={timeZone}
           onInstallmentConfirmed={(data) => handleMovementCompleted("installment", data)}
+          onInstallmentReversed={(data) => handleMovementCompleted("installmentReversal", data)}
         />
       )}
 

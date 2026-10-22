@@ -166,6 +166,69 @@ Entry points (flag on only):
 
 With the flag on, the details root gets `savings-goal-details--smart`, and the status badges on the blue header take the same translucent-white treatment as its other chips, so they are readable in both themes. With the flag off, the header is unchanged.
 
+## Multi-account funding and reversal (F4)
+
+Both live in the goal's smart plan panel, behind the same flag.
+
+### Which dialog confirms an installment
+
+| Plan `funding_mode` | Confirm opens | Can the user change the split? |
+| --- | --- | --- |
+| `single` | `ConfirmInstallmentDialog` (F2, unchanged) | No |
+| `priority` | `ConfirmInstallmentDialog`, with **Pay from several accounts instead** → `FundingBreakdownDialog` | Yes, across the plan's accounts |
+| `at_confirmation` | Same as priority | Yes, across every eligible account (required) |
+| `allocated` | `FundingBreakdownDialog` directly (the single-account path rejects allocated plans) | No, the plan's fixed shares |
+
+### `FundingBreakdownDialog` (`POST …/funding-preview` → `POST …/confirm-accounts`)
+
+1. **Build.**
+   - Opening the dialog sends `funding-preview` with no body, and the backend proposes the breakdown:
+     - allocated: the plan's shares;
+     - priority: filled in the plan's order;
+     - at-confirmation: `problem: breakdown_required`, so the user writes the split.
+   - Each part shows its account, exact amount and available balance, plus the preview's warnings, blocker, `problem` (`insufficient_balance` with `shortfall_amount`, `exceeds_remaining`, `breakdown_invalid`, `account_not_eligible`).
+   - Where the mode allows editing, the user sets the account and amount per part, with at most five parts and no account twice. "Left to allocate" is `total − Σ parts`, worked out exactly in BigInt minor units with `subtractMoney`/`sumMoney`; nothing else is calculated.
+   - **Check this split** sends `{ legs }`, and the backend validates and, when the split is confirmable, signs it.
+   - Any edit after a check makes that preview stale, and it can't be approved until checked again (`getBreakdownKey`).
+2. **Approve.**
+   - Shows exactly the checked breakdown as account → goal transfers with the total, and explains them: separate transfers, all or nothing, balances re-checked.
+   - An explicit checkbox is required.
+3. **Confirm** sends `expected_plan_version`, `expected_lock_version`, `amount`, `legs` (in the order shown) and `confirmation_intent` **unchanged** (`buildConfirmAccountsPayload`), with one Idempotency-Key per payload.
+4. **Any failure** goes back to Build with the **same** breakdown previewed again. The approval is cleared and nothing is resent automatically.
+   - A 409 (e.g. `savings_installment_intent_invalid`, a version conflict) or 422 drops the key.
+   - An unknown outcome (network, timeout, 5xx) keeps it. If nothing changed, the re-signed intent is identical, so the retry is the identical request and the backend replays it.
+5. **Success:** the page merges the returned goal (its progress is refetched), refreshes the activity and shows a notice; the plan and its health are fetched again. The response's `funding_legs` are kept for reversal (see below).
+
+Opening the dialog and previewing never move money. A failed preview is a read error with a retry; it never says "the money may have moved".
+
+### `ReverseLegsDialog` (`POST …/reverse-legs`)
+
+**Offered for** multi-account installments only: `status = fulfilled`, `fulfilled_goal_movement_id = null` (the backend names a single movement only for one-account confirmations) and a non-zero `effective_amount`. Single-account installments keep the existing transaction reversal from the goal's activity. Reversal is allowed while the goal is paused (the backend has no status gate; it is like a withdrawal).
+
+**Fresh payments on every opening.** The dialog calls `GET …/funding-legs` each time it opens, including after a page reload. Nothing is cached between openings. Everything shown and sent comes from that response (`readFundingLegs`):
+- **Amounts:** scheduled, originally paid (`confirmed_amount`), still in the goal (`effective_amount`) and already reversed (`reversed_amount`), all taken from the response's `installment`.
+- **Current payment** (`current_confirmation`): its date and each leg (account, exact amount). Reversed legs are struck through with their reversal date.
+- **What can be chosen:** a leg can be chosen only if its id is in `reversal.effective_leg_ids` (and `reversal.eligible` is true). The user can reverse **all remaining payments** (`all: true`) or **choose** one or several (`leg_ids`). The exact total being reversed is shown (`sumMoney` of the chosen legs, or `effective_amount`).
+- **Earlier confirmations** (`history`): each cycle with its date and legs, listed last in a separate dashed panel, read only and never selectable.
+- **Nothing to reverse:** when the response says reversal isn't possible, the dialog explains why ("paid from a single account; reverse it from the goal's activity", or "nothing is left to reverse") and offers only Close.
+
+**`expected_lock_version`** comes from that response (`reversal.expected_lock_version`), never from the plan or a cached value.
+
+**Required:** a reason (3–500 characters, per the contract) and an explicit acknowledgement. The button enables after the acknowledgement; a short reason or an empty choice is explained when pressed. A pending reversal blocks further presses, so one press sends one request.
+
+**Failures**
+- **409, 404 or 422** (`savings_installment_version_conflict`, `legs_changed`, `leg_already_reversed`, an old leg, …): the payments are read again, the plan is refetched, and the choice **and** the acknowledgement are cleared. The user reviews the current state; a different set is never reversed and nothing is resent automatically. The key is dropped, so the next attempt is a new request.
+- **Unknown outcome** (network, timeout, 5xx): the key is kept and the payments are read again. If nothing changed, the same choice resends the identical request with the same key and the backend replays it. If the version changed, that is a new review.
+- **403** (not the owner), **429** (rate limited) and read errors are explained in place; a failed read is never described as "the money may have moved".
+
+**Success:** the goal is merged, the activity refreshed, a "payments reversed" notice shown and the plan fetched again. The next opening reads the payment history fresh. Partial reversals also show in the timeline (paid / reversed / short by) and in plan health.
+
+### Reusable pieces
+
+- `FundingLegs`: account → goal rows with exact amounts, an optional detail, reversed state and optional selection.
+- `smartPlanHelpers.js`: `readFundingLegs`, `readFundingPreview`, `remainingToAllocate`, `validateDraftLegs`, `getBreakdownKey`, `buildConfirmAccountsPayload`, `isMultiAccountInstallment`, `canReverseLegs`, `buildReversePayload`.
+- `useInstallmentWrite("reverseLegs")` is the same write hook as postpone and skip.
+
 ## Screen inventory
 
 The "API" column is the backend endpoint. Every write sends `Idempotency-Key`. Plan writes also send `expected_plan_version`, and installment writes send `expected_lock_version`.
@@ -181,8 +244,8 @@ The "API" column is the backend endpoint. Every write sends `Idempotency-Key`. P
 | 7 | **Goal details + plan panel** (F2, done) | `GET …/{id}`, `GET …/plan` | flexible (404), paused (on hold), `plan_health` reasons |
 | 8 | **Installment timeline** (F2, done) | `savings_plan.installments` | planned, fulfilled, partially reversed, skipped, missed, cancelled, postponed |
 | 9 | **Confirm installment, one account** (F2, done) | `GET …/confirmation-preview` → `POST …/confirm` | `confirmable: false`, 409 version / not open / exceeds remaining, 422 balance |
-| 10 | Confirm from several accounts | `POST …/funding-preview` → `POST …/confirm-accounts` | shortfall, 409 `savings_installment_intent_invalid` |
-| 11 | Reverse a confirmation (one leg or all) | `POST …/reverse-legs` | 409 version conflict, partially reversed result |
+| 10 | **Confirm from several accounts** (F4, done) | `POST …/funding-preview` → `POST …/confirm-accounts` | shortfall, 409 `savings_installment_intent_invalid` |
+| 11 | **Reverse a confirmation (one leg or all)** (F4, done) | `POST …/reverse-legs` | 409 version conflict, partially reversed result |
 | 12 | **Postpone / skip** (F2, done) | `POST …/postpone`, `POST …/skip` | 409 beyond target date / schedule conflict (`latest_allowed_date`) / limit reached |
 | 13 | Revise schedule or funding | `GET …/plan-options` → `PATCH …/plan` | 409 version conflict, stale option; schedule changes are blocked while paused |
 | 14 | Discontinue plan | `POST …/plan/discontinue` | 409 `savings_plan_not_active` |
