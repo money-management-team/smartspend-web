@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router-dom";
-import { LuChevronLeft, LuChevronRight, LuX } from "react-icons/lu";
+import { LuChevronLeft, LuChevronRight, LuPiggyBank, LuX } from "react-icons/lu";
 
 import Loading from "../../../../components/Loading/Loading";
 import { getSavingsGoalDetailsPath } from "../../../../routes/Path";
@@ -14,6 +14,7 @@ import SavingsGoalCard from "./components/SavingsGoalCard/SavingsGoalCard";
 import SavingsGoalFilters from "./components/SavingsGoalFilters/SavingsGoalFilters";
 import SavingsGoalForm from "./components/SavingsGoalForm/SavingsGoalForm";
 import SavingsGoalsHeader from "./components/SavingsGoalsHeader/SavingsGoalsHeader";
+import UpcomingInstallments from "./components/UpcomingInstallments/UpcomingInstallments";
 import {
   getCurrencyOptions,
   getGoalActions,
@@ -26,6 +27,8 @@ import {
   parsePage,
   readGoalFilters,
 } from "./savingsGoalHelpers";
+import { SMART_SAVINGS_ENABLED, getUpcomingInstallments } from "./smartSavings";
+import { useGoalPlanSummaries } from "./useGoalPlanSummaries";
 
 import "./SavingsGoals.css";
 
@@ -37,8 +40,12 @@ const sameId = (left, right) => String(left) === String(right);
  * archiving happen in modals. The backend ledger is the source of truth: after
  * money moves (or a goal is created/archived) the list is refetched instead of
  * being patched locally.
+ *
+ * With smart savings enabled (`smartSavings.js`, off by default) each goal's
+ * active plan is looked up too: cards tell smart plans from flexible goals,
+ * and the next installments are listed above the grid.
  */
-export default function SavingsGoals() {
+export default function SavingsGoals({ smartSavingsEnabled = SMART_SAVINGS_ENABLED }) {
   const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = readGoalFilters(searchParams);
@@ -104,6 +111,13 @@ export default function SavingsGoals() {
   const { page: listPage, error } = isLoading ? { page: null, error: null } : result;
   const items = listPage?.items ?? [];
   const isFiltered = hasActiveGoalFilters(filters);
+  const isListReady = !isLoading && !error && listPage != null;
+
+  const planSummaries = useGoalPlanSummaries(items, {
+    enabled: smartSavingsEnabled,
+    requestKey: isListReady ? requestKey : null,
+  });
+  const upcomingInstallments = getUpcomingInstallments(items, planSummaries);
 
   const reloadGoals = () => setReloadKey((key) => key + 1);
 
@@ -247,8 +261,12 @@ export default function SavingsGoals() {
   };
 
   return (
-    <div className="savings-goals-page">
-      <SavingsGoalsHeader onNewGoal={openCreateForm} />
+    <div className={`savings-goals-page${smartSavingsEnabled ? " savings-goals-page--smart" : ""}`}>
+      <SavingsGoalsHeader
+        onNewGoal={openCreateForm}
+        goalCount={smartSavingsEnabled && isListReady ? listPage.total : null}
+        isFiltered={isFiltered}
+      />
 
       {notice && (
         <div className="savings-goals-page__notice" role="status">
@@ -304,16 +322,33 @@ export default function SavingsGoals() {
                 {t("dashboard.savingsGoals.filters.clear")}
               </button>
             </>
-          ) : (
+          ) : !smartSavingsEnabled ? (
             <>
               <p>{t("dashboard.savingsGoals.states.empty")}</p>
               <button type="button" onClick={openCreateForm}>
                 {t("dashboard.savingsGoals.newGoal")}
               </button>
             </>
+          ) : (
+            <div className="savings-goals-page__empty">
+              <span className="savings-goals-page__empty-icon" aria-hidden="true">
+                <LuPiggyBank />
+              </span>
+              <h2>{t("dashboard.savingsGoals.overview.emptyTitle")}</h2>
+              <p>{t("dashboard.savingsGoals.states.empty")}</p>
+              <button
+                type="button"
+                className="savings-goals-page__empty-action"
+                onClick={openCreateForm}
+              >
+                {t("dashboard.savingsGoals.newGoal")}
+              </button>
+            </div>
           )}
         </div>
       )}
+
+      {smartSavingsEnabled && isListReady && <UpcomingInstallments items={upcomingInstallments} />}
 
       {!isLoading && !error && items.length > 0 && (
         <section className="savings-goals-page__grid" aria-label={t("dashboard.savingsGoals.title")}>
@@ -321,6 +356,7 @@ export default function SavingsGoals() {
             <SavingsGoalCard
               key={goal.id}
               goal={goal}
+              planSummary={planSummaries[String(goal.id)]}
               onContribute={() => openContribution(goal)}
               onEdit={() => openEditForm(goal)}
               onArchive={() => openArchiveDialog(goal)}

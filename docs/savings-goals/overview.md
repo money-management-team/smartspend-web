@@ -27,6 +27,7 @@ They are separate backend values and are shown as separate badges (a paused goal
 | [api.md](api.md) | Endpoints, payloads, response envelopes and pagination keys, error codes |
 | [business-rules.md](business-rules.md) | Lifecycle and action matrix, pause/resume, archive, money movements, idempotency, eligible accounts |
 | [implementation.md](implementation.md) | Pages, components, state after each write, error wording, i18n/RTL, verification |
+| [smart-plans.md](smart-plans.md) | Smart savings plans: release gate, overview behaviour, full screen inventory, design direction |
 
 ## Routes
 
@@ -76,6 +77,9 @@ Savings goals (GET /savings-goals, filtered + paginated)
 | `…/SavingsGoals/components/GoalActivity/` | Paginated history with All / Contributions / Withdrawals tabs |
 | `…/SavingsGoals/components/GoalStatusBadge/`, `GoalProgressBar/`, `GoalProgress/` | Shared badges and progress visuals |
 | `src/features/Dashboards/User/SavingsGoalDetails/SavingsGoalDetails.jsx` | Details page |
+| `src/features/Dashboards/User/api/savingsPlansApi.js` | Smart-plan reads (`GET …/plan`) |
+| `…/SavingsGoals/smartSavings.js`, `useGoalPlanSummaries.js` | Smart-savings gate, plan summaries, upcoming installments |
+| `…/SavingsGoals/components/GoalPlanChip/`, `UpcomingInstallments/` | Smart plan / flexible chip; next-installments panel |
 | `src/locales/{en,ar}/*.json` → `dashboard.savingsGoals.*` | All copy |
 
 Accounts come from the existing `accountsApi`, the workspace from `resolveWorkspaceId()` / the session workspace, idempotency keys from `createIdempotentAttempt()`; none of these is duplicated.

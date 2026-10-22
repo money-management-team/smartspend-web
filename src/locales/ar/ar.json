@@ -2036,6 +2036,31 @@
         "savedNotice": "حُفظت الخطة.",
         "previous": "السابق",
         "next": "التالي"
+      },
+      "overview": {
+        "totalGoals": "إجمالي الأهداف",
+        "matchingGoals": "الأهداف المطابقة",
+        "emptyTitle": "ابدأ هدف الادخار الأول",
+        "mode": {
+          "loading": "جارٍ التحقق من الخطة…",
+          "smart": "خطة ذكية",
+          "flexible": "ادخار مرن",
+          "unavailable": "تعذّر معرفة حالة الخطة"
+        },
+        "intensity": {
+          "easy": "سهلة",
+          "balanced": "متوازنة",
+          "intensive": "مكثّفة"
+        },
+        "nextInstallment": "القسط التالي",
+        "overdue": "متأخر",
+        "noOpenInstallments": "لا توجد أقساط مفتوحة",
+        "onHold": "الخطة متوقفة مؤقتًا ما دام الهدف معلّقًا",
+        "reviewSuggested": "يُنصح بالمراجعة",
+        "upcoming": {
+          "title": "الأقساط القادمة",
+          "hint": "القسط التالي لكل خطة ذكية في هذه الصفحة. لا يتحرك أي مال حتى تؤكده بنفسك."
+        }
       }
     },
     "debts": {

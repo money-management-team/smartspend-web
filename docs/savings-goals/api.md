@@ -21,6 +21,14 @@ Paths are relative to `VITE_API_BASE_URL`, which already ends in `/api`, so `/sa
 
 There is intentionally no `delete` wrapper: `DELETE` archives, and `archive` says so. `PUT` is supported by the backend but the client uses `PATCH`.
 
+### Smart plans (`savingsPlansApi`, gated)
+
+| Method | Endpoint | Wrapper | Response |
+| --- | --- | --- | --- |
+| `GET` | `/savings-goals/{id}/plan` | `getActive(id, { signal })` | `data.savings_goal`, `data.balance`, `data.savings_plan` (`next_installment`, `installments`), `data.plan_health`. **404 = no active plan (flexible goal)** |
+
+Only used when smart savings is enabled; see [smart-plans.md](smart-plans.md).
+
 ## Goal object
 
 ```json

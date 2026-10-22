@@ -16,6 +16,14 @@
   - the lifecycle badge, the progress badge (when it differs), and "Deadline passed";
   - saved / target, remaining and the target date;
   - Add contribution, Edit and Archive, per the action matrix. Archived cards are dimmed and have no buttons.
+- **Smart savings (gated, off by default):** with `VITE_SMART_SAVINGS_ENABLED=true` the page root gets `savings-goals-page--smart`, and only then:
+  - each card gets a plan chip and, for smart plans, its next installment;
+  - an "Upcoming installments" panel appears above the grid;
+  - the header shows the list's `total` ("Total goals", or "Matching goals" when filtered);
+  - the unfiltered empty state gets an icon, a title and a primary button;
+  - cards lift on hover.
+
+  With the flag off the page is the original production UI. See [smart-plans.md](smart-plans.md).
 - **Pagination:** `per_page=12`; the footer (reusing the transactions pagination copy) appears when `last_page > 1`.
 - **`?new=1`** opens the create form once, then is removed from the URL.
 

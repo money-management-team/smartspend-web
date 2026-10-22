@@ -1,7 +1,7 @@
 import PrivateMoney from "../../../Experience/PrivateMoney";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { LuArchive, LuPencil, LuPlus } from "react-icons/lu";
+import { LuArchive, LuCirclePause, LuPencil, LuPlus, LuTriangleAlert } from "react-icons/lu";
 
 import { getSavingsGoalDetailsPath } from "../../../../../../routes/Path";
 import { getDisplayLocale } from "../../../Accounts/accountHelpers";
@@ -14,6 +14,7 @@ import {
   getGoalStatus,
   toDateOnly,
 } from "../../savingsGoalHelpers";
+import GoalPlanChip from "../GoalPlanChip/GoalPlanChip";
 import GoalProgress from "../GoalProgress/GoalProgress";
 import GoalStatusBadge from "../GoalStatusBadge/GoalStatusBadge";
 
@@ -23,12 +24,17 @@ import "./SavingsGoalCard.css";
  * One goal in the list. Every figure is the backend's own progress (saved,
  * remaining, percentage, status); nothing is calculated here. The whole card
  * opens the details page; the buttons follow the lifecycle status.
+ *
+ * `planSummary` (smart savings, gated) adds the smart-plan / flexible chip
+ * and, for a smart plan, its next installment exactly as the backend sent
+ * it. Without it the card is the flexible-only card.
  */
 export default function SavingsGoalCard({
   goal,
   onContribute,
   onEdit,
   onArchive,
+  planSummary,
 }) {
   const { t, i18n } = useTranslation();
   const locale = getDisplayLocale(i18n.language);
@@ -46,8 +52,15 @@ export default function SavingsGoalCard({
       </bdi>
     );
 
+  const smartPlan = planSummary?.state === "smart" ? planSummary : null;
+  const next = smartPlan?.nextInstallment;
+
   return (
-    <article className={`saving-goal-card saving-goal-card--${status}`}>
+    <article
+      className={`saving-goal-card saving-goal-card--${status}${
+        smartPlan ? " saving-goal-card--smart" : ""
+      }`}
+    >
       <div className="saving-goal-card__top">
         <GoalProgress
           percentage={progress?.percentage_funded}
@@ -66,6 +79,7 @@ export default function SavingsGoalCard({
           </Link>
 
           <div className="saving-goal-card__badges">
+            <GoalPlanChip summary={planSummary} />
             <GoalStatusBadge kind="lifecycle" status={goal.status} />
             {progress?.status && progress.status !== goal.status && (
               <GoalStatusBadge kind="progress" status={progress.status} />
@@ -106,6 +120,47 @@ export default function SavingsGoalCard({
               </>
             )}
           </small>
+
+          {smartPlan && (
+            <div
+              className={`saving-goal-card__plan${
+                next?.isOverdue && smartPlan.executable ? " saving-goal-card__plan--overdue" : ""
+              }`}
+            >
+              {!smartPlan.executable ? (
+                <span className="saving-goal-card__plan-note">
+                  <LuCirclePause aria-hidden="true" />
+                  {t("dashboard.savingsGoals.overview.onHold")}
+                </span>
+              ) : next ? (
+                <>
+                  <span className="saving-goal-card__plan-label">
+                    {t("dashboard.savingsGoals.overview.nextInstallment")}
+                  </span>
+                  <span className="saving-goal-card__plan-value">
+                    {money(next.amount)}
+                    <span className="saving-goal-card__separator">·</span>
+                    <bdi>{formatDate(next.date, locale)}</bdi>
+                  </span>
+                  {next.isOverdue && (
+                    <span className="saving-goal-card__plan-overdue">
+                      {t("dashboard.savingsGoals.overview.overdue")}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <span className="saving-goal-card__plan-note">
+                  {t("dashboard.savingsGoals.overview.noOpenInstallments")}
+                </span>
+              )}
+              {smartPlan.reviewSuggested && (
+                <span className="saving-goal-card__plan-review">
+                  <LuTriangleAlert aria-hidden="true" />
+                  {t("dashboard.savingsGoals.overview.reviewSuggested")}
+                </span>
+              )}
+            </div>
+          )}
 
           {(actions.canContribute || actions.canEdit || actions.canArchive) && (
             <div className="saving-goal-card__actions">

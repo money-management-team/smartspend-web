@@ -1,0 +1,100 @@
+/* Sits beside GoalStatusBadge: same height, radius and type size. */
+.goal-plan-chip {
+  padding: 5px 10px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  border: 1px solid transparent;
+  border-radius: 999px;
+
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.goal-plan-chip svg {
+  width: 12px;
+  height: 12px;
+  flex: none;
+}
+
+.goal-plan-chip--smart {
+  color: var(--savings-ink, var(--color-primary));
+  border-color: color-mix(in srgb, var(--savings-cyan, #0891b2) 30%, transparent);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-primary) 10%, transparent),
+    color-mix(in srgb, var(--savings-cyan, #0891b2) 12%, transparent)
+  );
+}
+
+.goal-plan-chip--smart svg {
+  color: var(--savings-cyan, #0891b2);
+}
+
+[dir="rtl"] .goal-plan-chip--smart {
+  background: linear-gradient(
+    270deg,
+    color-mix(in srgb, var(--color-primary) 10%, transparent),
+    color-mix(in srgb, var(--savings-cyan, #0891b2) 12%, transparent)
+  );
+}
+
+.goal-plan-chip__dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.55;
+}
+
+.goal-plan-chip__intensity {
+  font-weight: 500;
+}
+
+.goal-plan-chip--flexible {
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+  background: var(--color-surface);
+}
+
+.goal-plan-chip--unavailable {
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+  border-style: dashed;
+  background: transparent;
+}
+
+.goal-plan-chip--loading {
+  min-width: 92px;
+
+  color: transparent;
+  background: linear-gradient(
+    90deg,
+    var(--surface-soft) 0%,
+    var(--surface-hover) 50%,
+    var(--surface-soft) 100%
+  );
+  background-size: 200% 100%;
+
+  animation: goal-plan-chip-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes goal-plan-chip-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .goal-plan-chip--loading {
+    animation: none;
+  }
+}

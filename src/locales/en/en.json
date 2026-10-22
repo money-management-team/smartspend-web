@@ -2036,6 +2036,31 @@
         "savedNotice": "Plan saved.",
         "previous": "Previous",
         "next": "Next"
+      },
+      "overview": {
+        "totalGoals": "Total goals",
+        "matchingGoals": "Matching goals",
+        "emptyTitle": "Start your first savings goal",
+        "mode": {
+          "loading": "Checking plan…",
+          "smart": "Smart plan",
+          "flexible": "Flexible saving",
+          "unavailable": "Plan status unavailable"
+        },
+        "intensity": {
+          "easy": "Easy",
+          "balanced": "Balanced",
+          "intensive": "Intensive"
+        },
+        "nextInstallment": "Next installment",
+        "overdue": "Overdue",
+        "noOpenInstallments": "No open installments",
+        "onHold": "Plan on hold while the goal is paused",
+        "reviewSuggested": "Review suggested",
+        "upcoming": {
+          "title": "Upcoming installments",
+          "hint": "The next installment of each smart plan on this page. No money moves until you confirm it."
+        }
       }
     },
     "debts": {
