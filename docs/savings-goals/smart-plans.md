@@ -105,6 +105,67 @@ Both move no money. Both send `Idempotency-Key`, `expected_plan_version` and `ex
 
 **Errors.** Known backend codes have their own translated sentence (`smartPlan.errors.codes.*`); the backend's English messages are not shown for them. A 403 explains that only the plan owner can act, a 404 that the installment is gone, and a 429 uses the standard rate-limit message.
 
+## Plan creation (F3)
+
+`SmartPlanWizard` (`src/features/Dashboards/User/SmartPlanWizard/`) has four stages: **Goal → Plan → Funding → Review**. It is a lazy page on two routes, and both are registered only when the flag is on (`smartSavingsFlag.js` is import-free, so the route table doesn't pull in the feature).
+
+| Route | Use | Preview | Create |
+| --- | --- | --- | --- |
+| `PATH.USER.SAVINGS_SMART_PLAN_NEW` `/dashboard/savings-goals/smart-plan` | New goal with a plan | `POST /savings-plans/preview` | `POST /savings-goals/with-plan` (goal, savings account and plan in one transaction) |
+| `PATH.USER.SAVINGS_GOAL_SMART_PLAN` `/dashboard/savings-goals/:id/smart-plan` | Existing flexible goal | `GET /savings-goals/{id}/plan-options` | `POST /savings-goals/{id}/plan` |
+
+Entry points (flag on only):
+- **Overview header:** a "Smart plan" action. "New goal" still opens the existing form.
+- **Details page:** an invitation card for an **active** flexible goal with money still to save. Paused, funded, achieved and archived goals get nothing.
+- **Wizard stage 1:** "Free savings" leaves for the existing create form (`?new=1`), unchanged.
+
+### Stages
+
+1. **Goal.**
+   - A new goal takes its name, target amount, currency, optional target date and notes.
+   - An existing goal is shown read only: target, saved and remaining come from its ledger progress, and amount and date change through Edit goal.
+   - Both choose a rhythm (weekly, every 2 weeks, monthly, every 3 months → `frequency` × `interval`) and an optional first-installment date.
+   - Validated before continuing (`validateGoalStep`).
+2. **Plan.**
+   - The backend's options as cards: amount per installment, count, first → last date, last installment when it differs, and the full schedule on demand (`option.installments`, exactly).
+   - Affordability is the backend's `band`, labelled **Estimate**. The capacity panel says "not a guarantee or financial advice". Unknown capacity is never shown as zero.
+   - Infeasible options show their `status` and shortfall. Duplicate schedules say "Same schedule as …". Neither can be chosen.
+   - The recommendation and its reason are the backend's. A preview 422 offers "Edit the goal"; other errors offer a retry.
+   - When no option can be chosen (e.g. already funded), Continue is disabled.
+3. **Funding.**
+   - The four backend modes. Only eligible accounts are offered (active, same currency, not a goal's account; `getEligibleAccounts`).
+   - **Single:** exactly one account.
+   - **Priority:** two to five accounts, reorderable. Sources are sent in that order, first = priority 1.
+   - **Allocated:** two to five accounts with percentages, parsed to whole basis points with string arithmetic (`percentToBps`). They must total exactly 10000; a note says split installments can't be confirmed in the app yet.
+   - **At confirmation:** no sources.
+   - Shape rules are checked before sending (`validateFunding`, mirroring `SavingsPlanFundingRules`). Eligibility is the backend's call.
+4. **Review.**
+   - The plan comes first, full width; goal and funding sit beside each other below it. Each has an Edit link.
+   - The assurance reads "Accepting a plan moves no money".
+   - An explicit checkbox is required before the create button is enabled.
+
+### Rules that protect the user
+
+- **Previews belong to their inputs.**
+  - `getPreviewKey` covers amount, currency, target date, rhythm, first date and goal, plus a nonce.
+  - Any change fetches a new preview, and the chosen option, read from that preview only, is cleared.
+  - Nothing from an older preview can be sent.
+- **The approval covers what is shown.** It is tied to the preview key, the option's two fingerprints, the funding and the name and notes. Changing any of them unticks it.
+- **Fingerprints.** Creation sends the chosen option's `options_fingerprint` and `assessment_fingerprint`; amounts and installments are never sent.
+- **Stale option.** On a 409 `savings_plan_option_stale` (verdict `schedule_changed`, `assessment_changed` or `unavailable`), the wizard returns to the Plan stage with a fresh preview, explains the verdict, and clears both the choice and the approval. The `current_option` in the 409 is **not** accepted on the user's behalf, and nothing is resent automatically.
+- **Idempotency.** There is one key per payload (`createIdempotentAttempt("savings-plan")`). An unknown outcome (network, timeout, 5xx) keeps it, so "Try again" replays the same request; the backend returns the same goal. Any rejection drops it.
+- **Other failures.**
+  - A 422 shows the backend's reason, with a link to the stage that owns the field (`getErrorStep`: `funding.*` → Funding, fingerprints → Plan, the rest → Goal).
+  - Other 409s (goal paused, archived, funded, or already planned) and a 403 (not the owner) show their message.
+  - The existing-goal route checks first and explains instead of offering the form.
+- **No money moves.** Previews and creation never create a transfer.
+- **Guard.** `UnsavedChangesGuard` protects unsaved work. It is quiet while a request is in flight, so navigating to the new goal isn't blocked.
+- **After success.** The wizard navigates to the goal's page with `state.smartPlanCreated`, and the plan panel shows "Your smart plan is ready. Nothing has moved yet".
+
+### Goal-details header (flag on)
+
+With the flag on, the details root gets `savings-goal-details--smart`, and the status badges on the blue header take the same translucent-white treatment as its other chips, so they are readable in both themes. With the flag off, the header is unchanged.
+
 ## Screen inventory
 
 The "API" column is the backend endpoint. Every write sends `Idempotency-Key`. Plan writes also send `expected_plan_version`, and installment writes send `expected_lock_version`.
@@ -113,10 +174,10 @@ The "API" column is the backend endpoint. Every write sends `Idempotency-Key`. P
 | --- | --- | --- | --- |
 | 1 | **Overview** (F1, done) | `GET /savings-goals`, `GET …/plan` | loading, empty, filtered-empty, error + retry, plan unavailable |
 | 2 | Create flexible goal | `POST /savings-goals` (unchanged) | validation 422 |
-| 3 | Create smart plan: goal + timing | `POST /savings-plans/preview` | capacity `known` / `none` / `unknown` (unknown is never shown as 0) |
-| 4 | Plan choice: Easy / Balanced / Intensive | preview `options[]`, `recommended_intensity`, `duplicate_of` | infeasible, `affordability.band`, recommendation `null` + reason |
-| 5 | Funding: single / priority / allocated / at confirmation | part of `POST /savings-goals/with-plan` | allocation sums to 10000 bps; account eligibility 422 |
-| 6 | Review & accept | `POST /savings-goals/with-plan` or `POST …/{id}/plan` | **409 `savings_plan_option_stale`** → show `current_option` and ask again |
+| 3 | **Create smart plan: goal + timing** (F3, done) | `POST /savings-plans/preview` | capacity `known` / `none` / `unknown` (unknown is never shown as 0) |
+| 4 | **Plan choice: Easy / Balanced / Intensive** (F3, done) | preview `options[]`, `recommended_intensity`, `duplicate_of` | infeasible, `affordability.band`, recommendation `null` + reason |
+| 5 | **Funding: single / priority / allocated / at confirmation** (F3, done) | part of `POST /savings-goals/with-plan` | allocation sums to 10000 bps; account eligibility 422 |
+| 6 | **Review & accept** (F3, done) | `POST /savings-goals/with-plan` or `POST …/{id}/plan` | **409 `savings_plan_option_stale`** → show `current_option` and ask again |
 | 7 | **Goal details + plan panel** (F2, done) | `GET …/{id}`, `GET …/plan` | flexible (404), paused (on hold), `plan_health` reasons |
 | 8 | **Installment timeline** (F2, done) | `savings_plan.installments` | planned, fulfilled, partially reversed, skipped, missed, cancelled, postponed |
 | 9 | **Confirm installment, one account** (F2, done) | `GET …/confirmation-preview` → `POST …/confirm` | `confirmable: false`, 409 version / not open / exceeds remaining, 422 balance |

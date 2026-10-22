@@ -1,12 +1,9 @@
 import { savingsPlansApi } from "../api/savingsPlansApi";
 import { getGoalStatus } from "./savingsGoalHelpers";
 
-/*
- * Smart savings plans are unreleased. The overview looks plans up only when
- * the build sets VITE_SMART_SAVINGS_ENABLED=true; without it the page is the
- * flexible-only experience production already has, with no extra requests.
- */
-export const SMART_SAVINGS_ENABLED = import.meta.env.VITE_SMART_SAVINGS_ENABLED === "true";
+// Off unless VITE_SMART_SAVINGS_ENABLED=true; without it the overview is the
+// flexible-only experience production already has, with no extra requests.
+export { SMART_SAVINGS_ENABLED } from "./smartSavingsFlag";
 
 export const PLAN_INTENSITIES = ["easy", "balanced", "intensive"];
 

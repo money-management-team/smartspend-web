@@ -7,6 +7,7 @@ import DashboardLayout from "../layouts/DashboardLayout/DashboardLayout";
 import PublicLayout from "../layouts/PublicLayout/PublicLayout";
 import { Navigate } from "react-router-dom";
 import WhatsAppDraftLink from "../features/Dashboards/User/WhatsAppDrafts/WhatsAppDraftLink";
+import { SMART_SAVINGS_ENABLED } from "../features/Dashboards/User/SavingsGoals/smartSavingsFlag";
 
 import {
   AttentionCenter,
@@ -45,6 +46,7 @@ import {
   Reports,
   SavingsGoalDetails,
   SavingsGoals,
+  SmartPlanWizard,
   Settings,
   TransactionDetails,
   TransferDetails,
@@ -252,6 +254,13 @@ const userRoutes = [
         path: PATH.USER.SAVINGS_GOAL_DETAILS,
         element: <SavingsGoalDetails />,
       },
+      // Unreleased: registered only when smart savings is enabled.
+      ...(SMART_SAVINGS_ENABLED
+        ? [
+            { path: PATH.USER.SAVINGS_SMART_PLAN_NEW, element: <SmartPlanWizard /> },
+            { path: PATH.USER.SAVINGS_GOAL_SMART_PLAN, element: <SmartPlanWizard /> },
+          ]
+        : []),
       {
         path: PATH.USER.DEBTS,
         element: <Debts />,

@@ -497,7 +497,7 @@ export default function SavingsGoalDetails({ smartSavingsEnabled = SMART_SAVINGS
             : null;
 
   return (
-    <div className="savings-goal-details">
+    <div className={`savings-goal-details${smartSavingsEnabled ? " savings-goal-details--smart" : ""}`}>
       {backLink}
 
       {notice.key === requestKey && (

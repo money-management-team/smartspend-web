@@ -2061,7 +2061,8 @@
         "upcoming": {
           "title": "Upcoming installments",
           "hint": "The next installment of each smart plan on this page. No money moves until you confirm it."
-        }
+        },
+        "smartPlanAction": "Smart plan"
       },
       "smartPlan": {
         "eyebrow": "Smart plan",
@@ -2188,7 +2189,8 @@
           "postponed": "Installment {{number}} moved to",
           "skipped": "Installment {{number}} skipped. Your target is unchanged.",
           "noMoney": "No money moved.",
-          "closed": "That installment changed and is no longer open, so the action was not started."
+          "closed": "That installment changed and is no longer open, so the action was not started.",
+          "created": "Your smart plan is ready. Nothing has moved yet: confirm each installment when it's due."
         },
         "confirm": {
           "eyebrow": "Installment {{number}}",
@@ -2276,6 +2278,225 @@
             "savings_installment_schedule_conflict": "That date reaches the next installment. The latest date allowed is {{date}}.",
             "savings_installment_beyond_target_date": "That date is after the goal's target date ({{date}})."
           }
+        },
+        "invite": {
+          "title": "Turn this goal into a smart plan",
+          "body": "Compare Easy, Balanced and Intensive schedules built from what's left and your recent cash flow. Nothing moves until you confirm each installment.",
+          "action": "Create a smart plan"
+        }
+      },
+      "smartPlanWizard": {
+        "eyebrow": "Smart savings",
+        "title": "Create a smart savings plan",
+        "titleExisting": "A smart plan for “{{name}}”",
+        "subtitle": "Set your goal, compare three plans built from your own numbers, choose where the money comes from, then review. Nothing moves until you confirm each installment.",
+        "backToGoals": "All savings goals",
+        "backToGoal": "Back to the goal",
+        "loadingGoal": "Loading the goal…",
+        "goalErrorTitle": "We couldn't start the plan",
+        "back": "Back",
+        "continue": "Continue",
+        "create": "Create goal and plan",
+        "createExisting": "Add this plan",
+        "creating": "Creating…",
+        "retryCreate": "Try again",
+        "unavailable": {
+          "title": "This goal can't take a smart plan now",
+          "hasPlan": "It already has an active smart plan. You can follow and manage it from the goal's page.",
+          "paused": "The goal is paused. Resume it first, then add a plan.",
+          "achieved": "The goal is already fully funded, so it needs no plan.",
+          "archived": "Archived goals can't be planned.",
+          "other": "Its current status doesn't allow a new plan."
+        },
+        "steps": {
+          "label": "Plan creation steps",
+          "count": "Step {{current}} of {{total}}",
+          "goal": "Goal",
+          "plan": "Plan",
+          "funding": "Funding",
+          "review": "Review"
+        },
+        "validation": {
+          "nameRequired": "Give the goal a name.",
+          "nameTooLong": "Use at most {{max}} characters.",
+          "currencyRequired": "Choose a currency.",
+          "dateInvalid": "Enter a valid date.",
+          "dateInPast": "Choose today or a later date.",
+          "targetBeforeStart": "The target date can't be before the first installment.",
+          "notesTooLong": "Use at most {{max}} characters.",
+          "rhythmRequired": "Choose how often you'll save.",
+          "choosePlan": "Choose one of the plans to continue.",
+          "modeRequired": "Choose how the plan is funded.",
+          "duplicateAccount": "Each account can be listed once.",
+          "chooseOneAccount": "Choose the account installments come from.",
+          "chooseTwoAccounts": "Add at least two accounts.",
+          "tooManyAccounts": "Use at most {{max}} accounts.",
+          "allocationInvalid": "Each share must be a percentage between 0.01 and 100, with up to two decimals.",
+          "allocationTotal": "The shares must add up to exactly 100%."
+        },
+        "goal": {
+          "kindTitle": "What kind of savings?",
+          "free": {
+            "title": "Free savings",
+            "description": "Add money whenever you like. No schedule."
+          },
+          "smart": {
+            "title": "Smart savings",
+            "description": "A schedule built from what's left and your recent cash flow.",
+            "selected": "Selected"
+          },
+          "existing": {
+            "target": "Target",
+            "saved": "Saved",
+            "remaining": "Remaining",
+            "targetDate": "Target date",
+            "noDate": "No target date",
+            "hint": "The plan covers what's still remaining. To change the target amount or date, edit the goal first."
+          },
+          "detailsTitle": "Your goal",
+          "optional": "(optional)",
+          "targetDateHint": "With a date, plans aim to finish by it. Without one, they're shaped by what you can afford.",
+          "rhythmTitle": "How often will you save?",
+          "rhythmHint": "Every installment is confirmed by you. None is taken automatically.",
+          "rhythms": {
+            "weekly": "Weekly",
+            "biweekly": "Every 2 weeks",
+            "monthly": "Monthly",
+            "quarterly": "Every 3 months"
+          },
+          "startDate": "First installment",
+          "startDateHint": "Leave empty to start from today."
+        },
+        "plan": {
+          "loading": "Building your plans…",
+          "errorTitle": "We couldn't build the plans",
+          "editGoal": "Edit the goal",
+          "stale": {
+            "title": "Your plan changed",
+            "schedule_changed": "The schedule changed since you reviewed it (for example, money moved in or out of the goal). The options below are current. Choose again.",
+            "assessment_changed": "What you can afford changed since you reviewed it. The options below are current. Choose again.",
+            "unavailable": "That option is no longer available. The options below are current. Choose again."
+          },
+          "capacity": {
+            "title": "Estimated room to save",
+            "perMonth": "a month",
+            "none": "No regular surplus found in your recent months.",
+            "unknown": "Not enough history yet to estimate what you can afford.",
+            "disclaimer": "An estimate from your own accounts over recent months. It's a guide, not a guarantee or financial advice.",
+            "warnings": {
+              "irregular_income": "Your income varies, so the estimate uses your weakest recent month.",
+              "negative_cash_flow_month": "You spent more than you earned in at least one recent month.",
+              "forecast_shortfall": "Your forecast shows a shortfall ahead.",
+              "debt_due_in_forecast_window": "A debt payment is due soon.",
+              "existing_planned_contributions_for_goal": "This goal already has planned contributions outside the plan.",
+              "no_spendable_account_in_currency": "You have no spendable account in this currency.",
+              "target_date_passed": "The target date has passed.",
+              "goal_paused": "The goal is paused."
+            }
+          },
+          "reasons": {
+            "fastest_comfortable_option": "Recommended: the fastest plan that fits comfortably in your estimated room.",
+            "gentlest_stretch_option": "Recommended: the gentlest plan. Every option is a stretch for your estimated room.",
+            "no_affordable_option": "None of the plans fits your estimated room. You can still choose one, or change the goal.",
+            "no_feasible_option": "None of the plans can reach the goal with these settings.",
+            "affordability_unknown": "We can't judge affordability yet, so no plan is recommended. Choose what feels right.",
+            "already_funded": "This goal is already fully funded.",
+            "none": "Compare the plans and choose one."
+          },
+          "empty": {
+            "title": "No plans to show",
+            "body": "Change the goal or the schedule and try again."
+          },
+          "chooseLabel": "Choose a plan",
+          "footnote": "Amounts and dates come from SmartSpend's planner and are rechecked when you create the plan.",
+          "recommended": "Recommended",
+          "per": {
+            "weekly": "every week",
+            "weeklyEvery": "every {{count}} weeks",
+            "monthly": "every month",
+            "monthlyEvery": "every {{count}} months"
+          },
+          "status": {
+            "deadline_before_first_installment": "The target date comes before the first installment.",
+            "too_many_installments": "This would take more installments than a plan allows.",
+            "above_contribution_limit": "Each installment would be above the allowed limit.",
+            "already_funded": "The goal is already fully funded.",
+            "unavailable": "This plan isn't available with these settings."
+          },
+          "installments": "Installments",
+          "dates": "Dates",
+          "finalInstallment": "Last installment",
+          "shortfall": "Falls short by",
+          "duplicate": "Same schedule as {{intensity}}.",
+          "bands": {
+            "comfortable": "Comfortable",
+            "stretch": "A stretch",
+            "strained": "Strained",
+            "unaffordable": "Beyond your estimated room",
+            "unknown": "Affordability unknown"
+          },
+          "estimate": "Estimate",
+          "monthlyEquivalent": "About",
+          "shareOfRoom": "{{share}} of your estimated monthly room",
+          "warnings": {
+            "insufficient_spendable_balance": "Your spendable balance may not cover the first installments.",
+            "exceeds_estimated_capacity": "Above your estimated monthly room.",
+            "target_date_passed": "The target date has passed."
+          },
+          "showSchedule": "Review all {{count}} installments",
+          "hideSchedule": "Hide the schedule"
+        },
+        "funding": {
+          "modeTitle": "Where will installments come from?",
+          "modes": {
+            "single": "Every installment from one account.",
+            "priority": "Up to five accounts in order. You confirm each installment from one of them.",
+            "allocated": "Each installment split across accounts by fixed shares.",
+            "at_confirmation": "No account now. You choose one each time you confirm."
+          },
+          "atConfirmation": "You'll pick an eligible {{currency}} account each time you confirm an installment, after seeing its balance.",
+          "loadingAccounts": "Loading your accounts…",
+          "accountsError": "We couldn't load your accounts.",
+          "noAccounts": "You have no active {{currency}} account that can fund a plan. Add one, or choose “Chosen at each confirmation”.",
+          "chooseOne": "Choose the account",
+          "priorityTitle": "Accounts in priority order",
+          "priorityHint": "Two to {{max}} accounts. The first is suggested first when you confirm.",
+          "allocatedTitle": "Accounts and their shares",
+          "allocatedHint": "Two to {{max}} accounts. The shares must add up to 100%.",
+          "shareOf": "Share for {{name}}, in percent",
+          "moveUp": "Move {{name}} up",
+          "moveDown": "Move {{name}} down",
+          "remove": "Remove {{name}}",
+          "addAccount": "Add an account",
+          "addPlaceholder": "Choose an account…",
+          "total": "Total",
+          "allocatedNotice": "Installments split across several accounts can't be confirmed in the app yet. You can still create the plan and change its funding later.",
+          "noMoney": "Choosing accounts moves no money. They're checked again when you create the plan and at every confirmation."
+        },
+        "review": {
+          "edit": {
+            "goal": "Edit the goal",
+            "plan": "Change the plan",
+            "funding": "Change the funding"
+          },
+          "editLabel": "Edit",
+          "unknownOutcome": "We couldn't confirm whether the plan was created. Trying again is safe: it won't create a second one.",
+          "fix": {
+            "goal": "Fix the goal details",
+            "plan": "Choose the plan again",
+            "funding": "Fix the funding"
+          },
+          "goalTitle": "Goal",
+          "noTargetDate": "No target date",
+          "planTitle": "{{intensity}} plan",
+          "firstInstallment": "First installment",
+          "lastInstallment": "Last installment",
+          "affordability": "Affordability",
+          "fundingTitle": "Funding",
+          "atConfirmation": "You'll choose the account each time you confirm.",
+          "noMoneyTitle": "Accepting a plan moves no money",
+          "noMoneyBody": "Each installment waits for you. Nothing is deducted until you confirm it, and you can postpone or skip installments from the goal's page.",
+          "accept": "I've reviewed this plan and want to create it."
         }
       }
     },

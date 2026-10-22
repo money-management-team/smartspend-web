@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { LuLandmark, LuRefreshCw, LuSparkles, LuX } from "react-icons/lu";
+import { Link, useLocation } from "react-router-dom";
+import { LuArrowRight, LuLandmark, LuRefreshCw, LuSparkles, LuX } from "react-icons/lu";
 
 import { ApiError } from "../../../api/apiClient";
 import { savingsPlansApi } from "../../../api/savingsPlansApi";
@@ -8,7 +9,8 @@ import { getDisplayLocale } from "../../../Accounts/accountHelpers";
 import PrivateMoney from "../../../Experience/PrivateMoney";
 import { translateEnum } from "../../../FinancialOperations/transactionHelpers";
 import { formatDate, formatMoney } from "../../../utils/formatters";
-import { getGoalCurrency, getGoalStatus } from "../../savingsGoalHelpers";
+import { getGoalSmartPlanPath } from "../../../../../../routes/Path";
+import { getGoalCurrency, getGoalProgress, getGoalStatus } from "../../savingsGoalHelpers";
 import {
   formatAllocation,
   getFrequencyLabel,
@@ -55,6 +57,10 @@ export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallme
   const [dialog, setDialog] = useState(null);
   // One-time message after a postpone / skip: { action, sequence, date }.
   const [notice, setNotice] = useState(null);
+  // Arriving from the plan wizard: a one-time "plan ready" message.
+  const location = useLocation();
+  const [createdDismissed, setCreatedDismissed] = useState(false);
+  const showCreated = location.state?.smartPlanCreated === true && !createdDismissed;
 
   useEffect(() => {
     if (!lookupKey) return undefined;
@@ -93,7 +99,34 @@ export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallme
   const isRefreshing = result.key !== lookupKey;
   const data = String(result.goalId) === String(goalId) ? result.data : null;
 
-  if (!isRefreshing && result.flexible) return null;
+  // A flexible goal keeps its page; an active one with money still to save
+  // is invited to take a plan (never paused, funded or archived goals).
+  if (!isRefreshing && result.flexible) {
+    const remaining = getGoalProgress(goal)?.remaining_amount;
+    const canPlan =
+      getGoalStatus(goal) === "active" && remaining != null && !/^-?0*(\.0*)?$/.test(String(remaining).trim());
+
+    if (!canPlan) return null;
+
+    return (
+      <section className="smart-plan smart-plan--invite" aria-labelledby="smart-plan-invite-title">
+        <p className="smart-plan__eyebrow">
+          <LuSparkles aria-hidden="true" />
+          <span>{t(`${prefix}.eyebrow`)}</span>
+        </p>
+        <div className="smart-plan__invite">
+          <div>
+            <h2 id="smart-plan-invite-title">{t(`${prefix}.invite.title`)}</h2>
+            <p>{t(`${prefix}.invite.body`)}</p>
+          </div>
+          <Link className="smart-plan__invite-action" to={getGoalSmartPlanPath(goalId)}>
+            <span>{t(`${prefix}.invite.action`)}</span>
+            <LuArrowRight aria-hidden="true" />
+          </Link>
+        </div>
+      </section>
+    );
+  }
 
   const reload = () => setReloadCount((count) => count + 1);
 
@@ -244,6 +277,15 @@ export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallme
           </span>
         )}
       </header>
+
+      {showCreated && (
+        <div className="smart-plan__notice" role="status">
+          <p>{t(`${prefix}.notices.created`)}</p>
+          <button type="button" onClick={() => setCreatedDismissed(true)} aria-label={t("common.close")}>
+            <LuX aria-hidden="true" />
+          </button>
+        </div>
+      )}
 
       {notice && (
         <div className="smart-plan__notice" role="status">

@@ -351,14 +351,25 @@ describe("Goal details smart plan", () => {
     assert.ok(view.container.querySelector(".savings-goal-details__header"));
     assert.equal(callsTo(calls, "GET", "/plan").length, 0);
     assert.equal(panel(view), null);
+    // The header badge contrast fix belongs to the smart experience only.
+    assert.equal(view.container.querySelector(".savings-goal-details--smart"), null);
     await view.unmount();
   });
 
-  it("shows nothing extra for a flexible goal and never looks up an achieved one", async () => {
+  it("invites an active flexible goal to take a plan and never looks up an achieved one", async () => {
     serve({ "GET /savings-goals/1": { savings_goal: goal() }, "GET /savings-goals/1/plan": notFound });
     let view = await renderDetails();
-    assert.equal(panel(view), null);
+    const invite = view.container.querySelector(".smart-plan--invite");
+    assert.ok(invite);
+    assert.equal(invite.querySelector("a").getAttribute("href"), "/dashboard/savings-goals/1/smart-plan");
+    assert.equal(view.container.querySelector(".smart-plan__figures"), null);
     assert.doesNotMatch(view.container.textContent, /Flexible/);
+    await view.unmount();
+
+    // A paused flexible goal keeps its page as it was.
+    serve({ "GET /savings-goals/1": { savings_goal: goal({ status: "paused" }) }, "GET /savings-goals/1/plan": notFound });
+    view = await renderDetails();
+    assert.equal(panel(view), null);
     await view.unmount();
 
     const calls = serve({ "GET /savings-goals/1": { savings_goal: goal({ status: "achieved" }) } });

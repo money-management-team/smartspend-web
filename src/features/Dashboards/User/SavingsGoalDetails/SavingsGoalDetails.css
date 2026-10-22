@@ -559,3 +559,17 @@
     animation: none;
   }
 }
+
+/* =========================================
+   SMART SAVINGS (VITE_SMART_SAVINGS_ENABLED)
+
+   On the blue header the status badges get the same translucent white
+   treatment as its other chips, so they stay readable in both themes.
+========================================= */
+
+/* (0,5,0): must beat the badge's own dark-theme tint, which is (0,4,0). */
+:root .savings-goal-details.savings-goal-details--smart .savings-goal-details__header .goal-status-badge {
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.14);
+}

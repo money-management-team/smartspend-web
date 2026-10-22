@@ -31,12 +31,14 @@ They are separate backend values and are shown as separate badges (a paused goal
 
 ## Routes
 
-Both routes are in the `userRoutes` group, behind `RequireAuth` + `DashboardLayout`.
+All routes are in the `userRoutes` group, behind `RequireAuth` + `DashboardLayout`.
 
 | Constant | URL | Page |
 | --- | --- | --- |
 | `PATH.USER.SAVINGS_GOALS` | `/dashboard/savings-goals` | `src/features/Dashboards/User/SavingsGoals/SavingsGoals.jsx` (list, filters, create) |
 | `PATH.USER.SAVINGS_GOAL_DETAILS` | `/dashboard/savings-goals/:savingsGoalId` | `src/features/Dashboards/User/SavingsGoalDetails/SavingsGoalDetails.jsx` |
+| `PATH.USER.SAVINGS_SMART_PLAN_NEW` | `/dashboard/savings-goals/smart-plan` | `src/features/Dashboards/User/SmartPlanWizard/SmartPlanWizard.jsx` (flag on only) |
+| `PATH.USER.SAVINGS_GOAL_SMART_PLAN` | `/dashboard/savings-goals/:savingsGoalId/smart-plan` | Same wizard, for an existing flexible goal (flag on only) |
 
 - Build links with `getSavingsGoalDetailsPath(id)`. The details route is nested under the list path, so the sidebar's "Savings Goals" item stays highlighted.
 - `getNewSavingsGoalPath()` (`/dashboard/savings-goals?new=1`) opens the create form once; the dashboard hero's "New goal" action uses it.
@@ -82,6 +84,8 @@ Savings goals (GET /savings-goals, filtered + paginated)
 | `…/SavingsGoals/components/GoalPlanChip/`, `UpcomingInstallments/` | Smart plan / flexible chip; next-installments panel |
 | `…/SavingsGoals/components/SmartPlanPanel/`, `PlanHealth/`, `InstallmentTimeline/` | Goal details: smart plan panel, health signals, installment timeline |
 | `…/SavingsGoals/components/ConfirmInstallmentDialog/`, `PostponeInstallmentDialog/`, `SkipInstallmentDialog/`, `PlanDialog/` | Installment dialogs and their shared shell |
+| `src/features/Dashboards/User/SmartPlanWizard/` | Smart plan creation wizard: page, `smartPlanWizardHelpers.js`, and the `WizardStepper`, `GoalStep`, `PlanStep`, `PlanOptionCard`, `FundingStep`, `ReviewStep` components |
+| `…/SavingsGoals/smartSavingsFlag.js` | The `VITE_SMART_SAVINGS_ENABLED` gate, import-free for the route table |
 | `…/SavingsGoals/smartPlanHelpers.js`, `useInstallmentWrite.js` | Plan parsing, timeline states, postpone bounds, write-error classification; installment write + idempotency |
 | `src/locales/{en,ar}/*.json` → `dashboard.savingsGoals.*` | All copy |
 

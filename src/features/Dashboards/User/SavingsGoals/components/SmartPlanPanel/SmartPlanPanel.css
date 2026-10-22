@@ -492,3 +492,96 @@
     animation: none;
   }
 }
+
+/* ---------- Invite (flexible goal, flag on) ---------- */
+
+.smart-plan--invite {
+  gap: 10px;
+}
+
+.smart-plan__invite {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+}
+
+.smart-plan__invite > div {
+  min-width: 0;
+  flex: 1 1 320px;
+  display: grid;
+  gap: 4px;
+}
+
+.smart-plan__invite h2 {
+  color: var(--savings-navy);
+
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.smart-plan__invite p {
+  max-width: 620px;
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.smart-plan__invite-action {
+  min-height: 42px;
+  padding: 0 18px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  border-radius: 999px;
+
+  color: var(--navigation-active-text);
+  background: var(--color-primary);
+
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--color-primary) 22%, transparent);
+
+  transition: background-color 160ms ease;
+}
+
+.smart-plan__invite-action:hover {
+  background: var(--color-primary-hover);
+}
+
+.smart-plan__invite-action:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.smart-plan__invite-action svg {
+  width: 16px;
+  height: 16px;
+}
+
+[dir="rtl"] .smart-plan__invite-action svg {
+  transform: scaleX(-1);
+}
+
+@media (max-width: 640px) {
+  .smart-plan__invite-action {
+    width: 100%;
+    min-height: var(--dashboard-touch-target, 44px);
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smart-plan__invite-action {
+    transition: none;
+  }
+}

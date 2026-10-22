@@ -59,12 +59,63 @@ function writeInstallment(goalId, installmentId, action, payload, idempotencyKey
  * - postpone / skip → `data.installment`, `data.result` (`money_moved:
  *   false`), `data.balance`, `data.savings_plan`, `data.plan_health`.
  *
+ * - previewProposal / getOptions → `data.plan_options`. Read only.
+ * - createWithGoal / createForGoal → 201 with the GET …/plan envelope. A
+ *   changed option is 409 `savings_plan_option_stale` with `verdict` and
+ *   `current_option` in `ApiError.payload`.
+ *
  * Conflicts are 409 with the backend's `code` in `ApiError.serverCode` and
  * its context (e.g. `latest_allowed_date`) in `ApiError.payload`.
  */
+// Plan writes (create) carry the reviewed option's fingerprints; the backend
+// regenerates the option and rejects anything that no longer matches.
+function createPlan(endpoint, body, idempotencyKey) {
+  if (!idempotencyKey) throw new Error(`POST ${endpoint} requires an Idempotency-Key.`);
+
+  return apiRequest(endpoint, {
+    method: "POST",
+    headers: { "Idempotency-Key": idempotencyKey },
+    body,
+  });
+}
+
 export const savingsPlansApi = {
   getActive: (goalId, options = {}) =>
     apiRequest(`${goalPath(goalId)}/plan`, { signal: options.signal }),
+
+  /*
+   * Easy / Balanced / Intensive for a goal that doesn't exist yet. Read
+   * only. Body: workspace_id, target_amount (4-decimal string),
+   * currency_code, target_date?, frequency?, interval?, start_date?.
+   * → `data.plan_options` ({ goal, schedule, capacity, options[],
+   *   recommended_intensity, recommendation_reason, warnings }).
+   */
+  previewProposal: (body, options = {}) =>
+    apiRequest("/savings-plans/preview", {
+      method: "POST",
+      body: { ...body, target_amount: toMoneyString(body.target_amount) },
+      signal: options.signal,
+    }),
+
+  // The same options for an existing goal (remaining from its ledger).
+  // Query: frequency?, interval?, start_date?, target_date?.
+  getOptions: (goalId, query = {}, options = {}) =>
+    apiRequest(`${goalPath(goalId)}/plan-options`, { query, signal: options.signal }),
+
+  /*
+   * The goal and its accepted plan in one transaction. Body: the goal's
+   * fields plus `plan` { intensity, frequency, interval, start_date?,
+   * options_fingerprint, assessment_fingerprint, funding { mode,
+   * sources[] } }. Same key + same body replays the same goal.
+   * → 201, the GET …/plan envelope.
+   */
+  createWithGoal: (body, idempotencyKey) =>
+    createPlan("/savings-goals/with-plan", { ...body, target_amount: toMoneyString(body.target_amount) }, idempotencyKey),
+
+  // A plan for an existing flexible goal (owner only). Body: the `plan`
+  // fields above at the top level. → 201, the GET …/plan envelope.
+  createForGoal: (goalId, body, idempotencyKey) =>
+    createPlan(`${goalPath(goalId)}/plan`, body, idempotencyKey),
 
   getConfirmationPreview: (goalId, installmentId, options = {}) =>
     apiRequest(`${installmentPath(goalId, installmentId)}/confirmation-preview`, {

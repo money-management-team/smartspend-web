@@ -4,7 +4,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { LuChevronLeft, LuChevronRight, LuPiggyBank, LuX } from "react-icons/lu";
 
 import Loading from "../../../../components/Loading/Loading";
-import { getSavingsGoalDetailsPath } from "../../../../routes/Path";
+import { getNewSmartPlanPath, getSavingsGoalDetailsPath } from "../../../../routes/Path";
 import { ApiError } from "../api/apiClient";
 import { resolveWorkspaceId } from "../api/dashboardApi";
 import { savingsGoalsApi } from "../api/savingsGoalsApi";
@@ -266,6 +266,7 @@ export default function SavingsGoals({ smartSavingsEnabled = SMART_SAVINGS_ENABL
         onNewGoal={openCreateForm}
         goalCount={smartSavingsEnabled && isListReady ? listPage.total : null}
         isFiltered={isFiltered}
+        smartPlanPath={smartSavingsEnabled ? getNewSmartPlanPath() : null}
       />
 
       {notice && (
