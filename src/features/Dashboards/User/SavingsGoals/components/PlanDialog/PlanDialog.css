@@ -1,0 +1,277 @@
+/* Installment dialogs: the dashboard modal shell, taller content scrolls in
+   the body while the header and footer stay put. */
+
+.account-form-modal__dialog.plan-dialog {
+  --savings-cyan: #0891b2;
+
+  width: min(100%, 520px);
+  max-height: calc(100dvh - 40px);
+  padding: 0;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  text-align: start;
+
+  animation: plan-dialog-in 180ms ease-out;
+}
+
+:root[data-theme="dark"] .account-form-modal__dialog.plan-dialog {
+  --savings-cyan: #22c3ee;
+}
+
+@keyframes plan-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.account-form-modal__dialog.plan-dialog > .plan-dialog__header {
+  padding: 20px 22px 14px;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.plan-dialog__header > div {
+  min-width: 0;
+}
+
+.plan-dialog__eyebrow {
+  margin: 0 0 4px;
+
+  color: var(--color-primary);
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+[dir="rtl"] .plan-dialog__eyebrow {
+  letter-spacing: 0;
+}
+
+.account-form-modal__dialog.plan-dialog h2 {
+  color: var(--color-text-primary);
+  font-family: var(--font-heading);
+  font-size: 18px;
+  line-height: 1.35;
+}
+
+.account-form-modal__dialog.plan-dialog header button {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  line-height: 1;
+  border-radius: 50%;
+}
+
+.account-form-modal__dialog.plan-dialog header button:hover:not(:disabled) {
+  background: var(--surface-hover);
+}
+
+.plan-dialog__body {
+  min-height: 0;
+  padding: 18px 22px;
+
+  display: grid;
+  gap: 16px;
+
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  color: var(--color-text-secondary);
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.plan-dialog__body p {
+  margin: 0;
+  color: inherit;
+}
+
+.account-form-modal__dialog.plan-dialog > .plan-dialog__footer {
+  margin: 0;
+  padding: 14px 22px 18px;
+
+  flex-wrap: wrap;
+
+  border-top: 1px solid var(--color-border);
+}
+
+.account-form-modal__dialog.plan-dialog footer button {
+  min-height: 40px;
+  height: auto;
+  padding: 0 16px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.account-form-modal__dialog.plan-dialog footer button.plan-dialog__caution {
+  border-color: var(--color-warning);
+  color: var(--text-inverse, #fff);
+  background: var(--color-warning);
+}
+
+/* Forms inside the body: no extra offset, the body's gap spaces them. */
+.account-form-modal__dialog .plan-dialog__body form {
+  margin-top: 0;
+}
+
+.account-form-modal__dialog .plan-dialog__body label > span {
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.postpone-installment__count {
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+/* ---------- Shared body pieces ---------- */
+
+/* A receipt-like summary of what the action is about. */
+.plan-dialog__facts {
+  margin: 0;
+  padding: 4px 14px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--surface-soft);
+}
+
+.plan-dialog__facts > div {
+  padding: 9px 0;
+
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.plan-dialog__facts > div + div {
+  border-top: 1px dashed var(--color-border);
+}
+
+.plan-dialog__facts dt {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.plan-dialog__facts dd {
+  margin: 0;
+
+  color: var(--color-text-primary);
+
+  font-weight: 600;
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.plan-dialog__facts .plan-dialog__total dd {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.plan-dialog__points {
+  margin: 0;
+  padding-inline-start: 18px;
+
+  display: grid;
+  gap: 4px;
+}
+
+.plan-dialog__callout {
+  --plan-dialog-tone: var(--color-primary);
+
+  margin: 0;
+  padding: 10px 12px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  border: 1px solid color-mix(in srgb, var(--plan-dialog-tone) 24%, var(--color-border));
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--plan-dialog-tone) 7%, var(--color-surface));
+
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.plan-dialog__callout > svg {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex: none;
+  color: var(--plan-dialog-tone);
+}
+
+.plan-dialog__callout--warning {
+  --plan-dialog-tone: var(--color-warning);
+}
+
+.plan-dialog__callout--danger {
+  --plan-dialog-tone: var(--color-danger);
+}
+
+.plan-dialog__callout ul {
+  margin: 4px 0 0;
+  padding-inline-start: 16px;
+}
+
+.plan-dialog__state {
+  padding: 18px 0;
+  text-align: center;
+}
+
+.plan-dialog__state button {
+  margin-top: 8px;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .account-form-modal:has(.plan-dialog) {
+    padding: 0;
+    place-items: end stretch;
+  }
+
+  .account-form-modal__dialog.plan-dialog {
+    width: 100%;
+    max-height: 92dvh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  .plan-dialog__footer > button {
+    flex: 1 1 auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-form-modal__dialog.plan-dialog {
+    animation: none;
+  }
+}

@@ -42,6 +42,8 @@
 
 Route `PATH.USER.SAVINGS_GOAL_DETAILS`. It reads `savingsGoalId` from `useParams` and calls `savingsGoalsApi.get`, keyed by `savingsGoalId:reloadKey`.
 
+With smart savings enabled, `SmartPlanPanel` sits under the progress panel and shows the active plan, its health, funding, schedule and installment timeline, with confirm, postpone and skip. Confirming an installment is handled like a contribution: the returned goal is merged, the activity is refetched, and an "installment confirmed" notice is shown. With the flag off, the page is unchanged. See [smart-plans.md](smart-plans.md#goal-details-f2).
+
 - **Header:** name; lifecycle, progress and "Deadline passed" badges; currency. The actions follow the matrix: Add contribution (primary), Withdraw, Pause/Resume, Edit, Archive.
 - **Note** (one at a time):
   - archived → read-only, history kept;

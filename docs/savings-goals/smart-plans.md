@@ -11,7 +11,8 @@ Smart savings is unreleased and **off by default**.
 - `SMART_SAVINGS_ENABLED` (`SavingsGoals/smartSavings.js`) is `true` only when the build sets `VITE_SMART_SAVINGS_ENABLED=true`. The tracked `.env` does not set it, and neither does the Hostinger workflow.
 - When it is off, the overview makes no plan requests and renders exactly the original production page. Every visual change in the table below (header count, empty state, hover lift, chips, panel) is scoped under `.savings-goals-page--smart` or rendered only when the flag is on.
 - Achieved and archived goals never get a plan chip: having no active plan doesn't make them flexible.
-- `SavingsGoals` takes `smartSavingsEnabled` as a prop, defaulting to the flag. The route passes nothing; tests pass `true`.
+- `SavingsGoals` and `SavingsGoalDetails` take `smartSavingsEnabled` as a prop, defaulting to the flag. The routes pass nothing; tests pass `true`.
+- With the flag off, the details page renders no smart-plan panel and calls no plan or installment endpoint.
 - To try it locally, put `VITE_SMART_SAVINGS_ENABLED=true` in `.env.local` (untracked), never in `.env`.
 
 ## What F1 ships: the overview
@@ -34,6 +35,76 @@ Smart savings is unreleased and **off by default**.
 
 The backend list has no plan field, so the overview needs one `GET …/plan` per goal (N+1). This is a known cost of not changing the backend contract. A `has_active_plan` / `next_installment` summary on `GET /savings-goals` would remove it.
 
+## Goal details (F2)
+
+`SmartPlanPanel` sits under the progress panel of `SavingsGoalDetails`. It loads `GET …/plan`:
+
+- 200 shows the panel.
+- 404 renders nothing, because the goal is flexible and its page is unchanged.
+- Achieved and archived goals are never looked up, so they are never called flexible.
+- Any other error shows the panel with the message and a retry.
+
+The plan is fetched again when money moves, when the goal's status changes, and after every installment action. While it refreshes, the last plan stays visible, marked "Updating…", with its actions disabled.
+
+| Part | Source |
+| --- | --- |
+| Title, rhythm | `intensity`, `frequency` × `interval` |
+| Saved / Remaining | `balance.saved_amount` / `balance.remaining_amount` (ledger) |
+| Still scheduled | `plan_health.outstanding_amount`, `outstanding_count` |
+| Per installment | `installment_amount`; `final_installment_amount` when the string differs |
+| Plan health (`PlanHealth`) | `plan_health` signals: on hold, overdue (count, amount, oldest date), target at risk (`uncovered_amount`, or the schedule ending after the target), finishing later, skipped, partly reversed, ahead of schedule; otherwise "On track" |
+| Funding | `funding_mode` + `funding_sources` in `priority` order; allocation shown as a percentage of `allocation_bps` |
+| Schedule | `start_date`, `expected_completion_date`, `scheduled_completion_date` (when delayed), `target_date`, `installment_count` |
+| Timeline (`InstallmentTimeline`) | `installments` in sequence. States: overdue, upcoming, confirmed, partly reversed (paid / reversed / short by), skipped, missed, cancelled. Postponed rows show the count and the original date struck through |
+
+**Overdue rows** are the first `plan_health.overdue.count` open installments. The backend counts them on the workspace's calendar. Installments are in date order, and a postponement can't pass the next one, so this needs no client clock.
+
+Rows show all resolved installments plus the first four open ones; "Show all" reveals the rest. Actions appear only on open installments, and only while the goal is active and the plan is executable:
+- the next installment, and any overdue one, gets full buttons;
+- later installments get compact icon buttons (labelled for assistive tech, 44px on touch).
+
+### Confirm an installment (`ConfirmInstallmentDialog`)
+
+1. Opening the dialog calls `GET …/confirmation-preview`. Nothing from before that request is shown, and opening it moves no money.
+2. The dialog shows the goal, due date, scheduled amount and the **amount to move** (`suggested_amount`, exactly). It also shows warnings and any blocker; a blocker disables Confirm.
+3. The account list is the preview's `accounts`, with their `available_balance`. The plan's account (`default_account_id`) is preselected when it can pay. Accounts that can't cover the amount are disabled. A single-account plan only ever lists its own account.
+4. **Confirm and move money** sends `POST …/confirm` with `expected_plan_version`, `expected_lock_version`, `from_account_id` and `amount` from the preview. It uses one Idempotency-Key per payload (`createIdempotentAttempt`).
+5. On success, the page merges the returned goal (its progress is refetched), refreshes the activity and shows a notice. The plan is fetched again.
+
+Every failure except a final one (403, 429) refetches both the preview and the plan:
+- **Stale** (any version / not-open / not-active 409, or 404): the key is dropped. The user sees what changed and reviews the current preview before confirming again.
+- **Validation** (422, e.g. insufficient balance): the key is dropped. The backend's reason is shown.
+- **Unknown outcome** (network, timeout, 5xx): the key is kept. If the money moved, the new preview shows the installment is no longer open. If not, the preview is unchanged, so **Try again** resends the identical payload with the same key, and the backend replays instead of moving money twice.
+
+### Postpone (`PostponeInstallmentDialog`) and skip (`SkipInstallmentDialog`)
+
+Both move no money. Both send `Idempotency-Key`, `expected_plan_version` and `expected_lock_version`. The write logic is shared in `useInstallmentWrite`.
+
+**Postpone**
+- The date picker is bounded by `getPostponeBounds`:
+  - not before today (the user's or workspace's time zone) and after the current date;
+  - before the next installment in sequence (any status);
+  - not after the goal's target date.
+- Dates outside the bounds are rejected before any request. The dialog lists the rules, the original date and how often the installment has been postponed.
+- A `savings_installment_schedule_conflict` 409 narrows the picker to its `latest_allowed_date`.
+- `…beyond_target_date` explains the target date.
+- `…postpone_limit_reached` disables the dialog and points to revising the plan.
+
+**Skip**
+- An alert dialog explains:
+  - no money moves;
+  - the target and target date don't change;
+  - the amount isn't spread over other installments;
+  - a skip can't be undone.
+- Its button uses the warning tone. The default focus is "Keep it".
+
+**After success, or on a stale 409**
+- On success, the dialog closes, the panel shows "Installment N moved to … / skipped. No money moved." and the plan is refetched.
+- A stale 409 refetches the plan and keeps the dialog open, so the next attempt uses the current versions with a new key.
+- If the installment is no longer open after a refresh, the dialog is withdrawn and a notice says so.
+
+**Errors.** Known backend codes have their own translated sentence (`smartPlan.errors.codes.*`); the backend's English messages are not shown for them. A 403 explains that only the plan owner can act, a 404 that the installment is gone, and a 429 uses the standard rate-limit message.
+
 ## Screen inventory
 
 The "API" column is the backend endpoint. Every write sends `Idempotency-Key`. Plan writes also send `expected_plan_version`, and installment writes send `expected_lock_version`.
@@ -46,12 +117,12 @@ The "API" column is the backend endpoint. Every write sends `Idempotency-Key`. P
 | 4 | Plan choice: Easy / Balanced / Intensive | preview `options[]`, `recommended_intensity`, `duplicate_of` | infeasible, `affordability.band`, recommendation `null` + reason |
 | 5 | Funding: single / priority / allocated / at confirmation | part of `POST /savings-goals/with-plan` | allocation sums to 10000 bps; account eligibility 422 |
 | 6 | Review & accept | `POST /savings-goals/with-plan` or `POST …/{id}/plan` | **409 `savings_plan_option_stale`** → show `current_option` and ask again |
-| 7 | Goal details + plan panel | `GET …/{id}`, `GET …/plan` | flexible (404), paused (on hold), `plan_health` reasons |
-| 8 | Installment timeline | `savings_plan.installments` | planned, fulfilled, partially reversed, skipped, missed, cancelled, postponed |
-| 9 | Confirm installment (one account) | `GET …/confirmation-preview` → `POST …/confirm` | `confirmable: false`, 409 version / not open / exceeds remaining, 422 balance |
+| 7 | **Goal details + plan panel** (F2, done) | `GET …/{id}`, `GET …/plan` | flexible (404), paused (on hold), `plan_health` reasons |
+| 8 | **Installment timeline** (F2, done) | `savings_plan.installments` | planned, fulfilled, partially reversed, skipped, missed, cancelled, postponed |
+| 9 | **Confirm installment, one account** (F2, done) | `GET …/confirmation-preview` → `POST …/confirm` | `confirmable: false`, 409 version / not open / exceeds remaining, 422 balance |
 | 10 | Confirm from several accounts | `POST …/funding-preview` → `POST …/confirm-accounts` | shortfall, 409 `savings_installment_intent_invalid` |
 | 11 | Reverse a confirmation (one leg or all) | `POST …/reverse-legs` | 409 version conflict, partially reversed result |
-| 12 | Postpone / skip | `POST …/postpone`, `POST …/skip` | 409 beyond target date / schedule conflict (`latest_allowed_date`) / limit reached |
+| 12 | **Postpone / skip** (F2, done) | `POST …/postpone`, `POST …/skip` | 409 beyond target date / schedule conflict (`latest_allowed_date`) / limit reached |
 | 13 | Revise schedule or funding | `GET …/plan-options` → `PATCH …/plan` | 409 version conflict, stale option; schedule changes are blocked while paused |
 | 14 | Discontinue plan | `POST …/plan/discontinue` | 409 `savings_plan_not_active` |
 | 15 | Plan history | `GET …/plans` (paginated) | superseded / completed / discontinued |

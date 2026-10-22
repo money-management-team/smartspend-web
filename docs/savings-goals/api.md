@@ -26,6 +26,15 @@ There is intentionally no `delete` wrapper: `DELETE` archives, and `archive` say
 | Method | Endpoint | Wrapper | Response |
 | --- | --- | --- | --- |
 | `GET` | `/savings-goals/{id}/plan` | `getActive(id, { signal })` | `data.savings_goal`, `data.balance`, `data.savings_plan` (`next_installment`, `installments`), `data.plan_health`. **404 = no active plan (flexible goal)** |
+| `GET` | `…/planned-contributions/{installment}/confirmation-preview` | `getConfirmationPreview(id, installmentId, { signal })` | `data.confirmation` (`confirmable`, `blocker`, `warnings`, `savings_plan.plan_version`, `installment.lock_version`, `suggested_amount`, `default_account_id`, `accounts[]`) |
+| `POST` | `…/planned-contributions/{installment}/confirm` | `confirm(id, installmentId, payload, idempotencyKey)` | `data.contribution`, `data.installment`, `data.savings_goal`, `data.balance`, `data.plan_health` (201). **Moves money** |
+| `POST` | `…/planned-contributions/{installment}/postpone` | `postpone(id, installmentId, payload, idempotencyKey)` | `data.installment`, `data.result` (`money_moved: false`), `data.plan_health` |
+| `POST` | `…/planned-contributions/{installment}/skip` | `skip(id, installmentId, payload, idempotencyKey)` | same shape as postpone |
+
+- Every installment write requires an `Idempotency-Key` header, plus `expected_plan_version` and `expected_lock_version`.
+- `confirm` also takes `from_account_id` and `amount`, which is the preview's `suggested_amount` as a 4-decimal string.
+- `postpone` takes `new_date` (`Y-m-d`).
+- A 409 carries the backend's `code` in `ApiError.serverCode` and its context (e.g. `latest_allowed_date`, `current_lock_version`) in `ApiError.payload`.
 
 Only used when smart savings is enabled; see [smart-plans.md](smart-plans.md).
 

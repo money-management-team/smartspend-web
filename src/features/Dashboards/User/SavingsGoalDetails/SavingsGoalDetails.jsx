@@ -31,6 +31,8 @@ import PlannedContributions from "../SavingsGoals/components/PlannedContribution
 import GoalProgressBar from "../SavingsGoals/components/GoalProgressBar/GoalProgressBar";
 import GoalStatusBadge from "../SavingsGoals/components/GoalStatusBadge/GoalStatusBadge";
 import SavingsGoalForm from "../SavingsGoals/components/SavingsGoalForm/SavingsGoalForm";
+import SmartPlanPanel from "../SavingsGoals/components/SmartPlanPanel/SmartPlanPanel";
+import { SMART_SAVINGS_ENABLED } from "../SavingsGoals/smartSavings";
 import {
   GOAL_PROGRESS_STATUSES,
   getGoalActions,
@@ -64,8 +66,12 @@ const LIFECYCLE_REQUESTS = {
  * here. "Refresh progress" calls GET …/progress and replaces only the
  * progress. Archiving keeps the page on the now read-only goal, since its
  * account and history are kept.
+ *
+ * With smart savings enabled (`smartSavings.js`, off by default) the goal's
+ * active plan is shown under the progress (SmartPlanPanel); confirming an
+ * installment moves money and is handled like a contribution.
  */
-export default function SavingsGoalDetails() {
+export default function SavingsGoalDetails({ smartSavingsEnabled = SMART_SAVINGS_ENABLED }) {
   const { savingsGoalId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -697,6 +703,17 @@ export default function SavingsGoalDetails() {
           </p>
         )}
       </section>
+
+      {smartSavingsEnabled && (
+        <SmartPlanPanel
+          goal={goal}
+          // Money moved, a write returned, or the status changed: the plan's
+          // health may differ, so it is fetched again.
+          refreshKey={`${requestKey}:${activityKey}:${goal.status}`}
+          timeZone={timeZone}
+          onInstallmentConfirmed={(data) => handleMovementCompleted("installment", data)}
+        />
+      )}
 
       <PlannedContributions
         goal={goal}

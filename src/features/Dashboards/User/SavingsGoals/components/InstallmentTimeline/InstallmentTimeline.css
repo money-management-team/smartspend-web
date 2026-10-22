@@ -1,0 +1,357 @@
+.installment-timeline {
+  display: grid;
+  gap: 10px;
+}
+
+.installment-timeline__empty {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.installment-timeline__list {
+  position: relative;
+
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+}
+
+/* The rail runs through the markers' centres (marker: 18px wide). */
+.installment-timeline__list::before {
+  content: "";
+  position: absolute;
+  inset-block: 18px;
+  inset-inline-start: 8px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--border-soft, var(--color-border));
+}
+
+.installment-timeline__row {
+  --timeline-tone: var(--color-text-muted);
+
+  position: relative;
+
+  padding-block: 12px;
+  padding-inline: 0 10px;
+
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  column-gap: 14px;
+  row-gap: 10px;
+  align-items: start;
+
+  border-radius: var(--radius-md);
+}
+
+.installment-timeline__row + .installment-timeline__row {
+  margin-top: 2px;
+}
+
+.installment-timeline__row--next {
+  margin-inline-start: -10px;
+  padding-inline-start: 10px;
+
+  background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 22%, transparent);
+}
+
+.installment-timeline__row--overdue.installment-timeline__row--next {
+  background: color-mix(in srgb, var(--color-danger) 5%, var(--color-surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-danger) 24%, transparent);
+}
+
+/* ---------- Marker ---------- */
+
+.installment-timeline__marker {
+  position: relative;
+  z-index: 1;
+
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  box-sizing: border-box;
+
+  display: grid;
+  place-items: center;
+
+  border: 2px solid var(--timeline-tone);
+  border-radius: 50%;
+
+  color: var(--color-surface);
+  background: var(--color-surface);
+}
+
+.installment-timeline__marker svg {
+  width: 11px;
+  height: 11px;
+  stroke-width: 3;
+}
+
+.installment-timeline__row--planned {
+  --timeline-tone: var(--color-primary);
+}
+
+.installment-timeline__row--overdue {
+  --timeline-tone: var(--color-danger);
+}
+
+.installment-timeline__row--fulfilled {
+  --timeline-tone: var(--savings-cyan, #0891b2);
+}
+
+.installment-timeline__row--partially_reversed {
+  --timeline-tone: var(--color-warning);
+}
+
+.installment-timeline__row--fulfilled .installment-timeline__marker,
+.installment-timeline__row--partially_reversed .installment-timeline__marker {
+  background: var(--timeline-tone);
+}
+
+.installment-timeline__row--skipped .installment-timeline__marker {
+  color: var(--color-text-muted);
+  border-style: dashed;
+}
+
+/* ---------- Text ---------- */
+
+.installment-timeline__main {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.installment-timeline__heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+
+.installment-timeline__date {
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.installment-timeline__seq {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.installment-timeline__next {
+  padding: 3px 8px;
+
+  border-radius: 999px;
+
+  color: var(--color-primary);
+  background: var(--primary-soft);
+
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.installment-timeline__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.installment-timeline__state {
+  padding: 3px 8px;
+
+  border-radius: 999px;
+
+  color: color-mix(in srgb, var(--timeline-tone) 85%, var(--color-text-primary));
+  background: color-mix(in srgb, var(--timeline-tone) 12%, transparent);
+
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.installment-timeline__note s,
+.installment-timeline__amount s {
+  color: var(--color-text-muted);
+}
+
+.installment-timeline__note bdi {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.installment-timeline__amount {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+
+  color: var(--color-text-primary);
+
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.installment-timeline__amount small {
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.installment-timeline__row--skipped .installment-timeline__date,
+.installment-timeline__row--cancelled .installment-timeline__date {
+  color: var(--color-text-secondary);
+}
+
+/* ---------- Actions ---------- */
+
+.installment-timeline__actions {
+  grid-column: 2 / -1;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.installment-timeline__action {
+  min-height: 34px;
+  padding: 0 12px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.installment-timeline__action svg {
+  width: 14px;
+  height: 14px;
+}
+
+.installment-timeline__action:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 45%, var(--color-border));
+  color: var(--color-primary);
+}
+
+.installment-timeline__action:focus-visible,
+.installment-timeline__toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.installment-timeline__action--primary {
+  border-color: var(--color-primary);
+  color: var(--navigation-active-text);
+  background: var(--color-primary);
+}
+
+.installment-timeline__action--primary:hover {
+  color: var(--navigation-active-text);
+  background: var(--color-primary-hover);
+}
+
+/* Later installments: quiet icon buttons, labels for assistive tech only. */
+.installment-timeline__actions--compact {
+  gap: 6px;
+}
+
+.installment-timeline__actions--compact .installment-timeline__action {
+  position: relative;
+  width: 30px;
+  min-height: 30px;
+  padding: 0;
+  justify-content: center;
+  border-color: transparent;
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+}
+
+.installment-timeline__actions--compact .installment-timeline__action span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.installment-timeline__actions--compact .installment-timeline__action:hover {
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+.installment-timeline__toggle {
+  justify-self: start;
+
+  padding: 6px 0;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .installment-timeline__row {
+    grid-template-columns: 18px minmax(0, 1fr);
+  }
+
+  .installment-timeline__amount {
+    grid-column: 2;
+    justify-items: start;
+  }
+
+  .installment-timeline__action {
+    min-height: var(--dashboard-touch-target, 44px);
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  /* Still a comfortable touch target, without stretching. */
+  .installment-timeline__actions--compact .installment-timeline__action {
+    width: var(--dashboard-touch-target, 44px);
+    min-height: var(--dashboard-touch-target, 44px);
+    flex: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .installment-timeline__action {
+    transition: none;
+  }
+}

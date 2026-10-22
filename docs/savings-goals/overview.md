@@ -80,6 +80,9 @@ Savings goals (GET /savings-goals, filtered + paginated)
 | `src/features/Dashboards/User/api/savingsPlansApi.js` | Smart-plan reads (`GET …/plan`) |
 | `…/SavingsGoals/smartSavings.js`, `useGoalPlanSummaries.js` | Smart-savings gate, plan summaries, upcoming installments |
 | `…/SavingsGoals/components/GoalPlanChip/`, `UpcomingInstallments/` | Smart plan / flexible chip; next-installments panel |
+| `…/SavingsGoals/components/SmartPlanPanel/`, `PlanHealth/`, `InstallmentTimeline/` | Goal details: smart plan panel, health signals, installment timeline |
+| `…/SavingsGoals/components/ConfirmInstallmentDialog/`, `PostponeInstallmentDialog/`, `SkipInstallmentDialog/`, `PlanDialog/` | Installment dialogs and their shared shell |
+| `…/SavingsGoals/smartPlanHelpers.js`, `useInstallmentWrite.js` | Plan parsing, timeline states, postpone bounds, write-error classification; installment write + idempotency |
 | `src/locales/{en,ar}/*.json` → `dashboard.savingsGoals.*` | All copy |
 
 Accounts come from the existing `accountsApi`, the workspace from `resolveWorkspaceId()` / the session workspace, idempotency keys from `createIdempotentAttempt()`; none of these is duplicated.
