@@ -1872,7 +1872,8 @@
         "archiveSuccess": "“{{name}}” was archived. Its account and history are kept.",
         "viewGoal": "View goal",
         "installmentSuccess": "Installment confirmed for “{{name}}”. The money moved into the goal's savings account.",
-        "installmentReversalSuccess": "Payments reversed for “{{name}}”. The money went back to the source accounts."
+        "installmentReversalSuccess": "Payments reversed for “{{name}}”. The money went back to the source accounts.",
+        "planDiscontinuedSuccess": "The smart plan for “{{name}}” was discontinued. No money moved; the goal is flexible saving again."
       },
       "form": {
         "createTitle": "New savings goal",
@@ -2428,7 +2429,8 @@
           "goal": "Goal",
           "plan": "Plan",
           "funding": "Funding",
-          "review": "Review"
+          "review": "Review",
+          "schedule": "Schedule"
         },
         "validation": {
           "nameRequired": "Give the goal a name.",
@@ -2611,6 +2613,187 @@
           "noMoneyTitle": "Accepting a plan moves no money",
           "noMoneyBody": "Each installment waits for you. Nothing is deducted until you confirm it, and you can postpone or skip installments from the goal's page.",
           "accept": "I've reviewed this plan and want to create it."
+        }
+      },
+      "planManagement": {
+        "loading": "Loading your plan…",
+        "errorTitle": "We couldn't load this plan",
+        "eyebrow": "{{intensity}} smart plan",
+        "title": {
+          "schedule": "Revise the schedule for {{name}}",
+          "funding": "Change how {{name}} is funded"
+        },
+        "subtitle": {
+          "schedule": "Pick a new rhythm or intensity. Your plan is rebuilt from what's left to save today, and you review it before anything changes.",
+          "funding": "Choose which accounts pay the installments. The schedule and amounts stay exactly as they are."
+        },
+        "noPlan": {
+          "title": "This goal has no active plan",
+          "body": "The plan may have been completed, discontinued or replaced. Its record is in the goal's plan history."
+        },
+        "paused": {
+          "title": "Resume the goal to change its schedule",
+          "body": "A paused goal keeps its schedule as it is. You can still change which accounts fund it.",
+          "funding": "Change funding instead"
+        },
+        "validation": {
+          "fundingUnchanged": "This is how the plan is funded now. Change the mode or the accounts to continue."
+        },
+        "submit": {
+          "schedule": "Approve the new schedule",
+          "funding": "Approve the new funding"
+        },
+        "submitting": "Saving…",
+        "retrySubmit": "Try again",
+        "actions": {
+          "label": "Manage plan",
+          "schedule": "Revise schedule",
+          "funding": "Change funding",
+          "discontinue": "Discontinue",
+          "notices": {
+            "schedule": "Your new schedule is in place. The previous plan is kept in plan history. Nothing has moved.",
+            "funding": "Your plan's funding was updated. Nothing has moved."
+          }
+        },
+        "review": {
+          "title": {
+            "schedule": "Your plan now and after the revision",
+            "funding": "Funding now and after the change"
+          },
+          "edit": {
+            "schedule": "Choose a different option",
+            "funding": "Edit the funding"
+          },
+          "caption": "Comparison of the current plan with the proposed one",
+          "columns": {
+            "item": "Item",
+            "now": "Now",
+            "after": "After"
+          },
+          "rows": {
+            "intensity": "Intensity",
+            "rhythm": "Rhythm",
+            "perInstallment": "Per installment",
+            "installments": "Installments",
+            "nextDue": "Next installment",
+            "completion": "Last installment",
+            "fundingMode": "Funding",
+            "accounts": "Accounts"
+          },
+          "openCount": "Open: {{count}}",
+          "unchanged": "Unchanged",
+          "chosenAtConfirmation": "Chosen at each confirmation",
+          "effectsTitle": "What this does",
+          "effects": {
+            "schedule": {
+              "replaced": "Your current plan is closed as replaced, and the new one takes its place.",
+              "cancelled": "Its open installments are cancelled ({{count}}).",
+              "kept": "Installments you already confirmed stay as they are; their money stays in the goal.",
+              "covers": "The new plan covers exactly what's left to save:",
+              "history": "The previous plan is kept in plan history."
+            },
+            "funding": {
+              "same": "The schedule, dates and amounts don't change.",
+              "open": "Open installments will be paid from the new setup.",
+              "kept": "Confirmed installments keep the accounts they were paid from.",
+              "history": "The previous setup is recorded in plan history."
+            }
+          },
+          "splitReversal": "Installments paid from several accounts in this plan: {{count}}. After the revision they stay in the goal, but reversing their payments from the app won't be available until closed plans can be opened from plan history.",
+          "noMoneyTitle": "No money moves",
+          "noMoneyBody": {
+            "schedule": "Revising the schedule only changes the plan. Money moves only when you confirm an installment.",
+            "funding": "Changing funding only changes where future installments come from. Money moves only when you confirm an installment."
+          },
+          "accept": {
+            "schedule": "I've reviewed the new schedule and want it to replace my current plan.",
+            "funding": "I've reviewed the new funding and want to use it for my open installments."
+          },
+          "conflict": "Your plan changed since you opened this page (for example, an installment was confirmed elsewhere). The current plan is shown; review it and approve again.",
+          "unknownOutcome": "We couldn't confirm whether the change was saved. Trying again is safe: it won't be applied twice.",
+          "fix": {
+            "schedule": "Edit the schedule",
+            "plan": "Choose an option again",
+            "funding": "Edit the funding"
+          },
+          "notReady": "Something in this revision needs your attention before it can be reviewed."
+        },
+        "discontinue": {
+          "eyebrow": "Smart plan",
+          "title": "Discontinue this plan?",
+          "keep": "Keep the plan",
+          "submit": "Discontinue plan",
+          "running": "Discontinuing…",
+          "retry": "Try again",
+          "facts": {
+            "open": "Open installments",
+            "scheduled": "Still scheduled",
+            "saved": "Saved in the goal (stays)"
+          },
+          "points": {
+            "noMoney": "No money moves.",
+            "cancelled": "Open installments are cancelled ({{count}}).",
+            "kept": "Installments you confirmed, and everything saved in the goal, stay exactly as they are.",
+            "flexible": "The goal goes back to flexible saving.",
+            "final": "A discontinued plan can't be reopened, but you can create a new one at any time."
+          },
+          "acknowledge": "I understand the open installments will be cancelled."
+        }
+      },
+      "planHistory": {
+        "eyebrow": "Smart plans",
+        "title": "Plan history",
+        "loading": "Loading plan history…",
+        "lead": "Every plan this goal has had, newest first. Plans: {{count}}",
+        "more": "Show older plans",
+        "loadingMore": "Loading…",
+        "until": "until",
+        "activeSince": "Active since",
+        "cardTitle": "{{intensity}} plan",
+        "status": {
+          "active": "Active",
+          "completed": "Completed",
+          "discontinued": "Discontinued",
+          "superseded": "Replaced"
+        },
+        "completion": {
+          "label": "Completion summary",
+          "title": "Target reached on",
+          "early": "Finished ahead of the plan (days: {{count}})",
+          "late": "Finished after the planned date (days: {{count}})",
+          "onTime": "Finished on the planned date",
+          "ledgerNote": "This is when the plan was completed. The goal's current balance is in its progress above and can change later through withdrawals or reversals."
+        },
+        "facts": {
+          "perInstallment": "Per installment",
+          "setOut": "Set out to cover",
+          "schedule": "Schedule",
+          "funding": "Funding"
+        },
+        "installments": {
+          "confirmed": "Confirmed installments: {{count}}",
+          "of": "of",
+          "open": "Open: {{count}}",
+          "cancelled": "Cancelled: {{count}}",
+          "barLabel": "Share of installments confirmed"
+        },
+        "endings": {
+          "plan_superseded": "Replaced by a revised schedule. Its open installments were cancelled; confirmed ones were kept.",
+          "plan_discontinued": "Discontinued by you. Its open installments were cancelled; confirmed ones were kept.",
+          "goal_archived": "Ended when the goal was archived.",
+          "goal_achieved": "Completed when the goal reached its target.",
+          "completed": "Completed.",
+          "discontinued": "Discontinued.",
+          "superseded": "Replaced."
+        },
+        "revisions": {
+          "summary": "Funding changes: {{count}}",
+          "was": "— previously {{mode}}"
+        },
+        "access": {
+          "active": "Installments, payments and reversals for this plan are in the plan above.",
+          "activeLink": "Go to the plan",
+          "closed": "Payments this plan confirmed are in the goal's activity, where single-account payments can be reversed. Opening a closed plan's installments, including reversing split payments, isn't available yet."
         }
       }
     },

@@ -124,6 +124,52 @@ export const savingsPlansApi = {
   createForGoal: (goalId, body, idempotencyKey) =>
     createPlan(`${goalPath(goalId)}/plan`, body, idempotencyKey),
 
+  /*
+   * Revises the active plan (owner only). Body: `change` and the
+   * `expected_plan_version` the user reviewed, plus
+   * - change=schedule: the `plan` fields above (a fresh option from
+   *   getOptions with its two fingerprints, and the full funding). The plan
+   *   is superseded by the regenerated, verified option;
+   * - change=funding: `funding` { mode, sources[] } only. Same plan and
+   *   schedule; `plan_version` increments.
+   * → 200, the GET …/plan envelope (the replacement plan for a schedule
+   * change). 409 `savings_plan_version_conflict` (with
+   * `current_plan_version`) or `savings_plan_option_stale`. No money moves.
+   */
+  revise: (goalId, body, idempotencyKey) => {
+    if (!idempotencyKey) throw new Error("PATCH /savings-goals/{id}/plan requires an Idempotency-Key.");
+
+    return apiRequest(`${goalPath(goalId)}/plan`, {
+      method: "PATCH",
+      headers: { "Idempotency-Key": idempotencyKey },
+      body,
+    });
+  },
+
+  /*
+   * Ends the active plan (owner only): open installments are cancelled, the
+   * goal and its balance are untouched and the goal is flexible again.
+   * Body: `expected_plan_version`. → 200, the GET …/plan envelope with the
+   * discontinued plan. 409 `savings_plan_version_conflict` or
+   * `savings_plan_not_active`. No money moves.
+   */
+  discontinue: (goalId, payload, idempotencyKey) =>
+    createPlan(
+      `${goalPath(goalId)}/plan/discontinue`,
+      { expected_plan_version: payload.expected_plan_version },
+      idempotencyKey,
+    ),
+
+  /*
+   * Every plan the goal has had, newest first (active, completed,
+   * discontinued, superseded), paginated. → `data.savings_plans` (Laravel
+   * paginator: `data[]`, `current_page`, `last_page`, `total`). Summaries
+   * with installment counts only; `funding_revisions` and
+   * `capacity_snapshot` are null for anyone but the planner.
+   */
+  listHistory: (goalId, query = {}, options = {}) =>
+    apiRequest(`${goalPath(goalId)}/plans`, { query, signal: options.signal }),
+
   getConfirmationPreview: (goalId, installmentId, options = {}) =>
     apiRequest(`${installmentPath(goalId, installmentId)}/confirmation-preview`, {
       signal: options.signal,

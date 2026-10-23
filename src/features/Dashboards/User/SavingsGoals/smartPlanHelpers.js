@@ -403,7 +403,9 @@ export function classifyPlanWriteError(error) {
   return "final";
 }
 
-const WRITE_CONTEXTS = ["confirm", "postpone", "skip", "reverse", "create"];
+const WRITE_CONTEXTS = ["confirm", "postpone", "skip", "reverse", "create", "revise", "discontinue"];
+// Contexts about the plan itself, where a 404 means the plan is gone.
+const PLAN_CONTEXTS = ["load", "revise", "discontinue"];
 
 /** A 409's context value (e.g. `latest_allowed_date`), from the error body. */
 export const getConflictContext = (error, key) => error?.payload?.[key] ?? null;
@@ -428,7 +430,7 @@ export function getSmartPlanErrorMessage(error, t, i18n, context = "load") {
 
   if (error?.code === "FORBIDDEN") return t(`${prefix}.ownerOnly`);
   if (error?.code === "NOT_FOUND") {
-    return t(context === "load" ? `${prefix}.planGone` : `${prefix}.installmentGone`);
+    return t(PLAN_CONTEXTS.includes(context) ? `${prefix}.planGone` : `${prefix}.installmentGone`);
   }
   // "Did it go through?" only means something for a write; a failed read
   // (load, preview) falls through to the plain network / server wording.

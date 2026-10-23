@@ -6,21 +6,22 @@ import { STEPS } from "../../smartPlanWizardHelpers";
 import "./WizardStepper.css";
 
 /*
- * The four stages. Earlier stages can be revisited; later ones open only
- * through Continue, which checks the current stage first.
+ * The stages (the wizard's four by default; plan revision passes its own).
+ * Earlier stages can be revisited; later ones open only through Continue,
+ * which checks the current stage first.
  */
-export default function WizardStepper({ current, onSelect }) {
+export default function WizardStepper({ current, onSelect, steps = STEPS }) {
   const { t } = useTranslation();
   const prefix = "dashboard.savingsGoals.smartPlanWizard.steps";
 
   return (
     <nav className="wizard-stepper" aria-label={t(`${prefix}.label`)}>
       <p className="wizard-stepper__count">
-        {t(`${prefix}.count`, { current: current + 1, total: STEPS.length })}
+        {t(`${prefix}.count`, { current: current + 1, total: steps.length })}
       </p>
 
       <ol className="wizard-stepper__list">
-        {STEPS.map((step, index) => {
+        {steps.map((step, index) => {
           const state = index < current ? "done" : index === current ? "current" : "upcoming";
 
           return (

@@ -31,6 +31,7 @@ import PlannedContributions from "../SavingsGoals/components/PlannedContribution
 import GoalProgressBar from "../SavingsGoals/components/GoalProgressBar/GoalProgressBar";
 import GoalStatusBadge from "../SavingsGoals/components/GoalStatusBadge/GoalStatusBadge";
 import SavingsGoalForm from "../SavingsGoals/components/SavingsGoalForm/SavingsGoalForm";
+import PlanHistory from "../SavingsGoals/components/PlanHistory/PlanHistory";
 import SmartPlanPanel from "../SavingsGoals/components/SmartPlanPanel/SmartPlanPanel";
 import { SMART_SAVINGS_ENABLED } from "../SavingsGoals/smartSavings";
 import {
@@ -102,6 +103,8 @@ export default function SavingsGoalDetails({ smartSavingsEnabled = SMART_SAVINGS
   });
   // Bumped after money moves, so the activity refetches.
   const [activityKey, setActivityKey] = useState(0);
+  // Bumped when the plan itself changes here (discontinued): plan history refetches.
+  const [planKey, setPlanKey] = useState(0);
   const saveRequestRef = useRef(null);
   const progressControllerRef = useRef(null);
   // Set when a write learns the page may be out of date (409, unknown
@@ -713,6 +716,20 @@ export default function SavingsGoalDetails({ smartSavingsEnabled = SMART_SAVINGS
           timeZone={timeZone}
           onInstallmentConfirmed={(data) => handleMovementCompleted("installment", data)}
           onInstallmentReversed={(data) => handleMovementCompleted("installmentReversal", data)}
+          onPlanDiscontinued={(data) => {
+            // No money moved: the goal is shown as returned, nothing else changes.
+            applyGoal(data?.savings_goal);
+            setPlanKey((key) => key + 1);
+            showNotice("planDiscontinuedSuccess", data?.savings_goal?.name ?? goal.name);
+          }}
+        />
+      )}
+
+      {smartSavingsEnabled && (
+        <PlanHistory
+          goal={goal}
+          refreshKey={`${requestKey}:${activityKey}:${goal.status}:${planKey}`}
+          timeZone={timeZone}
         />
       )}
 

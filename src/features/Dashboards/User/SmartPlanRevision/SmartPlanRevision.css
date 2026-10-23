@@ -1,0 +1,20 @@
+/* =========================================
+   SMART PLAN REVISION (gated)
+
+   The wizard's page shell (SmartPlanWizard.css) and stages, plus the
+   banner shown when the plan changed under the user.
+========================================= */
+
+.smart-revision__banner {
+  margin: 0 0 14px;
+  padding: 12px 14px;
+
+  border: 1px solid color-mix(in srgb, var(--color-warning) 30%, var(--color-border));
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface));
+
+  font-size: 13px;
+  line-height: 1.55;
+}

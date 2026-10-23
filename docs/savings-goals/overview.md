@@ -28,6 +28,7 @@ They are separate backend values and are shown as separate badges (a paused goal
 | [business-rules.md](business-rules.md) | Lifecycle and action matrix, pause/resume, archive, money movements, idempotency, eligible accounts |
 | [implementation.md](implementation.md) | Pages, components, state after each write, error wording, i18n/RTL, verification |
 | [smart-plans.md](smart-plans.md) | Smart savings plans: release gate, overview behaviour, full screen inventory, design direction |
+| [plan-management.md](plan-management.md) | Smart plan revision (schedule / funding), discontinuing, plan history, and the backend contracts still missing |
 
 ## Routes
 

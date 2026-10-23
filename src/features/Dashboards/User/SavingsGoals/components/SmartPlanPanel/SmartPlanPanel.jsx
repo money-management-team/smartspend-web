@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
-import { LuArrowRight, LuLandmark, LuRefreshCw, LuSparkles, LuX } from "react-icons/lu";
+import { LuArrowRight, LuCalendarClock, LuCircleStop, LuLandmark, LuRefreshCw, LuSparkles, LuWallet, LuX } from "react-icons/lu";
 
 import { ApiError } from "../../../api/apiClient";
 import { savingsPlansApi } from "../../../api/savingsPlansApi";
@@ -9,7 +9,7 @@ import { getDisplayLocale } from "../../../Accounts/accountHelpers";
 import PrivateMoney from "../../../Experience/PrivateMoney";
 import { translateEnum } from "../../../FinancialOperations/transactionHelpers";
 import { formatDate, formatMoney } from "../../../utils/formatters";
-import { getGoalSmartPlanPath } from "../../../../../../routes/Path";
+import { getGoalPlanRevisionPath, getGoalSmartPlanPath } from "../../../../../../routes/Path";
 import { getGoalCurrency, getGoalProgress, getGoalStatus } from "../../savingsGoalHelpers";
 import {
   EDITABLE_FUNDING_MODES,
@@ -23,6 +23,7 @@ import {
 } from "../../smartPlanHelpers";
 import { canHaveActivePlan } from "../../smartSavings";
 import ConfirmInstallmentDialog from "../ConfirmInstallmentDialog/ConfirmInstallmentDialog";
+import DiscontinuePlanDialog from "../DiscontinuePlanDialog/DiscontinuePlanDialog";
 import FundingBreakdownDialog from "../FundingBreakdownDialog/FundingBreakdownDialog";
 import InstallmentTimeline from "../InstallmentTimeline/InstallmentTimeline";
 import PlanHealth from "../PlanHealth/PlanHealth";
@@ -52,8 +53,20 @@ import "./SmartPlanPanel.css";
  * FundingBreakdownDialog; priority and at-confirmation plans keep the
  * single-account dialog, which can switch to it. ReverseLegsDialog reads an
  * installment's payments fresh (GET …/funding-legs) every time it opens.
+ *
+ * Managing the plan (F5): "Revise schedule" and "Change funding" open the
+ * revision page (PATCH …/plan); "Discontinue" opens DiscontinuePlanDialog,
+ * whose response goes to `onPlanDiscontinued(data)`. Arriving back from a
+ * revision (`state.smartPlanRevised`) shows a one-time notice.
  */
-export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallmentConfirmed, onInstallmentReversed }) {
+export default function SmartPlanPanel({
+  goal,
+  refreshKey,
+  timeZone,
+  onInstallmentConfirmed,
+  onInstallmentReversed,
+  onPlanDiscontinued,
+}) {
   const { t, i18n } = useTranslation();
   const locale = getDisplayLocale(i18n.language);
   const currency = getGoalCurrency(goal);
@@ -63,7 +76,7 @@ export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallme
   const [reloadCount, setReloadCount] = useState(0);
   const lookupKey = canHaveActivePlan(goal) ? `${goalId}|${refreshKey}|${reloadCount}` : null;
   const [result, setResult] = useState({ key: null, goalId: null, data: null, error: null, flexible: false });
-  // { type: "confirm" | "fund" | "postpone" | "skip" | "reverse", installmentId }
+  // { type: "confirm" | "fund" | "postpone" | "skip" | "reverse", installmentId } or { type: "discontinue" }
   const [dialog, setDialog] = useState(null);
   // One-time message after a postpone / skip: { action, sequence, date }.
   const [notice, setNotice] = useState(null);
@@ -71,6 +84,10 @@ export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallme
   const location = useLocation();
   const [createdDismissed, setCreatedDismissed] = useState(false);
   const showCreated = location.state?.smartPlanCreated === true && !createdDismissed;
+  const [revisedDismissed, setRevisedDismissed] = useState(false);
+  const revised = ["schedule", "funding"].includes(location.state?.smartPlanRevised) && !revisedDismissed
+    ? location.state.smartPlanRevised
+    : null;
 
   useEffect(() => {
     if (!lookupKey) return undefined;
@@ -187,6 +204,7 @@ export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallme
   }
 
   const { plan, health, balance } = data;
+  const managePrefix = "dashboard.savingsGoals.planManagement.actions";
 
   const money = (value) =>
     value == null || value === "" ? (
@@ -209,9 +227,14 @@ export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallme
   const dialogInstallment = dialog
     ? plan.installments.find((installment) => String(installment.id) === String(dialog.installmentId))
     : null;
-  // A dialog is shown only while its installment still allows it.
+  // A dialog is shown only while its installment still allows it; the
+  // discontinue dialog while there is an active plan to end.
   const dialogIsOpen =
-    dialog?.type === "reverse" ? canReverseLegs(dialogInstallment) : isOpenInstallment(dialogInstallment);
+    dialog?.type === "discontinue"
+      ? true
+      : dialog?.type === "reverse"
+        ? canReverseLegs(dialogInstallment)
+        : isOpenInstallment(dialogInstallment);
   const canReverse = !isRefreshing;
 
   const closeDialog = () => setDialog(null);
@@ -239,6 +262,13 @@ export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallme
     setDialog(null);
     setNotice(null);
     onInstallmentReversed(response);
+  };
+
+  const handleDiscontinued = (response) => {
+    setDialog(null);
+    setNotice(null);
+    onPlanDiscontinued?.(response);
+    reload();
   };
 
   const dialogProps = {
@@ -299,6 +329,39 @@ export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallme
           </span>
         )}
       </header>
+
+      {!isRefreshing && (
+        <nav className="smart-plan__manage" aria-label={t(`${managePrefix}.label`)}>
+          <Link className="smart-plan__manage-action" to={getGoalPlanRevisionPath(goalId, "schedule")}>
+            <LuCalendarClock aria-hidden="true" />
+            <span>{t(`${managePrefix}.schedule`)}</span>
+          </Link>
+          <Link className="smart-plan__manage-action" to={getGoalPlanRevisionPath(goalId, "funding")}>
+            <LuWallet aria-hidden="true" />
+            <span>{t(`${managePrefix}.funding`)}</span>
+          </Link>
+          <button
+            type="button"
+            className="smart-plan__manage-action smart-plan__manage-action--caution"
+            onClick={() => {
+              setNotice(null);
+              setDialog({ type: "discontinue" });
+            }}
+          >
+            <LuCircleStop aria-hidden="true" />
+            <span>{t(`${managePrefix}.discontinue`)}</span>
+          </button>
+        </nav>
+      )}
+
+      {revised && (
+        <div className="smart-plan__notice" role="status">
+          <p>{t(`${managePrefix}.notices.${revised}`)}</p>
+          <button type="button" onClick={() => setRevisedDismissed(true)} aria-label={t("common.close")}>
+            <LuX aria-hidden="true" />
+          </button>
+        </div>
+      )}
 
       {showCreated && (
         <div className="smart-plan__notice" role="status">
@@ -429,6 +492,9 @@ export default function SmartPlanPanel({ goal, refreshKey, timeZone, onInstallme
       )}
       {dialogIsOpen && dialog.type === "skip" && (
         <SkipInstallmentDialog {...dialogProps} onDone={handleScheduleDone} />
+      )}
+      {dialog?.type === "discontinue" && (
+        <DiscontinuePlanDialog {...dialogProps} health={health} balance={balance} onDone={handleDiscontinued} />
       )}
     </>,
   );

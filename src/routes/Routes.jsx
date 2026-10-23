@@ -47,6 +47,7 @@ import {
   SavingsGoalDetails,
   SavingsGoals,
   SmartPlanWizard,
+  SmartPlanRevision,
   Settings,
   TransactionDetails,
   TransferDetails,
@@ -259,6 +260,7 @@ const userRoutes = [
         ? [
             { path: PATH.USER.SAVINGS_SMART_PLAN_NEW, element: <SmartPlanWizard /> },
             { path: PATH.USER.SAVINGS_GOAL_SMART_PLAN, element: <SmartPlanWizard /> },
+            { path: PATH.USER.SAVINGS_GOAL_PLAN_REVISE, element: <SmartPlanRevision /> },
           ]
         : []),
       {

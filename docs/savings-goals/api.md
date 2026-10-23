@@ -38,6 +38,9 @@ There is intentionally no `delete` wrapper: `DELETE` archives, and `archive` say
 | `GET` | `/savings-goals/{id}/plan-options` | `getOptions(id, query, { signal })` | `data.plan_options` for an existing goal. Read only |
 | `POST` | `/savings-goals/with-plan` | `createWithGoal(body, idempotencyKey)` | 201, the `GET …/plan` envelope. Goal + account + plan atomically |
 | `POST` | `/savings-goals/{id}/plan` | `createForGoal(id, body, idempotencyKey)` | 201, the `GET …/plan` envelope |
+| `PATCH` | `/savings-goals/{id}/plan` | `revise(id, body, idempotencyKey)` | 200, the `GET …/plan` envelope (the replacement plan for `change=schedule`). 409 `savings_plan_version_conflict` / `savings_plan_option_stale` |
+| `POST` | `/savings-goals/{id}/plan/discontinue` | `discontinue(id, { expected_plan_version }, idempotencyKey)` | 200, the envelope with the discontinued plan. 409 `savings_plan_version_conflict` / `savings_plan_not_active` |
+| `GET` | `/savings-goals/{id}/plans` | `listHistory(id, { per_page, page }, { signal })` | `data.savings_plans` (paginator of plan summaries with `installments_summary` counts). Read only |
 
 - Every installment write requires an `Idempotency-Key` header, plus `expected_plan_version` and `expected_lock_version`.
 - `confirm` also takes `from_account_id` and `amount`, which is the preview's `suggested_amount` as a 4-decimal string.

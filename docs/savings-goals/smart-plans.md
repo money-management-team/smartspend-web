@@ -229,6 +229,10 @@ Opening the dialog and previewing never move money. A failed preview is a read e
 - `smartPlanHelpers.js`: `readFundingLegs`, `readFundingPreview`, `remainingToAllocate`, `validateDraftLegs`, `getBreakdownKey`, `buildConfirmAccountsPayload`, `isMultiAccountInstallment`, `canReverseLegs`, `buildReversePayload`.
 - `useInstallmentWrite("reverseLegs")` is the same write hook as postpone and skip.
 
+## Plan management and history (F5.1)
+
+Revising, discontinuing and the plan history are documented in [plan-management.md](plan-management.md).
+
 ## Screen inventory
 
 The "API" column is the backend endpoint. Every write sends `Idempotency-Key`. Plan writes also send `expected_plan_version`, and installment writes send `expected_lock_version`.
@@ -247,9 +251,9 @@ The "API" column is the backend endpoint. Every write sends `Idempotency-Key`. P
 | 10 | **Confirm from several accounts** (F4, done) | `POST …/funding-preview` → `POST …/confirm-accounts` | shortfall, 409 `savings_installment_intent_invalid` |
 | 11 | **Reverse a confirmation (one leg or all)** (F4, done) | `POST …/reverse-legs` | 409 version conflict, partially reversed result |
 | 12 | **Postpone / skip** (F2, done) | `POST …/postpone`, `POST …/skip` | 409 beyond target date / schedule conflict (`latest_allowed_date`) / limit reached |
-| 13 | Revise schedule or funding | `GET …/plan-options` → `PATCH …/plan` | 409 version conflict, stale option; schedule changes are blocked while paused |
-| 14 | Discontinue plan | `POST …/plan/discontinue` | 409 `savings_plan_not_active` |
-| 15 | Plan history | `GET …/plans` (paginated) | superseded / completed / discontinued |
+| 13 | **Revise schedule or funding** (F5.1, done) | `GET …/plan-options` → `PATCH …/plan` | 409 version conflict, stale option; schedule changes are blocked while paused |
+| 14 | **Discontinue plan** (F5.1, done) | `POST …/plan/discontinue` | 409 `savings_plan_not_active` |
+| 15 | **Plan history** (F5.1, done; closed plans' installments need a backend endpoint) | `GET …/plans` (paginated) | superseded / completed / discontinued |
 | 16 | Reminders | `GET /notifications` types `savings_installment_due` / `_overdue`; `GET/PATCH /notifications/preferences` → `savings_installment_reminders` | `savings_installment_reminders_available: false` → explain the global switch is off |
 
 Cross-cutting states for every screen:
