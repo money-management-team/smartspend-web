@@ -12,7 +12,11 @@ import {
   LuTriangleAlert,
 } from "react-icons/lu";
 
+import { getDisplayLocale } from "../../../Accounts/accountHelpers";
+import PrivateMoney from "../../../Experience/PrivateMoney";
+import { useExperience } from "../../../Experience/useExperience";
 import { translateEnum } from "../../../FinancialOperations/transactionHelpers";
+import { formatMoney } from "../../../utils/formatters";
 import { FUNDING_MODES, MAX_SOURCES, TOTAL_BPS, bpsToPercent, totalAllocationBps } from "../../smartPlanWizardHelpers";
 
 import "./FundingStep.css";
@@ -38,6 +42,8 @@ const MODE_ICONS = {
  */
 export default function FundingStep({ funding, accounts, currency, error, onChange, onRetry }) {
   const { t, i18n } = useTranslation();
+  const experience = useExperience();
+  const locale = getDisplayLocale(i18n.language);
   const prefix = "dashboard.savingsGoals.smartPlanWizard.funding";
   const { mode, sources } = funding;
   const list = accounts.list ?? [];
@@ -58,16 +64,31 @@ export default function FundingStep({ funding, accounts, currency, error, onChan
     [next[index], next[index + step]] = [next[index + step], next[index]];
     setSources(next);
   };
+  // The account's current balance from GET /accounts, as a guide for choosing; it is checked again at every confirmation.
+  const hasBalance = (account) => typeof account?.current_balance === "string" && account.current_balance !== "";
   const accountLabel = (account) => (
     <>
       <span className="funding-step__account-name" dir="auto">
         {account?.name ?? "—"}
       </span>
-      {account?.type && (
-        <span className="funding-step__account-type">{translateEnum(t, i18n, "dashboard.accounts.types", account.type)}</span>
+      {hasBalance(account) ? (
+        <span className="funding-step__account-balance">
+          {t(`${prefix}.available`)}{" "}
+          <bdi dir="ltr">
+            <PrivateMoney>{formatMoney(account.current_balance, currency, locale)}</PrivateMoney>
+          </bdi>
+        </span>
+      ) : (
+        account?.type && (
+          <span className="funding-step__account-type">{translateEnum(t, i18n, "dashboard.accounts.types", account.type)}</span>
+        )
       )}
     </>
   );
+  const optionLabel = (account) =>
+    hasBalance(account)
+      ? `${account.name} · ${experience?.preferences.hiddenMoney ? "••••" : formatMoney(account.current_balance, currency, locale)}`
+      : account.name;
 
   const total = mode === "allocated" ? totalAllocationBps(sources) : null;
 
@@ -205,7 +226,7 @@ export default function FundingStep({ funding, accounts, currency, error, onChan
                 <option value="">{t(`${prefix}.addPlaceholder`)}</option>
                 {available.map((account) => (
                   <option key={account.id} value={account.id}>
-                    {account.name}
+                    {optionLabel(account)}
                   </option>
                 ))}
               </select>

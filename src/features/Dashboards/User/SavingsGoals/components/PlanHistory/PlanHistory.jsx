@@ -446,14 +446,17 @@ function PlanHistoryCard({ goal, refreshKey, onInstallmentReversed, focusInstall
               <span>
                 {t(`dashboard.savingsGoals.smartPlan.funding.modes.${plan.funding_mode}`, { defaultValue: plan.funding_mode })}
                 {sources.length > 0 && (
-                  <small dir="auto">
-                    {sources
-                      .map((source) => {
-                        const name = source.account_name ?? `#${source.account_id}`;
-                        const allocation = plan.funding_mode === "allocated" ? formatAllocation(source.allocation_bps, locale) : null;
-                        return allocation ? `${name} ${allocation}` : name;
-                      })
-                      .join(" · ")}
+                  <small>
+                    {/* One account per line, name and share isolated: in one string an Arabic and an English name reordered their shares. */}
+                    {sources.map((source) => {
+                      const allocation = plan.funding_mode === "allocated" ? formatAllocation(source.allocation_bps, locale) : null;
+                      return (
+                        <span key={source.account_id}>
+                          <bdi>{source.account_name ?? `#${source.account_id}`}</bdi>
+                          {allocation && <> <bdi>{allocation}</bdi></>}
+                        </span>
+                      );
+                    })}
                   </small>
                 )}
               </span>

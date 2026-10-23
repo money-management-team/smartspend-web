@@ -463,6 +463,8 @@
 }
 
 .plan-history__funding small {
+  display: grid;
+  gap: 2px;
   overflow-wrap: anywhere;
 }
 

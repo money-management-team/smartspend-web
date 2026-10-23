@@ -33,6 +33,10 @@
 }
 
 .smart-wizard__back {
+  /* A 36px tall target (WCAG 2.5.8 asks 24px); the negative margin keeps the layout where it was. */
+  min-height: 36px;
+  margin-block: -8px;
+
   display: inline-flex;
   align-items: center;
   gap: 8px;

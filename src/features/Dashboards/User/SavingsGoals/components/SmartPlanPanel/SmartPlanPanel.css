@@ -522,6 +522,8 @@
 .smart-plan__aside {
   min-width: 0;
   display: grid;
+  /* An implicit auto track grows to a long account name and pushes the cards past the column. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
 }
 
@@ -543,6 +545,7 @@
   padding: 14px 16px;
 
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
 
   border: 1px solid var(--color-border);
@@ -586,6 +589,7 @@
   padding: 0;
 
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 6px;
 
   list-style: none;

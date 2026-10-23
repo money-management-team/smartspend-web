@@ -199,10 +199,11 @@
   border: 0;
 }
 
+/* Cards share the row's height; each card lines up its affordability and schedule at the bottom. */
 .plan-step__cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  align-items: start;
+  align-items: stretch;
   gap: 14px;
 }
 

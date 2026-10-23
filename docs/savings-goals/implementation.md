@@ -11,7 +11,7 @@
   - filtered empty → "Clear filters";
   - empty page past the first → "Go to the first page".
 - **Cards (`SavingsGoalCard`):**
-  - the radial `GoalProgress`: the ring is clamped to 0–100 %, the text is the real percentage;
+  - the radial `GoalProgress`: the ring is clamped to 0–100 % and drawn on a fixed 0–100 angle axis (`PolarAngleAxis domain={[0, 100]}`; without it recharts scaled the single bar to its own value and every non-zero goal showed a full ring); the text is the real percentage;
   - the name, as a link stretched over the card to the details page;
   - the lifecycle badge, the progress badge (when it differs), and "Deadline passed";
   - saved / target, remaining and the target date;
@@ -75,6 +75,10 @@ With smart savings enabled, `SmartPlanPanel` sits under the progress panel and s
 | Edit | The returned goal is merged in (the status may have flipped); notice |
 | Archive | The returned archived goal is merged in; the page stays, now read-only; notice |
 | No usable goal in the response | Full refetch; a missing `progress` triggers a progress refresh |
+
+A completion with no response at all (a payment or reversal found already recorded after a lost response, reported by `SmartPlanPanel`) refreshes the goal's progress (`GET …/progress`) and the activity instead of reloading the page, which would also drop the notice.
+
+The notice (`role="status"`) is sticky just below the dashboard header, on an opaque background, so the result of a write started far down the page (an installment confirmed or reversed in the plan panel or the plan history) is visible where the user is. It stays until closed or replaced.
 | 404 on edit / pause / resume / archive | Page switches to "not available" |
 | 409, 403 or unknown outcome | Message in the modal; the goal is refetched when it closes |
 | Any failed contribution/withdrawal | Message + hint in the form; the goal is refetched when it closes (a 404 there may concern the account, so the page isn't marked unavailable) |
@@ -133,6 +137,9 @@ All copy is in `dashboard.savingsGoals.*` in both locales, with exact key parity
 
 - Layout uses logical properties (`inline-size`, `padding-inline-start`, `margin-inline`, `text-align: start/end`); progress bars fill from the inline start. Back and pagination arrows are mirrored under `[dir="rtl"]`.
 - Amounts, currency codes, dates and percentages are wrapped in `<bdi>` (`dir="ltr"` for amounts); names, notes and descriptions use `dir="auto"`.
+- The plan history's funding lists one account per line, each name and each share in its own `<bdi>`: joined into one string, an Arabic name and an English one reordered their percentages.
+- Stand-alone text links (the "All savings goals" / "Back to the goal" links, a notification's title link) have touch targets of at least 24px (WCAG 2.5.8), without moving the layout: a min-height with an equal negative margin, or vertical padding on an inline link. Card titles and activity rows are already stretched over their whole card or row.
+- Single-column grids holding account names (the plan panel's side column and cards, the wizard review cards) use `grid-template-columns: minmax(0, 1fr)`; an implicit `auto` track grew to a long name and pushed content past the card. The plan panel truncates a long source name with an ellipsis and a `title`.
 - Colors come from tokens (`--color-primary`, `--color-success`, `--color-warning`, `--color-danger`, `--primary-soft`, `--surface-soft`, `--success-soft`, `--warning-soft`). Dark overrides use `:root[data-theme="dark"]`. Transitions and the refresh spinner honor `prefers-reduced-motion`.
 
 ## Verification

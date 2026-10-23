@@ -498,7 +498,11 @@ describe("plan history", () => {
     assert.match(cards[1].textContent, /Finished ahead of the plan \(days: 10\)/);
     assert.match(cards[1].textContent, /Set out to cover₪2,400\.00/, "the plan's own figure, labelled as such");
     assert.match(cards[1].textContent, /current balance is in its progress above/);
-    assert.match(cards[1].textContent, /Main bank 60% · Wallet 40%/);
+    assert.deepEqual(
+      [...cards[1].querySelectorAll(".plan-history__funding small > span")].map((row) => row.textContent),
+      ["Main bank 60%", "Wallet 40%"],
+      "one funding account per line, each with its share",
+    );
     assert.match(cards[1].textContent, /Funding changes: 1/);
     assert.ok(byText(cards[1], "Show installments (8)"), "any plan's installments can be opened");
     assert.equal(cards[1].querySelector(".plan-history__bar").getAttribute("aria-valuenow"), "100");

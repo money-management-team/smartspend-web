@@ -43,6 +43,8 @@
   padding: 16px 18px;
 
   display: grid;
+  /* An implicit auto track grows to a long account name and pushes the card (and its Edit button) off screen. */
+  grid-template-columns: minmax(0, 1fr);
   align-content: start;
   gap: 10px;
 
@@ -136,7 +138,8 @@
 }
 
 .review-step__card--plan .review-step__facts {
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  /* Wide enough that a label and its value sit on one line (they wrapped at 160px). */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   column-gap: 20px;
 }
 
@@ -192,6 +195,7 @@
   padding: 0;
 
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 6px;
 
   list-style: none;
@@ -213,12 +217,11 @@
   font-weight: 600;
 }
 
+/* The approval screen shows each account's full name: it wraps instead of being cut. */
 .review-step__sources li > span[dir] {
   min-width: 0;
   flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .review-step__order {

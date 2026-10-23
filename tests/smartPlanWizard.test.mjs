@@ -236,9 +236,30 @@ describe("wizard helpers", () => {
 /* ------------------------------------------------------------- gate */
 
 describe("gate", () => {
-  it("registers no wizard route while the flag is off", () => {
-    const paths = JSON.stringify(userRoutes, (key, value) => (key === "element" ? undefined : value));
-    assert.doesNotMatch(paths, /smart-plan/);
+  it("registers the smart-plan URLs only as redirects to existing savings pages while the flag is off", async () => {
+    const all = [];
+    const walk = (routes) => routes.forEach((route) => { all.push(route); walk(route.children ?? []); });
+    walk(userRoutes);
+    const smart = all.filter((route) => /smart-plan/.test(route.path ?? ""));
+    assert.equal(smart.length, 3);
+    for (const route of smart) {
+      assert.notEqual(route.element.type, SmartPlanWizard, `${route.path} never renders the wizard`);
+      assert.doesNotMatch(String(route.element.type?.name ?? route.element.type?.displayName ?? ""), /SmartPlan|Lazy/i);
+    }
+
+    const landsOn = async (url) => {
+      const router = createMemoryRouter([...smart.map(({ path, element }) => ({ path, element })), { path: "*", element: h(LocationProbe) }], { initialEntries: [url] });
+      const view = await render(withI18n(await createI18n("en"), h(RouterProvider, { router })));
+      await settle();
+      const path = probe(view).dataset.path;
+      await view.unmount();
+      return path;
+    };
+    const fetchCalls = serve();
+    assert.equal(await landsOn("/dashboard/savings-goals/smart-plan"), "/dashboard/savings-goals");
+    assert.equal(await landsOn("/dashboard/savings-goals/7/smart-plan"), "/dashboard/savings-goals/7");
+    assert.equal(await landsOn("/dashboard/savings-goals/7/smart-plan/revise/funding"), "/dashboard/savings-goals/7");
+    assert.equal(fetchCalls.length, 0, "a redirect loads nothing");
   });
 
   it("redirects away when rendered with the flag off", async () => {

@@ -304,7 +304,10 @@ export default function SavingsGoalDetails({ smartSavingsEnabled = SMART_SAVINGS
   // status recalculated by the backend); the activity is refetched.
   const handleMovementCompleted = (type, data) => {
     staleRef.current = false;
-    applyGoal(data?.savings_goal);
+    // No response at all: a payment or reversal found already recorded after a lost response (see
+    // SmartPlanPanel). Its progress is read again; a full reload would also drop the notice below.
+    if (data) applyGoal(data.savings_goal);
+    else refreshProgress();
     setActivityKey((key) => key + 1);
     setDialog(null);
     if (suggested)

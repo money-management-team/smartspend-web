@@ -6,9 +6,8 @@
   min-width: 0;
   padding: 18px;
 
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-content: start;
+  display: flex;
+  flex-direction: column;
   gap: 14px;
 
   border: 1px solid var(--color-border);
@@ -20,6 +19,15 @@
   transition:
     border-color 160ms ease,
     box-shadow 160ms ease;
+}
+
+.plan-option > * {
+  min-width: 0;
+}
+
+/* The affordability, warnings and schedule sit at the bottom, level across the cards. */
+.plan-option > .plan-option__fit {
+  margin-block-start: auto;
 }
 
 .plan-option:hover:not(.plan-option--disabled) {

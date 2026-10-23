@@ -120,9 +120,12 @@ export default function ReviewStep({
           <div>
             <dt>{t(`${prefix}.affordability`)}</dt>
             <dd>
-              {t(`dashboard.savingsGoals.smartPlanWizard.plan.bands.${option.affordability?.band ?? "unknown"}`, {
-                defaultValue: t("dashboard.savingsGoals.smartPlanWizard.plan.bands.unknown"),
-              })}{" "}
+              {/* Under the "Affordability" label, the unknown band reads "Not known yet", not "Affordability unknown". */}
+              {(option.affordability?.band ?? "unknown") === "unknown"
+                ? t(`${prefix}.affordabilityUnknown`)
+                : t(`dashboard.savingsGoals.smartPlanWizard.plan.bands.${option.affordability.band}`, {
+                    defaultValue: t(`${prefix}.affordabilityUnknown`),
+                  })}{" "}
               <em>{t("dashboard.savingsGoals.smartPlanWizard.plan.estimate")}</em>
             </dd>
           </div>

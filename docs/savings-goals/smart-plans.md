@@ -13,6 +13,7 @@ Smart savings is unreleased and **off by default**.
 - Achieved and archived goals never get a plan chip: having no active plan doesn't make them flexible.
 - `SavingsGoals` and `SavingsGoalDetails` take `smartSavingsEnabled` as a prop, defaulting to the flag. The routes pass nothing; tests pass `true`.
 - With the flag off, the details page renders no smart-plan panel and calls no plan or installment endpoint.
+- With the flag off, the smart-plan URLs are registered only as redirects (`Routes.jsx`, `SavingsGoalRedirect`): the new-plan wizard goes to the savings goals overview, and a goal's wizard or revision URL goes to that goal's page. They never render the wizard and load nothing.
 - To try it locally, put `VITE_SMART_SAVINGS_ENABLED=true` in `.env.local` (untracked), never in `.env`.
 
 ## What F1 ships: the overview
@@ -132,15 +133,20 @@ Entry points (flag on only):
    - Infeasible options show their `status` and shortfall. Duplicate schedules say "Same schedule as …". Neither can be chosen.
    - The recommendation and its reason are the backend's. A preview 422 offers "Edit the goal"; other errors offer a retry.
    - When no option can be chosen (e.g. already funded), Continue is disabled.
+   - The cards share one height on desktop; each card's affordability, warnings and schedule toggle sit at its bottom, level across the three.
 3. **Funding.**
    - The four backend modes. Only eligible accounts are offered (active, same currency, not a goal's account; `getEligibleAccounts`).
+   - Each account shows its available balance (`current_balance` from `GET /accounts`, behind the privacy setting), also in the "Add an account" choice. It is a guide: the footnote says balances are checked again on creation and at every confirmation.
    - **Single:** exactly one account.
    - **Priority:** two to five accounts, reorderable. Sources are sent in that order, first = priority 1.
-   - **Allocated:** two to five accounts with percentages, parsed to whole basis points with string arithmetic (`percentToBps`). They must total exactly 10000; a note says split installments can't be confirmed in the app yet.
+   - **Allocated:** two to five accounts with percentages, parsed to whole basis points with string arithmetic (`percentToBps`). They must total exactly 10000; a note says each installment is split by these shares and that the user sees each account's part before any money moves.
    - **At confirmation:** no sources.
    - Shape rules are checked before sending (`validateFunding`, mirroring `SavingsPlanFundingRules`). Eligibility is the backend's call.
 4. **Review.**
    - The plan comes first, full width; goal and funding sit beside each other below it. Each has an Edit link.
+   - The plan's facts are laid out at least 220px wide each so a label and its value stay on one line. The completion date is labelled "Last installment date" (`review.lastInstallment`), apart from the "Last installment" amount (`plan.finalInstallment`) shown when the final installment differs.
+   - Funding account names wrap in full on this screen (they are what the user approves); every card uses a `minmax(0, 1fr)` column, so a long name can't push a card or its Edit link off screen (F6.2).
+   - Affordability reads "Not known yet" when the backend's band is `unknown` (`review.affordabilityUnknown`), instead of repeating "Affordability unknown" under the Affordability label.
    - The assurance reads "Accepting a plan moves no money".
    - An explicit checkbox is required before the create button is enabled.
 
@@ -187,7 +193,8 @@ Both live in the goal's smart plan panel, behind the same flag.
      - priority: filled in the plan's order;
      - at-confirmation: `problem: breakdown_required`, so the user writes the split.
    - Each part shows its account, exact amount and available balance, plus the preview's warnings, blocker, `problem` (`insufficient_balance` with `shortfall_amount`, `exceeds_remaining`, `breakdown_invalid`, `account_not_eligible`).
-   - Where the mode allows editing, the user sets the account and amount per part, with at most five parts and no account twice. "Left to allocate" is `total − Σ parts`, worked out exactly in BigInt minor units with `subtractMoney`/`sumMoney`; nothing else is calculated.
+   - Where the mode allows editing, the user sets the account and amount per part, with at most five parts and no account twice. An account with nothing available (and no overdraft) is disabled in the choice and labelled "no available balance"; a part above its account's `available_balance` is flagged under the account and marked `aria-invalid`. Both come from the preview's own balances with exact string arithmetic and only guide the user: the preview still checks every split.
+   - A split that doesn't add up is shown as a red error box (icon, `role="alert"`) and nothing is sent for it. (`.plan-dialog__body p` used to override the error's colour; the dialog's rules are scoped under `.plan-dialog__body`.) "Left to allocate" is `total − Σ parts`, worked out exactly in BigInt minor units with `subtractMoney`/`sumMoney`; nothing else is calculated.
    - **Check this split** sends `{ legs }`, and the backend validates and, when the split is confirmable, signs it.
    - Any edit after a check makes that preview stale, and it can't be approved until checked again (`getBreakdownKey`).
 2. **Approve.**
@@ -197,6 +204,7 @@ Both live in the goal's smart plan panel, behind the same flag.
 4. **Any failure** goes back to Build with the **same** breakdown previewed again. The approval is cleared and nothing is resent automatically.
    - A 409 (e.g. `savings_installment_intent_invalid`, a version conflict) or 422 drops the key.
    - An unknown outcome (network, timeout, 5xx) keeps it. If nothing changed, the re-signed intent is identical, so the retry is the identical request and the backend replays it.
+   - If the refetch after an unknown outcome shows the installment already **fulfilled** (the lost response had in fact succeeded), the dialog closes and the page treats it as a completed confirmation: the goal's progress and activity are read again and the usual "Installment confirmed" notice is shown. The same applies to a reversal whose payments are found reversed. Nothing is sent for it (`getSettledKey` in `SmartPlanPanel`). Any other change closes the dialog with a notice that never claims nothing happened.
 5. **Success:** the page merges the returned goal (its progress is refetched), refreshes the activity and shows a notice; the plan and its health are fetched again. The response's `funding_legs` are kept for reversal (see below).
 
 Opening the dialog and previewing never move money. A failed preview is a read error with a retry; it never says "the money may have moved".

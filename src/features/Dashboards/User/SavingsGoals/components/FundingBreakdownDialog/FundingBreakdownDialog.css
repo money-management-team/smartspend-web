@@ -175,7 +175,11 @@
   height: 14px;
 }
 
-.funding-breakdown__remaining {
+/*
+ * `.plan-dialog__body .…` because `.plan-dialog__body p { color: inherit }` is more specific than a single
+ * class: without it the warning and the validation error rendered in the body's plain text colour.
+ */
+.plan-dialog__body .funding-breakdown__remaining {
   margin: 0;
   margin-inline-start: auto;
 
@@ -185,15 +189,44 @@
   font-weight: 700;
 }
 
-.funding-breakdown__remaining--ok {
+.plan-dialog__body .funding-breakdown__remaining--ok {
   color: var(--color-text-strong);
 }
 
-.funding-breakdown__error {
+.plan-dialog__body .funding-breakdown__error {
   margin: 0;
+  padding: 9px 12px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  border: 1px solid color-mix(in srgb, var(--color-danger) 30%, var(--color-border));
+  border-radius: var(--radius-md);
+
   color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 7%, var(--color-surface));
+
   font-size: 12px;
   font-weight: 600;
+  line-height: 1.5;
+}
+
+.funding-breakdown__error svg {
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  flex: none;
+}
+
+.funding-breakdown__field .funding-breakdown__leg-warning {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.funding-breakdown__field input[aria-invalid="true"] {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-danger) 35%, transparent);
 }
 
 /* ---------- Approve ---------- */

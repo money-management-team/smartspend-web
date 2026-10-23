@@ -193,6 +193,21 @@
   font-size: 11px;
 }
 
+.funding-step__account-balance {
+  margin-inline-start: auto;
+  flex: none;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.funding-step__account-balance bdi {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
 .funding-step__chosen {
   margin: 0;
   padding: 0;
@@ -450,6 +465,16 @@
 
   .funding-step__row .funding-step__account-type {
     display: none;
+  }
+
+  /* Name, then its balance under it, so the row's buttons keep their room. */
+  .funding-step__row .funding-step__row-name {
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+
+  .funding-step__row .funding-step__account-balance {
+    margin-inline-start: 0;
   }
 
   .funding-step__percent {

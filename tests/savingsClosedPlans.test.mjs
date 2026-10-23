@@ -303,6 +303,27 @@ describe("complete plan history", () => {
     await view.unmount();
   });
 
+  it("isolates each funding account's name and share, so mixed Arabic and English names keep their order", async () => {
+    serve({
+      "GET /savings-goals/1": { savings_goal: goal() },
+      "GET /savings-goals/1/plan": { status: 404, body: { status: false, message: "Not found." } },
+      "GET /savings-goals/1/plans": historyPage([
+        historyPlan({
+          funding_mode: "allocated",
+          funding_sources: [
+            { account_id: 5, account_name: "Main checking", priority: 1, allocation_bps: 7000 },
+            { account_id: 6, account_name: "حساب التوفير المشترك", priority: 2, allocation_bps: 3000 },
+          ],
+        }),
+      ]),
+    });
+    const view = await renderDetails();
+    const isolated = [...view.container.querySelectorAll(".plan-history__funding small bdi")].map((node) => node.textContent);
+
+    assert.deepEqual(isolated, ["Main checking", "70%", "حساب التوفير المشترك", "30%"]);
+    await view.unmount();
+  });
+
   it("hides unreliable totals when attribution is incomplete", async () => {
     serve({
       "GET /savings-goals/1": { savings_goal: goal() },

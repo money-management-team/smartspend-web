@@ -18,12 +18,26 @@ import {
   toDraftLegs,
   validateDraftLegs,
 } from "../../smartPlanHelpers";
+import { subtractMoney } from "../../../utils/formatters";
 import FundingLegs from "../FundingLegs/FundingLegs";
 import PlanDialog from "../PlanDialog/PlanDialog";
 
 import "./FundingBreakdownDialog.css";
 
 const isZero = (value) => /^-?0*(\.0*)?$/.test(String(value ?? "").trim());
+const MONEY = /^\d+(\.\d{1,4})?$/;
+
+/*
+ * Hints from the preview's own balances (`available_balance`, `allows_overdraft`), exact string arithmetic.
+ * They only guide the choice: the funding preview still checks every split before anything can be approved.
+ */
+const hasNoBalance = (account) => account?.allows_overdraft !== true && isZero(account?.available_balance);
+const exceedsBalance = (account, amount) =>
+  account != null &&
+  account.allows_overdraft !== true &&
+  MONEY.test(String(account.available_balance ?? "")) &&
+  MONEY.test(String(amount ?? "").trim()) &&
+  subtractMoney(account.available_balance, String(amount).trim()).startsWith("-");
 
 /*
  * Confirms one installment from several accounts
@@ -300,6 +314,8 @@ export default function FundingBreakdownDialog({
                     const account = accountsById.get(String(leg.account_id));
                     const taken = new Set(draftLegs.filter((_, i) => i !== index).map((other) => String(other.account_id)));
                     const update = (patch) => editDraft(draftLegs.map((item, i) => (i === index ? { ...item, ...patch } : item)));
+                    const tooMuch = exceedsBalance(account, leg.amount);
+                    const legHintId = `funding-breakdown-leg-${index}-hint`;
 
                     return (
                       <li key={index} className="funding-breakdown__leg">
@@ -307,15 +323,24 @@ export default function FundingBreakdownDialog({
                           <span>{t(`${prefix}.account`)}</span>
                           <select value={leg.account_id} onChange={(event) => update({ account_id: event.target.value })}>
                             <option value="">{t(`${prefix}.chooseAccount`)}</option>
-                            {accounts.map((option) => (
-                              <option key={option.id} value={option.id} disabled={taken.has(String(option.id))}>
-                                {option.name}
-                              </option>
-                            ))}
+                            {accounts.map((option) => {
+                              const empty = hasNoBalance(option);
+                              return (
+                                <option
+                                  key={option.id}
+                                  value={option.id}
+                                  // An empty account can't pay any part; it stays selectable only if it is already chosen here.
+                                  disabled={taken.has(String(option.id)) || (empty && String(option.id) !== String(leg.account_id))}
+                                >
+                                  {empty ? `${option.name} · ${t(`${prefix}.noBalance`)}` : option.name}
+                                </option>
+                              );
+                            })}
                           </select>
                           {account && (
-                            <small>
+                            <small id={legHintId} className={tooMuch ? "funding-breakdown__leg-warning" : undefined}>
                               {t(`${prefix}.available`)} {money(account.available_balance)}
+                              {tooMuch && <> · {t(`${prefix}.exceedsAvailable`)}</>}
                             </small>
                           )}
                         </label>
@@ -325,6 +350,8 @@ export default function FundingBreakdownDialog({
                             inputMode="decimal"
                             dir="ltr"
                             value={leg.amount}
+                            aria-invalid={tooMuch || (showDraftError && draftError === "totalMismatch") || undefined}
+                            aria-describedby={account ? legHintId : undefined}
                             onChange={(event) => update({ amount: event.target.value })}
                           />
                         </label>
@@ -368,7 +395,8 @@ export default function FundingBreakdownDialog({
 
                 {showDraftError && draftError && (
                   <p className="funding-breakdown__error" role="alert">
-                    {t(`${prefix}.validation.${draftError}`, { max: MAX_FUNDING_LEGS })}
+                    <LuTriangleAlert aria-hidden="true" />
+                    <span>{t(`${prefix}.validation.${draftError}`, { max: MAX_FUNDING_LEGS })}</span>
                   </p>
                 )}
 

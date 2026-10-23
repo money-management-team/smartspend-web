@@ -393,6 +393,56 @@ describe("multi-account confirmation", () => {
     await view.unmount();
   });
 
+  it("explains empty and short accounts while the split is written, and shows a mismatch as an error (F6.2.1)", async () => {
+    const empty = { id: 7, name: "Empty card", currency_code: "ILS", available_balance: "0.0000", allows_overdraft: false, covers_suggested_amount: false };
+    const calls = serve({
+      "GET /savings-goals/1": { savings_goal: goal() },
+      "GET /savings-goals/1/plan": planData({ mode: "at_confirmation" }),
+      "GET /savings-goals/1/planned-contributions/3/confirmation-preview": {
+        confirmation: {
+          confirmable: true, blocker: null, warnings: [],
+          savings_goal: { id: 1, name: "Emergency fund" },
+          savings_plan: { id: 9, status: "active", plan_version: 3, funding_mode: "at_confirmation" },
+          installment: { id: 3, sequence: 3, status: "planned", planned_date: "2037-03-01", scheduled_amount: "312.5000", lock_version: 2 },
+          suggested_amount: "312.5000", default_account_id: null, accounts: [...accounts, empty],
+        },
+      },
+      "POST /savings-goals/1/planned-contributions/3/funding-preview": {
+        funding_preview: { ...fundingPreview({ mode: "at_confirmation", legs: [], problem: "breakdown_required" }), accounts: [...accounts, empty] },
+      },
+    });
+    const view = await renderDetails();
+
+    await confirmRow(view, 3);
+    await settle();
+    await click(byText(dialog(), "Pay from several accounts instead"));
+    await settle();
+
+    const select = dialog().querySelector(".funding-breakdown__field--account select");
+    const emptyOption = [...select.options].find((option) => option.value === "7");
+    assert.equal(emptyOption.disabled, true, "an account with nothing available can't pay a part");
+    assert.match(emptyOption.textContent, /Empty card · no available balance/);
+
+    // Wallet has ₪150.00: asking ₪200 of it is flagged before anything is checked.
+    await change(select, "6");
+    const amount = dialog().querySelector(".funding-breakdown__field--amount input");
+    await change(amount, "200");
+    assert.match(dialog().querySelector(".funding-breakdown__leg-warning").textContent, /More than this account has available/);
+    assert.equal(amount.getAttribute("aria-invalid"), "true");
+
+    // A split that doesn't add up is a clear error, and nothing is sent for it.
+    await change(amount, "100");
+    const previews = callsTo(calls, "POST", "/savings-goals/1/planned-contributions/3/funding-preview").length;
+    await click(byText(dialog(), "Check this split"));
+    await settle();
+    const error = dialog().querySelector(".funding-breakdown__error");
+    assert.equal(error.getAttribute("role"), "alert");
+    assert.ok(error.querySelector("svg"), "an error icon, not plain text");
+    assert.match(error.textContent, /The parts must add up to exactly the amount to move/);
+    assert.equal(callsTo(calls, "POST", "/savings-goals/1/planned-contributions/3/funding-preview").length, previews);
+    await view.unmount();
+  });
+
   it("a failed preview is a read error, never an unknown money outcome", async () => {
     serve({
       "GET /savings-goals/1": { savings_goal: goal() },
@@ -465,6 +515,38 @@ describe("multi-account confirmation", () => {
     assert.notEqual(first.headers["Idempotency-Key"], second.headers["Idempotency-Key"]);
     assert.equal(second.body.expected_lock_version, 4);
     assert.equal(second.body.confirmation_intent, INTENT_2);
+    await view.unmount();
+  });
+
+  it("a lost response whose payment did go through is reported as confirmed, never as not started (F6.2.1)", async () => {
+    const paid = installment(3, {
+      status: "fulfilled", fulfilled_amount: "312.5000", effective_amount: "312.5000", confirmed_amount: "312.5000",
+      from_account_id: null, fulfilled_goal_movement_id: null, lock_version: 3,
+    });
+    const calls = serve({
+      "GET /savings-goals/1": { savings_goal: goal() },
+      // The dialog refetches after the unknown outcome: the backend already recorded the payment.
+      "GET /savings-goals/1/plan": [
+        planData(),
+        planData({ installments: [multiPaid(), installment(2, { status: "fulfilled", fulfilled_amount: "312.5000", fulfilled_goal_movement_id: 77, effective_amount: "312.5000", from_account_id: 5 }), paid, installment(4)] }),
+      ],
+      "POST /savings-goals/1/planned-contributions/3/funding-preview": { funding_preview: fundingPreview() },
+      "POST /savings-goals/1/planned-contributions/3/confirm-accounts": { status: 503, body: { status: false, message: "" } },
+    });
+    const view = await renderDetails();
+
+    await confirmRow(view, 3);
+    await settle();
+    await click(byText(dialog(), "Review and approve"));
+    await click(dialog().querySelector(".funding-breakdown__approve input"));
+    await click(byText(dialog(), "Confirm and move money"));
+    await settle(16);
+
+    assert.equal(dialog(), null, "nothing is left to confirm");
+    assert.doesNotMatch(view.container.textContent, /not started/);
+    assert.match(view.container.querySelector(".savings-goal-details__notice").textContent, /Installment confirmed for “Emergency fund”/);
+    assert.equal(callsTo(calls, "GET", "/savings-goals/1/progress").length, 1, "the goal's progress is read again");
+    assert.equal(callsTo(calls, "POST", "/confirm-accounts").length, 1, "and nothing is sent again");
     await view.unmount();
   });
 

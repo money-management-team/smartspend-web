@@ -2202,6 +2202,8 @@
             "account": "Account",
             "chooseAccount": "Choose an account…",
             "available": "Available",
+            "noBalance": "no available balance",
+            "exceedsAvailable": "More than this account has available.",
             "amount": "Amount",
             "removeLeg": "Remove part {{number}}",
             "addLeg": "Add an account",
@@ -2253,7 +2255,7 @@
           "postponed": "Installment {{number}} moved to",
           "skipped": "Installment {{number}} skipped. Your target is unchanged.",
           "noMoney": "No money moved.",
-          "closed": "That installment changed and is no longer open, so the action was not started.",
+          "closed": "Installment {{number}} changed while this was open, so the dialog was closed. Its current state is shown below, and nothing more happens unless you act again.",
           "created": "Your smart plan is ready. Nothing has moved yet: confirm each installment when it's due."
         },
         "confirm": {
@@ -2592,8 +2594,9 @@
           "addAccount": "Add an account",
           "addPlaceholder": "Choose an account…",
           "total": "Total",
-          "allocatedNotice": "Installments split across several accounts can't be confirmed in the app yet. You can still create the plan and change its funding later.",
-          "noMoney": "Choosing accounts moves no money. They're checked again when you create the plan and at every confirmation."
+          "allocatedNotice": "Each installment is split by these shares. When you confirm one, you see exactly how much comes from each account before any money moves.",
+          "available": "Available",
+          "noMoney": "Choosing accounts moves no money. Balances are a guide: they're checked again when you create the plan and at every confirmation."
         },
         "review": {
           "edit": {
@@ -2612,8 +2615,9 @@
           "noTargetDate": "No target date",
           "planTitle": "{{intensity}} plan",
           "firstInstallment": "First installment",
-          "lastInstallment": "Last installment",
+          "lastInstallment": "Last installment date",
           "affordability": "Affordability",
+          "affordabilityUnknown": "Not known yet",
           "fundingTitle": "Funding",
           "atConfirmation": "You'll choose the account each time you confirm.",
           "noMoneyTitle": "Accepting a plan moves no money",

@@ -36,6 +36,28 @@ import SkipInstallmentDialog from "../SkipInstallmentDialog/SkipInstallmentDialo
 import "./SmartPlanPanel.css";
 
 /*
+ * When an open dialog's installment changed under it — in another tab, or through this user's own
+ * write whose response was lost (the dialog refetches on an unknown outcome) — and the change is a
+ * recorded payment ("confirmed") or reversal ("reversed"), that outcome is reported as done rather
+ * than "not started". Keyed by the installment's lock version so it is reported once. Reads only;
+ * nothing is sent.
+ */
+function getSettledKey({ dialog, result, goalId, lookupKey }) {
+  if (!dialog || !lookupKey || result.key !== lookupKey || String(result.goalId) !== String(goalId)) return null;
+  const installment = result.data?.plan?.installments?.find((item) => String(item.id) === String(dialog.installmentId));
+  if (!installment) return null;
+
+  const outcome =
+    (dialog.type === "confirm" || dialog.type === "fund") && installment.status === "fulfilled"
+      ? "confirmed"
+      : dialog.type === "reverse" && !canReverseLegs(installment) && installment.reversal_state !== "partially_reversed"
+        ? "reversed"
+        : null;
+
+  return outcome ? `${outcome}:${installment.id}:${installment.lock_version}` : null;
+}
+
+/*
  * The goal's active smart plan (GET /savings-goals/{id}/plan), on the goal's
  * page. Gated by the page (VITE_SMART_SAVINGS_ENABLED). Renders nothing for
  * a flexible goal (404) and is not looked up for achieved or archived goals,
@@ -157,6 +179,16 @@ export default function SmartPlanPanel({
     row?.scrollIntoView?.({ behavior: reduced ? "auto" : "smooth", block: "center" });
   }, [focusId, hasPlan]);
 
+  // A payment or reversal that turned out to be recorded is reported once; the page refreshes the goal.
+  const settledKey = getSettledKey({ dialog, result, goalId, lookupKey });
+  const reportedRef = useRef(null);
+  useEffect(() => {
+    if (!settledKey || reportedRef.current === settledKey) return;
+    reportedRef.current = settledKey;
+    if (settledKey.startsWith("confirmed")) onInstallmentConfirmed(null);
+    else onInstallmentReversed(null);
+  }, [settledKey, onInstallmentConfirmed, onInstallmentReversed]);
+
   if (!lookupKey) return null;
 
   const isRefreshing = result.key !== lookupKey;
@@ -275,6 +307,7 @@ export default function SmartPlanPanel({
         ? canReverseLegs(dialogInstallment)
         : isOpenInstallment(dialogInstallment);
   const canReverse = canManage && !isRefreshing;
+  const settled = settledKey ? settledKey.split(":")[0] : null;
   const focused = focusId ? plan.installments.find((installment) => String(installment.id) === focusId) : null;
   const focusedState = focused ? getInstallmentState(focused, getOverdueInstallmentIds(plan, health)) : null;
   const clearFocus = () => {
@@ -497,9 +530,9 @@ export default function SmartPlanPanel({
         </div>
       )}
 
-      {dialog && !dialogIsOpen && !isRefreshing && (
+      {dialog && !dialogIsOpen && !isRefreshing && !settled && (
         <div className="smart-plan__notice smart-plan__notice--info" role="status">
-          <p>{t(`${prefix}.notices.closed`)}</p>
+          <p>{t(`${prefix}.notices.closed`, { number: dialogInstallment?.sequence ?? "" })}</p>
           <button type="button" onClick={closeDialog} aria-label={t("common.close")}>
             <LuX aria-hidden="true" />
           </button>
@@ -551,7 +584,7 @@ export default function SmartPlanPanel({
               <ol className="smart-plan__sources">
                 {sources.map((source) => (
                   <li key={source.account_id}>
-                    <span dir="auto">{source.account_name ?? `#${source.account_id}`}</span>
+                    <span dir="auto" title={source.account_name ?? undefined}>{source.account_name ?? `#${source.account_id}`}</span>
                     {plan.funding_mode === "allocated" && source.allocation_bps != null && (
                       <bdi>{formatAllocation(source.allocation_bps, locale)}</bdi>
                     )}
