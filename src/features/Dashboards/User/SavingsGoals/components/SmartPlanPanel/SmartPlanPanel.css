@@ -232,6 +232,180 @@
   }
 }
 
+/* ---------- Read only + reminder ---------- */
+
+.smart-plan__readonly {
+  margin: -6px 0 0;
+  padding: 9px 12px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: var(--primary-soft);
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.smart-plan__readonly svg {
+  width: 15px;
+  height: 15px;
+  margin-top: 2px;
+  flex: none;
+  color: var(--color-primary);
+}
+
+/* The installment a savings reminder points to. */
+.smart-plan__reminder {
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  border: 1px solid color-mix(in srgb, var(--savings-cyan) 40%, var(--color-border));
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--savings-cyan) 8%, var(--color-surface));
+
+  font-size: 13px;
+  line-height: 1.55;
+
+  animation: smart-plan-in 220ms ease-out;
+}
+
+.smart-plan__reminder--closed {
+  border-color: var(--color-border);
+  background: var(--surface-soft);
+}
+
+.smart-plan__reminder > svg {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex: none;
+  color: var(--savings-cyan);
+}
+
+.smart-plan__reminder > div {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 4px;
+}
+
+.smart-plan__reminder p {
+  margin: 0;
+}
+
+/* Title, then date and amount, each kept apart in either direction. */
+.smart-plan__reminder p:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+
+.smart-plan__reminder-facts {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.smart-plan__reminder-action {
+  justify-self: start;
+
+  min-height: 36px;
+  margin-top: 4px;
+  padding: 0 16px;
+
+  border: 1px solid var(--color-primary);
+  border-radius: 999px;
+
+  color: var(--navigation-active-text, #fff);
+  background: var(--color-primary);
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.smart-plan__reminder-action:hover {
+  background: var(--color-primary-hover, var(--color-primary));
+}
+
+.smart-plan__reminder-action:focus-visible,
+.smart-plan__reminder-close:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.smart-plan__reminder-link {
+  justify-self: start;
+  padding: 0;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.smart-plan__reminder-link:hover {
+  text-decoration: underline;
+}
+
+.smart-plan__reminder-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.smart-plan__reminder-close {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  flex: none;
+
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: 50%;
+
+  color: inherit;
+  background: transparent;
+
+  cursor: pointer;
+}
+
+.smart-plan__reminder-close:hover {
+  background: color-mix(in srgb, var(--savings-cyan) 14%, transparent);
+}
+
+@media (max-width: 640px) {
+  .smart-plan__reminder-action {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smart-plan__reminder {
+    animation: none;
+  }
+}
+
 /* ---------- Notices ---------- */
 
 .smart-plan__notice {

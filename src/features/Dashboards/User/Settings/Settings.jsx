@@ -9,10 +9,13 @@ import ProfileSettings from "./components/ProfileSettings/ProfileSettings";
 import ChangePassword from "./components/ChangePassword/ChangePassword";
 import Preferences from "./components/Preferences/Preferences";
 import WhatsAppIntegration from "./components/WhatsAppIntegration/WhatsAppIntegration";
+import SavingsReminders from "./components/SavingsReminders/SavingsReminders";
+import { SMART_SAVINGS_ENABLED } from "../SavingsGoals/smartSavingsFlag";
 
 import "./Settings.css";
 
-export default function Settings() {
+// `smartSavingsEnabled` defaults to the build flag; tests pass it.
+export default function Settings({ smartSavingsEnabled = SMART_SAVINGS_ENABLED }) {
   const { t } = useTranslation();
 
   // The tab lives in `?tab=` so a refresh or a shared link opens the same one.
@@ -47,6 +50,8 @@ export default function Settings() {
           {activeTab === "preferences" && (
             <>
               <Preferences />
+              {/* Unreleased: savings reminders exist only with smart savings. */}
+              {smartSavingsEnabled && <SavingsReminders />}
               <DisplayPreferences />
             </>
           )}

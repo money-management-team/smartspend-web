@@ -88,6 +88,8 @@ const planData = ({ mode = "allocated", installments, health = {} } = {}) => ({
     target_date: "2037-08-30",
     funding_mode: mode,
     plan_version: 3,
+    // The backend's permission for the signed-in user (F5.2).
+    can_manage: true,
     funding_sources: [
       { account_id: 5, account_name: "Main bank", priority: 1, allocation_bps: mode === "allocated" ? 6000 : null },
       { account_id: 6, account_name: "Wallet", priority: 2, allocation_bps: mode === "allocated" ? 4000 : null },

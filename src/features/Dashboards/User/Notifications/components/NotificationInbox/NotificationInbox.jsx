@@ -34,7 +34,7 @@ import "./NotificationInbox.css";
  * `unread_count` to the shared UnreadNotifications context; nothing is
  * decremented locally.
  */
-export default function NotificationInbox({ searchParams, onSearchParamsChange }) {
+export default function NotificationInbox({ searchParams, onSearchParamsChange, smartSavingsEnabled }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { count: unreadCount, setCount: setUnreadCount } = useUnreadNotifications();
@@ -292,6 +292,7 @@ export default function NotificationInbox({ searchParams, onSearchParamsChange }
               isPending={pendingIds.has(String(notification.id))}
               onOpen={handleOpen}
               onMarkRead={handleMarkRead}
+              smartSavingsEnabled={smartSavingsEnabled}
             />
           ))}
         </ul>

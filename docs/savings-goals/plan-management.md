@@ -16,7 +16,7 @@ The plan panel (`SmartPlanPanel`) has a **Manage plan** toolbar under its title,
 
 The route is registered only when the flag is on (`Routes.jsx`), and `SmartPlanRevision` redirects to the goals list when rendered with the flag off. An unknown `change` redirects to the goal.
 
-Actions are shown to anyone who can see the plan. The plan resource has no owner flag, so a non-owner's attempt gets the backend's 403, worded "Only the person who set up this plan can do this" (the F2 pattern).
+Actions are shown only when the backend's `savings_plan.can_manage` is true (F5.2, below). The backend's 403 stays authoritative ("Only the person who set up this plan can do this").
 
 ## Revising a plan (`SmartPlanRevision`)
 
@@ -42,7 +42,7 @@ The page reuses the wizard's shell (`SmartPlanWizard.css`), `WizardStepper` (now
 - **What this does.**
   - Schedule: the plan is closed as replaced and its open installments are cancelled (count shown). Confirmed installments keep their money in the goal. The new plan covers exactly what's left (`plan_options.goal.remaining_amount`). The old plan stays in history.
   - Funding: the schedule and amounts don't change, open installments use the new setup, confirmed ones keep their accounts, and the old setup is recorded in history.
-- **Split payments warning.** When the current plan has installments paid from several accounts that can still be reversed (`countReversibleSplitPayments`), a schedule change warns before approval that reversing them from the app won't be available afterwards. See the missing contract below.
+- **Split payments note.** When the current plan has installments paid from several accounts that can still be reversed (`countReversibleSplitPayments`), the review notes that they stay in the goal and remain reversible from plan history.
 - **Approval.** "No money moves" is shown, followed by an explicit checkbox. The approval is tied to `[change, plan_version, preview key, both fingerprints, funding]`, so any change to these unticks it.
 
 ### Safety rules
@@ -91,25 +91,74 @@ On the goal's page under the plan panel, for every goal (also achieved and archi
   - "Target reached on {date}";
   - the pace against the plan's own last installment date (`getCompletionPerformance`: early / on the planned date / late, in whole days);
   - a note that this is when the plan completed and that the goal's current balance lives in its progress and can change later. **No history figure is the ledger balance.**
-- **Installments and reversals.**
-  - The active plan's card links to the plan panel, where its installments, payments and reversals already are.
-  - A closed plan's card says its payments are in the goal's activity, where single-account payments can be reversed, and that opening a closed plan's installments, including reversing split payments, isn't available yet. The workflow gap is stated, not hidden. See below.
+- **Installments and reversals.** Any plan's installments open from its card, and split payments of closed plans can be reversed there (F5.2, below). The active plan's card also links to the plan panel.
 - **No writes.** Reading history writes nothing.
 
-## Missing backend contracts (for F5.2)
+## Complete history, closed-plan reversals and permissions (F5.2)
 
-1. **A closed plan's installments.**
-   - `GET …/plan` returns only the active plan.
-   - `GET …/planned-contributions` lists standalone contributions only (`->standalone()`).
-   - `GET …/plans` returns counts only.
-   - Goal activity movements carry no installment id.
-   - So the frontend can't learn a completed, discontinued or superseded plan's installment ids. The backend already accepts them: `GET …/funding-legs` requires only `savings_plan_id`, and `reverse-legs` works on a closed plan (a fully reversed installment becomes `cancelled`). But they are unreachable.
-   - A multi-account payment confirmed under a plan that later closed therefore can't be reversed from the app (its generic transaction reversal is refused with `savings_installment_leg_requires_domain_reversal`).
-   - Needed: `GET /savings-goals/{goal}/plans/{plan}` (or `…/plans/{plan}/installments`) returning the plan's installments in the `SavingsPlanInstallmentResource` shape (`id`, `status`, `reversal_state`, `confirmed_amount`, `effective_amount`, `fulfilled_goal_movement_id`, `lock_version`), with the same scoping as `GET …/plans` (404 outside the workspace).
-2. **What a plan actually saved.**
-   - `SavingsPlanHistoryResource` has counts and `baseline_remaining` but no money totals.
-   - Needed: `installments_summary.confirmed_amount`, `effective_amount` (confirmed minus reversed) and `reversed_amount`, summed by the backend, so a completed plan can show what it saved without the client adding money.
-3. **Owner flag.** Neither plan resource says whether the viewer owns the plan. `can_manage` (or `is_owner`) would let non-owners see management actions as read only, instead of learning from a 403.
+Backend checkpoint `eb21cc72` added `GET …/plans/{plan}/installments`, `financial_summary` on each history plan and `can_manage` on the plan, history and plan-installment resources.
+
+### Installments of any plan (`PlanInstallments`)
+
+- **Opening.** Each history card has a **Show installments (N)** toggle (`aria-expanded`, `aria-controls`). Opening it loads `GET …/plans/{plan}/installments?per_page=10`; "Show more installments" appends the next page without repeats (`appendById`). It refetches with the history's refresh key, so after a reversal the rows are current.
+- **Rendering.** Rows use the plan panel's `InstallmentTimeline` with `canAct=false`. Every state shows: confirmed, partly reversed (paid / reversed / short by), postponed (count and struck-out original date), skipped, missed and cancelled. Cancelled rows say why (`resolution_reason`: plan revised, plan discontinued, goal archived, target reached).
+- **Active plans.** These also open here, read only, with a link to the plan panel, where installments are confirmed.
+
+### What a plan collected (`financial_summary`)
+
+- **The figures.** A card section **Plan contributions** shows **Effective plan contributions** (`contributions.effective_amount`), **Confirmed plan contributions** (`confirmed_amount`) and **Reversed plan contributions** (`reversed_amount`, with the reversed-payment count). They are the backend's strings via `formatMoney`; nothing is added up client side.
+- **Not the goal's balance.** These are contributions attributed to the plan's own installments. The note says so: the goal's balance also includes direct contributions, withdrawals and other plans, and is shown only where it comes from the goal's own balance response (its progress, `GET …/plan` `balance.saved_amount`). Completed plans add "Effective plan contributions: {amount}" to their summary.
+- **Incomplete attribution.** When `attribution.complete` is false, `readFinancialSummary` returns no amounts (even if some were sent). The card explains that the totals can't be worked out reliably and that the installments below remain accurate.
+
+### Reversing a closed plan's payments
+
+- **Offered when** `savings_plan.can_manage === true` (from the installments response) and the installment holds a split payment (`canReverseLegs`).
+- **The dialog** is the existing `ReverseLegsDialog`, unchanged. It reads `GET …/funding-legs` fresh on every opening; legs are selectable only if their id is in `reversal.effective_leg_ids`, and historical cycles stay read only. Its rules are unchanged:
+  - "all remaining" or chosen legs;
+  - `expected_lock_version` from that read;
+  - a reason, an explicit acknowledgement and an Idempotency-Key;
+  - a 409, 404 or 422 re-reads and asks for a fresh choice and approval;
+  - an unknown outcome keeps the key;
+  - nothing is sent automatically.
+- **Single-account payments** stay with the goal's activity reversal, and a hint in the panel says so.
+- **On success** the page applies the returned goal, refreshes activity and history, and the panel says the plan stays `{status}`. The backend keeps a closed plan's status; the client never changes it.
+
+### Permission (`can_manage`)
+
+`can_manage` is permission only: the plan owner who still manages the workspace's finances. Eligibility still comes from the plan's status, the goal's status, `plan_health.executable` and `reversal.eligible`, and the backend's 403 remains final.
+
+| Where | `can_manage !== true` |
+| --- | --- |
+| Plan panel | No Manage toolbar and no confirm, postpone, skip or reverse buttons. A note says the plan is view only |
+| Revision page | "Only the plan's owner can change it", with no stages |
+| Discontinue dialog | Not rendered |
+| History card | A "View only" pill |
+| History installments | A view-only note and no reverse buttons |
+
+### Savings reminders (F5.2.2: deep links)
+
+- **Inbox.** `savings_installment_due` / `_overdue` notifications use the existing inbox and item, with translated type labels. Read and unread behaviour is unchanged.
+- **Link.** It comes from `getNotificationPath`, which reads only the notification's **top-level `action`** (backend `651b217d`; validated there, `null` for every other type). `metadata` is never read.
+  - flag off: no link (unchanged behaviour);
+  - flag on, with `action.type === "review_savings_installment"` and positive integer ids (`savings_goal_id`, `installment_id`, and `savings_plan_id` when present): `/dashboard/savings-goals/{goal}?plan={plan}&installment={id}`;
+  - flag on, with a null or malformed action: the savings goals overview.
+  - The link is an internal route built from those ids. The action's `confirmation_preview` / `funding_preview` paths are never followed, and nothing from the payload is used as a URL.
+- **The goal page.** Ids in the query are accepted only as positive integers; anything else is ignored.
+  - **The active plan's installment** (`plan` absent or equal to the active plan's id): the plan panel reveals it even past the first four open rows (`InstallmentTimeline` opens the list instead of hiding it), highlights it (`aria-current`), scrolls to it and shows a banner.
+    - An open installment that the user may act on gets **Review installment**. That opens the usual dialog, which first fetches a fresh `confirmation-preview` (or `funding-preview` for split plans).
+    - Otherwise the banner says why it can't be confirmed, or gives its current state ("Installment 1 is Confirmed. There's nothing to confirm"). It never offers an invalid confirmation.
+  - **An earlier plan** (completed, discontinued or superseded): the panel says the installment is in plan history and links there. `PlanHistory` reads older pages until it finds the plan and opens its card on its installments. `PlanInstallments` then reads pages of 50 until it finds the installment, highlights it and states its current status and the plan's ("installment 56 is Cancelled. This plan is Replaced, so there's nothing to confirm").
+  - **Edge cases.** A plan or installment that isn't there is explained ("isn't in this goal's history" / "isn't in this plan"). An inaccessible goal shows the goal's own not-found state, and no plan is requested.
+  - Opening a notification never moves money, and nothing opens a dialog by itself.
+- **Preference (`SavingsReminders`, Settings → Preferences, flag on only).**
+  - `GET /notifications/preferences`; the switch (a native checkbox with `role="switch"`) sends `PATCH` with `{ savings_installment_reminders }` only, so no other preference is touched, and then shows the response.
+  - A failed save keeps the previous value and says so.
+  - When `savings_installment_reminders_available` is false, the card explains that reminders are off for SmartSpend right now and that the choice will apply once they're on. The client never touches the scheduler switches.
+
+## Remaining gaps (before F6)
+
+- **Postponed rows** show the count and original date, but not when each postponement happened; there is no field for it.
+- **Finding an earlier plan's installment** reads pages until it is found (50 installments and 5 plans per page). Paging always ends: it stops when the target is found, at the last page, on any error, on a response for a page other than the one requested (treated as malformed, with a retry), and after `MAX_SEEK_PAGES` (40) automatic pages. A very long history makes several read requests; a backend lookup by installment id would make it one.
 
 ## RTL, i18n and design
 

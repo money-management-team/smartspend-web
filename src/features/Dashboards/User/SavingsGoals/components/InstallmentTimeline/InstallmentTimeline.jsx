@@ -31,8 +31,23 @@ const ACTIONS = [
  * Installments paid from several accounts can have their payments reversed
  * (`canReverse`); single-account ones keep the existing transfer reversal.
  * `money(value)` / `day(value)` render an amount / a Y-m-d date.
+ *
+ * `highlightId` marks one row (the installment a reminder points to). The
+ * timeline is also the read-only view of a closed plan in plan history:
+ * there `canAct` is false and cancelled rows say why (`resolution_reason`).
  */
-export default function InstallmentTimeline({ plan, health, canAct, canReverse = false, onAction, money, day }) {
+const CANCEL_REASONS = ["plan_superseded", "plan_discontinued", "goal_archived", "goal_achieved"];
+
+export default function InstallmentTimeline({
+  plan,
+  health,
+  canAct,
+  canReverse = false,
+  onAction,
+  money,
+  day,
+  highlightId = null,
+}) {
   const { t, i18n } = useTranslation();
   const [showAll, setShowAll] = useState(false);
   const prefix = "dashboard.savingsGoals.smartPlan.timeline";
@@ -40,7 +55,12 @@ export default function InstallmentTimeline({ plan, health, canAct, canReverse =
   const installments = plan.installments ?? [];
   const overdueIds = getOverdueInstallmentIds(plan, health);
   const nextId = installments.find(isOpenInstallment)?.id;
-  const { rows, hidden } = getVisibleInstallments(installments, showAll);
+  // A highlighted row (a reminder's installment) is shown even past the
+  // first open ones: the list opens fully instead of hiding it.
+  const isHighlighted = (installment) => highlightId != null && String(installment.id) === String(highlightId);
+  const mustReveal =
+    installments.some(isHighlighted) && !getVisibleInstallments(installments, false).rows.some(isHighlighted);
+  const { rows, hidden } = getVisibleInstallments(installments, showAll || mustReveal);
 
   if (installments.length === 0) {
     return <p className="installment-timeline__empty">{t(`${prefix}.empty`)}</p>;
@@ -64,7 +84,9 @@ export default function InstallmentTimeline({ plan, health, canAct, canReverse =
               key={installment.id}
               className={`installment-timeline__row installment-timeline__row--${state}${
                 isNext ? " installment-timeline__row--next" : ""
-              }`}
+              }${isHighlighted(installment) ? " installment-timeline__row--focus" : ""}`}
+              aria-current={isHighlighted(installment) ? "true" : undefined}
+              data-installment-id={installment.id}
             >
               <span className="installment-timeline__marker" aria-hidden="true">
                 {installment.status === "fulfilled" && <LuCheck />}
@@ -125,6 +147,12 @@ export default function InstallmentTimeline({ plan, health, canAct, canReverse =
                   {state === "skipped" && (
                     <span className="installment-timeline__note">{t(`${prefix}.skippedNote`)}</span>
                   )}
+
+                  {state === "cancelled" && CANCEL_REASONS.includes(installment.resolution_reason) && (
+                    <span className="installment-timeline__note">
+                      {t(`${prefix}.cancelledReasons.${installment.resolution_reason}`)}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -181,7 +209,7 @@ export default function InstallmentTimeline({ plan, health, canAct, canReverse =
         })}
       </ol>
 
-      {(hidden > 0 || showAll) && (
+      {(hidden > 0 || showAll) && !mustReveal && (
         <button
           type="button"
           className="installment-timeline__toggle"

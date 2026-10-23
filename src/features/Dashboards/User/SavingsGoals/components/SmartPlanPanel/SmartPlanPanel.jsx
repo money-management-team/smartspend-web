@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useLocation } from "react-router-dom";
-import { LuArrowRight, LuCalendarClock, LuCircleStop, LuLandmark, LuRefreshCw, LuSparkles, LuWallet, LuX } from "react-icons/lu";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { LuArrowRight, LuBellRing, LuCalendarClock, LuCircleStop, LuEye, LuLandmark, LuRefreshCw, LuSparkles, LuWallet, LuX } from "react-icons/lu";
 
 import { ApiError } from "../../../api/apiClient";
 import { savingsPlansApi } from "../../../api/savingsPlansApi";
@@ -15,6 +15,8 @@ import {
   EDITABLE_FUNDING_MODES,
   canReverseLegs,
   formatAllocation,
+  getInstallmentState,
+  getOverdueInstallmentIds,
   getFrequencyLabel,
   getSmartPlanErrorMessage,
   isDateOnly,
@@ -58,6 +60,20 @@ import "./SmartPlanPanel.css";
  * revision page (PATCH …/plan); "Discontinue" opens DiscontinuePlanDialog,
  * whose response goes to `onPlanDiscontinued(data)`. Arriving back from a
  * revision (`state.smartPlanRevised`) shows a one-time notice.
+ *
+ * Permission (F5.2): every action — confirm, postpone, skip, reverse,
+ * revise, discontinue — is offered only when the backend says this user
+ * manages the plan (`savings_plan.can_manage === true`). Anyone else sees
+ * the plan read only. That is permission, not eligibility: each action
+ * still checks the plan's and installment's state, and the backend decides.
+ *
+ * A savings reminder opens the goal with `?plan={id}&installment={id}`.
+ * When that is this active plan (or no plan is named), the row is revealed
+ * and highlighted, and a banner shows its current state; only an open
+ * installment the user may act on gets "Review installment". A reminder for
+ * an earlier plan is left to plan history, which opens that plan. Reviewing opens the usual
+ * dialog, which fetches a fresh confirmation preview; nothing moves until
+ * the user confirms there.
  */
 export default function SmartPlanPanel({
   goal,
@@ -88,6 +104,17 @@ export default function SmartPlanPanel({
   const revised = ["schedule", "funding"].includes(location.state?.smartPlanRevised) && !revisedDismissed
     ? location.state.smartPlanRevised
     : null;
+  // The plan and installment a savings reminder points to (`?plan=&installment=`).
+  const [searchParams, setSearchParams] = useSearchParams();
+  const asId = (value) => (/^[1-9]\d{0,17}$/.test(value ?? "") ? value : null);
+  const requestedInstallment = asId(searchParams.get("installment"));
+  const requestedPlan = asId(searchParams.get("plan"));
+  // This panel answers for the active plan only; another plan is plan history's.
+  const activePlanId = result.data?.plan?.id != null ? String(result.data.plan.id) : null;
+  const focusIsHere = requestedInstallment != null && (requestedPlan == null || requestedPlan === activePlanId);
+  const focusId = focusIsHere ? requestedInstallment : null;
+  const panelRef = useRef(null);
+  const hasPlan = result.data != null;
 
   useEffect(() => {
     if (!lookupKey) return undefined;
@@ -120,6 +147,15 @@ export default function SmartPlanPanel({
 
     return () => controller.abort();
   }, [goalId, lookupKey]);
+
+  // Bring the reminded installment into view once the plan is shown.
+  useEffect(() => {
+    if (!focusId || !hasPlan) return;
+
+    const row = panelRef.current?.querySelector(`[data-installment-id="${focusId}"]`);
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    row?.scrollIntoView?.({ behavior: reduced ? "auto" : "smooth", block: "center" });
+  }, [focusId, hasPlan]);
 
   if (!lookupKey) return null;
 
@@ -158,7 +194,7 @@ export default function SmartPlanPanel({
   const reload = () => setReloadCount((count) => count + 1);
 
   const shell = (children, modifier = "") => (
-    <section className={`smart-plan${modifier}`} aria-labelledby="smart-plan-title">
+    <section ref={panelRef} className={`smart-plan${modifier}`} aria-labelledby="smart-plan-title">
       {children}
     </section>
   );
@@ -205,6 +241,7 @@ export default function SmartPlanPanel({
 
   const { plan, health, balance } = data;
   const managePrefix = "dashboard.savingsGoals.planManagement.actions";
+  const reminderPrefix = "dashboard.savingsGoals.planManagement.reminder";
 
   const money = (value) =>
     value == null || value === "" ? (
@@ -222,7 +259,9 @@ export default function SmartPlanPanel({
   const sources = [...(plan.funding_sources ?? [])].sort(
     (left, right) => Number(left.priority) - Number(right.priority),
   );
-  const canAct = !isRefreshing && health.executable !== false && getGoalStatus(goal) === "active";
+  // Permission from the backend; state checks follow per action.
+  const canManage = plan.can_manage === true;
+  const canAct = canManage && !isRefreshing && health.executable !== false && getGoalStatus(goal) === "active";
 
   const dialogInstallment = dialog
     ? plan.installments.find((installment) => String(installment.id) === String(dialog.installmentId))
@@ -235,7 +274,20 @@ export default function SmartPlanPanel({
       : dialog?.type === "reverse"
         ? canReverseLegs(dialogInstallment)
         : isOpenInstallment(dialogInstallment);
-  const canReverse = !isRefreshing;
+  const canReverse = canManage && !isRefreshing;
+  const focused = focusId ? plan.installments.find((installment) => String(installment.id) === focusId) : null;
+  const focusedState = focused ? getInstallmentState(focused, getOverdueInstallmentIds(plan, health)) : null;
+  const clearFocus = () => {
+    const next = new URLSearchParams(searchParams);
+    next.delete("installment");
+    next.delete("plan");
+    setSearchParams(next, { replace: true, preventScrollReset: true });
+  };
+  const showHistory = () => {
+    const target = document.getElementById("plan-history-title");
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    target?.scrollIntoView?.({ behavior: reduced ? "auto" : "smooth", block: "start" });
+  };
 
   const closeDialog = () => setDialog(null);
 
@@ -330,7 +382,66 @@ export default function SmartPlanPanel({
         )}
       </header>
 
-      {!isRefreshing && (
+      {!isRefreshing && !canManage && (
+        <p className="smart-plan__readonly">
+          <LuEye aria-hidden="true" />
+          <span>{t(`${managePrefix}.readOnly`)}</span>
+        </p>
+      )}
+
+      {requestedInstallment && !focusIsHere && !isRefreshing && (
+        <div className="smart-plan__reminder smart-plan__reminder--closed" role="status">
+          <LuBellRing aria-hidden="true" />
+          <div>
+            <p>{t(`${reminderPrefix}.earlierPlan`)}</p>
+            <button type="button" className="smart-plan__reminder-link" onClick={showHistory}>
+              {t(`${reminderPrefix}.showHistory`)}
+            </button>
+          </div>
+          <button type="button" className="smart-plan__reminder-close" onClick={clearFocus} aria-label={t("common.close")}>
+            <LuX aria-hidden="true" />
+          </button>
+        </div>
+      )}
+
+      {focusId && !isRefreshing && (
+        <div className={`smart-plan__reminder${focused && isOpenInstallment(focused) ? "" : " smart-plan__reminder--closed"}`} role="status">
+          <LuBellRing aria-hidden="true" />
+          <div>
+            {focused && isOpenInstallment(focused) ? (
+              <>
+                <p>
+                  <strong>{t(`${reminderPrefix}.title`, { number: focused.sequence })}</strong>
+                  <span className="smart-plan__reminder-facts">
+                    {day(focused.planned_date)} · {money(focused.amount)}
+                  </span>
+                </p>
+                <p>{t(canAct ? `${reminderPrefix}.body` : `${reminderPrefix}.cannotAct`)}</p>
+                {canAct && (
+                  <button type="button" className="smart-plan__reminder-action" onClick={() => handleAction("confirm", focused)}>
+                    {t(`${reminderPrefix}.review`)}
+                  </button>
+                )}
+              </>
+            ) : focused ? (
+              // Already resolved: its current state, and nothing to confirm.
+              <p>
+                {t(`${reminderPrefix}.resolved`, {
+                  number: focused.sequence,
+                  state: translateEnum(t, i18n, `${prefix}.timeline.states`, focusedState),
+                })}
+              </p>
+            ) : (
+              <p>{t(`${reminderPrefix}.closed`)}</p>
+            )}
+          </div>
+          <button type="button" className="smart-plan__reminder-close" onClick={clearFocus} aria-label={t("common.close")}>
+            <LuX aria-hidden="true" />
+          </button>
+        </div>
+      )}
+
+      {!isRefreshing && canManage && (
         <nav className="smart-plan__manage" aria-label={t(`${managePrefix}.label`)}>
           <Link className="smart-plan__manage-action" to={getGoalPlanRevisionPath(goalId, "schedule")}>
             <LuCalendarClock aria-hidden="true" />
@@ -417,6 +528,7 @@ export default function SmartPlanPanel({
             canAct={canAct}
             canReverse={canReverse}
             onAction={handleAction}
+            highlightId={focusId}
             money={money}
             day={day}
           />
@@ -493,7 +605,7 @@ export default function SmartPlanPanel({
       {dialogIsOpen && dialog.type === "skip" && (
         <SkipInstallmentDialog {...dialogProps} onDone={handleScheduleDone} />
       )}
-      {dialog?.type === "discontinue" && (
+      {dialog?.type === "discontinue" && canManage && (
         <DiscontinuePlanDialog {...dialogProps} health={health} balance={balance} onDone={handleDiscontinued} />
       )}
     </>,

@@ -91,6 +91,8 @@ const plan = (over = {}) => ({
   baseline_remaining: "1250.0000",
   funding_mode: "priority",
   plan_version: 3,
+  // The backend's permission for the signed-in user (F5.2).
+  can_manage: true,
   funding_sources: [
     { account_id: 5, account_name: "Main bank", priority: 1, allocation_bps: null },
     { account_id: 6, account_name: "Wallet", priority: 2, allocation_bps: null },
@@ -498,7 +500,7 @@ describe("plan history", () => {
     assert.match(cards[1].textContent, /current balance is in its progress above/);
     assert.match(cards[1].textContent, /Main bank 60% · Wallet 40%/);
     assert.match(cards[1].textContent, /Funding changes: 1/);
-    assert.match(cards[1].textContent, /Opening a closed plan's installments.*isn't available yet/, "the gap is said, not hidden");
+    assert.ok(byText(cards[1], "Show installments (8)"), "any plan's installments can be opened");
     assert.equal(cards[1].querySelector(".plan-history__bar").getAttribute("aria-valuenow"), "100");
 
     await click(byText(history, "Show older plans"));

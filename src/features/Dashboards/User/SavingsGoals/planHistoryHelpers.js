@@ -29,10 +29,70 @@ export function readPlanHistory(data, goalId) {
   };
 }
 
-/** Older pages appended after the ones shown, without repeating a plan. */
-export function appendPlans(shown, next) {
-  const ids = new Set(shown.map((plan) => String(plan.id)));
-  return [...shown, ...next.filter((plan) => !ids.has(String(plan.id)))];
+/** Older pages appended after the ones shown, without repeating a row (plans or installments). */
+export function appendById(shown, next) {
+  const ids = new Set(shown.map((row) => String(row.id)));
+  return [...shown, ...next.filter((row) => !ids.has(String(row.id)))];
+}
+
+export const appendPlans = appendById;
+
+export const PLAN_INSTALLMENTS_PAGE_SIZE = 10;
+
+/*
+ * The most pages read automatically while looking for a reminder's plan or
+ * installment. Paging also stops at the last page and on any error; this
+ * bounds it even if the backend kept reporting more pages.
+ */
+export const MAX_SEEK_PAGES = 40;
+
+/*
+ * `data` of GET …/plans/{plan}/installments: `{ plan, items, page,
+ * lastPage, total }` when it is this plan's page, else null. `plan.can_manage`
+ * is the backend's permission for this plan (owner with finance access);
+ * it says nothing about whether a given installment can be reversed.
+ */
+export function readPlanInstallments(data, planId) {
+  const plan = data?.savings_plan;
+  const page = data?.installments;
+
+  if (!plan || String(plan.id) !== String(planId) || !page || !Array.isArray(page.data)) return null;
+
+  return {
+    plan,
+    items: page.data.filter((row) => row && row.id != null && String(row.savings_plan_id) === String(planId)),
+    page: Number(page.current_page) || 1,
+    lastPage: Number(page.last_page) || 1,
+    total: Number(page.total) || 0,
+  };
+}
+
+/*
+ * A plan's `financial_summary`: what the plan's own installment
+ * confirmations collected (never the goal's balance). The three amounts are
+ * the backend's strings, shown only when `attribution.complete` is true;
+ * otherwise they are null and `complete` is false, and nothing is guessed.
+ * Null when there is no summary.
+ */
+export function readFinancialSummary(summary) {
+  if (!summary || typeof summary !== "object" || !summary.contributions || !summary.attribution) return null;
+
+  const complete = summary.attribution.complete === true;
+  const contributions = summary.contributions;
+  const amount = (value) => (complete && typeof value === "string" && value !== "" ? value : null);
+
+  return {
+    complete,
+    issues: Array.isArray(summary.attribution.issues) ? summary.attribution.issues : [],
+    currency: summary.currency_code ?? null,
+    confirmed: amount(contributions.confirmed_amount),
+    effective: amount(contributions.effective_amount),
+    reversed: amount(contributions.reversed_amount),
+    legs: Number(contributions.confirmation_legs) || 0,
+    reversedLegs: Number(contributions.reversed_legs) || 0,
+    paidInstallments: Number(contributions.paid_installments) || 0,
+    skipped: Number(summary.scheduled?.skipped?.count) || 0,
+  };
 }
 
 /** When the plan stopped being active, as the backend recorded it. */

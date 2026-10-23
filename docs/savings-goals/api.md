@@ -40,7 +40,8 @@ There is intentionally no `delete` wrapper: `DELETE` archives, and `archive` say
 | `POST` | `/savings-goals/{id}/plan` | `createForGoal(id, body, idempotencyKey)` | 201, the `GET …/plan` envelope |
 | `PATCH` | `/savings-goals/{id}/plan` | `revise(id, body, idempotencyKey)` | 200, the `GET …/plan` envelope (the replacement plan for `change=schedule`). 409 `savings_plan_version_conflict` / `savings_plan_option_stale` |
 | `POST` | `/savings-goals/{id}/plan/discontinue` | `discontinue(id, { expected_plan_version }, idempotencyKey)` | 200, the envelope with the discontinued plan. 409 `savings_plan_version_conflict` / `savings_plan_not_active` |
-| `GET` | `/savings-goals/{id}/plans` | `listHistory(id, { per_page, page }, { signal })` | `data.savings_plans` (paginator of plan summaries with `installments_summary` counts). Read only |
+| `GET` | `/savings-goals/{id}/plans` | `listHistory(id, { per_page, page }, { signal })` | `data.savings_plans` (paginator of plan summaries with `installments_summary`, `financial_summary` and `can_manage`). Read only |
+| `GET` | `/savings-goals/{id}/plans/{plan}/installments` | `listPlanInstallments(id, planId, { per_page, page }, { signal })` | `data.savings_plan` { id, status, plan_version, currency_code, can_manage } + `data.installments` (paginator, installment shape). Read only; any plan status |
 
 - Every installment write requires an `Idempotency-Key` header, plus `expected_plan_version` and `expected_lock_version`.
 - `confirm` also takes `from_account_id` and `amount`, which is the preview's `suggested_amount` as a 4-decimal string.

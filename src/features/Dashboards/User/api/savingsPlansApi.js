@@ -170,6 +170,20 @@ export const savingsPlansApi = {
   listHistory: (goalId, query = {}, options = {}) =>
     apiRequest(`${goalPath(goalId)}/plans`, { query, signal: options.signal }),
 
+  /*
+   * Every installment of one plan — active, completed, discontinued or
+   * superseded — in schedule order, paginated (per_page 1–50). Read only.
+   * → `data.savings_plan` { id, savings_goal_id, status, plan_version,
+   * currency_code, can_manage } and `data.installments` (Laravel paginator)
+   * in the installment shape the installment actions return; the ids are
+   * the ones getFundingLegs / reverseLegs take. 404 for another goal's plan.
+   */
+  listPlanInstallments: (goalId, planId, query = {}, options = {}) =>
+    apiRequest(`${goalPath(goalId)}/plans/${encodeURIComponent(planId)}/installments`, {
+      query,
+      signal: options.signal,
+    }),
+
   getConfirmationPreview: (goalId, installmentId, options = {}) =>
     apiRequest(`${installmentPath(goalId, installmentId)}/confirmation-preview`, {
       signal: options.signal,

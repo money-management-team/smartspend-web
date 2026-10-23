@@ -10,12 +10,12 @@ import {
   LuTriangleAlert,
 } from "react-icons/lu";
 
-import { getSubjectPath } from "../../../../../../routes/Path";
 import { getDisplayLocale } from "../../../Accounts/accountHelpers";
 import { formatOptionalMoney } from "../../../Dashboard/dashboardHelpers";
 import { translateEnum } from "../../../FinancialOperations/transactionHelpers";
 import { formatDateTime } from "../../../utils/formatters";
 import {
+  getNotificationPath,
   getNotificationSeverity,
   isNotificationRead,
 } from "../../notificationHelpers";
@@ -42,7 +42,8 @@ const isPlainClick = (event) =>
  * title, body, amount + currency (only when sent) and read state.
  *
  * `subject_type` + `subject_id` are a reference, mapped to an app route by
- * `getSubjectPath`; without a known route the notification has no link.
+ * `getNotificationPath` (savings reminders: the goal and installment, only
+ * with smart savings on); without a known route the notification has no link.
  * Opening an unread notification goes through `onOpen`, which marks it read
  * before navigating.
  */
@@ -51,16 +52,14 @@ export default function NotificationItem({
   isPending,
   onOpen,
   onMarkRead,
+  smartSavingsEnabled,
 }) {
   const { t, i18n } = useTranslation();
   const locale = getDisplayLocale(i18n.language);
 
   const isRead = isNotificationRead(notification);
   const severity = getNotificationSeverity(notification);
-  const path = getSubjectPath(
-    notification.subject_type,
-    notification.subject_id,
-  );
+  const path = getNotificationPath(notification, { smartSavingsEnabled });
   const title =
     notification.title ||
     translateEnum(t, i18n, "dashboard.notifications.types", notification.type);

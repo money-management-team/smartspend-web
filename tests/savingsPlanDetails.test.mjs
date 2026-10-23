@@ -122,6 +122,8 @@ const planData = ({ plan = {}, health = {} } = {}) => ({
     baseline_remaining: "2500.0000",
     funding_mode: "priority",
     plan_version: 3,
+    // The backend's permission for the signed-in user (F5.2).
+    can_manage: true,
     funding_sources: [
       { account_id: 6, account_name: "Wallet", currency_code: "ILS", priority: 2, allocation_bps: null },
       { account_id: 5, account_name: "Main bank", currency_code: "ILS", priority: 1, allocation_bps: null },

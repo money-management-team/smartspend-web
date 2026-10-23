@@ -2121,7 +2121,13 @@
           },
           "showAll": "Show all {{count}} installments",
           "showLess": "Show fewer",
-          "multiAccount": "Paid from several accounts"
+          "multiAccount": "Paid from several accounts",
+          "cancelledReasons": {
+            "plan_superseded": "Cancelled when the plan was revised",
+            "plan_discontinued": "Cancelled when the plan was discontinued",
+            "goal_archived": "Cancelled when the goal was archived",
+            "goal_achieved": "Cancelled when the goal reached its target"
+          }
         },
         "health": {
           "title": "Plan health",
@@ -2653,7 +2659,8 @@
           "notices": {
             "schedule": "Your new schedule is in place. The previous plan is kept in plan history. Nothing has moved.",
             "funding": "Your plan's funding was updated. Nothing has moved."
-          }
+          },
+          "readOnly": "You can view this plan. Only its owner can confirm installments, change the plan or reverse payments."
         },
         "review": {
           "title": {
@@ -2699,7 +2706,7 @@
               "history": "The previous setup is recorded in plan history."
             }
           },
-          "splitReversal": "Installments paid from several accounts in this plan: {{count}}. After the revision they stay in the goal, but reversing their payments from the app won't be available until closed plans can be opened from plan history.",
+          "splitReversal": "Installments paid from several accounts in this plan: {{count}}. They stay in the goal after the revision, and their payments can still be reversed from plan history.",
           "noMoneyTitle": "No money moves",
           "noMoneyBody": {
             "schedule": "Revising the schedule only changes the plan. Money moves only when you confirm an installment.",
@@ -2738,6 +2745,20 @@
             "final": "A discontinued plan can't be reopened, but you can create a new one at any time."
           },
           "acknowledge": "I understand the open installments will be cancelled."
+        },
+        "ownerOnly": {
+          "title": "Only the plan's owner can change it",
+          "body": "You can see this plan and its history, but only the person who set it up can revise it, discontinue it or move money for it."
+        },
+        "reminder": {
+          "title": "Reminder: installment {{number}}",
+          "body": "Reviewing it opens a fresh preview of the amount and accounts. Nothing moves until you confirm.",
+          "cannotAct": "It can't be confirmed from here right now (the goal may be paused, or you may not manage this plan).",
+          "review": "Review installment",
+          "closed": "The installment from this reminder is no longer open: it may have been confirmed, skipped or replaced by a revised plan.",
+          "resolved": "Installment {{number}} is {{state}}. There's nothing to confirm.",
+          "earlierPlan": "This reminder is about an installment of an earlier plan. It's opened in plan history below.",
+          "showHistory": "Go to plan history"
         }
       },
       "planHistory": {
@@ -2762,7 +2783,8 @@
           "early": "Finished ahead of the plan (days: {{count}})",
           "late": "Finished after the planned date (days: {{count}})",
           "onTime": "Finished on the planned date",
-          "ledgerNote": "This is when the plan was completed. The goal's current balance is in its progress above and can change later through withdrawals or reversals."
+          "ledgerNote": "This is when the plan was completed. The goal's current balance is in its progress above and can change later through withdrawals or reversals.",
+          "saved": "Effective plan contributions:"
         },
         "facts": {
           "perInstallment": "Per installment",
@@ -2793,7 +2815,37 @@
         "access": {
           "active": "Installments, payments and reversals for this plan are in the plan above.",
           "activeLink": "Go to the plan",
-          "closed": "Payments this plan confirmed are in the goal's activity, where single-account payments can be reversed. Opening a closed plan's installments, including reversing split payments, isn't available yet."
+          "show": "Show installments ({{count}})",
+          "hide": "Hide installments"
+        },
+        "viewOnly": "View only",
+        "money": {
+          "label": "Contributions attributed to this plan",
+          "title": "Plan contributions",
+          "effective": "Effective plan contributions",
+          "confirmed": "Confirmed plan contributions",
+          "reversed": "Reversed plan contributions",
+          "reversedLegs": "Reversed payments: {{count}}",
+          "incomplete": "These totals can't be worked out reliably for this plan right now, so they aren't shown. Its installments below are still accurate.",
+          "note": "Attributed to this plan's own installments only. This isn't the goal's balance, which also includes direct contributions, withdrawals and other plans; the goal's balance is shown in its progress."
+        },
+        "timeline": {
+          "loading": "Loading this plan's installments…",
+          "readOnly": "View only: only the plan's owner can reverse its payments.",
+          "shown": "Showing {{shown}} of {{total}}",
+          "more": "Show more installments",
+          "loadingMore": "Loading…",
+          "reversedNotice": "Payments reversed. The money went back to the source accounts, and this plan stays {{status}}.",
+          "singleAccountHint": "Payments split across several accounts are reversed here. A payment from a single account is reversed from the goal's activity.",
+          "focus": {
+            "seeking": "Finding the installment from your reminder…",
+            "found": "From your reminder: installment {{number}} is {{state}}. This plan is {{status}}, so there's nothing to confirm.",
+            "missing": "The installment from your reminder isn't in this plan."
+          }
+        },
+        "focus": {
+          "seeking": "Finding the plan from your reminder…",
+          "missing": "The plan from your reminder isn't in this goal's history."
         }
       }
     },
@@ -3670,7 +3722,9 @@
         "critical": "Critical"
       },
       "types": {
-        "recurring_posted": "Recurring transaction posted"
+        "recurring_posted": "Recurring transaction posted",
+        "savings_installment_due": "Savings installment due",
+        "savings_installment_overdue": "Savings installment overdue"
       },
       "item": {
         "new": "New",
@@ -4128,6 +4182,18 @@
         "help": {
           "title": "Help and FAQ"
         }
+      },
+      "savingsReminders": {
+        "title": "Savings reminders",
+        "description": "In-app reminders when an installment of one of your smart savings plans is due or overdue. They never move money.",
+        "loading": "Loading your reminder preference…",
+        "label": "Remind me about savings installments",
+        "hint": "Covers every smart savings plan you own. In-app only.",
+        "unavailable": "Savings reminders are turned off for SmartSpend right now, so none are being sent. Your choice is saved and applies as soon as they're turned on.",
+        "saving": "Saving…",
+        "savedOn": "Saved: reminders are on.",
+        "savedOff": "Saved: reminders are off.",
+        "saveFailed": "Your choice wasn't saved; the previous setting is still in place."
       }
     },
     "reportExports": {

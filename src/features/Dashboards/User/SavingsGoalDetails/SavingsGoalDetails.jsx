@@ -730,6 +730,8 @@ export default function SavingsGoalDetails({ smartSavingsEnabled = SMART_SAVINGS
           goal={goal}
           refreshKey={`${requestKey}:${activityKey}:${goal.status}:${planKey}`}
           timeZone={timeZone}
+          // A historical payment reversed: same as from the panel (goal, activity, history).
+          onInstallmentReversed={(data) => handleMovementCompleted("installmentReversal", data)}
         />
       )}
 

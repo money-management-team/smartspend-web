@@ -429,6 +429,18 @@ function SmartPlanRevision({ savingsGoalId, change }) {
     );
   }
 
+  // Only the plan's owner (with finance access) may change it: the
+  // backend's `can_manage`. Its 403 stays the final word either way.
+  if (plan.can_manage !== true) {
+    return pageState(
+      t(`${prefix}.ownerOnly.title`),
+      t(`${prefix}.ownerOnly.body`),
+      <Link className="smart-wizard__state-link" to={detailsPath}>
+        {t("dashboard.savingsGoals.smartPlanWizard.backToGoal")}
+      </Link>,
+    );
+  }
+
   // The backend keeps a paused goal's schedule as it is; funding may change.
   if (change === "schedule" && getGoalStatus(goal) === "paused") {
     return pageState(
