@@ -6,9 +6,9 @@ A goal **without** an active plan is *flexible saving* and works exactly as befo
 
 ## Release gate
 
-Smart savings is unreleased and **off by default**.
+Smart savings is **off by default** in every build. Production ships it on since the approved release of 2026-10-24 (backend `SMART_SAVINGS_ENABLED` first, then this workflow). Reminders and their scheduler stay off until a separate approval.
 
-- `SMART_SAVINGS_ENABLED` (`SavingsGoals/smartSavings.js`) is `true` only when the build sets `VITE_SMART_SAVINGS_ENABLED=true`. The tracked `.env` does not set it, and neither does the Hostinger workflow.
+- `SMART_SAVINGS_ENABLED` (`SavingsGoals/smartSavings.js`) is `true` only when the build sets `VITE_SMART_SAVINGS_ENABLED=true`. The tracked `.env` never sets it; only the Hostinger workflow does, for production.
 - When it is off, the overview makes no plan requests and renders exactly the original production page. Every visual change in the table below (header count, empty state, hover lift, chips, panel) is scoped under `.savings-goals-page--smart` or rendered only when the flag is on.
 - Achieved and archived goals never get a plan chip: having no active plan doesn't make them flexible.
 - `SavingsGoals` and `SavingsGoalDetails` take `smartSavingsEnabled` as a prop, defaulting to the flag. The routes pass nothing; tests pass `true`.
@@ -20,7 +20,7 @@ Smart savings is unreleased and **off by default**.
   - `.env` or `.env.[mode]` sets the flag at all;
   - a **production** build would ship it on without `SMARTSPEND_SMART_SAVINGS_RELEASE_APPROVED=true` in the shell environment. An env file cannot approve it, and that includes `.env.local`, which `vite build` also reads.
   - `npm run dev` and `vite build --mode development` need no approval. Rules and tests: `tests/smartSavingsBuildFlag.test.mjs`.
-- **CI.** The Hostinger workflow pins `VITE_SMART_SAVINGS_ENABLED: "false"` at job level, so it ignores repository variables and runner environment. Before building it asserts three things: the flag is still `false`, no approval variable is set, and no tracked env file sets the flag.
+- **CI.** The Hostinger workflow pins `VITE_SMART_SAVINGS_ENABLED: "true"` and `SMARTSPEND_SMART_SAVINGS_RELEASE_APPROVED: "true"` at job level, so it ignores repository variables and runner environment. Before building it asserts three things: the flag is exactly `true`, the approval is exactly `true`, and no tracked env file sets the flag. **Rollback:** set the flag back to `"false"`, remove the approval line, and restore the off-state checks (the reviewed `e7662da` version of the workflow and of `tests/smartSavingsBuildFlag.test.mjs`); reverting the activation merge does exactly that.
 - **Backend gate.** The backend refuses new plans with `409 smart_savings_disabled` until its own `SMART_SAVINGS_ENABLED` is on. Turn on the backend first, then the frontend. The four switches, their order and rollback are in the backend repo's `docs/operations/SMART_SAVINGS_RELEASE.md`.
 - **Backend off, frontend on.** The wizard maps `smart_savings_disabled` (`isSmartSavingsDisabledError` in `smartPlanHelpers.js`) to its own failure kind, `unavailable`. It shows `smartPlan.errors.codes.smart_savings_disabled` (Arabic/English): nothing was created, and goals, balances and transactions are unchanged. It is not shown as a stale-plan conflict, and no options are refreshed. The idempotency key is dropped and the Create button disabled, so nothing is resent.
 
