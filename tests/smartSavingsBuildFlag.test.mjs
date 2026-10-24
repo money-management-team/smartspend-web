@@ -100,13 +100,13 @@ describe("tracked configuration keeps Smart Savings off", () => {
     assert.doesNotMatch(example, /^\s*VITE_SMART_SAVINGS_ENABLED\s*=/m);
   });
 
-  it("the deploy workflow pins the flag off and asserts it before building", () => {
+  it("the deploy workflow pins the approved release on and asserts it before building", () => {
     const workflow = read(".github/workflows/deploy-hostinger.yml");
-    assert.match(workflow, /^\s+VITE_SMART_SAVINGS_ENABLED: "false"$/m);
-    assert.match(workflow, /"\$VITE_SMART_SAVINGS_ENABLED" != "false"/);
-    assert.match(workflow, new RegExp(`-n "\\$\\{${APPROVAL}:-\\}"`));
-    assert.doesNotMatch(workflow, new RegExp(`${APPROVAL}:\\s`), "the workflow must never approve a release");
-    assert.ok(workflow.indexOf("SMART_SAVINGS=OFF") < workflow.indexOf("npm run build"), "asserted before the build");
+    assert.match(workflow, /^\s+VITE_SMART_SAVINGS_ENABLED: "true"$/m);
+    assert.match(workflow, new RegExp(`^\\s+${APPROVAL}: "true"$`, "m"));
+    assert.match(workflow, /"\$VITE_SMART_SAVINGS_ENABLED" != "true"/);
+    assert.match(workflow, new RegExp(`"\\$\\{${APPROVAL}:-\\}" != "true"`));
+    assert.ok(workflow.indexOf("SMART_SAVINGS=ON") < workflow.indexOf("npm run build"), "asserted before the build");
   });
 });
 
