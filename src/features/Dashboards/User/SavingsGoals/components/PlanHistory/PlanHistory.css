@@ -1,0 +1,979 @@
+/* =========================================
+   PLAN HISTORY (goal details, gated)
+
+   The page's panel card with the smart-plan hairline. Plans sit on a quiet
+   vertical rail, newest first; each card carries its status as a pill and
+   an inline-start accent. Completed plans open with a summary band.
+   Green is kept for completion (success), cyan for the active plan.
+========================================= */
+
+.plan-history {
+  --plan-history-cyan: #0891b2;
+  --plan-history-navy: #0b1f44;
+
+  position: relative;
+
+  padding: 22px 24px;
+
+  display: grid;
+  gap: 16px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 17px;
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+:root[data-theme="dark"] .plan-history {
+  --plan-history-cyan: #22c3ee;
+  --plan-history-navy: var(--color-text-strong);
+}
+
+.plan-history::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -1px;
+  inset-inline: 24px;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(90deg, var(--color-primary), var(--plan-history-cyan));
+  opacity: 0.6;
+}
+
+[dir="rtl"] .plan-history::before {
+  background: linear-gradient(270deg, var(--color-primary), var(--plan-history-cyan));
+}
+
+.plan-history h2,
+.plan-history h3 {
+  margin: 0;
+}
+
+.plan-history__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Head ---------- */
+
+.plan-history__head {
+  position: relative;
+  display: grid;
+  gap: 4px;
+}
+
+.plan-history__eyebrow {
+  margin: 0;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  color: var(--plan-history-cyan);
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.plan-history__eyebrow svg {
+  width: 14px;
+  height: 14px;
+}
+
+.plan-history__head h2 {
+  color: var(--plan-history-navy);
+
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.plan-history__lead {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.plan-history__refreshing {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+}
+
+.plan-history__refreshing svg {
+  width: 14px;
+  height: 14px;
+  animation: plan-history-spin 900ms linear infinite;
+}
+
+@keyframes plan-history-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Finding a reminder's plan on older pages, or saying it isn't here. */
+.plan-history__seek {
+  margin: 0;
+  padding: 9px 12px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--plan-history-cyan) 8%, var(--color-surface));
+
+  font-size: 13px;
+}
+
+.plan-history__seek svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: var(--plan-history-cyan);
+}
+
+.plan-history__seek:not(.plan-history__seek--missing) svg {
+  animation: plan-history-spin 900ms linear infinite;
+}
+
+.plan-history__seek--missing {
+  background: var(--surface-soft);
+}
+
+.plan-history__seek--missing svg {
+  color: var(--color-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plan-history__seek svg {
+    animation: none !important;
+  }
+}
+
+/* ---------- List + rail ---------- */
+
+.plan-history__list {
+  position: relative;
+
+  margin: 0;
+  padding: 0;
+
+  display: grid;
+  gap: 12px;
+
+  list-style: none;
+}
+
+.plan-history__item {
+  --plan-history-tone: var(--color-text-muted);
+
+  position: relative;
+  min-width: 0;
+  padding-inline-start: 22px;
+}
+
+/* The rail and the dot marking each plan. */
+.plan-history__item::before {
+  content: "";
+  position: absolute;
+  inset-block: 0 -12px;
+  inset-inline-start: 5px;
+  width: 2px;
+  background: var(--border-soft, var(--color-border));
+}
+
+.plan-history__item:last-child::before {
+  inset-block-end: auto;
+  height: 22px;
+}
+
+.plan-history__item::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 18px;
+  inset-inline-start: 0;
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
+  border: 2px solid var(--color-surface);
+  border-radius: 50%;
+  background: var(--plan-history-tone);
+  box-shadow: 0 0 0 1px var(--plan-history-tone);
+}
+
+.plan-history__item--active {
+  --plan-history-tone: var(--plan-history-cyan);
+}
+
+.plan-history__item--completed {
+  --plan-history-tone: var(--color-success);
+}
+
+.plan-history__item--superseded {
+  --plan-history-tone: var(--color-primary);
+}
+
+.plan-history__item--discontinued {
+  --plan-history-tone: var(--color-text-muted);
+}
+
+/* ---------- Card ---------- */
+
+.plan-history__card {
+  min-width: 0;
+  padding: 16px 18px;
+
+  display: grid;
+  gap: 12px;
+
+  border: 1px solid var(--color-border);
+  border-inline-start: 3px solid var(--plan-history-tone);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface);
+}
+
+.plan-history__item--active .plan-history__card {
+  background:
+    radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--plan-history-cyan) 7%, transparent), transparent 55%),
+    var(--color-surface);
+}
+
+[dir="rtl"] .plan-history__item--active .plan-history__card {
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--plan-history-cyan) 7%, transparent), transparent 55%),
+    var(--color-surface);
+}
+
+.plan-history__card-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "status dates"
+    "title title";
+  align-items: center;
+  gap: 6px 12px;
+}
+
+.plan-history__status {
+  grid-area: status;
+  justify-self: start;
+
+  min-height: 24px;
+  padding: 0 10px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  border-radius: 999px;
+
+  color: var(--plan-history-tone);
+  background: color-mix(in srgb, var(--plan-history-tone) 12%, transparent);
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.plan-history__status svg {
+  width: 13px;
+  height: 13px;
+}
+
+.plan-history__card-head h3 {
+  grid-area: title;
+
+  color: var(--color-text-strong);
+
+  font-family: var(--font-heading);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.plan-history__dates {
+  grid-area: dates;
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* Date ranges read start → end in either direction. */
+.plan-history__arrow {
+  display: inline-block;
+}
+
+[dir="rtl"] .plan-history__arrow {
+  transform: scaleX(-1);
+}
+
+/* ---------- Completion summary ---------- */
+
+.plan-history__completion {
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  border: 1px solid color-mix(in srgb, var(--color-success) 26%, var(--color-border));
+  border-radius: var(--radius-md);
+
+  background: color-mix(in srgb, var(--color-success) 7%, var(--color-surface));
+}
+
+.plan-history__completion-icon {
+  width: 36px;
+  height: 36px;
+  flex: none;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 12px;
+
+  color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 14%, var(--color-surface));
+}
+
+.plan-history__completion-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.plan-history__completion-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.plan-history__completion-copy strong {
+  color: var(--color-text-strong);
+  font-size: 14px;
+}
+
+.plan-history__completion-copy p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.plan-history__pace {
+  justify-self: start;
+
+  padding: 2px 9px;
+
+  border-radius: 999px;
+
+  color: var(--plan-history-pace, var(--color-success));
+  background: color-mix(in srgb, var(--plan-history-pace, var(--color-success)) 12%, transparent);
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.plan-history__pace--onTime {
+  --plan-history-pace: var(--color-primary);
+}
+
+.plan-history__pace--late {
+  --plan-history-pace: var(--color-warning);
+}
+
+/* ---------- Facts ---------- */
+
+.plan-history__facts {
+  margin: 0;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px 18px;
+}
+
+.plan-history__facts > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.plan-history__facts dt {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.plan-history__facts dd {
+  margin: 0;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+
+  color: var(--color-text-primary);
+
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.plan-history__facts dd small {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.plan-history__funding {
+  align-items: flex-start;
+}
+
+.plan-history__funding svg {
+  width: 15px;
+  height: 15px;
+  margin-top: 2px;
+  flex: none;
+  color: var(--plan-history-cyan);
+}
+
+.plan-history__funding > span {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.plan-history__funding small {
+  display: grid;
+  gap: 2px;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Installment progress (by count) ---------- */
+
+.plan-history__progress {
+  display: grid;
+  gap: 6px;
+}
+
+.plan-history__progress-head {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 12px;
+
+  color: var(--color-text-primary);
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.plan-history__muted {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.plan-history__bar {
+  height: 6px;
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: var(--surface-soft, color-mix(in srgb, var(--color-text-muted) 14%, transparent));
+}
+
+.plan-history__bar span {
+  display: block;
+  height: 100%;
+
+  border-radius: inherit;
+
+  background: var(--plan-history-tone);
+}
+
+.plan-history__item--active .plan-history__bar span {
+  background: linear-gradient(90deg, var(--color-primary), var(--plan-history-cyan));
+}
+
+[dir="rtl"] .plan-history__item--active .plan-history__bar span {
+  background: linear-gradient(270deg, var(--color-primary), var(--plan-history-cyan));
+}
+
+/* ---------- Ending, revisions, access ---------- */
+
+.plan-history__ending,
+.plan-history__access {
+  margin: 0;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.plan-history__ending svg,
+.plan-history__access svg {
+  width: 15px;
+  height: 15px;
+  margin-top: 3px;
+  flex: none;
+}
+
+.plan-history__ending svg {
+  color: var(--plan-history-tone);
+}
+
+.plan-history__access {
+  padding-top: 12px;
+
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+
+  border-top: 1px solid var(--border-soft, var(--color-border));
+}
+
+.plan-history__access-note {
+  min-width: 0;
+  flex: 1 1 240px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.plan-history__access-note > svg {
+  color: var(--color-text-muted);
+}
+
+/* "Show installments": a quiet pill that turns cyan while open. */
+.plan-history__toggle {
+  min-height: 36px;
+  padding: 0 14px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.plan-history__toggle svg {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  color: var(--plan-history-cyan);
+}
+
+.plan-history__toggle:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 40%, var(--color-border));
+  background: var(--primary-soft);
+}
+
+.plan-history__toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.plan-history__toggle--open {
+  border-color: color-mix(in srgb, var(--plan-history-cyan) 50%, var(--color-border));
+  background: color-mix(in srgb, var(--plan-history-cyan) 8%, var(--color-surface));
+}
+
+.plan-history__toggle-chevron {
+  transition: transform 160ms ease;
+}
+
+.plan-history__toggle--open .plan-history__toggle-chevron {
+  transform: rotate(180deg);
+}
+
+/* ---------- What the plan's own confirmations collected ---------- */
+
+.plan-history__money {
+  padding: 12px 14px;
+
+  display: grid;
+  gap: 10px;
+
+  border: 1px solid color-mix(in srgb, var(--plan-history-cyan) 22%, var(--color-border));
+  border-radius: var(--radius-md);
+
+  background: color-mix(in srgb, var(--plan-history-cyan) 5%, var(--color-surface));
+}
+
+.plan-history__money header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.plan-history__money header svg {
+  width: 15px;
+  height: 15px;
+  color: var(--plan-history-cyan);
+}
+
+.plan-history__money dl {
+  margin: 0;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) repeat(2, minmax(0, 1fr));
+  gap: 8px 18px;
+}
+
+.plan-history__money dl > div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.plan-history__money dt {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.plan-history__money dd {
+  margin: 0;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+
+  color: var(--color-text-primary);
+
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.plan-history__money dd small {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.plan-history__money-main dd {
+  color: var(--plan-history-navy);
+
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.plan-history__money-note {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.plan-history__money-unknown {
+  margin: 0;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  color: var(--color-text-primary);
+
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.plan-history__money-unknown svg {
+  width: 15px;
+  height: 15px;
+  margin-top: 3px;
+  flex: none;
+  color: var(--color-warning);
+}
+
+.plan-history__completion-saved {
+  color: var(--color-text-primary) !important;
+  font-size: 13px !important;
+}
+
+.plan-history__view-only {
+  margin-inline-start: 10px;
+  padding: 2px 8px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  vertical-align: middle;
+
+  border-radius: 999px;
+
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.plan-history__view-only svg {
+  width: 12px;
+  height: 12px;
+}
+
+.plan-history__link {
+  padding: 0;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.plan-history__link:hover {
+  text-decoration: underline;
+}
+
+.plan-history__link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.plan-history__revisions {
+  font-size: 13px;
+}
+
+.plan-history__revisions summary {
+  width: fit-content;
+  min-height: 32px;
+
+  display: inline-flex;
+  align-items: center;
+
+  color: var(--color-primary);
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.plan-history__revisions summary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.plan-history__revisions ul {
+  margin: 6px 0 0;
+  padding-inline-start: 18px;
+
+  display: grid;
+  gap: 4px;
+
+  color: var(--color-text-secondary);
+}
+
+/* ---------- More, error, loading ---------- */
+
+.plan-history__more {
+  justify-self: center;
+
+  min-height: 40px;
+  padding: 0 18px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.plan-history__more:hover:not(:disabled) {
+  background: var(--surface-hover, var(--primary-soft));
+}
+
+.plan-history__more:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.plan-history__more:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.plan-history__more svg {
+  width: 15px;
+  height: 15px;
+}
+
+.plan-history__error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  color: var(--color-text-primary);
+
+  font-size: 13px;
+}
+
+.plan-history__error p {
+  margin: 0;
+}
+
+.plan-history__error button {
+  padding: 0;
+  border: 0;
+  color: var(--color-primary);
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.plan-history__skeleton {
+  display: grid;
+  gap: 10px;
+}
+
+.plan-history__skeleton > span:not(.plan-history__sr-only) {
+  height: 74px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(90deg, var(--surface-soft), var(--color-surface), var(--surface-soft));
+  background-size: 200% 100%;
+  animation: plan-history-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes plan-history-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .plan-history {
+    padding: 18px 16px;
+  }
+
+  .plan-history__item {
+    padding-inline-start: 18px;
+  }
+
+  .plan-history__card {
+    padding: 14px;
+  }
+
+  .plan-history__card-head {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "status"
+      "title"
+      "dates";
+  }
+
+  .plan-history__dates {
+    white-space: normal;
+  }
+
+  .plan-history__facts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .plan-history__money dl {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .plan-history__money-main {
+    grid-column: 1 / -1;
+  }
+
+  .plan-history__toggle {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .plan-history__refreshing {
+    position: static;
+  }
+
+  .plan-history__more {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plan-history__toggle,
+  .plan-history__toggle-chevron {
+    transition: none;
+  }
+
+  .plan-history__refreshing svg,
+  .plan-history__skeleton > span {
+    animation: none;
+  }
+}

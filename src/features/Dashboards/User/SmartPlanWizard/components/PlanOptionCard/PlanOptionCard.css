@@ -1,0 +1,363 @@
+.plan-option {
+  --plan-option-accent: var(--color-border);
+
+  position: relative;
+
+  min-width: 0;
+  padding: 18px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.plan-option > * {
+  min-width: 0;
+}
+
+/* The affordability, warnings and schedule sit at the bottom, level across the cards. */
+.plan-option > .plan-option__fit {
+  margin-block-start: auto;
+}
+
+.plan-option:hover:not(.plan-option--disabled) {
+  border-color: color-mix(in srgb, var(--color-primary) 40%, var(--color-border));
+}
+
+.plan-option--checked {
+  border-color: var(--color-primary);
+  box-shadow:
+    inset 0 0 0 1px var(--color-primary),
+    var(--shadow-card);
+}
+
+.plan-option--recommended::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -1px;
+  inset-inline: 18px;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(90deg, var(--color-primary), var(--smart-wizard-cyan, #0891b2));
+}
+
+[dir="rtl"] .plan-option--recommended::before {
+  background: linear-gradient(270deg, var(--color-primary), var(--smart-wizard-cyan, #0891b2));
+}
+
+.plan-option--disabled {
+  background: color-mix(in srgb, var(--surface-soft) 55%, var(--color-surface));
+  box-shadow: none;
+}
+
+/* ---------- Choice (the whole head is the radio's label) ---------- */
+
+.plan-option__choice {
+  display: grid;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.plan-option--disabled .plan-option__choice {
+  cursor: not-allowed;
+}
+
+.plan-option__choice input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.plan-option:has(.plan-option__choice input:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.plan-option__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.plan-option__name {
+  color: var(--color-text-strong);
+
+  font-family: var(--font-heading);
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.plan-option__badge {
+  padding: 4px 9px;
+
+  border-radius: 999px;
+
+  color: var(--smart-wizard-cyan, #0891b2);
+  background: color-mix(in srgb, var(--smart-wizard-cyan, #0891b2) 12%, transparent);
+
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.plan-option__radio {
+  width: 20px;
+  height: 20px;
+  margin-inline-start: auto;
+  box-sizing: border-box;
+  flex: none;
+
+  border: 2px solid var(--border-strong, var(--color-border));
+  border-radius: 50%;
+}
+
+.plan-option--checked .plan-option__radio {
+  border: 6px solid var(--color-primary);
+}
+
+.plan-option--disabled .plan-option__radio {
+  opacity: 0.4;
+}
+
+.plan-option__amount {
+  display: grid;
+  gap: 2px;
+}
+
+.plan-option__amount strong {
+  color: var(--color-text-strong);
+
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.plan-option__amount > span {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.plan-option__unavailable {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ---------- Facts ---------- */
+
+.plan-option__facts {
+  margin: 0;
+
+  display: grid;
+  gap: 8px;
+
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft, var(--color-border));
+}
+
+.plan-option__facts > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+
+  font-size: 12px;
+}
+
+.plan-option__facts dt {
+  color: var(--color-text-secondary);
+}
+
+.plan-option__facts dd {
+  margin: 0;
+
+  color: var(--color-text-primary);
+
+  font-weight: 600;
+  text-align: end;
+}
+
+[dir="rtl"] .plan-option__facts dd span[aria-hidden] {
+  display: inline-block;
+  transform: scaleX(-1);
+}
+
+.plan-option__note {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* ---------- Affordability (estimate) ---------- */
+
+.plan-option__fit {
+  --plan-option-fit: var(--color-text-muted);
+
+  padding: 10px 12px;
+
+  display: grid;
+  gap: 4px;
+
+  border-radius: var(--radius-md);
+
+  background: color-mix(in srgb, var(--plan-option-fit) 8%, var(--color-surface));
+}
+
+.plan-option__fit--comfortable {
+  --plan-option-fit: var(--smart-wizard-cyan, #0891b2);
+}
+
+.plan-option__fit--stretch {
+  --plan-option-fit: var(--color-primary);
+}
+
+.plan-option__fit--strained {
+  --plan-option-fit: var(--color-warning);
+}
+
+.plan-option__fit--unaffordable {
+  --plan-option-fit: var(--color-danger);
+}
+
+.plan-option__fit-head {
+  margin: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  color: var(--color-text-strong);
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.plan-option__fit-head svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: var(--plan-option-fit);
+}
+
+.plan-option__fit-head em {
+  margin-inline-start: auto;
+
+  color: var(--color-text-muted);
+
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.plan-option__fit-detail {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.plan-option__warnings {
+  margin: 0;
+  padding-inline-start: 16px;
+
+  display: grid;
+  gap: 3px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* ---------- Schedule ---------- */
+
+.plan-option__toggle {
+  justify-self: start;
+
+  padding: 0;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.plan-option__toggle svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 160ms ease;
+}
+
+.plan-option__toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.plan-option__toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.plan-option__schedule {
+  max-height: 220px;
+  margin: 0;
+  padding: 4px 0;
+
+  overflow-y: auto;
+
+  list-style: none;
+
+  border-top: 1px solid var(--border-soft, var(--color-border));
+}
+
+.plan-option__schedule li {
+  padding: 6px 0;
+
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: 8px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+}
+
+.plan-option__schedule-seq {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.plan-option__schedule-amount {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plan-option,
+  .plan-option__toggle svg {
+    transition: none;
+  }
+}

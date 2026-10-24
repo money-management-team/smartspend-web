@@ -22,6 +22,7 @@ Environment variables (`.env`):
 - `VITE_API_BASE_URL`: the backend URL. If unset, `apiClient` falls back to `/api`. The tracked `.env` sets it to `/api`; production gets its own value from the Hostinger workflow.
 - Local dev is fail-closed: the Vite dev server forwards `/api` to `http://127.0.0.1:8000` unless `SMARTSPEND_DEV_API_ORIGIN` says otherwise, and a remote origin (or an absolute remote `VITE_API_BASE_URL`) additionally needs `SMARTSPEND_ALLOW_REMOTE_API=true`. See `docs/dev-environment/local-api-target.md`. Never point a dev session at staging or production by editing the tracked `.env`.
 - `VITE_GOOGLE_CLIENT_ID`: the Google Identity Services client ID, read in `src/features/Auth/components/AuthSocial/googleIdentity.js`. If unset, the Google sign-in button is disabled and a warning is logged in dev.
+- `VITE_SMART_SAVINGS_ENABLED`: the Smart Savings release gate, off unless it is exactly `"true"`. Set it only in `.env.local`. A production build with it on fails unless `SMARTSPEND_SMART_SAVINGS_RELEASE_APPROVED=true` is set in the shell (`scripts/smartSavingsBuildFlag.mjs`), and the Hostinger workflow pins it off. See `docs/savings-goals/smart-plans.md`.
 
 ESLint uses the flat config with `eslint-plugin-react-hooks` v7 (recommended), which includes the stricter React Compiler–style rules, plus `react-refresh`.
 

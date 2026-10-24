@@ -31,6 +31,9 @@ import PlannedContributions from "../SavingsGoals/components/PlannedContribution
 import GoalProgressBar from "../SavingsGoals/components/GoalProgressBar/GoalProgressBar";
 import GoalStatusBadge from "../SavingsGoals/components/GoalStatusBadge/GoalStatusBadge";
 import SavingsGoalForm from "../SavingsGoals/components/SavingsGoalForm/SavingsGoalForm";
+import PlanHistory from "../SavingsGoals/components/PlanHistory/PlanHistory";
+import SmartPlanPanel from "../SavingsGoals/components/SmartPlanPanel/SmartPlanPanel";
+import { SMART_SAVINGS_ENABLED } from "../SavingsGoals/smartSavings";
 import {
   GOAL_PROGRESS_STATUSES,
   getGoalActions,
@@ -64,8 +67,12 @@ const LIFECYCLE_REQUESTS = {
  * here. "Refresh progress" calls GET …/progress and replaces only the
  * progress. Archiving keeps the page on the now read-only goal, since its
  * account and history are kept.
+ *
+ * With smart savings enabled (`smartSavings.js`, off by default) the goal's
+ * active plan is shown under the progress (SmartPlanPanel); confirming an
+ * installment moves money and is handled like a contribution.
  */
-export default function SavingsGoalDetails() {
+export default function SavingsGoalDetails({ smartSavingsEnabled = SMART_SAVINGS_ENABLED }) {
   const { savingsGoalId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -96,6 +103,8 @@ export default function SavingsGoalDetails() {
   });
   // Bumped after money moves, so the activity refetches.
   const [activityKey, setActivityKey] = useState(0);
+  // Bumped when the plan itself changes here (discontinued): plan history refetches.
+  const [planKey, setPlanKey] = useState(0);
   const saveRequestRef = useRef(null);
   const progressControllerRef = useRef(null);
   // Set when a write learns the page may be out of date (409, unknown
@@ -295,7 +304,10 @@ export default function SavingsGoalDetails() {
   // status recalculated by the backend); the activity is refetched.
   const handleMovementCompleted = (type, data) => {
     staleRef.current = false;
-    applyGoal(data?.savings_goal);
+    // No response at all: a payment or reversal found already recorded after a lost response (see
+    // SmartPlanPanel). Its progress is read again; a full reload would also drop the notice below.
+    if (data) applyGoal(data.savings_goal);
+    else refreshProgress();
     setActivityKey((key) => key + 1);
     setDialog(null);
     if (suggested)
@@ -491,7 +503,7 @@ export default function SavingsGoalDetails() {
             : null;
 
   return (
-    <div className="savings-goal-details">
+    <div className={`savings-goal-details${smartSavingsEnabled ? " savings-goal-details--smart" : ""}`}>
       {backLink}
 
       {notice.key === requestKey && (
@@ -697,6 +709,34 @@ export default function SavingsGoalDetails() {
           </p>
         )}
       </section>
+
+      {smartSavingsEnabled && (
+        <SmartPlanPanel
+          goal={goal}
+          // Money moved, a write returned, or the status changed: the plan's
+          // health may differ, so it is fetched again.
+          refreshKey={`${requestKey}:${activityKey}:${goal.status}`}
+          timeZone={timeZone}
+          onInstallmentConfirmed={(data) => handleMovementCompleted("installment", data)}
+          onInstallmentReversed={(data) => handleMovementCompleted("installmentReversal", data)}
+          onPlanDiscontinued={(data) => {
+            // No money moved: the goal is shown as returned, nothing else changes.
+            applyGoal(data?.savings_goal);
+            setPlanKey((key) => key + 1);
+            showNotice("planDiscontinuedSuccess", data?.savings_goal?.name ?? goal.name);
+          }}
+        />
+      )}
+
+      {smartSavingsEnabled && (
+        <PlanHistory
+          goal={goal}
+          refreshKey={`${requestKey}:${activityKey}:${goal.status}:${planKey}`}
+          timeZone={timeZone}
+          // A historical payment reversed: same as from the panel (goal, activity, history).
+          onInstallmentReversed={(data) => handleMovementCompleted("installmentReversal", data)}
+        />
+      )}
 
       <PlannedContributions
         goal={goal}

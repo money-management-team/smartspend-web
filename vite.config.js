@@ -2,6 +2,7 @@ import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import process from 'node:process'
 import { resolveDevApiTarget } from './scripts/devApiTarget.mjs'
+import { readCommittableEnvFiles, resolveSmartSavingsBuild } from './scripts/smartSavingsBuildFlag.mjs'
 
 // https://vite.dev/config/
 export default defineConfig(({ command, mode }) => {
@@ -19,6 +20,25 @@ export default defineConfig(({ command, mode }) => {
     console.info(
       `[smartspend] dev API proxy: /api -> ${target.origin}`
       + `${target.remote ? ' (REMOTE, explicitly allowed)' : ' (local)'}`,
+    )
+  }
+
+  // Smart Savings is unreleased. A production build that would ship it
+  // fails unless the release is approved in the build environment itself;
+  // committable env files may not set the flag at all.
+  // See scripts/smartSavingsBuildFlag.mjs.
+  const smartSavings = resolveSmartSavingsBuild({
+    command,
+    mode,
+    env,
+    processEnv: process.env,
+    committableFiles: readCommittableEnvFiles(process.cwd(), mode),
+  })
+
+  if (smartSavings.enabled) {
+    console.info(
+      `[smartspend] Smart Savings: ON (${command}, ${mode}`
+      + `${smartSavings.approved ? ', release approved' : ''})`,
     )
   }
 

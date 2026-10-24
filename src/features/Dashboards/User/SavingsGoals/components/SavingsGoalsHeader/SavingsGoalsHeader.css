@@ -51,6 +51,42 @@
 }
 
 
+.savings-goals-header__count {
+  margin-top: 12px;
+  padding-block: 5px;
+  padding-inline: 12px 6px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  font-size: 12px;
+  line-height: 1;
+}
+
+.savings-goals-header__count strong {
+  min-width: 24px;
+  padding: 4px 8px;
+
+  border-radius: 999px;
+
+  color: var(--color-primary);
+  background: var(--primary-soft);
+
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+
 /* =========================================
    BUTTON
 ========================================= */
@@ -151,6 +187,46 @@
   .savings-goals-header__button {
     width: max-content;
 
+    margin-top: 0;
+  }
+}
+
+/* =========================================
+   SMART SAVINGS ACTIONS (flag on only)
+========================================= */
+
+.savings-goals-header__actions {
+  margin-top: 11px;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.savings-goals-header__actions .savings-goals-header__button {
+  margin-top: 0;
+  text-decoration: none;
+}
+
+.savings-goals-header__button--quiet {
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+  box-shadow: none;
+}
+
+.savings-goals-header__button--quiet:hover {
+  border-color: var(--border-strong, var(--color-border));
+  background: var(--surface-hover);
+}
+
+.savings-goals-header__actions .savings-goals-header__button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 620px) {
+  .savings-goals-header__actions {
     margin-top: 0;
   }
 }

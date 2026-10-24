@@ -7,6 +7,8 @@ import DashboardLayout from "../layouts/DashboardLayout/DashboardLayout";
 import PublicLayout from "../layouts/PublicLayout/PublicLayout";
 import { Navigate } from "react-router-dom";
 import WhatsAppDraftLink from "../features/Dashboards/User/WhatsAppDrafts/WhatsAppDraftLink";
+import { SMART_SAVINGS_ENABLED } from "../features/Dashboards/User/SavingsGoals/smartSavingsFlag";
+import SavingsGoalRedirect from "./SavingsGoalRedirect";
 
 import {
   AttentionCenter,
@@ -45,6 +47,8 @@ import {
   Reports,
   SavingsGoalDetails,
   SavingsGoals,
+  SmartPlanWizard,
+  SmartPlanRevision,
   Settings,
   TransactionDetails,
   TransferDetails,
@@ -252,6 +256,19 @@ const userRoutes = [
         path: PATH.USER.SAVINGS_GOAL_DETAILS,
         element: <SavingsGoalDetails />,
       },
+      // Unreleased: registered only when smart savings is enabled. With it off,
+      // the same URLs lead to the existing savings pages instead.
+      ...(SMART_SAVINGS_ENABLED
+        ? [
+            { path: PATH.USER.SAVINGS_SMART_PLAN_NEW, element: <SmartPlanWizard /> },
+            { path: PATH.USER.SAVINGS_GOAL_SMART_PLAN, element: <SmartPlanWizard /> },
+            { path: PATH.USER.SAVINGS_GOAL_PLAN_REVISE, element: <SmartPlanRevision /> },
+          ]
+        : [
+            { path: PATH.USER.SAVINGS_SMART_PLAN_NEW, element: <Navigate to={PATH.USER.SAVINGS_GOALS} replace /> },
+            { path: PATH.USER.SAVINGS_GOAL_SMART_PLAN, element: <SavingsGoalRedirect /> },
+            { path: PATH.USER.SAVINGS_GOAL_PLAN_REVISE, element: <SavingsGoalRedirect /> },
+          ]),
       {
         path: PATH.USER.DEBTS,
         element: <Debts />,

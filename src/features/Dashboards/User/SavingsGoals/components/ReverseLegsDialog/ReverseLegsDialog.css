@@ -1,0 +1,248 @@
+.reverse-legs__section {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+
+.reverse-legs__section h3 {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.reverse-legs__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.reverse-legs__scope {
+  margin: 0;
+  padding: 4px;
+  min-width: 0;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--surface-soft);
+}
+
+.account-form-modal__dialog .reverse-legs__scope-option {
+  position: relative;
+
+  min-height: 38px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 9px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+
+  cursor: pointer;
+}
+
+.account-form-modal__dialog .reverse-legs__scope-option input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.account-form-modal__dialog .reverse-legs__scope-option:has(input:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.account-form-modal__dialog .reverse-legs__scope-option--checked {
+  color: var(--color-text-strong);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs, 0 1px 2px rgb(0 0 0 / 0.08));
+}
+
+.reverse-legs__summary {
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+
+  border: 1px solid color-mix(in srgb, var(--color-warning) 30%, var(--color-border));
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-warning) 6%, var(--color-surface));
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.reverse-legs__summary strong {
+  color: var(--color-text-strong);
+
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.reverse-legs__error {
+  margin: -8px 0 0;
+  color: var(--color-danger);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.account-form-modal__dialog .reverse-legs__reason {
+  gap: 6px;
+  font-size: 13px;
+}
+
+.account-form-modal__dialog .reverse-legs__reason textarea {
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+
+  font: inherit;
+  resize: vertical;
+}
+
+.account-form-modal__dialog .reverse-legs__reason textarea:focus-visible {
+  outline: 0;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}
+
+.account-form-modal__dialog .reverse-legs__reason textarea[aria-invalid="true"] {
+  border-color: var(--color-danger);
+}
+
+.account-form-modal__dialog .reverse-legs__reason small.reverse-legs__hint {
+  color: var(--color-text-muted);
+}
+
+.account-form-modal__dialog .reverse-legs__ack {
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+
+  cursor: pointer;
+}
+
+.account-form-modal__dialog .reverse-legs__ack:has(input:checked) {
+  border-color: var(--color-warning);
+}
+
+.account-form-modal__dialog .reverse-legs__ack input {
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  padding: 0;
+  flex: none;
+  accent-color: var(--color-warning);
+}
+
+.reverse-legs__submit-icon {
+  width: 14px;
+  height: 14px;
+  vertical-align: -2px;
+}
+
+/* ---------- Current confirmation and earlier cycles ---------- */
+
+.reverse-legs__cycle-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+
+.reverse-legs__cycle-date {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Earlier cycles: quieter, clearly apart from what can be acted on. */
+.reverse-legs__history {
+  padding: 12px;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: color-mix(in srgb, var(--surface-soft) 60%, transparent);
+}
+
+.reverse-legs__history h3 {
+  margin: 0;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.reverse-legs__history h3 svg {
+  width: 14px;
+  height: 14px;
+}
+
+.reverse-legs__history-hint {
+  margin: -4px 0 0;
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+.reverse-legs__cycle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+}
+
+.reverse-legs__cycle + .reverse-legs__cycle {
+  padding-top: 10px;
+  border-top: 1px solid var(--border-soft, var(--color-border));
+}

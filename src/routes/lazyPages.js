@@ -43,6 +43,8 @@ export const RecurringDetails = lazy(() => import("../features/Dashboards/User/R
 export const ReportExports = lazy(() => import("../features/Dashboards/User/ReportExports/ReportExports"));
 export const Reports = lazy(() => import("../features/Dashboards/User/Reports/Reports"));
 export const SavingsGoalDetails = lazy(() => import("../features/Dashboards/User/SavingsGoalDetails/SavingsGoalDetails"));
+export const SmartPlanWizard = lazy(() => import("../features/Dashboards/User/SmartPlanWizard/SmartPlanWizard"));
+export const SmartPlanRevision = lazy(() => import("../features/Dashboards/User/SmartPlanRevision/SmartPlanRevision"));
 export const SavingsGoals = lazy(() => import("../features/Dashboards/User/SavingsGoals/SavingsGoals"));
 export const Settings = lazy(() => import("../features/Dashboards/User/Settings/Settings"));
 export const TransactionDetails = lazy(() => import("../features/Dashboards/User/TransactionDetails/TransactionDetails"));

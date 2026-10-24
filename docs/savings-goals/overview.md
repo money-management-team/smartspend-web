@@ -27,15 +27,19 @@ They are separate backend values and are shown as separate badges (a paused goal
 | [api.md](api.md) | Endpoints, payloads, response envelopes and pagination keys, error codes |
 | [business-rules.md](business-rules.md) | Lifecycle and action matrix, pause/resume, archive, money movements, idempotency, eligible accounts |
 | [implementation.md](implementation.md) | Pages, components, state after each write, error wording, i18n/RTL, verification |
+| [smart-plans.md](smart-plans.md) | Smart savings plans: release gate, overview behaviour, full screen inventory, design direction |
+| [plan-management.md](plan-management.md) | Smart plan revision (schedule / funding), discontinuing, plan history, and the backend contracts still missing |
 
 ## Routes
 
-Both routes are in the `userRoutes` group, behind `RequireAuth` + `DashboardLayout`.
+All routes are in the `userRoutes` group, behind `RequireAuth` + `DashboardLayout`.
 
 | Constant | URL | Page |
 | --- | --- | --- |
 | `PATH.USER.SAVINGS_GOALS` | `/dashboard/savings-goals` | `src/features/Dashboards/User/SavingsGoals/SavingsGoals.jsx` (list, filters, create) |
 | `PATH.USER.SAVINGS_GOAL_DETAILS` | `/dashboard/savings-goals/:savingsGoalId` | `src/features/Dashboards/User/SavingsGoalDetails/SavingsGoalDetails.jsx` |
+| `PATH.USER.SAVINGS_SMART_PLAN_NEW` | `/dashboard/savings-goals/smart-plan` | `src/features/Dashboards/User/SmartPlanWizard/SmartPlanWizard.jsx` (flag on only) |
+| `PATH.USER.SAVINGS_GOAL_SMART_PLAN` | `/dashboard/savings-goals/:savingsGoalId/smart-plan` | Same wizard, for an existing flexible goal (flag on only) |
 
 - Build links with `getSavingsGoalDetailsPath(id)`. The details route is nested under the list path, so the sidebar's "Savings Goals" item stays highlighted.
 - `getNewSavingsGoalPath()` (`/dashboard/savings-goals?new=1`) opens the create form once; the dashboard hero's "New goal" action uses it.
@@ -76,6 +80,15 @@ Savings goals (GET /savings-goals, filtered + paginated)
 | `…/SavingsGoals/components/GoalActivity/` | Paginated history with All / Contributions / Withdrawals tabs |
 | `…/SavingsGoals/components/GoalStatusBadge/`, `GoalProgressBar/`, `GoalProgress/` | Shared badges and progress visuals |
 | `src/features/Dashboards/User/SavingsGoalDetails/SavingsGoalDetails.jsx` | Details page |
+| `src/features/Dashboards/User/api/savingsPlansApi.js` | Smart-plan reads (`GET …/plan`) |
+| `…/SavingsGoals/smartSavings.js`, `useGoalPlanSummaries.js` | Smart-savings gate, plan summaries, upcoming installments |
+| `…/SavingsGoals/components/GoalPlanChip/`, `UpcomingInstallments/` | Smart plan / flexible chip; next-installments panel |
+| `…/SavingsGoals/components/SmartPlanPanel/`, `PlanHealth/`, `InstallmentTimeline/` | Goal details: smart plan panel, health signals, installment timeline |
+| `…/SavingsGoals/components/ConfirmInstallmentDialog/`, `PostponeInstallmentDialog/`, `SkipInstallmentDialog/`, `PlanDialog/` | Installment dialogs and their shared shell |
+| `src/features/Dashboards/User/SmartPlanWizard/` | Smart plan creation wizard: page, `smartPlanWizardHelpers.js`, and the `WizardStepper`, `GoalStep`, `PlanStep`, `PlanOptionCard`, `FundingStep`, `ReviewStep` components |
+| `…/SavingsGoals/smartSavingsFlag.js` | The `VITE_SMART_SAVINGS_ENABLED` gate, import-free for the route table |
+| `…/SavingsGoals/components/FundingBreakdownDialog/`, `ReverseLegsDialog/`, `FundingLegs/` | Multi-account confirmation, payment reversal, and the shared payment list |
+| `…/SavingsGoals/smartPlanHelpers.js`, `useInstallmentWrite.js` | Plan parsing, timeline states, postpone bounds, write-error classification; installment write + idempotency |
 | `src/locales/{en,ar}/*.json` → `dashboard.savingsGoals.*` | All copy |
 
 Accounts come from the existing `accountsApi`, the workspace from `resolveWorkspaceId()` / the session workspace, idempotency keys from `createIdempotentAttempt()`; none of these is duplicated.

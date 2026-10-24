@@ -1870,7 +1870,10 @@
         "pauseSuccess": "“{{name}}” is paused. Its money stays in place, and withdrawals are still allowed.",
         "resumeSuccess": "“{{name}}” was resumed. Its status is now: {{status}}.",
         "archiveSuccess": "“{{name}}” was archived. Its account and history are kept.",
-        "viewGoal": "View goal"
+        "viewGoal": "View goal",
+        "installmentSuccess": "Installment confirmed for “{{name}}”. The money moved into the goal's savings account.",
+        "installmentReversalSuccess": "Payments reversed for “{{name}}”. The money went back to the source accounts.",
+        "planDiscontinuedSuccess": "The smart plan for “{{name}}” was discontinued. No money moved; the goal is flexible saving again."
       },
       "form": {
         "createTitle": "New savings goal",
@@ -2036,6 +2039,819 @@
         "savedNotice": "Plan saved.",
         "previous": "Previous",
         "next": "Next"
+      },
+      "overview": {
+        "totalGoals": "Total goals",
+        "matchingGoals": "Matching goals",
+        "emptyTitle": "Start your first savings goal",
+        "mode": {
+          "loading": "Checking plan…",
+          "smart": "Smart plan",
+          "flexible": "Flexible saving",
+          "unavailable": "Plan status unavailable"
+        },
+        "intensity": {
+          "easy": "Easy",
+          "balanced": "Balanced",
+          "intensive": "Intensive"
+        },
+        "nextInstallment": "Next installment",
+        "overdue": "Overdue",
+        "noOpenInstallments": "No open installments",
+        "onHold": "Plan on hold while the goal is paused",
+        "reviewSuggested": "Review suggested",
+        "upcoming": {
+          "title": "Upcoming installments",
+          "hint": "The next installment of each smart plan on this page. No money moves until you confirm it."
+        },
+        "smartPlanAction": "Smart plan"
+      },
+      "smartPlan": {
+        "eyebrow": "Smart plan",
+        "title": "{{intensity}} plan",
+        "loading": "Loading the savings plan…",
+        "errorTitle": "Savings plan unavailable",
+        "refreshing": "Updating…",
+        "reviewUpdated": "The details here are now current. Review them and try again.",
+        "frequency": {
+          "weekly": "Weekly installments",
+          "monthly": "Monthly installments",
+          "weeklyEvery": "An installment every {{count}} weeks",
+          "monthlyEvery": "An installment every {{count}} months"
+        },
+        "figures": {
+          "saved": "Saved",
+          "remaining": "Remaining",
+          "scheduled": "Still scheduled",
+          "perInstallment": "Per installment",
+          "openCount": "Open installments: {{count}}",
+          "finalInstallment": "Last installment"
+        },
+        "timeline": {
+          "title": "Installments",
+          "onHold": "The goal is paused, so its installments are on hold until you resume it.",
+          "empty": "This plan has no installments.",
+          "installmentNumber": "Installment {{number}}",
+          "next": "Next",
+          "states": {
+            "overdue": "Overdue",
+            "planned": "Upcoming",
+            "fulfilled": "Confirmed",
+            "partially_reversed": "Partly reversed",
+            "skipped": "Skipped",
+            "missed": "Missed",
+            "cancelled": "Cancelled"
+          },
+          "postponedCount": "Postponed: {{count}}",
+          "originally": "originally",
+          "paid": "Paid",
+          "reversed": "Reversed",
+          "shortfall": "Short by",
+          "skippedNote": "Not saved. Your target is unchanged.",
+          "scheduled": "Scheduled",
+          "actions": {
+            "confirm": "Confirm",
+            "postpone": "Postpone",
+            "skip": "Skip",
+            "confirmNamed": "Confirm installment {{number}}",
+            "postponeNamed": "Postpone installment {{number}}",
+            "skipNamed": "Skip installment {{number}}",
+            "reverse": "Reverse payments",
+            "reverseNamed": "Reverse payments of installment {{number}}"
+          },
+          "showAll": "Show all {{count}} installments",
+          "showLess": "Show fewer",
+          "multiAccount": "Paid from several accounts",
+          "cancelledReasons": {
+            "plan_superseded": "Cancelled when the plan was revised",
+            "plan_discontinued": "Cancelled when the plan was discontinued",
+            "goal_archived": "Cancelled when the goal was archived",
+            "goal_achieved": "Cancelled when the goal reached its target"
+          }
+        },
+        "health": {
+          "title": "Plan health",
+          "onTrack": "On track",
+          "onTrackHint": "The open installments cover what's left of your target.",
+          "onHold": {
+            "title": "On hold",
+            "detail": "The goal is paused. Installments wait until you resume it."
+          },
+          "overdue": {
+            "title": "Overdue installments: {{count}}",
+            "detail": "Due and not yet confirmed:"
+          },
+          "uncovered": {
+            "title": "Target at risk",
+            "detail": "The open schedule doesn't cover the remaining amount. Not covered:"
+          },
+          "endsAfterTarget": {
+            "title": "Target at risk",
+            "detail": "The schedule now ends after the goal's target date."
+          },
+          "delayed": {
+            "title": "Finishing later",
+            "detail": "Postponed installments moved the end of the schedule."
+          },
+          "skipped": {
+            "title": "Skipped installments: {{count}}",
+            "detail": "Not saved, and not added to other installments:"
+          },
+          "partiallyReversed": {
+            "title": "Partly reversed installments: {{count}}",
+            "detail": "Returned to the source accounts:"
+          },
+          "ahead": {
+            "title": "Ahead of schedule",
+            "detail": "You've saved more than the plan has asked for so far."
+          },
+          "dateLabel": {
+            "overdue": "oldest from",
+            "endsAfterTarget": "ends",
+            "delayed": "now ends"
+          }
+        },
+        "funding": {
+          "title": "Funding",
+          "modes": {
+            "single": "One account",
+            "priority": "Accounts in priority order",
+            "allocated": "Split across accounts",
+            "at_confirmation": "Chosen at each confirmation"
+          },
+          "hints": {
+            "single": "Each installment comes from this account.",
+            "priority": "You confirm each installment from one of these accounts.",
+            "allocated": "Each installment is split across these accounts.",
+            "at_confirmation": "You choose an eligible account each time you confirm."
+          },
+          "priority": "Priority {{number}}",
+          "allocatedLater": "Confirming an installment split across several accounts isn't available here yet.",
+          "confirm": {
+            "title": "Pay from several accounts",
+            "approveTitle": "Approve this breakdown",
+            "loading": "Working out the breakdown…",
+            "reviewAgain": "Nothing moved. The breakdown below has been checked again; review it before approving.",
+            "breakdownTitle": "Where the money comes from",
+            "modeHints": {
+              "allocated": "Your plan splits every installment by fixed shares, so this breakdown can't be changed here.",
+              "priority": "Proposed in your plan's order. You can change the split across the plan's accounts.",
+              "at_confirmation": "Choose the accounts and how much each one pays. Together they must equal the amount to move.",
+              "single": "This installment comes from your plan's account."
+            },
+            "account": "Account",
+            "chooseAccount": "Choose an account…",
+            "available": "Available",
+            "noBalance": "no available balance",
+            "exceedsAvailable": "More than this account has available.",
+            "amount": "Amount",
+            "removeLeg": "Remove part {{number}}",
+            "addLeg": "Add an account",
+            "remaining": "Left to allocate:",
+            "allocated": "Fully allocated",
+            "remainingUnknown": "Enter valid amounts to see what's left",
+            "checkFirst": "Check this split with SmartSpend before approving it.",
+            "validation": {
+              "legsRequired": "Add at least one account.",
+              "tooManyLegs": "Use at most {{max}} accounts.",
+              "accountRequired": "Choose an account for every part.",
+              "duplicateAccount": "Each account can be used once.",
+              "amountInvalid": "Every part needs a positive amount with up to four decimals.",
+              "totalMismatch": "The parts must add up to exactly the amount to move."
+            },
+            "problems": {
+              "insufficient_balance": "One of these accounts doesn't have enough balance for its part.",
+              "exceeds_remaining": "This is more than what's left to reach the goal.",
+              "breakdown_invalid": "This split doesn't follow your plan's funding rules.",
+              "account_not_eligible": "One of these accounts can't fund this goal (archived, another currency, or not yours to use)."
+            },
+            "shortBy": "Short by",
+            "changeSplit": "Change the split",
+            "check": "Check this split",
+            "review": "Review and approve",
+            "back": "Back",
+            "approveLead": "{{count}} separate transfers will move these exact amounts into the goal:",
+            "total": "Total into the goal",
+            "facts": {
+              "separate": "Each account is debited with exactly its part, as a separate transfer ({{count}} in all).",
+              "together": "All parts succeed together or none of them happens.",
+              "recheck": "Balances are checked again at the moment you approve."
+            },
+            "approve": "I approve moving these exact amounts from these accounts.",
+            "submit": "Confirm and move money",
+            "running": "Moving money…",
+            "retry": "Try again"
+          }
+        },
+        "schedule": {
+          "title": "Schedule",
+          "start": "First installment",
+          "expectedCompletion": "Planned completion",
+          "scheduledCompletion": "Now finishes",
+          "targetDate": "Target date",
+          "installments": "Installments"
+        },
+        "notices": {
+          "postponed": "Installment {{number}} moved to",
+          "skipped": "Installment {{number}} skipped. Your target is unchanged.",
+          "noMoney": "No money moved.",
+          "closed": "Installment {{number}} changed while this was open, so the dialog was closed. Its current state is shown below, and nothing more happens unless you act again.",
+          "created": "Your smart plan is ready. Nothing has moved yet: confirm each installment when it's due."
+        },
+        "confirm": {
+          "eyebrow": "Installment {{number}}",
+          "title": "Confirm this installment",
+          "loading": "Checking the current details…",
+          "reviewAgain": "Nothing was confirmed against old details. Review what's shown now before confirming.",
+          "goal": "Goal",
+          "dueDate": "Due date",
+          "scheduledAmount": "Scheduled amount",
+          "amountToMove": "Amount to move",
+          "warnings": {
+            "installment_overdue": "This installment is overdue.",
+            "amount_limited_to_remaining": "Only part of the scheduled amount is left to reach your target, so the amount to move is lower.",
+            "no_eligible_account": "No eligible account can fund this installment. Accounts must be active and in the goal's currency.",
+            "insufficient_balance": "None of the eligible accounts has enough balance for this amount."
+          },
+          "fromAccount": "From account",
+          "available": "Available",
+          "notEnough": "Not enough balance for this amount",
+          "overdraft": "This account allows a negative balance.",
+          "statement": "A real transfer into the goal's savings account. Nothing is deducted until you confirm.",
+          "running": "Confirming…",
+          "retry": "Try again",
+          "submit": "Confirm and move money",
+          "split": "Pay from several accounts instead"
+        },
+        "postpone": {
+          "eyebrow": "Installment {{number}}",
+          "title": "Postpone this installment",
+          "running": "Postponing…",
+          "submit": "Postpone",
+          "currentDate": "Current date",
+          "originalDate": "Originally scheduled",
+          "amount": "Amount",
+          "newDate": "New date",
+          "errors": {
+            "required": "Choose a new date.",
+            "invalid": "Enter a valid date.",
+            "tooEarly": "Choose this date or later:",
+            "tooLate": "Choose this date or earlier:"
+          },
+          "noRoom": "There's no later date this installment can move to before the next one or the target date. Revise the plan to change its schedule.",
+          "rulesTitle": "What postponing allows",
+          "rules": {
+            "after": "A date after the current one, and not in the past. Current date:",
+            "beforeNext": "Before the next installment, due",
+            "byTarget": "No later than the goal's target date,",
+            "limited": "An installment can be postponed only a limited number of times.",
+            "noMoney": "The amount and the other installments stay the same. No money moves."
+          },
+          "postponedSoFar": "Postponed so far: {{count}}"
+        },
+        "skip": {
+          "eyebrow": "Installment {{number}}",
+          "title": "Skip this installment?",
+          "keep": "Keep it",
+          "running": "Skipping…",
+          "submit": "Skip installment",
+          "date": "Due date",
+          "amount": "Amount",
+          "target": "Savings target",
+          "points": {
+            "noMoney": "No money moves.",
+            "targetUnchanged": "Your savings target and target date don't change.",
+            "notReplaced": "The amount isn't added to other installments, so the plan may no longer cover your target.",
+            "final": "A skipped installment can't be reopened."
+          }
+        },
+        "errors": {
+          "ownerOnly": "Only the person who set up this plan can do this.",
+          "planGone": "This savings plan is no longer available.",
+          "installmentGone": "This installment is no longer available.",
+          "unknownOutcome": "We couldn't confirm whether this was saved. Trying again is safe: it won't be applied twice.",
+          "unknownOutcomeMoney": "We couldn't confirm whether the money moved. The details have been checked again; if the installment is still open, trying again is safe and won't move the money twice.",
+          "codes": {
+            "smart_savings_disabled": "Smart savings plans aren't available yet, so no plan was created. Your goals, balances and transactions are unchanged.",
+            "savings_plan_version_conflict": "The plan changed since you opened this.",
+            "savings_installment_version_conflict": "This installment changed since you opened this.",
+            "savings_installment_not_open": "This installment is no longer open.",
+            "savings_installment_not_in_active_plan": "This installment belongs to a plan that's no longer active.",
+            "savings_plan_not_active": "This plan is no longer active.",
+            "savings_goal_not_accepting_contributions": "This goal isn't accepting contributions right now (it may be paused, archived or already funded).",
+            "savings_goal_not_active": "This goal isn't active, so its installments can't change. Resume it first.",
+            "savings_installment_exceeds_remaining": "The amount is more than what's left to reach the target.",
+            "savings_installment_funding_unsupported": "This plan splits each installment across several accounts, which can't be confirmed here yet.",
+            "savings_installment_postpone_limit_reached": "This installment has been postponed the most times allowed ({{max}}). Revise the plan to change its schedule.",
+            "savings_installment_schedule_conflict": "That date reaches the next installment. The latest date allowed is {{date}}.",
+            "savings_installment_beyond_target_date": "That date is after the goal's target date ({{date}}).",
+            "savings_installment_intent_invalid": "This breakdown isn't the one that was checked. Check it again before confirming.",
+            "savings_installment_breakdown_invalid": "This split doesn't follow your plan's funding rules.",
+            "savings_installment_leg_already_reversed": "One of these payments was already reversed.",
+            "savings_installment_not_multi_leg": "This installment was paid from a single account; reverse it from the goal's activity.",
+            "savings_installment_nothing_to_reverse": "There's nothing left to reverse for this installment.",
+            "savings_installment_legs_changed": "The installment's payments changed.",
+            "savings_installment_leg_requires_domain_reversal": "This payment is part of an installment; reverse it from the installment.",
+            "savings_plan_accounts_changed": "The plan's funding accounts changed."
+          }
+        },
+        "invite": {
+          "title": "Turn this goal into a smart plan",
+          "body": "Compare Easy, Balanced and Intensive schedules built from what's left and your recent cash flow. Nothing moves until you confirm each installment.",
+          "action": "Create a smart plan"
+        },
+        "legs": {
+          "reversed": "Reversed"
+        },
+        "reverse": {
+          "eyebrow": "Installment {{number}}",
+          "title": "Reverse payments",
+          "keep": "Keep them",
+          "submit": "Reverse",
+          "running": "Reversing…",
+          "retry": "Try again",
+          "unknownOutcome": "We couldn't confirm whether the reversal happened. The installment has been checked again; trying again is safe and won't reverse anything twice.",
+          "reviewAgain": "The payments changed, so nothing was reversed. Review the current state and choose again.",
+          "facts": {
+            "scheduled": "Scheduled",
+            "confirmed": "Originally paid",
+            "effective": "Still in the goal",
+            "reversed": "Already reversed"
+          },
+          "paymentsTitle": "Payments",
+          "scopeLabel": "What to reverse",
+          "scope": {
+            "all": "All remaining payments",
+            "some": "Choose payments"
+          },
+          "summaryAll": "Reversing every remaining payment",
+          "summarySome": "Reversing the chosen payments: {{count}}",
+          "validation": {
+            "chooseLeg": "Choose at least one payment.",
+            "reasonShort": "Give a reason of at least {{min}} characters.",
+            "reasonLong": "Use at most {{max}} characters."
+          },
+          "reason": "Reason",
+          "reasonHint": "Required, at least {{min}} characters. Saved with the reversal.",
+          "points": {
+            "returns": "The money goes back to each payment's own account.",
+            "history": "The original payments stay in the history, marked as reversed.",
+            "noReplan": "No other installment changes; the plan's health shows any gap."
+          },
+          "acknowledge": "I understand this moves money out of the goal.",
+          "loading": "Reading this installment's payments…",
+          "currentTitle": "Current payment",
+          "confirmedOn": "Confirmed",
+          "reversedOn": "Reversed",
+          "singleAccount": "This installment was paid from a single account. Reverse it from the goal's activity.",
+          "nothingLeft": "Nothing is left to reverse for this installment.",
+          "historyTitle": "Earlier confirmations",
+          "historyHint": "Kept for your records. These payments can't be chosen."
+        }
+      },
+      "smartPlanWizard": {
+        "eyebrow": "Smart savings",
+        "title": "Create a smart savings plan",
+        "titleExisting": "A smart plan for “{{name}}”",
+        "subtitle": "Set your goal, compare three plans built from your own numbers, choose where the money comes from, then review. Nothing moves until you confirm each installment.",
+        "backToGoals": "All savings goals",
+        "backToGoal": "Back to the goal",
+        "loadingGoal": "Loading the goal…",
+        "goalErrorTitle": "We couldn't start the plan",
+        "back": "Back",
+        "continue": "Continue",
+        "create": "Create goal and plan",
+        "createExisting": "Add this plan",
+        "creating": "Creating…",
+        "retryCreate": "Try again",
+        "unavailable": {
+          "title": "This goal can't take a smart plan now",
+          "hasPlan": "It already has an active smart plan. You can follow and manage it from the goal's page.",
+          "paused": "The goal is paused. Resume it first, then add a plan.",
+          "achieved": "The goal is already fully funded, so it needs no plan.",
+          "archived": "Archived goals can't be planned.",
+          "other": "Its current status doesn't allow a new plan."
+        },
+        "steps": {
+          "label": "Plan creation steps",
+          "count": "Step {{current}} of {{total}}",
+          "goal": "Goal",
+          "plan": "Plan",
+          "funding": "Funding",
+          "review": "Review",
+          "schedule": "Schedule"
+        },
+        "validation": {
+          "nameRequired": "Give the goal a name.",
+          "nameTooLong": "Use at most {{max}} characters.",
+          "currencyRequired": "Choose a currency.",
+          "dateInvalid": "Enter a valid date.",
+          "dateInPast": "Choose today or a later date.",
+          "targetBeforeStart": "The target date can't be before the first installment.",
+          "notesTooLong": "Use at most {{max}} characters.",
+          "rhythmRequired": "Choose how often you'll save.",
+          "choosePlan": "Choose one of the plans to continue.",
+          "modeRequired": "Choose how the plan is funded.",
+          "duplicateAccount": "Each account can be listed once.",
+          "chooseOneAccount": "Choose the account installments come from.",
+          "chooseTwoAccounts": "Add at least two accounts.",
+          "tooManyAccounts": "Use at most {{max}} accounts.",
+          "allocationInvalid": "Each share must be a percentage between 0.01 and 100, with up to two decimals.",
+          "allocationTotal": "The shares must add up to exactly 100%."
+        },
+        "goal": {
+          "kindTitle": "What kind of savings?",
+          "free": {
+            "title": "Free savings",
+            "description": "Add money whenever you like. No schedule."
+          },
+          "smart": {
+            "title": "Smart savings",
+            "description": "A schedule built from what's left and your recent cash flow.",
+            "selected": "Selected"
+          },
+          "existing": {
+            "target": "Target",
+            "saved": "Saved",
+            "remaining": "Remaining",
+            "targetDate": "Target date",
+            "noDate": "No target date",
+            "hint": "The plan covers what's still remaining. To change the target amount or date, edit the goal first."
+          },
+          "detailsTitle": "Your goal",
+          "optional": "(optional)",
+          "targetDateHint": "With a date, plans aim to finish by it. Without one, they're shaped by what you can afford.",
+          "rhythmTitle": "How often will you save?",
+          "rhythmHint": "Every installment is confirmed by you. None is taken automatically.",
+          "rhythms": {
+            "weekly": "Weekly",
+            "biweekly": "Every 2 weeks",
+            "monthly": "Monthly",
+            "quarterly": "Every 3 months"
+          },
+          "startDate": "First installment",
+          "startDateHint": "Leave empty to start from today."
+        },
+        "plan": {
+          "loading": "Building your plans…",
+          "errorTitle": "We couldn't build the plans",
+          "editGoal": "Edit the goal",
+          "stale": {
+            "title": "Your plan changed",
+            "schedule_changed": "The schedule changed since you reviewed it (for example, money moved in or out of the goal). The options below are current. Choose again.",
+            "assessment_changed": "What you can afford changed since you reviewed it. The options below are current. Choose again.",
+            "unavailable": "That option is no longer available. The options below are current. Choose again."
+          },
+          "capacity": {
+            "title": "Estimated room to save",
+            "perMonth": "a month",
+            "none": "No regular surplus found in your recent months.",
+            "unknown": "Not enough history yet to estimate what you can afford.",
+            "disclaimer": "An estimate from your own accounts over recent months. It's a guide, not a guarantee or financial advice.",
+            "warnings": {
+              "irregular_income": "Your income varies, so the estimate uses your weakest recent month.",
+              "negative_cash_flow_month": "You spent more than you earned in at least one recent month.",
+              "forecast_shortfall": "Your forecast shows a shortfall ahead.",
+              "debt_due_in_forecast_window": "A debt payment is due soon.",
+              "existing_planned_contributions_for_goal": "This goal already has planned contributions outside the plan.",
+              "no_spendable_account_in_currency": "You have no spendable account in this currency.",
+              "target_date_passed": "The target date has passed.",
+              "goal_paused": "The goal is paused."
+            }
+          },
+          "reasons": {
+            "fastest_comfortable_option": "Recommended: the fastest plan that fits comfortably in your estimated room.",
+            "gentlest_stretch_option": "Recommended: the gentlest plan. Every option is a stretch for your estimated room.",
+            "no_affordable_option": "None of the plans fits your estimated room. You can still choose one, or change the goal.",
+            "no_feasible_option": "None of the plans can reach the goal with these settings.",
+            "affordability_unknown": "We can't judge affordability yet, so no plan is recommended. Choose what feels right.",
+            "already_funded": "This goal is already fully funded.",
+            "none": "Compare the plans and choose one."
+          },
+          "empty": {
+            "title": "No plans to show",
+            "body": "Change the goal or the schedule and try again."
+          },
+          "chooseLabel": "Choose a plan",
+          "footnote": "Amounts and dates come from SmartSpend's planner and are rechecked when you create the plan.",
+          "recommended": "Recommended",
+          "per": {
+            "weekly": "every week",
+            "weeklyEvery": "every {{count}} weeks",
+            "monthly": "every month",
+            "monthlyEvery": "every {{count}} months"
+          },
+          "status": {
+            "deadline_before_first_installment": "The target date comes before the first installment.",
+            "too_many_installments": "This would take more installments than a plan allows.",
+            "above_contribution_limit": "Each installment would be above the allowed limit.",
+            "already_funded": "The goal is already fully funded.",
+            "unavailable": "This plan isn't available with these settings."
+          },
+          "installments": "Installments",
+          "dates": "Dates",
+          "finalInstallment": "Last installment",
+          "shortfall": "Falls short by",
+          "duplicate": "Same schedule as {{intensity}}.",
+          "bands": {
+            "comfortable": "Comfortable",
+            "stretch": "A stretch",
+            "strained": "Strained",
+            "unaffordable": "Beyond your estimated room",
+            "unknown": "Affordability unknown"
+          },
+          "estimate": "Estimate",
+          "monthlyEquivalent": "About",
+          "shareOfRoom": "{{share}} of your estimated monthly room",
+          "warnings": {
+            "insufficient_spendable_balance": "Your spendable balance may not cover the first installments.",
+            "exceeds_estimated_capacity": "Above your estimated monthly room.",
+            "target_date_passed": "The target date has passed."
+          },
+          "showSchedule": "Review all {{count}} installments",
+          "hideSchedule": "Hide the schedule"
+        },
+        "funding": {
+          "modeTitle": "Where will installments come from?",
+          "modes": {
+            "single": "Every installment from one account.",
+            "priority": "Up to five accounts in order. You confirm each installment from one of them.",
+            "allocated": "Each installment split across accounts by fixed shares.",
+            "at_confirmation": "No account now. You choose one each time you confirm."
+          },
+          "atConfirmation": "You'll pick an eligible {{currency}} account each time you confirm an installment, after seeing its balance.",
+          "loadingAccounts": "Loading your accounts…",
+          "accountsError": "We couldn't load your accounts.",
+          "noAccounts": "You have no active {{currency}} account that can fund a plan. Add one, or choose “Chosen at each confirmation”.",
+          "chooseOne": "Choose the account",
+          "priorityTitle": "Accounts in priority order",
+          "priorityHint": "Two to {{max}} accounts. The first is suggested first when you confirm.",
+          "allocatedTitle": "Accounts and their shares",
+          "allocatedHint": "Two to {{max}} accounts. The shares must add up to 100%.",
+          "shareOf": "Share for {{name}}, in percent",
+          "moveUp": "Move {{name}} up",
+          "moveDown": "Move {{name}} down",
+          "remove": "Remove {{name}}",
+          "addAccount": "Add an account",
+          "addPlaceholder": "Choose an account…",
+          "total": "Total",
+          "allocatedNotice": "Each installment is split by these shares. When you confirm one, you see exactly how much comes from each account before any money moves.",
+          "available": "Available",
+          "noMoney": "Choosing accounts moves no money. Balances are a guide: they're checked again when you create the plan and at every confirmation."
+        },
+        "review": {
+          "edit": {
+            "goal": "Edit the goal",
+            "plan": "Change the plan",
+            "funding": "Change the funding"
+          },
+          "editLabel": "Edit",
+          "unknownOutcome": "We couldn't confirm whether the plan was created. Trying again is safe: it won't create a second one.",
+          "fix": {
+            "goal": "Fix the goal details",
+            "plan": "Choose the plan again",
+            "funding": "Fix the funding"
+          },
+          "goalTitle": "Goal",
+          "noTargetDate": "No target date",
+          "planTitle": "{{intensity}} plan",
+          "firstInstallment": "First installment",
+          "lastInstallment": "Last installment date",
+          "affordability": "Affordability",
+          "affordabilityUnknown": "Not known yet",
+          "fundingTitle": "Funding",
+          "atConfirmation": "You'll choose the account each time you confirm.",
+          "noMoneyTitle": "Accepting a plan moves no money",
+          "noMoneyBody": "Each installment waits for you. Nothing is deducted until you confirm it, and you can postpone or skip installments from the goal's page.",
+          "accept": "I've reviewed this plan and want to create it."
+        }
+      },
+      "planManagement": {
+        "loading": "Loading your plan…",
+        "errorTitle": "We couldn't load this plan",
+        "eyebrow": "{{intensity}} smart plan",
+        "title": {
+          "schedule": "Revise the schedule for {{name}}",
+          "funding": "Change how {{name}} is funded"
+        },
+        "subtitle": {
+          "schedule": "Pick a new rhythm or intensity. Your plan is rebuilt from what's left to save today, and you review it before anything changes.",
+          "funding": "Choose which accounts pay the installments. The schedule and amounts stay exactly as they are."
+        },
+        "noPlan": {
+          "title": "This goal has no active plan",
+          "body": "The plan may have been completed, discontinued or replaced. Its record is in the goal's plan history."
+        },
+        "paused": {
+          "title": "Resume the goal to change its schedule",
+          "body": "A paused goal keeps its schedule as it is. You can still change which accounts fund it.",
+          "funding": "Change funding instead"
+        },
+        "validation": {
+          "fundingUnchanged": "This is how the plan is funded now. Change the mode or the accounts to continue."
+        },
+        "submit": {
+          "schedule": "Approve the new schedule",
+          "funding": "Approve the new funding"
+        },
+        "submitting": "Saving…",
+        "retrySubmit": "Try again",
+        "actions": {
+          "label": "Manage plan",
+          "schedule": "Revise schedule",
+          "funding": "Change funding",
+          "discontinue": "Discontinue",
+          "notices": {
+            "schedule": "Your new schedule is in place. The previous plan is kept in plan history. Nothing has moved.",
+            "funding": "Your plan's funding was updated. Nothing has moved."
+          },
+          "readOnly": "You can view this plan. Only its owner can confirm installments, change the plan or reverse payments."
+        },
+        "review": {
+          "title": {
+            "schedule": "Your plan now and after the revision",
+            "funding": "Funding now and after the change"
+          },
+          "edit": {
+            "schedule": "Choose a different option",
+            "funding": "Edit the funding"
+          },
+          "caption": "Comparison of the current plan with the proposed one",
+          "columns": {
+            "item": "Item",
+            "now": "Now",
+            "after": "After"
+          },
+          "rows": {
+            "intensity": "Intensity",
+            "rhythm": "Rhythm",
+            "perInstallment": "Per installment",
+            "installments": "Installments",
+            "nextDue": "Next installment",
+            "completion": "Last installment",
+            "fundingMode": "Funding",
+            "accounts": "Accounts"
+          },
+          "openCount": "Open: {{count}}",
+          "unchanged": "Unchanged",
+          "chosenAtConfirmation": "Chosen at each confirmation",
+          "effectsTitle": "What this does",
+          "effects": {
+            "schedule": {
+              "replaced": "Your current plan is closed as replaced, and the new one takes its place.",
+              "cancelled": "Its open installments are cancelled ({{count}}).",
+              "kept": "Installments you already confirmed stay as they are; their money stays in the goal.",
+              "covers": "The new plan covers exactly what's left to save:",
+              "history": "The previous plan is kept in plan history."
+            },
+            "funding": {
+              "same": "The schedule, dates and amounts don't change.",
+              "open": "Open installments will be paid from the new setup.",
+              "kept": "Confirmed installments keep the accounts they were paid from.",
+              "history": "The previous setup is recorded in plan history."
+            }
+          },
+          "splitReversal": "Installments paid from several accounts in this plan: {{count}}. They stay in the goal after the revision, and their payments can still be reversed from plan history.",
+          "noMoneyTitle": "No money moves",
+          "noMoneyBody": {
+            "schedule": "Revising the schedule only changes the plan. Money moves only when you confirm an installment.",
+            "funding": "Changing funding only changes where future installments come from. Money moves only when you confirm an installment."
+          },
+          "accept": {
+            "schedule": "I've reviewed the new schedule and want it to replace my current plan.",
+            "funding": "I've reviewed the new funding and want to use it for my open installments."
+          },
+          "conflict": "Your plan changed since you opened this page (for example, an installment was confirmed elsewhere). The current plan is shown; review it and approve again.",
+          "unknownOutcome": "We couldn't confirm whether the change was saved. Trying again is safe: it won't be applied twice.",
+          "fix": {
+            "schedule": "Edit the schedule",
+            "plan": "Choose an option again",
+            "funding": "Edit the funding"
+          },
+          "notReady": "Something in this revision needs your attention before it can be reviewed."
+        },
+        "discontinue": {
+          "eyebrow": "Smart plan",
+          "title": "Discontinue this plan?",
+          "keep": "Keep the plan",
+          "submit": "Discontinue plan",
+          "running": "Discontinuing…",
+          "retry": "Try again",
+          "facts": {
+            "open": "Open installments",
+            "scheduled": "Still scheduled",
+            "saved": "Saved in the goal (stays)"
+          },
+          "points": {
+            "noMoney": "No money moves.",
+            "cancelled": "Open installments are cancelled ({{count}}).",
+            "kept": "Installments you confirmed, and everything saved in the goal, stay exactly as they are.",
+            "flexible": "The goal goes back to flexible saving.",
+            "final": "A discontinued plan can't be reopened, but you can create a new one at any time."
+          },
+          "acknowledge": "I understand the open installments will be cancelled."
+        },
+        "ownerOnly": {
+          "title": "Only the plan's owner can change it",
+          "body": "You can see this plan and its history, but only the person who set it up can revise it, discontinue it or move money for it."
+        },
+        "reminder": {
+          "title": "Reminder: installment {{number}}",
+          "body": "Reviewing it opens a fresh preview of the amount and accounts. Nothing moves until you confirm.",
+          "cannotAct": "It can't be confirmed from here right now (the goal may be paused, or you may not manage this plan).",
+          "review": "Review installment",
+          "closed": "The installment from this reminder is no longer open: it may have been confirmed, skipped or replaced by a revised plan.",
+          "resolved": "Installment {{number}} is {{state}}. There's nothing to confirm.",
+          "earlierPlan": "This reminder is about an installment of an earlier plan. It's opened in plan history below.",
+          "showHistory": "Go to plan history"
+        }
+      },
+      "planHistory": {
+        "eyebrow": "Smart plans",
+        "title": "Plan history",
+        "loading": "Loading plan history…",
+        "lead": "Every plan this goal has had, newest first. Plans: {{count}}",
+        "more": "Show older plans",
+        "loadingMore": "Loading…",
+        "until": "until",
+        "activeSince": "Active since",
+        "cardTitle": "{{intensity}} plan",
+        "status": {
+          "active": "Active",
+          "completed": "Completed",
+          "discontinued": "Discontinued",
+          "superseded": "Replaced"
+        },
+        "completion": {
+          "label": "Completion summary",
+          "title": "Target reached on",
+          "early": "Finished ahead of the plan (days: {{count}})",
+          "late": "Finished after the planned date (days: {{count}})",
+          "onTime": "Finished on the planned date",
+          "ledgerNote": "This is when the plan was completed. The goal's current balance is in its progress above and can change later through withdrawals or reversals.",
+          "saved": "Effective plan contributions:"
+        },
+        "facts": {
+          "perInstallment": "Per installment",
+          "setOut": "Set out to cover",
+          "schedule": "Schedule",
+          "funding": "Funding"
+        },
+        "installments": {
+          "confirmed": "Confirmed installments: {{count}}",
+          "of": "of",
+          "open": "Open: {{count}}",
+          "cancelled": "Cancelled: {{count}}",
+          "barLabel": "Share of installments confirmed"
+        },
+        "endings": {
+          "plan_superseded": "Replaced by a revised schedule. Its open installments were cancelled; confirmed ones were kept.",
+          "plan_discontinued": "Discontinued by you. Its open installments were cancelled; confirmed ones were kept.",
+          "goal_archived": "Ended when the goal was archived.",
+          "goal_achieved": "Completed when the goal reached its target.",
+          "completed": "Completed.",
+          "discontinued": "Discontinued.",
+          "superseded": "Replaced."
+        },
+        "revisions": {
+          "summary": "Funding changes: {{count}}",
+          "was": "— previously {{mode}}"
+        },
+        "access": {
+          "active": "Installments, payments and reversals for this plan are in the plan above.",
+          "activeLink": "Go to the plan",
+          "show": "Show installments ({{count}})",
+          "hide": "Hide installments"
+        },
+        "viewOnly": "View only",
+        "money": {
+          "label": "Contributions attributed to this plan",
+          "title": "Plan contributions",
+          "effective": "Effective plan contributions",
+          "confirmed": "Confirmed plan contributions",
+          "reversed": "Reversed plan contributions",
+          "reversedLegs": "Reversed payments: {{count}}",
+          "incomplete": "These totals can't be worked out reliably for this plan right now, so they aren't shown. Its installments below are still accurate.",
+          "note": "Attributed to this plan's own installments only. This isn't the goal's balance, which also includes direct contributions, withdrawals and other plans; the goal's balance is shown in its progress."
+        },
+        "timeline": {
+          "loading": "Loading this plan's installments…",
+          "readOnly": "View only: only the plan's owner can reverse its payments.",
+          "shown": "Showing {{shown}} of {{total}}",
+          "more": "Show more installments",
+          "loadingMore": "Loading…",
+          "reversedNotice": "Payments reversed. The money went back to the source accounts, and this plan stays {{status}}.",
+          "singleAccountHint": "Payments split across several accounts are reversed here. A payment from a single account is reversed from the goal's activity.",
+          "focus": {
+            "seeking": "Finding the installment from your reminder…",
+            "found": "From your reminder: installment {{number}} is {{state}}. This plan is {{status}}, so there's nothing to confirm.",
+            "missing": "The installment from your reminder isn't in this plan."
+          }
+        },
+        "focus": {
+          "seeking": "Finding the plan from your reminder…",
+          "missing": "The plan from your reminder isn't in this goal's history."
+        }
       }
     },
     "debts": {
@@ -2911,7 +3727,9 @@
         "critical": "Critical"
       },
       "types": {
-        "recurring_posted": "Recurring transaction posted"
+        "recurring_posted": "Recurring transaction posted",
+        "savings_installment_due": "Savings installment due",
+        "savings_installment_overdue": "Savings installment overdue"
       },
       "item": {
         "new": "New",
@@ -3369,6 +4187,18 @@
         "help": {
           "title": "Help and FAQ"
         }
+      },
+      "savingsReminders": {
+        "title": "Savings reminders",
+        "description": "In-app reminders when an installment of one of your smart savings plans is due or overdue. They never move money.",
+        "loading": "Loading your reminder preference…",
+        "label": "Remind me about savings installments",
+        "hint": "Covers every smart savings plan you own. In-app only.",
+        "unavailable": "Savings reminders are turned off for SmartSpend right now, so none are being sent. Your choice is saved and applies as soon as they're turned on.",
+        "saving": "Saving…",
+        "savedOn": "Saved: reminders are on.",
+        "savedOff": "Saved: reminders are off.",
+        "saveFailed": "Your choice wasn't saved; the previous setting is still in place."
       }
     },
     "reportExports": {

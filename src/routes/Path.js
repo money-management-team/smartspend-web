@@ -44,6 +44,10 @@ export const PATH = {
     BUDGET_DETAILS: "/dashboard/budgets/:budgetId",
     SAVINGS_GOALS: "/dashboard/savings-goals",
     SAVINGS_GOAL_DETAILS: "/dashboard/savings-goals/:savingsGoalId",
+    // Smart savings (VITE_SMART_SAVINGS_ENABLED only): plan creation and revision.
+    SAVINGS_SMART_PLAN_NEW: "/dashboard/savings-goals/smart-plan",
+    SAVINGS_GOAL_SMART_PLAN: "/dashboard/savings-goals/:savingsGoalId/smart-plan",
+    SAVINGS_GOAL_PLAN_REVISE: "/dashboard/savings-goals/:savingsGoalId/smart-plan/revise/:change",
     DEBTS: "/dashboard/debts",
     DEBT_DETAILS: "/dashboard/debts/:debtId",
     REPORTS: "/dashboard/reports",
@@ -128,6 +132,18 @@ export const getSavingsGoalDetailsPath = (savingsGoalId) =>
 
 /* Opens the savings goals page with the new-goal form open. */
 export const getNewSavingsGoalPath = () => `${PATH.USER.SAVINGS_GOALS}?new=1`;
+
+/* Smart savings plan creation: a new goal, or an existing flexible goal. */
+export const getNewSmartPlanPath = () => PATH.USER.SAVINGS_SMART_PLAN_NEW;
+export const getGoalSmartPlanPath = (savingsGoalId) =>
+  PATH.USER.SAVINGS_GOAL_SMART_PLAN.replace(":savingsGoalId", encodeURIComponent(savingsGoalId));
+
+/* Revising a goal's active smart plan: change is "schedule" or "funding". */
+export const getGoalPlanRevisionPath = (savingsGoalId, change) =>
+  PATH.USER.SAVINGS_GOAL_PLAN_REVISE.replace(":savingsGoalId", encodeURIComponent(savingsGoalId)).replace(
+    ":change",
+    encodeURIComponent(change),
+  );
 
 export const getDebtDetailsPath = (debtId) =>
   PATH.USER.DEBT_DETAILS.replace(":debtId", encodeURIComponent(debtId));

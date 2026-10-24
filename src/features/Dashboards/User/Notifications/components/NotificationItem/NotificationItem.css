@@ -152,7 +152,10 @@
   font-weight: 700;
 }
 
+/* Vertical padding on an inline link widens its touch target without moving the text. */
 .notification-item__link {
+  padding-block: 4px;
+
   color: inherit;
   text-decoration: none;
 }
