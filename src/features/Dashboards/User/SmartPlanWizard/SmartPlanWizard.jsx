@@ -16,7 +16,7 @@ import { getDisplayLocale } from "../Accounts/accountHelpers";
 import PrivateMoney from "../Experience/PrivateMoney";
 import { createIdempotentAttempt } from "../FinancialOperations/transactionHelpers";
 import { getEligibleAccounts, getGoalErrorMessage, getGoalProgress, getGoalStatus } from "../SavingsGoals/savingsGoalHelpers";
-import { isDateOnly, todayIn } from "../SavingsGoals/smartPlanHelpers";
+import { isDateOnly, isSmartSavingsDisabledError, todayIn } from "../SavingsGoals/smartPlanHelpers";
 import { SMART_SAVINGS_ENABLED } from "../SavingsGoals/smartSavings";
 import { UNKNOWN_OUTCOME_CODES } from "../Transfers/transferHelpers";
 import { formatDate, formatMoney } from "../utils/formatters";
@@ -62,7 +62,9 @@ const isZeroAmount = (value) => /^-?0*(\.0*)?$/.test(String(value ?? "").trim())
  * to the refreshed options and must choose and approve again — nothing is
  * accepted on their behalf. One Idempotency-Key per payload: an identical
  * retry after an unknown outcome replays instead of creating twice.
- * Accepting a plan moves no money.
+ * Accepting a plan moves no money. If the backend's release gate is off
+ * (409 smart_savings_disabled) nothing was created; the wizard says so and
+ * offers no retry.
  */
 export default function SmartPlanWizardPage({ smartSavingsEnabled = SMART_SAVINGS_ENABLED }) {
   if (!smartSavingsEnabled) return <Navigate to={PATH.USER.SAVINGS_GOALS} replace />;
@@ -301,7 +303,7 @@ function SmartPlanWizard() {
   };
 
   const handleCreate = async () => {
-    if (pendingRef.current || !accepted || !selectedOption || fundingError) return;
+    if (pendingRef.current || !accepted || !selectedOption || fundingError || failure?.kind === "unavailable") return;
 
     const planSelection = buildPlanSelection(form, selectedOption, effectiveFunding);
     const body = isExisting ? planSelection : buildCreateWithGoalBody(form, workspaceId, planSelection);
@@ -343,7 +345,9 @@ function SmartPlanWizard() {
 
       setFailure({
         error,
-        kind: unknown ? "unknown" : "final",
+        // "unavailable": the backend refuses new plans altogether. Not a
+        // conflict to resolve and nothing to resend.
+        kind: isSmartSavingsDisabledError(error) ? "unavailable" : unknown ? "unknown" : "final",
         step: error?.code === "VALIDATION_ERROR" ? getErrorStep(error.errors) : null,
       });
     } finally {
@@ -534,7 +538,7 @@ function SmartPlanWizard() {
             type="button"
             className="smart-wizard__button smart-wizard__button--primary"
             onClick={handleCreate}
-            disabled={!accepted || isRunning || !selectedOption}
+            disabled={!accepted || isRunning || !selectedOption || failure?.kind === "unavailable"}
             aria-busy={isRunning || undefined}
           >
             <span>

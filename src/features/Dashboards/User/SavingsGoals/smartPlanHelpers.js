@@ -411,6 +411,15 @@ const PLAN_CONTEXTS = ["load", "revise", "discontinue"];
 export const getConflictContext = (error, key) => error?.payload?.[key] ?? null;
 
 /*
+ * Backend 409 `smart_savings_disabled`: the backend's release gate refuses
+ * new plans. Not a stale option and not a network error — nothing was
+ * created, and sending it again changes nothing until the feature is on.
+ */
+export const SMART_SAVINGS_DISABLED_CODE = "smart_savings_disabled";
+
+export const isSmartSavingsDisabledError = (error) => error?.serverCode === SMART_SAVINGS_DISABLED_CODE;
+
+/*
  * Wording for a smart-plan request. Known backend codes get their own
  * translated sentence (the backend's messages are English); 422 keeps the
  * backend's domain message, which is the specific reason.

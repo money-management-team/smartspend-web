@@ -15,6 +15,14 @@ Smart savings is unreleased and **off by default**.
 - With the flag off, the details page renders no smart-plan panel and calls no plan or installment endpoint.
 - With the flag off, the smart-plan URLs are registered only as redirects (`Routes.jsx`, `SavingsGoalRedirect`): the new-plan wizard goes to the savings goals overview, and a goal's wizard or revision URL goes to that goal's page. They never render the wizard and load nothing.
 - To try it locally, put `VITE_SMART_SAVINGS_ENABLED=true` in `.env.local` (untracked), never in `.env`.
+- **Build protection (F6.3.1).** `scripts/smartSavingsBuildFlag.mjs`, run from `vite.config.js`, fails the build when:
+  - the value is not exactly `true` or `false` (or unset);
+  - `.env` or `.env.[mode]` sets the flag at all;
+  - a **production** build would ship it on without `SMARTSPEND_SMART_SAVINGS_RELEASE_APPROVED=true` in the shell environment. An env file cannot approve it, and that includes `.env.local`, which `vite build` also reads.
+  - `npm run dev` and `vite build --mode development` need no approval. Rules and tests: `tests/smartSavingsBuildFlag.test.mjs`.
+- **CI.** The Hostinger workflow pins `VITE_SMART_SAVINGS_ENABLED: "false"` at job level, so it ignores repository variables and runner environment. Before building it asserts three things: the flag is still `false`, no approval variable is set, and no tracked env file sets the flag.
+- **Backend gate.** The backend refuses new plans with `409 smart_savings_disabled` until its own `SMART_SAVINGS_ENABLED` is on. Turn on the backend first, then the frontend. The four switches, their order and rollback are in the backend repo's `docs/operations/SMART_SAVINGS_RELEASE.md`.
+- **Backend off, frontend on.** The wizard maps `smart_savings_disabled` (`isSmartSavingsDisabledError` in `smartPlanHelpers.js`) to its own failure kind, `unavailable`. It shows `smartPlan.errors.codes.smart_savings_disabled` (Arabic/English): nothing was created, and goals, balances and transactions are unchanged. It is not shown as a stale-plan conflict, and no options are refreshed. The idempotency key is dropped and the Create button disabled, so nothing is resent.
 
 ## What F1 ships: the overview
 

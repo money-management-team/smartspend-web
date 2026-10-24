@@ -22,6 +22,11 @@ jobs:
     env:
       VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
       VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+      # Smart Savings is unreleased: pinned off here, whatever a repository
+      # variable or the runner environment says. Shipping it needs a
+      # reviewed change to this file AND product-owner approval; see
+      # docs/savings-goals/smart-plans.md ("Release gate").
+      VITE_SMART_SAVINGS_ENABLED: "false"
 
     steps:
       - name: Checkout development
@@ -46,6 +51,22 @@ jobs:
             exit 1
           fi
 
+          if [ "$VITE_SMART_SAVINGS_ENABLED" != "false" ]; then
+            echo "ERROR: Smart Savings must stay off in production builds."
+            exit 1
+          fi
+
+          if [ -n "${SMARTSPEND_SMART_SAVINGS_RELEASE_APPROVED:-}" ]; then
+            echo "ERROR: Smart Savings release approval must not be set in this workflow."
+            exit 1
+          fi
+
+          if grep -Eqs '^[[:space:]]*(export[[:space:]]+)?VITE_SMART_SAVINGS_ENABLED[[:space:]]*=' .env .env.production; then
+            echo "ERROR: A tracked env file sets VITE_SMART_SAVINGS_ENABLED."
+            exit 1
+          fi
+
+          echo "SMART_SAVINGS=OFF"
           echo "PRODUCTION_VARIABLES=OK"
 
       - name: Install dependencies

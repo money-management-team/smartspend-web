@@ -2332,6 +2332,7 @@
           "unknownOutcome": "We couldn't confirm whether this was saved. Trying again is safe: it won't be applied twice.",
           "unknownOutcomeMoney": "We couldn't confirm whether the money moved. The details have been checked again; if the installment is still open, trying again is safe and won't move the money twice.",
           "codes": {
+            "smart_savings_disabled": "Smart savings plans aren't available yet, so no plan was created. Your goals, balances and transactions are unchanged.",
             "savings_plan_version_conflict": "The plan changed since you opened this.",
             "savings_installment_version_conflict": "This installment changed since you opened this.",
             "savings_installment_not_open": "This installment is no longer open.",

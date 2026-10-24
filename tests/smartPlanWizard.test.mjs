@@ -402,6 +402,44 @@ describe("new goal with a smart plan", () => {
     await view.unmount();
   });
 
+  it("when the backend gate is off, says so plainly and never resends", async () => {
+    const fetchCalls = serve({
+      "POST /savings-plans/preview": { plan_options: planOptions() },
+      "POST /savings-goals/with-plan": {
+        status: 409,
+        body: { status: false, message: "Smart savings plans are not available yet.", code: "smart_savings_disabled" },
+      },
+    });
+    const view = await renderWizard();
+
+    await fillGoal(view);
+    await click(continueButton(view));
+    await settle();
+    await pickIntensity(view, "balanced");
+    await click(continueButton(view));
+    await settle();
+    await click(view.container.querySelector('input[name="smart-wizard-funding-account"]'));
+    await click(continueButton(view));
+    await click(view.container.querySelector(".review-step__accept input"));
+    const create = byText(view.container, "Create goal and plan");
+    await click(create);
+    await settle();
+
+    const failure = view.container.querySelector(".review-step__failure");
+    assert.match(failure.textContent, /Smart savings plans aren't available yet, so no plan was created/);
+    assert.match(failure.textContent, /balances and transactions are unchanged/);
+    assert.doesNotMatch(view.container.textContent, /Your plan changed/, "not a stale-plan conflict");
+    assert.equal(calls(fetchCalls, "POST", "/savings-plans/preview").length, 1, "no refreshed options");
+
+    const button = view.container.querySelector(".smart-wizard__button--primary");
+    assert.equal(button.disabled, true, "nothing to retry");
+    await click(button);
+    await settle();
+    assert.equal(calls(fetchCalls, "POST", "/savings-goals/with-plan").length, 1, "never resent");
+    assert.equal(probe(view), null, "stays on the review step");
+    await view.unmount();
+  });
+
   it("retries an unknown outcome with the same key and body", async () => {
     const fetchCalls = serve({
       "POST /savings-plans/preview": { plan_options: planOptions() },
@@ -585,6 +623,36 @@ describe("smart plan for an existing goal", () => {
     });
     assert.ok(post.headers["Idempotency-Key"]);
     assert.equal(probe(view).dataset.path, "/dashboard/savings-goals/1");
+    await view.unmount();
+  });
+
+  it("shows the disabled-gate message in Arabic for an existing goal", async () => {
+    const fetchCalls = serve({
+      "GET /savings-goals/1": { savings_goal: goal() },
+      "GET /savings-goals/1/plan": notFound,
+      "GET /savings-goals/1/plan-options": { plan_options: planOptions() },
+      "POST /savings-goals/1/plan": {
+        status: 409,
+        body: { status: false, message: "Smart savings plans are not available yet.", code: "smart_savings_disabled" },
+      },
+    });
+    const view = await renderWizard({ path: "/dashboard/savings-goals/1/smart-plan", language: "ar" });
+    const next = () => click(view.container.querySelector(".smart-wizard__button--primary"));
+
+    await next();
+    await settle();
+    await pickIntensity(view, "easy");
+    await next();
+    await settle();
+    await click(view.container.querySelector('input[name="smart-wizard-funding-mode"][value="at_confirmation"]'));
+    await next();
+    await click(view.container.querySelector(".review-step__accept input"));
+    await next();
+    await settle();
+
+    assert.match(view.container.querySelector(".review-step__failure").textContent, /خطط الادخار الذكية غير متاحة بعد/);
+    assert.equal(view.container.querySelector(".smart-wizard__button--primary").disabled, true);
+    assert.equal(calls(fetchCalls, "POST", "/savings-goals/1/plan").length, 1);
     await view.unmount();
   });
 
