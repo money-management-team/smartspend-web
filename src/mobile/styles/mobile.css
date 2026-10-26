@@ -1,5 +1,5 @@
 /* =========================================================
-   SmartSpend Mobile (S04A foundation)
+   SmartSpend Mobile (S04A foundation, S04B1 read-only screens)
 
    Isolation rules, enforced by tests/mobileBoundaries.test.mjs:
    - every selector starts with `.sm-root` (or `:root[data-theme=...] .sm-root`);
@@ -31,6 +31,7 @@
   --sm-nav-bg: #ffffff;
   --sm-nav-active: #1d4ed8;
   --sm-backdrop: rgba(7, 20, 43, 0.55);
+  --sm-neg: #b42318;
 
   --sm-font-ui: "Cairo", system-ui, -apple-system, "Segoe UI", sans-serif;
   --sm-font-heading: "Tajawal", "Cairo", system-ui, sans-serif;
@@ -54,6 +55,7 @@
   --sm-nav-bg: #0a1426;
   --sm-nav-active: #5ec8f5;
   --sm-backdrop: rgba(0, 0, 0, 0.65);
+  --sm-neg: #ff9b8f;
 }
 
 /* ---------- Frame ---------- */
@@ -422,6 +424,448 @@
   font-size: 1.25rem;
 }
 
+/* ---------- Boot (while the Mobile chunk downloads) ---------- */
+
+.sm-root.sm-boot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.sm-root .sm-boot-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--sm-border);
+  border-block-start-color: var(--sm-blue);
+  border-radius: 50%;
+  animation: sm-spin 0.9s linear infinite;
+}
+
+.sm-root .sm-boot-text {
+  color: var(--sm-muted);
+}
+
+/*
+ * Text the person wrote (account names, descriptions) or the backend wrote
+ * (alert messages) can be in either script. `unicode-bidi: plaintext` orders
+ * it by its own first strong letter, while the line still starts on the side
+ * of the page's direction, so a Latin name in an Arabic row lines up with the
+ * Arabic text around it. (dir="auto" would also flip the alignment.)
+ */
+.sm-root .sm-user-text {
+  unicode-bidi: plaintext;
+}
+
+/* ---------- Money ---------- */
+
+.sm-root .sm-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.sm-root .sm-money {
+  display: inline-block;
+  max-inline-size: 100%;
+  font-variant-numeric: tabular-nums;
+}
+
+.sm-root .sm-money-run {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 0 0.3em;
+  max-inline-size: 100%;
+  unicode-bidi: isolate;
+}
+
+.sm-root .sm-money-number {
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.sm-root .sm-money-currency {
+  font-size: 0.8125em;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.sm-root .sm-money-negative {
+  color: var(--sm-neg);
+}
+
+.sm-root .sm-money-na,
+.sm-root .sm-money-hidden {
+  color: var(--sm-muted);
+  font-weight: 700;
+}
+
+/* ---------- Screens: cards, hero, lists ---------- */
+
+.sm-root .sm-card-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.sm-root .sm-greeting {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.sm-root .sm-button-small {
+  padding-inline: 1rem;
+  font-size: 0.9375rem;
+}
+
+.sm-root .sm-hero {
+  gap: 0.75rem;
+  border-color: var(--sm-navy);
+  color: #ffffff;
+  background: var(--sm-navy);
+}
+
+/* The page itself is almost this navy in the dark theme, so the balance card is a step lighter there to stay the anchor of the screen. */
+:root[data-theme="dark"] .sm-root .sm-hero {
+  border-color: #1f3d73;
+  background: #0b2250;
+}
+
+.sm-root .sm-hero .sm-card-title,
+.sm-root .sm-hero .sm-money {
+  color: #ffffff;
+}
+
+.sm-root .sm-hero .sm-money-negative {
+  color: #ffb4a8;
+}
+
+.sm-root .sm-hero .sm-money-na,
+.sm-root .sm-hero .sm-money-hidden {
+  color: #c2cde4;
+}
+
+.sm-root .sm-hero .sm-money-currency {
+  color: var(--sm-cyan);
+  opacity: 1;
+}
+
+.sm-root .sm-hero-money {
+  font-family: var(--sm-font-heading);
+  font-size: 1.75rem;
+  line-height: 1.25;
+}
+
+.sm-root .sm-hero-note {
+  font-size: 0.875rem;
+  color: #c2cde4;
+}
+
+.sm-root .sm-balance-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.sm-root .sm-balance-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+}
+
+.sm-root .sm-balance-label {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+  min-width: 0;
+  color: #c2cde4;
+  font-size: 0.875rem;
+}
+
+.sm-root .sm-balance-code {
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.sm-root .sm-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.0625rem 0.5rem;
+  border-radius: 999px;
+  color: var(--sm-text);
+  background: var(--sm-bg);
+  border: 1px solid var(--sm-border);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.sm-root .sm-hero .sm-chip {
+  color: var(--sm-navy);
+  background: var(--sm-cyan);
+  border-color: var(--sm-cyan);
+}
+
+.sm-root .sm-period {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+}
+
+.sm-root .sm-fine {
+  font-size: 0.875rem;
+}
+
+.sm-root .sm-summary-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.sm-root .sm-summary-block {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.sm-root .sm-subhead {
+  font-weight: 800;
+  color: var(--sm-muted);
+}
+
+.sm-root .sm-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr));
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.sm-root .sm-stats-stacked {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.5rem;
+}
+
+.sm-root .sm-stat {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.sm-root .sm-stats-stacked .sm-stat {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.sm-root .sm-stat dt {
+  margin: 0;
+  color: var(--sm-muted);
+  font-size: 0.875rem;
+}
+
+.sm-root .sm-stat dd {
+  margin: 0;
+  min-width: 0;
+  text-align: start;
+}
+
+.sm-root .sm-stats-stacked .sm-stat dd {
+  text-align: end;
+}
+
+.sm-root .sm-list {
+  display: grid;
+  gap: 0;
+}
+
+.sm-root .sm-list:focus {
+  outline: none;
+}
+
+.sm-root .sm-list > li + li {
+  border-block-start: 1px solid var(--sm-border);
+}
+
+.sm-root .sm-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  min-height: var(--sm-target);
+  padding-block: 0.625rem;
+  color: var(--sm-text);
+}
+
+.sm-root .sm-row:hover {
+  color: var(--sm-text);
+}
+
+.sm-root .sm-row-main {
+  display: grid;
+  flex: 1 1 8rem;
+  min-width: 0;
+}
+
+.sm-root .sm-row-title {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.sm-root .sm-row-meta {
+  color: var(--sm-muted);
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.sm-root .sm-row-amount {
+  margin-inline-start: auto;
+  max-inline-size: 100%;
+  text-align: end;
+}
+
+/* Amount and chevron stay together: when the row has no room for both beside the name, they move below it as one. */
+.sm-root .sm-row-end {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-inline-start: auto;
+  max-inline-size: 100%;
+}
+
+.sm-root .sm-link-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: var(--sm-target);
+  color: var(--sm-nav-active);
+  font-weight: 700;
+}
+
+.sm-root .sm-link-row:hover {
+  color: var(--sm-nav-active);
+}
+
+.sm-root .sm-back {
+  justify-content: flex-start;
+}
+
+.sm-root .sm-chevron {
+  display: inline-flex;
+  flex: none;
+  font-size: 1.25rem;
+  color: var(--sm-muted);
+}
+
+.sm-root .sm-alert {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.5rem;
+  padding-block: 0.5rem;
+}
+
+.sm-root .sm-chip-severity {
+  flex: none;
+}
+
+.sm-root .sm-alert[data-sm-severity="critical"] .sm-chip-severity {
+  color: #ffffff;
+  background: var(--sm-neg);
+  border-color: var(--sm-neg);
+}
+
+/* ---------- States ---------- */
+
+.sm-root .sm-error {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+}
+
+.sm-root .sm-error-compact {
+  padding: 0.75rem;
+  border: 1px solid var(--sm-border);
+  border-radius: 0.75rem;
+  background: var(--sm-bg);
+}
+
+.sm-root .sm-stale {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px dashed var(--sm-muted);
+  border-radius: 0.75rem;
+  background: var(--sm-surface);
+}
+
+.sm-root [data-sm-stale="true"] .sm-money {
+  opacity: 0.75;
+}
+
+.sm-root .sm-skeleton {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.sm-root .sm-skeleton-line {
+  display: block;
+  height: 4rem;
+  border-radius: 1rem;
+  background: var(--sm-border);
+  animation: sm-pulse 1.2s ease-in-out infinite;
+}
+
+.sm-root .sm-skeleton-first {
+  height: 7rem;
+}
+
+/* ---------- Standalone pages (identity change, /m/enter) ---------- */
+
+.sm-root.sm-identity,
+.sm-root.sm-standalone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: calc(1rem + var(--sm-safe-top)) calc(1rem + var(--sm-safe-bottom));
+  padding-inline: calc(1rem + var(--sm-safe-start)) calc(1rem + var(--sm-safe-end));
+  overflow-y: auto;
+}
+
+.sm-root .sm-identity-body,
+.sm-root .sm-standalone-body {
+  display: grid;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 28rem;
+  padding: 1.25rem;
+  border: 1px solid var(--sm-border);
+  border-radius: 1rem;
+  background: var(--sm-surface);
+}
+
+.sm-root .sm-identity-title {
+  font-family: var(--sm-font-heading);
+  font-size: 1.375rem;
+  font-weight: 800;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
 /* ---------- Sheets ---------- */
 
 .sm-root .sm-portal {
@@ -498,6 +942,18 @@
   background: var(--sm-bg);
 }
 
+@keyframes sm-pulse {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@keyframes sm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @keyframes sm-sheet-in {
   from {
     transform: translateY(1rem);
@@ -517,5 +973,10 @@
 
   .sm-root .sm-skip {
     transition: none;
+  }
+
+  .sm-root .sm-boot-spinner,
+  .sm-root .sm-skeleton-line {
+    animation: none;
   }
 }

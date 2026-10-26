@@ -52,6 +52,14 @@ const KNOWN_PATHS = [
   `${MOBILE_PREFIX}/planning`,
   `${MOBILE_PREFIX}/more`,
   `${MOBILE_PREFIX}/nope`,
+  `${MOBILE_PREFIX}/accounts`,
+  `${MOBILE_PREFIX}/accounts/`,
+  `${MOBILE_PREFIX}/accounts/7`,
+  `${MOBILE_PREFIX}/accounts/007`,
+  `${MOBILE_PREFIX}/accounts/abc`,
+  `${MOBILE_PREFIX}/accounts/7/deeper`,
+  `${MOBILE_PREFIX}/enter`,
+  `${MOBILE_PREFIX}/enter/`,
   `${MOBILE_PREFIX}/more/deep/er`,
   "/mission",
   "/m-x",
@@ -103,6 +111,33 @@ describe("canonical resolver", () => {
         screen.mobile,
       );
     }
+  });
+
+  it("Accounts and an account's page map to their Desktop pages when Desktop is chosen, keeping query and hash", () => {
+    assert.deepEqual(getRedirect(loc("/m/accounts", "?a=1", "#h"), ctx({ mode: "desktop" })), loc(PATH.USER.ACCOUNTS, "?a=1", "#h"));
+    assert.deepEqual(getRedirect(loc("/m/accounts/7", "?a=1", "#h"), ctx({ mode: "desktop" })), loc("/dashboard/accounts/7", "?a=1", "#h"));
+    assert.deepEqual(getRedirect(loc("/m/accounts/7/", "", ""), ctx({ mode: "desktop" })), loc("/dashboard/accounts/7"), "a trailing slash is normalised");
+  });
+
+  it("an account address that is not an id goes to the dashboard on Desktop, never into an Accounts URL", () => {
+    for (const bad of ["/m/accounts/abc", "/m/accounts/0", "/m/accounts/007", "/m/accounts/7/deeper", "/m/accounts/1e3", "/m/accounts/-5"]) {
+      assert.deepEqual(getRedirect(loc(bad, "?a=1", "#h"), ctx({ mode: "desktop" })), loc(PATH.USER.DASHBOARD), bad);
+    }
+  });
+
+  it("/dashboard/accounts stays Desktop in Mobile mode: Desktop's Accounts page can create, edit and archive, Mobile's cannot", () => {
+    assert.equal(getRedirect(loc(PATH.USER.ACCOUNTS, "?a=1"), ctx()), null);
+    assert.equal(getRedirect(loc("/dashboard/accounts/7"), ctx()), null);
+    assert.equal(getRedirect(loc("/m/accounts/7"), ctx()), null, "and a Mobile account page stays in Mobile");
+  });
+
+  it("/m/enter is never redirected, in any mode: it is how a Desktop-mode visitor asks for Mobile", () => {
+    for (const mode of ["mobile", "desktop"]) {
+      for (const [search, hash] of [["", ""], ["?a=1", "#h"]]) assert.equal(getRedirect(loc("/m/enter", search, hash), ctx({ mode })), null, `${mode}${search}${hash}`);
+    }
+
+    assert.equal(getRedirect(loc("/m/enter/"), ctx({ mode: "desktop" })), null);
+    assert.equal(getRedirect(loc("/m/entering"), ctx({ mode: "desktop" })).pathname, PATH.USER.DASHBOARD, "a lookalike is just an unknown Mobile address");
   });
 
   it("sends an unknown Mobile address to the dashboard on Desktop, dropping its query", () => {

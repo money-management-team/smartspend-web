@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { after, before, describe, it } from "node:test";
@@ -20,8 +20,13 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const VITE = path.join(ROOT, "node_modules/vite/bin/vite.js");
-const SENTINEL = "SMARTSPEND_MOBILE_S04A";
-const MOBILE_STRINGS = [SENTINEL, "sm-root", "data-sm-build", "smartspend:presentation", "Mobile Foundation preview", "virtual:smartspend-mobile", "sm-sheet"];
+const SENTINEL = "SMARTSPEND_MOBILE_S04B1";
+const MOBILE_STRINGS = [
+  SENTINEL, "sm-root", "data-sm-build", "smartspend:presentation", "Mobile Foundation preview", "virtual:smartspend-mobile", "sm-sheet",
+  // S04B1: the screens, the identity guard, the money layer and the entry
+  "sm-money", "sm-identity", "sm-boot", "data-sm-identity", "smartspend:storage-probe", "Your session changed", "Balances by currency",
+  "Open the Mobile version?", "MobileApp", "MobileEntry", "/m/enter", "--sm-",
+];
 
 const cleanEnv = (extra = {}) => {
   const env = { ...process.env };
@@ -44,6 +49,7 @@ function build(name, extra, args = []) {
 const files = (dir) => readdirSync(dir, { recursive: true, withFileTypes: true }).filter((entry) => entry.isFile()).map((entry) => path.join(entry.parentPath, entry.name));
 const text = (file) => readFileSync(file, "utf8");
 const stylesheets = (dir) => files(dir).filter((file) => /assets[\\/]style-[^\\/]+\.css$/.test(file));
+const entryOf = (dir) => files(dir).find((file) => /assets[\\/]index-[^\\/]+\.js$/.test(file));
 const assets = (dir) => files(dir).filter((file) => /\.(js|css|html)$/.test(file));
 
 // The rules of a minified stylesheet, split at top-level closing braces.
@@ -112,16 +118,21 @@ describe("a production build with Mobile off", () => {
 });
 
 describe("a production build with Mobile on (local testing mode)", () => {
-  it("holds the Mobile code in its own lazy chunk, and not in the entry bundle", () => {
-    const chunks = files(on).filter((file) => /MobileRouter-[^/\\]+\.js$/.test(file));
+  it("holds the Mobile screens in their own lazy chunk, and not in the entry bundle", () => {
+    const chunks = files(on).filter((file) => /MobileApp-[^\\/]+\.js$/.test(file));
     assert.equal(chunks.length, 1);
     assert.ok(text(chunks[0]).includes(SENTINEL));
 
-    const entry = files(on).find((file) => /assets[\\/]index-[^/\\]+\.js$/.test(file));
-    for (const needle of [SENTINEL, "sm-root", "Mobile Foundation preview"]) assert.ok(!text(entry).includes(needle), `entry contains "${needle}"`);
+    for (const needle of [SENTINEL, "data-sm-build", "Mobile Foundation preview"]) assert.ok(!text(entryOf(on)).includes(needle), `entry contains "${needle}"`);
+    assert.ok(statSync(entryOf(on)).size - statSync(entryOf(off)).size < 12_000, "the Mobile code in the entry (presentation gate and boot state) stays small");
   });
 
-  it("adds only Mobile rules to the stylesheet; the Desktop rules are the same, in the same order apart from a bounded head", () => {
+  it("never references the Mobile chunk from the HTML, so a Desktop page does not request it", () => {
+    assert.doesNotMatch(text(path.join(on, "index.html")), /MobileApp/);
+    assert.match(text(entryOf(on)), /MobileApp-[A-Za-z0-9_-]{8}\.js/, "the entry loads it on demand");
+  });
+
+  it("adds only Mobile rules to the stylesheet; every Desktop rule is unchanged and in the same order", () => {
     // @import statements end with ";" not "}", so they would glue to the next rule: drop them first.
     const css = (dir) => text(stylesheets(dir)[0]).replace(/@import\s+"[^"]*"[^;{}]*;/g, "");
     const offRules = topLevelRules(css(off));
@@ -131,20 +142,7 @@ describe("a production build with Mobile on (local testing mode)", () => {
     const desktop = onRules.filter((rule) => !isMobile(rule));
 
     assert.ok(added.length > 20, `only ${added.length} Mobile rules found`);
-    assert.equal(desktop.length, offRules.length);
-    assert.deepEqual([...desktop].sort(), [...offRules].sort(), "no Desktop rule added, removed or changed");
-
-    // Known, measured, not harmful: with Mobile on, the bundler puts the Loading
-    // component's rules (a module shared with the Mobile chunk) ahead of the
-    // first rules of index.css. Everything after that head is in its original
-    // order. Review this before a release build turns Mobile on.
-    let common = 0;
-    while (common < offRules.length && offRules[offRules.length - 1 - common] === desktop[desktop.length - 1 - common]) common += 1;
-    const headLength = offRules.length - common;
-
-    assert.ok(headLength < 120, `${headLength} Desktop rules changed place: the reordering is no longer a small head`);
-    assert.deepEqual(desktop.slice(0, headLength).sort(), offRules.slice(0, headLength).sort());
-    assert.ok(desktop.slice(0, headLength).filter((rule) => /\.loading/.test(rule)).length > 0, "the moved block is the Loading rules");
+    assert.deepEqual(desktop, offRules, "no Desktop rule added, removed, changed or moved");
   });
 
   it("still ships every Desktop chunk", () => {

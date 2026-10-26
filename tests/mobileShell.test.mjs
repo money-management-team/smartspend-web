@@ -2,14 +2,15 @@ import "./helpers/domSetup.mjs";
 import assert from "node:assert/strict";
 import { after, afterEach, beforeEach, describe, it } from "node:test";
 import { act, createElement as h } from "react";
-import { MemoryRouter, useLocation, useNavigationType } from "react-router-dom";
+import { MemoryRouter, useLocation, useNavigationType, useRoutes } from "react-router-dom";
 import { click, flush, installDom, render } from "./helpers/dom.mjs";
 
 /*
  * The Mobile route tree inside a router, with the real theme and language
  * providers and the app's own i18next instance. Auth is a plain context
- * value, so no session and no API are involved; every fetch is recorded and
- * refused, and the last test asserts there were none.
+ * value plus a matching session in storage (the identity boundary compares
+ * the two). No API exists in this file: every fetch is recorded and refused,
+ * and the last test asserts that any request Mobile made was a GET.
  */
 
 const dom = installDom();
@@ -33,7 +34,7 @@ const { default: i18n } = await import("../src/i18n.js");
 const { AuthContext } = await import("../src/contexts/auth/authContext.js");
 const { default: ThemeProvider } = await import("../src/contexts/theme/themeProvider.jsx");
 const { default: LanguageProvider } = await import("../src/contexts/language/languageProvider.jsx");
-const { default: MobileRouter } = await import("../src/mobile/MobileRouter.jsx");
+const { default: MobileEntry } = await import("../src/mobile/entry/MobileEntry.jsx");
 const { default: PresentationGate } = await import("../src/mobile/presentation/PresentationGate.jsx");
 const { MOBILE_MESSAGES } = await import("../src/mobile/i18n/messages.js");
 const { PRESENTATION_KEY } = await import("../src/mobile/presentation/preference.js");
@@ -52,6 +53,10 @@ const DESKTOP_ROUTES = [
   { path: "*", element: stub("desktop-not-found") },
 ];
 
+function Desktop() {
+  return useRoutes(DESKTOP_ROUTES);
+}
+
 function Probe() {
   const { pathname, search, hash, state } = useLocation();
   const type = useNavigationType();
@@ -60,12 +65,18 @@ function Probe() {
 
 let mounted;
 
-async function mount({ entry = "/m", authenticated = true, initializing = false, preference = "mobile", gate } = {}) {
+const SESSION = { token: "token-user-a", user: { id: 1, name: "Test User" } };
+
+async function mount({ entry = "/m/more", authenticated = true, initializing = false, preference = "mobile", gate } = {}) {
   if (preference) window.localStorage.setItem(PRESENTATION_KEY, preference);
-  const auth = { isAuthenticated: authenticated, initializing };
+  if (authenticated) {
+    window.localStorage.setItem("ACCESS_TOKEN", SESSION.token);
+    window.localStorage.setItem("user", JSON.stringify(SESSION.user));
+  }
+  const auth = { isAuthenticated: authenticated, initializing, token: authenticated ? SESSION.token : null, user: authenticated ? SESSION.user : null };
   const router = gate
     ? h(PresentationGate, gate, null)
-    : h(MobileRouter, { desktopRoutes: DESKTOP_ROUTES });
+    : h(MobileEntry, { desktop: h(Desktop) });
 
   mounted = await render(
     h(ThemeProvider, null,
@@ -73,6 +84,8 @@ async function mount({ entry = "/m", authenticated = true, initializing = false,
         h(AuthContext.Provider, { value: auth },
           h(MemoryRouter, { initialEntries: [entry] }, h(Probe), router)))),
   );
+  // The Mobile screens are a lazy chunk: wait for the boot state to give way.
+  for (let attempt = 0; attempt < 100 && document.querySelector(".sm-boot"); attempt += 1) await flush();
   await flush();
   return mounted.container;
 }
@@ -143,13 +156,13 @@ describe("Mobile shell: structure", () => {
   });
 
   it("shows placeholders only: no money figures, no form, no input", async () => {
-    for (const entry of ["/m", "/m/activity", "/m/planning"]) {
+    for (const entry of ["/m/activity", "/m/planning"]) {
       await mount({ entry });
       const text = q("main").textContent;
 
       assert.doesNotMatch(text, /\d[\d,.]*\s?(ILS|USD|EUR|₪|\$)/);
       assert.equal(qa("form, input, textarea, select", q("main")).length, 0);
-      assert.match(text, /placeholder/i);
+      assert.match(text, /not available in mobile yet/i);
       await mounted.unmount();
       mounted = null;
     }
@@ -162,7 +175,7 @@ describe("Mobile shell: structure", () => {
   });
 
   it("moves focus to the page title after navigating, not on first load", async () => {
-    await mount();
+    await mount({ entry: "/m/activity" });
     assert.notEqual(document.activeElement, q("h1"));
 
     await click(qa("a", mainNav()).find((link) => link.textContent.trim() === "More"));
@@ -470,7 +483,11 @@ describe("Presentation: redirects, preference and safety", () => {
 
     const stored = Object.fromEntries(Object.keys(window.localStorage).map((key) => [key, window.localStorage.getItem(key)]));
     assert.equal(stored[PRESENTATION_KEY], undefined, "automatic removes the entry");
-    for (const key of Object.keys(stored)) assert.doesNotMatch(key, /amount|balance|transaction|token/i);
+
+    // The session is what this test put there; Mobile adds nothing next to it.
+    const fromThisTest = new Set(["ACCESS_TOKEN", "user"]);
+    for (const key of Object.keys(stored).filter((name) => !fromThisTest.has(name))) assert.doesNotMatch(key, /amount|balance|transaction|token|account|currency/i, key);
+    assert.equal(stored.ACCESS_TOKEN, SESSION.token);
   });
 
   it("does not redirect while a form is dirty or a request is in flight", async () => {
@@ -506,8 +523,11 @@ describe("Presentation: redirects, preference and safety", () => {
   });
 });
 
-describe("Mobile never touches the network in S04A", () => {
-  it("made no request in any test above", () => {
-    assert.deepEqual(fetchCalls, []);
+describe("Mobile only ever reads", () => {
+  it("every request made in any test above was a GET", () => {
+    for (const [url, init] of fetchCalls) {
+      assert.equal((init?.method ?? "GET").toUpperCase(), "GET", String(url));
+      assert.equal(init?.body, undefined, String(url));
+    }
   });
 });

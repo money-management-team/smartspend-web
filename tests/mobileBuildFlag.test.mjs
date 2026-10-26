@@ -86,13 +86,14 @@ describe("Mobile build flag", () => {
 describe("the Mobile entry plugin", () => {
   it("answers the virtual import with no import at all when Mobile is off", () => {
     const source = mobileEntrySource(false, ROOT);
-    assert.equal(source, "export const MobileRouter = null;\n");
+    assert.equal(source, "export const MobileEntry = null;\n");
     assert.doesNotMatch(source, /import/);
   });
 
-  it("answers it with a lazy import of the Mobile router when Mobile is on", () => {
+  it("answers it with a plain re-export of the Mobile entry when Mobile is on (the screens are loaded lazily from there)", () => {
     const source = mobileEntrySource(true, ROOT);
-    assert.match(source, /lazy\(\(\) => import\(".*src\/mobile\/MobileRouter\.jsx"\)\)/);
+    assert.match(source, /^export \{ default as MobileEntry \} from ".*src\/mobile\/entry\/MobileEntry\.jsx";\n$/);
+    assert.doesNotMatch(source, /import\(/, "the entry itself holds no dynamic import");
   });
 
   it("only claims its own virtual id", () => {

@@ -19,7 +19,7 @@ const MOBILE_ENTRY = "virtual:smartspend-mobile";
 
 export async function resolve(specifier, context, nextResolve) {
   if (specifier === MOBILE_ENTRY) {
-    return { url: "data:text/javascript,export const MobileRouter = null;", format: "module", shortCircuit: true };
+    return { url: "data:text/javascript,export const MobileEntry = null;", format: "module", shortCircuit: true };
   }
 
   if (!/^\.{1,2}\//.test(specifier) || /\.[a-z0-9]+$/i.test(specifier)) {

@@ -1,9 +1,7 @@
-import { Suspense } from "react";
 import { useRoutes } from "react-router-dom";
 // Supplied by scripts/mobileEntryPlugin.mjs: null unless this build has Mobile on.
-import { MobileRouter } from "virtual:smartspend-mobile";
+import { MobileEntry } from "virtual:smartspend-mobile";
 
-import Loading from "../components/Loading/Loading";
 import { routes, guestRoutes, emailLinkRoutes, userRoutes } from "./Routes";
 
 const desktopRoutes = [
@@ -17,14 +15,9 @@ function DesktopRouter() {
   return useRoutes(desktopRoutes);
 }
 
+// With Mobile on, MobileEntry shows this same element for every Desktop URL.
 function Router() {
-  if (MobileRouter) {
-    return (
-      <Suspense fallback={<Loading variant="page" size="large" message={false} />}>
-        <MobileRouter desktopRoutes={desktopRoutes} />
-      </Suspense>
-    );
-  }
+  if (MobileEntry) return <MobileEntry desktop={<DesktopRouter />} />;
 
   return <DesktopRouter />;
 }

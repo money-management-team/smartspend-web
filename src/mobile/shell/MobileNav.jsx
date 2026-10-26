@@ -1,12 +1,10 @@
 import { LuMenu, LuPlus } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
-import { NavLink } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
-import { MOBILE_SCREENS } from "../navigation.js";
+import { MOBILE_SCREENS, currentOf } from "../navigation.js";
 import { SCREEN_ICONS } from "./screenIcons.js";
-
-const linkClass = ({ isActive }) => `sm-nav-item${isActive ? " sm-active" : ""}`;
 
 function AddButton({ onAdd, addRef, compact }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
@@ -32,6 +30,7 @@ function AddButton({ onAdd, addRef, compact }) {
  */
 export default function MobileNav({ compact, onAdd, onMenu, menuOpen, addRef, menuRef }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
+  const { pathname } = useLocation();
 
   if (compact) {
     return (
@@ -56,11 +55,13 @@ export default function MobileNav({ compact, onAdd, onMenu, menuOpen, addRef, me
   const item = (screen) => {
     const Icon = SCREEN_ICONS[screen.id];
 
+    const current = currentOf(screen, pathname);
+
     return (
-      <NavLink key={screen.id} to={screen.mobile} end className={linkClass}>
+      <Link key={screen.id} to={screen.mobile} aria-current={current} className={`sm-nav-item${current ? " sm-active" : ""}`}>
         <span className="sm-nav-icon" aria-hidden="true"><Icon /></span>
         <span className="sm-nav-label">{t(`nav.${screen.id}`)}</span>
-      </NavLink>
+      </Link>
     );
   };
 

@@ -3,7 +3,7 @@ import { test, before, after } from "node:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MemoryRouter } from "react-router-dom";
-import { createServer } from "vite";
+import { createIsolatedServer as createServer } from "./helpers/isolatedVite.mjs";
 import react from "@vitejs/plugin-react";
 
 let server, context, auth, i18n;

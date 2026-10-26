@@ -22,8 +22,14 @@ const mobileCss = mobileFiles.filter((file) => file.endsWith(".css"));
 /*
  * What the Mobile tree may import from outside itself. Everything else is
  * refused, which keeps Desktop pages, layouts, shared components and their
- * CSS out of Mobile. RouteGuards is a reviewed exception: Mobile must use the
- * app's own RequireAuth rather than a second copy of the sign-in redirect.
+ * CSS out of Mobile. Two are reviewed exceptions:
+ *  - RouteGuards: Mobile must use the app's own RequireAuth rather than a
+ *    second copy of the sign-in redirect;
+ *  - Experience/experienceStore.js: the full app's device-preference store, read
+ *    (never written) so that "hide amounts" is respected in Mobile. It is plain
+ *    JavaScript with no component and no CSS.
+ * Which of the api/ modules may be imported, and by which file, is checked in
+ * tests/mobileReadOnly.test.mjs.
  */
 const ALLOWED_OUTSIDE = [
   /^src\/routes\/Path\.js$/,
@@ -33,7 +39,7 @@ const ALLOWED_OUTSIDE = [
   /^src\/i18n\.js$/,
   /^src\/assets\/smart-spend-logo\.png$/,
   /^src\/features\/Dashboards\/User\/api\/[A-Za-z]+\.js$/,
-  /^src\/features\/Dashboards\/User\/utils\/formatters\.js$/,
+  /^src\/features\/Dashboards\/User\/Experience\/experienceStore\.js$/,
 ];
 
 const ALLOWED_PACKAGES = ["react", "react-dom", "react-router-dom", "react-i18next", "react-icons/lu"];
@@ -76,7 +82,7 @@ describe("Mobile import boundaries", () => {
   it("imports no Desktop page, layout, shared component or CSS", () => {
     for (const file of mobileSource) {
       for (const specifier of specifiers(readFileSync(file, "utf8"))) {
-        assert.doesNotMatch(specifier, /\/(layouts|components|features\/(?!Dashboards\/User\/(api|utils)\/))/, `${rel(file)} -> ${specifier}`);
+        assert.doesNotMatch(specifier, /\/(layouts|components|features\/(?!Dashboards\/User\/api\/|Dashboards\/User\/Experience\/experienceStore))/, `${rel(file)} -> ${specifier}`);
 
         if (specifier.endsWith(".css")) {
           const target = rel(path.resolve(path.dirname(file), specifier));
@@ -88,7 +94,7 @@ describe("Mobile import boundaries", () => {
 
   it("does not import the application's global stylesheet or its other entry files", () => {
     for (const file of mobileSource) {
-      assert.doesNotMatch(readFileSync(file, "utf8"), /index\.css|main\.jsx|Root\.jsx|App\.jsx/, rel(file));
+      assert.doesNotMatch(readFileSync(file, "utf8"), /index\.css|main\.jsx|Root\.jsx|\bApp\.jsx/, rel(file));
     }
   });
 

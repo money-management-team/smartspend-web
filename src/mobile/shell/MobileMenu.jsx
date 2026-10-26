@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
-import { NavLink } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
-import { MOBILE_SCREENS } from "../navigation.js";
+import { MOBILE_SCREENS, currentOf } from "../navigation.js";
 import MobileSheet from "./MobileSheet.jsx";
 import { SCREEN_ICONS } from "./screenIcons.js";
 
@@ -26,6 +26,7 @@ function moveFocus(event) {
  */
 export default function MobileMenu({ open, onClose, returnFocusRef }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
+  const { pathname } = useLocation();
 
   return (
     <MobileSheet
@@ -39,18 +40,19 @@ export default function MobileMenu({ open, onClose, returnFocusRef }) {
         <ul className="sm-menu-list" onKeyDown={moveFocus}>
           {MOBILE_SCREENS.map((screen) => {
             const Icon = SCREEN_ICONS[screen.id];
+            const current = currentOf(screen, pathname);
 
             return (
               <li key={screen.id}>
-                <NavLink
+                <Link
                   to={screen.mobile}
-                  end
-                  className={({ isActive }) => `sm-menu-link${isActive ? " sm-active" : ""}`}
+                  aria-current={current}
+                  className={`sm-menu-link${current ? " sm-active" : ""}`}
                   onClick={onClose}
                 >
                   <span className="sm-nav-icon" aria-hidden="true"><Icon /></span>
                   <span>{t(`nav.${screen.id}`)}</span>
-                </NavLink>
+                </Link>
               </li>
             );
           })}

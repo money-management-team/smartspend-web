@@ -4,18 +4,23 @@ The smallest isolated Mobile layer: a build flag that is off by default, a `/m/*
 
 Nothing here is released. The production workflow pins Mobile off.
 
+> **Updated by S04B1** ([S04B1-readonly-home-accounts.md](S04B1-readonly-home-accounts.md)). The foundation described here is still the base, but four things changed and this document was corrected where it would otherwise be wrong: the entry (a small static `MobileEntry` decides the presentation and loads the Mobile screens lazily, only for a Mobile URL; §1, §2), Home is a real read-only screen and Accounts exists (§4), flag-on Desktop is no longer reordered or delayed (§11, §13), and `utils/formatters.js` is no longer an allowed import (§7).
+
 ## 1. Architecture
 
 ```
 main.jsx → Root (Theme, Language, ErrorBoundary, Auth, EmailVerification) → App → routes/Router.jsx
                                                                                     │
-                                          import { MobileRouter } from "virtual:smartspend-mobile"
+                                          import { MobileEntry } from "virtual:smartspend-mobile"
                                                                                     │
                              Mobile OFF: null  ──────────► DesktopRouter  (the unchanged Desktop route table)
-                             Mobile ON : lazy chunk ─────► MobileRouter(desktopRoutes)
-                                                             ├─ PresentationGate   (resolver, redirects)
-                                                             └─ useRoutes([...desktopRoutes, ...mobileRoutes])
+                             Mobile ON : static ─────────► MobileEntry({ desktop: <DesktopRouter/> })
+                                                             └─ PresentationGate   (resolver, redirects)
+                                                                  ├─ a Mobile URL (/m, /m/…) ► Suspense ► lazy MobileApp (mobileRoutes)
+                                                                  └─ anything else           ► the `desktop` element, untouched
 ```
+
+(S04A loaded the whole Mobile router lazily, Desktop routes included, behind a page-level `Suspense` for everyone. S04B1 moved the decision into the small static entry, so a Desktop URL renders exactly what a flag-off build renders: no `Suspense`, no Mobile element, no request for the Mobile chunk.)
 
 - **Dedicated route tree** under `src/mobile/`, mounted at `/m`. Canonical URLs keep their current Desktop paths.
 - **Shared providers.** Mobile sits inside the app's own providers. It holds no session, theme or language state of its own: `RequireAuth` (the app's guard), `useThemeContext`, `useLanguageContext` and the one i18next instance are reused.
@@ -46,7 +51,7 @@ Two attempts that did not work, found by building and inspecting the output:
 1. `const M = flag ? lazy(() => import("../mobile/…")) : null` in the router: with the variable unset the flag is an unknown value, so the Mobile chunk was emitted (and moved Desktop chunk hashes).
 2. The same with the resolved value baked in through `define` as the literal `"false"`: the bundler still emitted an **unreferenced** Mobile chunk, because it records a dynamic import before it folds the dead branch.
 
-So the Mobile code enters the build through one virtual module, `virtual:smartspend-mobile`, answered by [scripts/mobileEntryPlugin.mjs](../../scripts/mobileEntryPlugin.mjs): `export const MobileRouter = null;` when off (there is no import to record), a lazy import when on. [tests/mobileBundle.test.mjs](../../tests/mobileBundle.test.mjs) builds both ways and checks the output.
+So the Mobile code enters the build through one virtual module, `virtual:smartspend-mobile`, answered by [scripts/mobileEntryPlugin.mjs](../../scripts/mobileEntryPlugin.mjs): `export const MobileEntry = null;` when off (nothing exists to record), a plain re-export of `src/mobile/entry/MobileEntry.jsx` when on (that file holds the one lazy `import()` of the Mobile screens, and a flag-off build never reaches it). [tests/mobileBundle.test.mjs](../../tests/mobileBundle.test.mjs) builds both ways and checks the output.
 
 ## 3. Branch and commits
 
@@ -58,10 +63,12 @@ So the Mobile code enters the build through one virtual module, `virtual:smartsp
 
 | Route | Screen |
 |---|---|
-| `/m` | Home placeholder |
+| `/m` | Home (S04A: placeholder; **S04B1: real, read-only**) |
 | `/m/activity` | Activity placeholder |
 | `/m/planning` | Planning placeholder |
-| `/m/more` | Theme, language, and the presentation switch |
+| `/m/more` | Accounts link, theme, language, and the presentation switch |
+| `/m/accounts`, `/m/accounts/{id}` | S04B1: read-only Accounts list and account page |
+| `/m/enter` | S04B1: asks before switching a Desktop-mode visitor to Mobile |
 | `/m/<anything else>` | "Not available", inside the shell |
 
 All sit behind the app's `RequireAuth`, so a signed-out visit goes to sign-in remembering the address and returns after, as on Desktop.
@@ -111,7 +118,7 @@ App bar (logo, one `h1` with the page title), a scrolling main region, the botto
 | `routes/Path.js`, `routes/postAuthRedirect.js`, `routes/RouteGuards.jsx` (reviewed exception: one `RequireAuth`, not a copy) | any Desktop page, layout or shared component |
 | `contexts/{auth,language,theme}/use*.js`, `i18n.js` | any `.css` outside `src/mobile/styles/mobile.css` |
 | `assets/smart-spend-logo.png` (unmodified) | `index.css`, `main.jsx`, `Root.jsx`, `App.jsx` |
-| `features/Dashboards/User/api/*`, `utils/formatters.js` (not used yet) | `document.body` |
+| `features/Dashboards/User/api/*` (S04B1: named only in `data/readApi.js` and the identity guard; see `tests/mobileReadOnly.test.mjs`), `features/Dashboards/User/Experience/experienceStore.js` (S04B1, read-only: "hide amounts"). `utils/formatters.js` was allowed in S04A and is **no longer**: Mobile has its own money layer | `document.body` |
 | `react`, `react-dom`, `react-router-dom`, `react-i18next`, `react-icons/lu` | any other package |
 
 Desktop code imports nothing from `src/mobile` (the router reaches it only through the virtual module).
@@ -165,12 +172,12 @@ Test suites added (113): flag (24), resolver/preference/guard (23), import and C
 
 **Flag off vs baseline.** Compared with every content hash normalised: 149 of 150 files are identical. The entry chunk differs by +26 bytes. An unminified build of the baseline source and the current source, with paths and hashes normalised, differs in 16 lines, all of them the router: `useRoutes([...])` moved into a `DesktopRouter` component. The Mobile branch is folded away entirely. The hash differences elsewhere (every chunk that imports the entry) are the entry's new file name.
 
-**Flag on** (local build, `--mode preview`):
+**Flag on** (local build, `--mode preview`), **as measured in S04A; superseded by S04B1 §12–§13**:
 
-- one lazy `MobileRouter` chunk (15.95 kB, 5.65 kB gzip) holding the Mobile code; the entry chunk contains none of it;
+- one lazy `MobileRouter` chunk (15.95 kB, 5.65 kB gzip) holding the Mobile code; the entry chunk contains none of it (S04B1: the chunk is `MobileApp`);
 - 61 Mobile CSS rules (about 7.5 kB), none of them in the flag-off stylesheet;
-- every Desktop rule is present and unchanged, with a **bounded reordering**: with Mobile on, the `Loading` component's rules (about 70, a module now shared with the Mobile chunk) are emitted ahead of the first rules of `index.css`. Everything after that head keeps its order. Visually harmless, but the project relies on CSS order (see `docs/performance/code-splitting.md`), so **review it before any build turns Mobile on for users**.
-- brand-logo anti-aliasing: about 280 pixels (0.02%) along the logo edge differ in Desktop screenshots, deterministically (maximum 33/255 in one channel). Not seen with the flag off.
+- every Desktop rule present and unchanged, with a bounded reordering: the `Loading` rules were emitted ahead of the first rules of `index.css` (**fixed in S04B1: now identical order**);
+- brand-logo anti-aliasing: about 280 pixels along the logo edge differed in Desktop screenshots (**not present in S04B1's runs: the flag-on differences equal the baseline's own noise**).
 
 ## 12. Desktop and Mobile browser evidence
 
@@ -187,20 +194,20 @@ Screenshots and result files stay outside the repository (scratch folder of the 
 
 - Placeholders only; no data, no API request, no financial form.
 - Not installable: no manifest, no service worker, no offline.
-- No way back from Desktop to Mobile other than the stored choice or an `/m` address while `auto` resolves to Mobile; a Desktop-side entry is future work.
-- A flag-on build shows the page-level loading fallback while the Mobile chunk downloads (for every visitor of that build).
+- No way back from Desktop to Mobile other than the stored choice or an `/m` address while `auto` resolves to Mobile. S04B1 adds `/m/enter` (an explicit, asked-first entry); there is still no control on a Desktop page, by design, until one is approved.
+- ~~A flag-on build shows the page-level loading fallback while the Mobile chunk downloads (for every visitor of that build).~~ Fixed in S04B1: only a Mobile URL shows a (Mobile) loading state; a Desktop URL shows the Desktop tree at once.
 - The Mobile strings are not in `src/locales`, by design (§7); CLAUDE.md should say so when Mobile is released.
 - Fonts come from the existing Google Fonts import; offline, system fonts are used.
 - The `workflow_dispatch` guard (`if: github.ref == 'refs/heads/development'`) is prepared on this branch. **It does not protect the workflow that is deployed from `development` until this change is itself merged through an approved release.** Branch-protection and environment rules on GitHub were not inspected.
 - **Stale-`/m`-bookmark recovery** is not implemented (it would add an unconditional route and break flag-off route parity). When Mobile is first released, a rollback needs a plan for devices that have `/m/…` addresses saved: for instance a one-release `/m/*` → canonical redirect, or hosting-level rules.
 - Real devices, screen readers, the Android back gesture, link capture and OS text scaling are untested.
-- Running the suite concurrently with other Vite processes can corrupt `node_modules/.vite` (see §14).
+- The test-suite instability described in §14 was investigated again in S04B1; the SSR tests now use a private Vite cache (S04B1 §14).
 
 ## 14. Rollback and feature disable
 
 - **Disable**: leave `VITE_MOBILE_ENABLED` unset (the default) or `"false"`. The production workflow pins it. A flag-off build contains no Mobile code, strings or CSS.
 - **Revert**: the change is additive; reverting the S04A commit removes the Mobile tree. The only edits to existing files are `Router.jsx`, `vite.config.js`, the deploy workflow, `.env.example` and `tests/helpers/loader.mjs`.
-- **Test cache note**: five SSR tests (`experienceRendering`) failed while a stale `node_modules/.vite` cache from concurrent Vite processes existed (a duplicated React instance); they pass alone and with a fresh cache. Delete `node_modules/.vite` if it happens.
+- **Test cache note** (S04A, kept for the record): five SSR tests (`experienceRendering`) failed while a stale `node_modules/.vite` cache from concurrent Vite processes existed (a duplicated React instance); they passed alone and with a fresh cache. S04B1 found the mechanism (a cache shared between differently configured Vite instances) but could not reproduce the failure, and isolated the cache per test server; see S04B1 §14 for the honest classification.
 
 ## 15. Reproducing the checks
 
@@ -211,6 +218,6 @@ npm run build                              # flag off; compare dist with a basel
 VITE_MOBILE_ENABLED=true npm run dev       # Mobile on, locally (set the presentation to "mobile" in More, or use a touch device)
 ```
 
-## 16. Next phase (S04B, not started)
+## 16. Next phase (was S04B)
 
-Read-only Mobile screens (Home, Accounts overview, Activity list, Planning overview, details) through the allowed import boundary: the S03.6 display-correctness rule for amounts (confirmed, stale, unknown, server-supplied estimate), a "GET only" test, the dashboard-only providers the shell does not mount yet (Experience, unread notifications, WhatsApp pending), a Desktop-side way back to Mobile, per-screen `fromCanonical`, and a review of the flag-on CSS order. No money-moving flow, no service worker.
+S04B1 ([S04B1-readonly-home-accounts.md](S04B1-readonly-home-accounts.md)) delivered the first part: read-only Home and Accounts, the amount rule, a "GET only" test, the provider decisions, the way back to Mobile (`/m/enter`), and the flag-on CSS-order fix. Still open from this list: Activity list, Planning overview and their details (see S04B1 §16). No money-moving flow, no service worker.

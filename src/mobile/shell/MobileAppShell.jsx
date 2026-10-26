@@ -5,9 +5,8 @@ import { Outlet, useLocation } from "react-router-dom";
 import logo from "../../assets/smart-spend-logo.png";
 import "../i18n/register.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
-import { MOBILE_SCREENS } from "../navigation.js";
+import { MOBILE_ACCOUNTS, MOBILE_SCREENS } from "../navigation.js";
 import { normalizePathname } from "../presentation/resolver.js";
-import "../styles/mobile.css";
 import MobileMenu from "./MobileMenu.jsx";
 import MobileNav from "./MobileNav.jsx";
 import MobileSheet from "./MobileSheet.jsx";
@@ -15,13 +14,17 @@ import { MobilePortalContext } from "./portalContext.js";
 import { useCompactNav } from "./useCompactNav.js";
 
 // Proves in a built bundle that this code shipped; see tests/mobileBundle.test.mjs.
-export const MOBILE_BUILD_MARKER = "SMARTSPEND_MOBILE_S04A";
+export const MOBILE_BUILD_MARKER = "SMARTSPEND_MOBILE_S04B1";
 
 function getTitleKey(pathname) {
   const path = normalizePathname(pathname);
   const screen = MOBILE_SCREENS.find((item) => item.mobile === path);
 
-  return screen ? `titles.${screen.id}` : "titles.notAvailable";
+  if (screen) return `titles.${screen.id}`;
+  if (path === MOBILE_ACCOUNTS) return "titles.accounts";
+  if (path.startsWith(`${MOBILE_ACCOUNTS}/`) && !path.slice(MOBILE_ACCOUNTS.length + 1).includes("/")) return "titles.accountDetail";
+
+  return "titles.notAvailable";
 }
 
 /*
@@ -30,8 +33,8 @@ function getTitleKey(pathname) {
  * app's own providers (theme, language, session), so it holds no session or
  * theme state of its own.
  *
- * Add is a button. In S04A it opens an informational sheet and nothing else:
- * no form, no request.
+ * Add is a button. It opens an informational sheet and nothing else: no form,
+ * no request. Recording money is not part of Mobile yet.
  */
 export default function MobileAppShell() {
   const { t } = useTranslation(MOBILE_NAMESPACE);

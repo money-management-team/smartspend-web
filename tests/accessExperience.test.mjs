@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { createServer } from "vite";
+import { createIsolatedServer as createServer } from "./helpers/isolatedVite.mjs";
 import {
   createWelcomeNotice,
   dismissWelcomeNotice,

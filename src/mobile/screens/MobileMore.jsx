@@ -1,13 +1,16 @@
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 import { useLanguageContext } from "../../contexts/language/useLanguageContext";
 import { useThemeContext } from "../../contexts/theme/useThemeContext";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
+import { MOBILE_ACCOUNTS } from "../navigation.js";
 import { PRESENTATION_PREFERENCES } from "../presentation/preference.js";
 import { usePresentation } from "../presentation/usePresentation.js";
+import Chevron from "../ui/Chevron.jsx";
 
 /*
- * More, in S04A: the three display choices that already exist elsewhere in
+ * More: Accounts (read-only), the display choices that already exist elsewhere in
  * the app (theme, language) plus the presentation switch. The switch is how
  * a visitor leaves Mobile for the full version; it stores one word on this
  * device and nothing else.
@@ -20,6 +23,17 @@ export default function MobileMore() {
 
   return (
     <section className="sm-page" data-sm-screen="more">
+      <div className="sm-card">
+        <h2 className="sm-card-title">{t("more.yourMoney")}</h2>
+        <Link className="sm-link-row" to={MOBILE_ACCOUNTS}>
+          <span className="sm-row-main">
+            <span className="sm-row-title">{t("more.accounts")}</span>
+            <span className="sm-row-meta">{t("more.accountsHint")}</span>
+          </span>
+          <Chevron />
+        </Link>
+      </div>
+
       <div className="sm-card">
         <h2 className="sm-card-title">{t("more.appearance")}</h2>
 

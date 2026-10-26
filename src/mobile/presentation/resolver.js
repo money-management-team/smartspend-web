@@ -1,5 +1,5 @@
-import { MOBILE_PREFIX, MOBILE_SCREENS } from "../navigation.js";
-import { PATH } from "../../routes/Path.js";
+import { PATH, getAccountDetailsPath } from "../../routes/Path.js";
+import { MOBILE_ACCOUNTS, MOBILE_ENTER, MOBILE_PREFIX, MOBILE_SCREENS } from "../navigation.js";
 
 /*
  * Maps a location to the presentation that should show it. Pure: no React, no
@@ -14,8 +14,10 @@ import { PATH } from "../../routes/Path.js";
  * - Mode "mobile": a canonical page with a Mobile equivalent that is marked
  *   `fromCanonical` goes to it. Anything else stays where it is, so a page
  *   without a Mobile screen keeps showing the Desktop page.
- * - Mode "desktop": a Mobile URL goes back to its canonical page; an unknown
- *   Mobile URL goes to the dashboard.
+ * - Mode "desktop": a Mobile URL goes back to its canonical page (Accounts and
+ *   an account's page included); an unknown Mobile URL goes to the dashboard.
+ *   /m/enter is the one exception: it is how someone in this mode asks to
+ *   switch to Mobile, so it stays.
  * - Pathname, query and hash are carried across unchanged.
  * - Idempotent: resolveLocation(resolveLocation(x)) equals resolveLocation(x),
  *   so the result of one redirect is never redirected again.
@@ -73,10 +75,17 @@ export function getRedirect(location, { enabled, authenticated, mode }) {
   }
 
   if (mode === "desktop" && isMobilePath(pathname)) {
+    if (pathname === MOBILE_ENTER) return null;
+
     const screen = MOBILE_SCREENS.find((item) => item.mobile === pathname);
-    return screen
-      ? { pathname: screen.canonical, search, hash }
-      : { pathname: PATH.USER.DASHBOARD, search: "", hash: "" };
+    if (screen) return { pathname: screen.canonical, search, hash };
+
+    if (pathname === MOBILE_ACCOUNTS) return { pathname: PATH.USER.ACCOUNTS, search, hash };
+
+    const account = /^\/m\/accounts\/([1-9]\d{0,14})$/.exec(pathname);
+    if (account) return { pathname: getAccountDetailsPath(account[1]), search, hash };
+
+    return { pathname: PATH.USER.DASHBOARD, search: "", hash: "" };
   }
 
   return null;
