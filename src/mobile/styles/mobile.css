@@ -1,0 +1,521 @@
+/* =========================================================
+   SmartSpend Mobile (S04A foundation)
+
+   Isolation rules, enforced by tests/mobileBoundaries.test.mjs:
+   - every selector starts with `.sm-root` (or `:root[data-theme=...] .sm-root`);
+     there are no bare element rules and no global resets;
+   - class names start with `sm-`, keyframes with `sm-`;
+   - tokens are defined on `.sm-root` only, never on :root;
+   - written with logical properties so one rule serves LTR and RTL;
+   - Mobile overlays render inside `.sm-root` (the .sm-portal element).
+
+   Specificity: `.sm-root .sm-x` is (0,2,0). That beats the Desktop element
+   rules in src/index.css that reach Mobile (`a:hover` is (0,1,1), `button`
+   and the headings are (0,0,1)), without !important.
+   ========================================================= */
+
+/* ---------- Tokens ---------- */
+
+.sm-root {
+  --sm-navy: #07142b;
+  --sm-blue: #2563eb;
+  --sm-cyan: #22c3ee;
+
+  --sm-bg: #f4f6fb;
+  --sm-surface: #ffffff;
+  --sm-text: #0b1a36;
+  --sm-muted: #4a5a78;
+  --sm-border: #d5ddec;
+  --sm-focus: #1d4ed8;
+  --sm-on-bar: #ffffff;
+  --sm-nav-bg: #ffffff;
+  --sm-nav-active: #1d4ed8;
+  --sm-backdrop: rgba(7, 20, 43, 0.55);
+
+  --sm-font-ui: "Cairo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sm-font-heading: "Tajawal", "Cairo", system-ui, sans-serif;
+
+  --sm-bar-height: 3.5rem;
+  --sm-nav-height: 4rem;
+  --sm-target: 2.75rem; /* 44px at the default text size */
+  --sm-safe-top: env(safe-area-inset-top, 0px);
+  --sm-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --sm-safe-start: env(safe-area-inset-left, 0px);
+  --sm-safe-end: env(safe-area-inset-right, 0px);
+}
+
+:root[data-theme="dark"] .sm-root {
+  --sm-bg: #050b17;
+  --sm-surface: #0d1a30;
+  --sm-text: #e8eefb;
+  --sm-muted: #a3b2cf;
+  --sm-border: #22324f;
+  --sm-focus: #5ec8f5;
+  --sm-nav-bg: #0a1426;
+  --sm-nav-active: #5ec8f5;
+  --sm-backdrop: rgba(0, 0, 0, 0.65);
+}
+
+/* ---------- Frame ---------- */
+
+.sm-root {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  box-sizing: border-box;
+  color: var(--sm-text);
+  background: var(--sm-bg);
+  font-family: var(--sm-font-ui);
+  font-size: 1rem;
+  line-height: 1.5;
+  text-align: start;
+  -webkit-text-size-adjust: 100%;
+}
+
+.sm-root *,
+.sm-root *::before,
+.sm-root *::after {
+  box-sizing: border-box;
+}
+
+/* Neutralise the Desktop element rules that reach into the Mobile root. */
+.sm-root h1,
+.sm-root h2,
+.sm-root p,
+.sm-root ul {
+  margin: 0;
+  padding: 0;
+  letter-spacing: normal;
+}
+
+.sm-root ul {
+  list-style: none;
+}
+
+.sm-root p,
+.sm-root label,
+.sm-root legend,
+.sm-root button,
+.sm-root input,
+.sm-root a {
+  font-family: var(--sm-font-ui);
+}
+
+.sm-root input[type="radio"] {
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.sm-root button {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.sm-root a,
+.sm-root a:hover {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sm-root :focus-visible {
+  outline: 3px solid var(--sm-focus);
+  outline-offset: 2px;
+}
+
+/* ---------- App bar ---------- */
+
+.sm-root .sm-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: calc(var(--sm-bar-height) + var(--sm-safe-top));
+  padding-block: var(--sm-safe-top) 0;
+  padding-inline: calc(1rem + var(--sm-safe-start)) calc(1rem + var(--sm-safe-end));
+  color: var(--sm-on-bar);
+  background: var(--sm-navy);
+}
+
+.sm-root .sm-bar :focus-visible {
+  outline-color: var(--sm-cyan);
+}
+
+.sm-root .sm-bar-logo {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  object-fit: contain;
+}
+
+.sm-root .sm-bar-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--sm-font-heading);
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.3;
+  color: var(--sm-on-bar);
+  overflow-wrap: anywhere;
+}
+
+.sm-root .sm-bar-title:focus {
+  outline: none;
+}
+
+.sm-root .sm-bar-title:focus-visible {
+  outline: 3px solid var(--sm-cyan);
+  outline-offset: 4px;
+}
+
+.sm-root .sm-skip {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--sm-target);
+  inset-block-start: 0.5rem;
+  inset-inline-start: 0.5rem;
+  z-index: 3;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  color: var(--sm-navy);
+  background: var(--sm-cyan);
+  font-weight: 700;
+  transform: translateY(-300%);
+}
+
+.sm-root .sm-skip:focus {
+  transform: none;
+}
+
+/* ---------- Main region ---------- */
+
+.sm-root .sm-main {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-block: 1rem;
+  padding-inline: calc(1rem + var(--sm-safe-start)) calc(1rem + var(--sm-safe-end));
+}
+
+.sm-root .sm-main:focus {
+  outline: none;
+}
+
+.sm-root .sm-page {
+  display: grid;
+  gap: 1rem;
+  max-width: 40rem;
+  margin-inline: auto;
+}
+
+.sm-root .sm-card {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--sm-border);
+  border-radius: 1rem;
+  background: var(--sm-surface);
+}
+
+.sm-root .sm-card-title {
+  font-family: var(--sm-font-heading);
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.35;
+  color: var(--sm-text);
+}
+
+.sm-root .sm-text {
+  font-size: 1rem;
+  color: var(--sm-text);
+}
+
+.sm-root .sm-muted {
+  color: var(--sm-muted);
+}
+
+/* ---------- Controls ---------- */
+
+.sm-root .sm-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--sm-target);
+  min-width: var(--sm-target);
+  padding-block: 0.5rem;
+  padding-inline: 1.25rem;
+  border: 0;
+  border-radius: 0.75rem;
+  color: #ffffff;
+  background: var(--sm-blue);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sm-root .sm-button:hover {
+  color: #ffffff;
+  background: #1d4ed8;
+}
+
+.sm-root .sm-button-quiet,
+.sm-root .sm-button-quiet:hover {
+  color: var(--sm-text);
+  background: transparent;
+  border: 1px solid var(--sm-border);
+}
+
+.sm-root .sm-field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.sm-root .sm-label {
+  font-weight: 700;
+  color: var(--sm-text);
+}
+
+.sm-root .sm-segment {
+  display: grid;
+  /* Side by side while they fit; stacked, full width, when enlarged text leaves no room. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 6rem), 1fr));
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--sm-border);
+  border-radius: 0.875rem;
+  background: var(--sm-bg);
+}
+
+.sm-root .sm-segment-button {
+  min-height: var(--sm-target);
+  padding-inline: 0.75rem;
+  border: 0;
+  border-radius: 0.625rem;
+  color: var(--sm-text);
+  background: transparent;
+  cursor: pointer;
+}
+
+.sm-root .sm-segment-button[aria-pressed="true"] {
+  color: #ffffff;
+  background: var(--sm-blue);
+}
+
+.sm-root .sm-fieldset {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.sm-root .sm-choice {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: var(--sm-target);
+  padding-inline: 0.25rem;
+  color: var(--sm-text);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.sm-root .sm-choice input {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0;
+  accent-color: var(--sm-blue);
+}
+
+/* ---------- Bottom navigation ---------- */
+
+.sm-root .sm-nav-wrap {
+  position: relative;
+}
+
+.sm-root .sm-nav {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  align-items: stretch;
+  min-height: calc(var(--sm-nav-height) + var(--sm-safe-bottom));
+  padding-block: 0 var(--sm-safe-bottom);
+  padding-inline: var(--sm-safe-start) var(--sm-safe-end);
+  border-block-start: 1px solid var(--sm-border);
+  background: var(--sm-nav-bg);
+}
+
+.sm-root .sm-nav-item,
+.sm-root .sm-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.125rem;
+  min-width: var(--sm-target);
+  min-height: var(--sm-target);
+  padding: 0.25rem 0.125rem;
+  border: 0;
+  color: var(--sm-muted);
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+}
+
+.sm-root .sm-nav-item:hover {
+  color: var(--sm-text);
+}
+
+.sm-root .sm-nav-item.sm-active {
+  color: var(--sm-nav-active);
+}
+
+.sm-root .sm-nav-item:focus-visible,
+.sm-root .sm-add:focus-visible {
+  outline-offset: -4px;
+}
+
+.sm-root .sm-nav-icon {
+  display: inline-flex;
+  font-size: 1.375rem;
+}
+
+.sm-root .sm-nav-label,
+.sm-root .sm-add-label {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.sm-root .sm-add-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--sm-blue), var(--sm-cyan));
+  font-size: 1.5rem;
+}
+
+.sm-root .sm-add {
+  color: var(--sm-text);
+}
+
+.sm-root .sm-nav-compact .sm-nav-item,
+.sm-root .sm-nav-compact .sm-add {
+  flex-direction: row;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.sm-root .sm-nav-compact .sm-add-icon {
+  width: 2rem;
+  height: 2rem;
+  font-size: 1.25rem;
+}
+
+/* ---------- Sheets ---------- */
+
+.sm-root .sm-portal {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.sm-root .sm-sheet-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  pointer-events: auto;
+}
+
+.sm-root .sm-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--sm-backdrop);
+}
+
+.sm-root .sm-sheet {
+  position: relative;
+  display: grid;
+  gap: 0.75rem;
+  width: 100%;
+  max-height: 85%;
+  overflow-y: auto;
+  padding-block: 1rem calc(1rem + var(--sm-safe-bottom));
+  padding-inline: calc(1rem + var(--sm-safe-start)) calc(1rem + var(--sm-safe-end));
+  border-start-start-radius: 1.25rem;
+  border-start-end-radius: 1.25rem;
+  color: var(--sm-text);
+  background: var(--sm-surface);
+  animation: sm-sheet-in 0.18s ease-out;
+}
+
+.sm-root .sm-sheet:focus {
+  outline: none;
+}
+
+.sm-root .sm-sheet-title {
+  font-family: var(--sm-font-heading);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--sm-text);
+}
+
+.sm-root .sm-menu-list {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.sm-root .sm-menu-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: var(--sm-target);
+  padding-inline: 0.75rem;
+  border-radius: 0.75rem;
+  color: var(--sm-text);
+  font-weight: 700;
+}
+
+.sm-root .sm-menu-link:hover {
+  color: var(--sm-text);
+  background: var(--sm-bg);
+}
+
+.sm-root .sm-menu-link.sm-active {
+  color: var(--sm-nav-active);
+  background: var(--sm-bg);
+}
+
+@keyframes sm-sheet-in {
+  from {
+    transform: translateY(1rem);
+    opacity: 0;
+  }
+
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sm-root .sm-sheet {
+    animation: none;
+  }
+
+  .sm-root .sm-skip {
+    transition: none;
+  }
+}

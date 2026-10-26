@@ -13,7 +13,15 @@ import { transformWithOxc } from "vite";
 const SUFFIXES = ["", ".jsx", ".js", "/index.jsx", "/index.js"];
 const STUBBED = /\.(css|png|jpe?g|svg|webp|woff2?|ttf)$/i;
 
+// Vite answers this virtual module in a real build (scripts/mobileEntryPlugin.mjs).
+// Tests see Mobile switched off, which is also what the route table must do by default.
+const MOBILE_ENTRY = "virtual:smartspend-mobile";
+
 export async function resolve(specifier, context, nextResolve) {
+  if (specifier === MOBILE_ENTRY) {
+    return { url: "data:text/javascript,export const MobileRouter = null;", format: "module", shortCircuit: true };
+  }
+
   if (!/^\.{1,2}\//.test(specifier) || /\.[a-z0-9]+$/i.test(specifier)) {
     return nextResolve(specifier, context);
   }

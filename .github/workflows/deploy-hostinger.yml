@@ -16,6 +16,11 @@ concurrency:
 jobs:
   deploy:
     name: Build and deploy frontend
+    # Production is built from `development` only. A manual run (workflow_dispatch)
+    # from any other branch is skipped instead of deploying that branch.
+    # NOTE: a workflow edited on an unmerged branch does not protect the copy
+    # that is deployed from `development` until this change is itself merged.
+    if: github.ref == 'refs/heads/development'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -29,6 +34,10 @@ jobs:
       # docs/savings-goals/smart-plans.md ("Release gate").
       VITE_SMART_SAVINGS_ENABLED: "true"
       SMARTSPEND_SMART_SAVINGS_RELEASE_APPROVED: "true"
+      # The Mobile experience is not part of any release: pinned off here,
+      # whatever a repository variable or the runner environment says. Turning
+      # it on needs its own approved release (see docs/mobile/S04A-foundation.md).
+      VITE_MOBILE_ENABLED: "false"
 
     steps:
       - name: Checkout development
@@ -65,6 +74,16 @@ jobs:
 
           if grep -Eqs '^[[:space:]]*(export[[:space:]]+)?VITE_SMART_SAVINGS_ENABLED[[:space:]]*=' .env .env.production; then
             echo "ERROR: A tracked env file sets VITE_SMART_SAVINGS_ENABLED."
+            exit 1
+          fi
+
+          if [ "$VITE_MOBILE_ENABLED" != "false" ]; then
+            echo "ERROR: Mobile must stay off in this workflow."
+            exit 1
+          fi
+
+          if grep -Eqs '^[[:space:]]*(export[[:space:]]+)?VITE_MOBILE_ENABLED[[:space:]]*=' .env .env.production; then
+            echo "ERROR: A tracked env file sets VITE_MOBILE_ENABLED."
             exit 1
           fi
 
