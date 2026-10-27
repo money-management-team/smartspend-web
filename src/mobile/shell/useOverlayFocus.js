@@ -73,7 +73,12 @@ export function useOverlayFocus({ open, containerRef, onClose, returnFocusRef })
 
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      if (opener?.isConnected && typeof opener.focus === "function") opener.focus();
+      if (opener?.isConnected && typeof opener.focus === "function") {
+        opener.focus();
+
+        // A sheet a screen opened leaves the page inert until the shell re-renders, and an inert element cannot take focus: try once more right after.
+        if (document.activeElement !== opener) setTimeout(() => opener.isConnected && opener.focus(), 0);
+      }
     };
   }, [open, containerRef, returnFocusRef]);
 }

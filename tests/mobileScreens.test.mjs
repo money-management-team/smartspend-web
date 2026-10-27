@@ -533,9 +533,10 @@ describe("Account details", () => {
     assert.equal(api.calls.some((call) => call.path === "/transactions"), false, "no movements were asked for");
   });
 
-  it("reports an access refusal separately from not found", async () => {
+  it("reports an access refusal in the same words as not found, so it never confirms that the account exists", async () => {
     await open("/m/accounts/5", (call) => (call.path === "/accounts/5" ? failure(403, "no") : healthyBackend()(call)));
-    assert.equal(q("[data-sm-error]").dataset.smError, "forbidden");
+    assert.equal(q("[data-sm-error]").dataset.smError, "notFound");
+    assert.doesNotMatch(text(q("[data-sm-error]")), /access to this/);
   });
 
   it("makes no request for an address that is not an account id", async () => {
@@ -636,8 +637,8 @@ describe("Every Mobile screen reads, and only reads", () => {
       api.restore();
     }
 
-    // Home 2 (dashboard, alerts) + Accounts 1 + an account 2 (account, movements); More, Activity, Planning read nothing.
-    assert.equal(seen.length, 5);
+    // Home 2 (dashboard, alerts) + Accounts 1 + an account 2 (account, movements) + Activity 1 (a page of transactions); More and Planning read nothing.
+    assert.equal(seen.length, 6);
     for (const call of seen) {
       assert.equal(call.method, "GET");
       assert.equal(call.hasBody, false);

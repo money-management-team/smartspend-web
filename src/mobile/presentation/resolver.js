@@ -1,4 +1,4 @@
-import { PATH, getAccountDetailsPath } from "../../routes/Path.js";
+import { PATH, getAccountDetailsPath, getTransactionDetailsPath } from "../../routes/Path.js";
 import { MOBILE_ACCOUNTS, MOBILE_ENTER, MOBILE_PREFIX, MOBILE_SCREENS } from "../navigation.js";
 
 /*
@@ -84,6 +84,9 @@ export function getRedirect(location, { enabled, authenticated, mode }) {
 
     const account = /^\/m\/accounts\/([1-9]\d{0,14})$/.exec(pathname);
     if (account) return { pathname: getAccountDetailsPath(account[1]), search, hash };
+
+    const transaction = /^\/m\/activity\/([1-9]\d{0,14})$/.exec(pathname);
+    if (transaction) return { pathname: getTransactionDetailsPath(transaction[1]), search, hash };
 
     return { pathname: PATH.USER.DASHBOARD, search: "", hash: "" };
   }

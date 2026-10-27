@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { createPortal } from "react-dom";
 
+import { useShellModal } from "./modalContext.js";
 import { useMobilePortal } from "./portalContext.js";
 import { useOverlayFocus } from "./useOverlayFocus.js";
 
@@ -14,6 +15,7 @@ export default function MobileSheet({ open, onClose, titleId, title, returnFocus
   const sheetRef = useRef(null);
 
   useOverlayFocus({ open, containerRef: sheetRef, onClose, returnFocusRef });
+  useShellModal(open);
 
   if (!open || !container) return null;
 

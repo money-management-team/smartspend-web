@@ -13,6 +13,8 @@ export const MOBILE_PREFIX = "/m";
  */
 export const MOBILE_ACCOUNTS = `${MOBILE_PREFIX}/accounts`;
 export const MOBILE_ENTER = `${MOBILE_PREFIX}/enter`;
+export const MOBILE_ACTIVITY = `${MOBILE_PREFIX}/activity`;
+export const activityDetailPath = (transactionId) => `${MOBILE_ACTIVITY}/${encodeURIComponent(transactionId)}`;
 export const accountDetailPath = (accountId) => `${MOBILE_ACCOUNTS}/${encodeURIComponent(accountId)}`;
 
 /*
@@ -26,11 +28,15 @@ export const accountDetailPath = (accountId) => `${MOBILE_ACCOUNTS}/${encodeURIC
  * More is a different page from Desktop's Settings, so a working Desktop page
  * is never replaced by something that does less. Accounts is not listed here
  * either: Desktop's Accounts page can create, edit and archive, and Mobile's
- * is read-only, so /dashboard/accounts stays Desktop.
+ * is read-only, so /dashboard/accounts stays Desktop. Activity is real and
+ * read-only in S04B2, and still not listed: Desktop's Financial operations page
+ * records, corrects and reverses money, which Mobile cannot, so
+ * /dashboard/financial-operations (and a transaction's page under it) stays
+ * Desktop until there is parity or an approved fallback.
  */
 export const MOBILE_SCREENS = Object.freeze([
   { id: "home", mobile: MOBILE_PREFIX, canonical: PATH.USER.DASHBOARD, fromCanonical: true },
-  { id: "activity", mobile: `${MOBILE_PREFIX}/activity`, canonical: PATH.USER.FINANCIAL_OPERATIONS, fromCanonical: false },
+  { id: "activity", mobile: `${MOBILE_PREFIX}/activity`, canonical: PATH.USER.FINANCIAL_OPERATIONS, fromCanonical: false, within: [`${MOBILE_PREFIX}/activity`] },
   { id: "planning", mobile: `${MOBILE_PREFIX}/planning`, canonical: PATH.USER.BUDGETS, fromCanonical: false },
   { id: "more", mobile: `${MOBILE_PREFIX}/more`, canonical: PATH.USER.SETTING, fromCanonical: false, within: [`${MOBILE_PREFIX}/accounts`] },
 ]);
@@ -50,3 +56,20 @@ export function currentOf(screen, pathname) {
  * 17rem is the provisional value from the S03.5 prototype; change it here.
  */
 export const COMPACT_NAV_MAX_REM = 17;
+
+/* How many pages of a list were loaded when a row was opened, so Back shows as much again (2 to 50). */
+export const backStateFrom = (state) => (Number.isInteger(state?.pages) && state.pages > 1 && state.pages <= 50 ? { pages: state.pages } : null);
+
+/*
+ * Where "Back" goes from a page opened from a list: the address the list was at
+ * (carried in the link's router state), but only if it is a Mobile address.
+ * Anything else (a missing state, a foreign or odd value) falls back to `fallback`.
+ */
+export function backPathFrom(state, fallback) {
+  const from = state?.from;
+
+  if (typeof from !== "string" || from.length > 600) return fallback;
+  if (!/^\/m(?:[/?#]|$)/.test(from) || from.startsWith("//") || [...from].some((char) => char === "\\" || char.charCodeAt(0) < 32)) return fallback;
+
+  return from;
+}

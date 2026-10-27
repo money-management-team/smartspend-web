@@ -13,7 +13,7 @@ import { currencyName } from "../money/decimal.js";
 import { formatDay, formatDayMonth } from "../money/format.js";
 import Money from "../money/Money.jsx";
 import { buildAlertsModel, buildHomeModel } from "../models/home.js";
-import { MOBILE_ACCOUNTS } from "../navigation.js";
+import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_PREFIX, activityDetailPath } from "../navigation.js";
 import Chevron from "../ui/Chevron.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
@@ -142,14 +142,21 @@ function RecentCard({ section, locale, timeZone }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
 
   return (
-    <Card id="sm-home-recent" title={t("home.recent.title")}>
+    <Card
+      id="sm-home-recent"
+      title={t("home.recent.title")}
+      action={
+        <Link className="sm-card-link" to={MOBILE_ACTIVITY}>
+          {t("home.recent.viewAll")}
+        </Link>
+      }
+    >
       {section.state === "ready" && (
         <ul className="sm-list">
           {section.items.map((item, index) => {
             const date = formatDay(item.occurredAt, locale, timeZone);
-
-            return (
-              <li key={item.id ?? `row-${index}`} className="sm-row sm-row-static" data-sm-type={item.type ?? "unknown"}>
+            const content = (
+              <>
                 <span className="sm-row-main">
                   <span className="sm-row-title sm-user-text">{item.title ?? t(`types.${typeKey(item.type)}`)}</span>
                   <span className="sm-row-meta">
@@ -158,9 +165,24 @@ function RecentCard({ section, locale, timeZone }) {
                     {item.reversed ? ` · ${t("movements.reversed")}` : ""}
                   </span>
                 </span>
-                <span className="sm-row-amount">
-                  <Money plus={item.type === "income"} value={item.amount} currency={item.currency} />
+                <span className="sm-row-end">
+                  <span className="sm-row-amount">
+                    <Money plain plus={item.type === "income"} value={item.amount} currency={item.currency} />
+                  </span>
+                  {item.id && <Chevron />}
                 </span>
+              </>
+            );
+
+            return (
+              <li key={item.id ?? `row-${index}`} data-sm-type={item.type ?? "unknown"}>
+                {item.id ? (
+                  <Link className="sm-row" to={activityDetailPath(item.id)} state={{ from: MOBILE_PREFIX }}>
+                    {content}
+                  </Link>
+                ) : (
+                  <div className="sm-row sm-row-static">{content}</div>
+                )}
               </li>
             );
           })}

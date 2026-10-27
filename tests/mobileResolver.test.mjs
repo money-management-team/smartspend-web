@@ -60,6 +60,11 @@ const KNOWN_PATHS = [
   `${MOBILE_PREFIX}/accounts/7/deeper`,
   `${MOBILE_PREFIX}/enter`,
   `${MOBILE_PREFIX}/enter/`,
+  `${MOBILE_PREFIX}/activity/7`,
+  `${MOBILE_PREFIX}/activity/007`,
+  `${MOBILE_PREFIX}/activity/abc`,
+  `${MOBILE_PREFIX}/activity/7/deeper`,
+  "/dashboard/financial-operations/7",
   `${MOBILE_PREFIX}/more/deep/er`,
   "/mission",
   "/m-x",
@@ -123,6 +128,22 @@ describe("canonical resolver", () => {
     for (const bad of ["/m/accounts/abc", "/m/accounts/0", "/m/accounts/007", "/m/accounts/7/deeper", "/m/accounts/1e3", "/m/accounts/-5"]) {
       assert.deepEqual(getRedirect(loc(bad, "?a=1", "#h"), ctx({ mode: "desktop" })), loc(PATH.USER.DASHBOARD), bad);
     }
+  });
+
+  it("a transaction's Mobile page maps to its Desktop page when Desktop is chosen, keeping query and hash", () => {
+    assert.deepEqual(getRedirect(loc("/m/activity/7", "?a=1", "#h"), ctx({ mode: "desktop" })), loc("/dashboard/financial-operations/7", "?a=1", "#h"));
+    assert.deepEqual(getRedirect(loc("/m/activity", "?type=expense&status=posted"), ctx({ mode: "desktop" })), loc(PATH.USER.FINANCIAL_OPERATIONS, "?type=expense&status=posted"));
+    for (const bad of ["/m/activity/abc", "/m/activity/0", "/m/activity/007", "/m/activity/7/deeper", "/m/activity/1e3"]) {
+      assert.deepEqual(getRedirect(loc(bad, "?a=1"), ctx({ mode: "desktop" })), loc(PATH.USER.DASHBOARD), bad);
+    }
+  });
+
+  it("Desktop financial operations, and a transaction's Desktop page, are never redirected to Mobile: they record, correct and reverse money", () => {
+    for (const path of [PATH.USER.FINANCIAL_OPERATIONS, "/dashboard/financial-operations/7", "/dashboard/financial-operations/new"]) {
+      assert.equal(getRedirect(loc(path, "?new=expense&type=expense"), ctx()), null, path);
+    }
+    assert.equal(MOBILE_SCREENS.find((item) => item.id === "activity").fromCanonical, false);
+    assert.equal(getRedirect(loc("/m/activity/7"), ctx()), null, "and Activity itself stays Mobile in Mobile mode");
   });
 
   it("/dashboard/accounts stays Desktop in Mobile mode: Desktop's Accounts page can create, edit and archive, Mobile's cannot", () => {

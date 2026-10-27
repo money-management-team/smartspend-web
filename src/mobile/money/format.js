@@ -44,3 +44,33 @@ export const formatDayMonth = (value, locale = "en", timeZone) =>
 
 export const formatClock = (timestamp, locale = "en") =>
   new Intl.DateTimeFormat(locale, { hour: "2-digit", minute: "2-digit", numberingSystem: "latn" }).format(new Date(timestamp));
+
+/*
+ * A moment, for a transaction's page: the date and the time in the user's time
+ * zone when the value says which instant it is (an offset or Z) and the zone is
+ * valid; just the date when it does not say (a bare date, or a time with no
+ * zone), because converting it would invent a shift. null when it is not a date.
+ */
+export function formatMoment(value, locale = "en", timeZone) {
+  const text = typeof value === "string" ? value.trim() : "";
+  const zoned = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(Z|[+-]\d{2}:?\d{2})$/i.test(text);
+  const date = parseDate(value);
+  if (!date) return null;
+
+  if (!zoned) return formatDay(/^\d{4}-\d{2}-\d{2}/.test(text) ? text.slice(0, 10) : value, locale);
+
+  const options = { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", numberingSystem: "latn" };
+
+  try {
+    return new Intl.DateTimeFormat(locale, timeZone ? { ...options, timeZone } : options).format(date);
+  } catch {
+    return new Intl.DateTimeFormat(locale, { ...options, timeZone: "UTC" }).format(date);
+  }
+}
+
+/** A day key ("YYYY-MM-DD") as a heading: weekday, day, month, year. The day is a label, so it is formatted in UTC and cannot shift. */
+export function formatDayHeading(day, locale = "en") {
+  if (typeof day !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
+
+  return new Intl.DateTimeFormat(locale, { weekday: "long", year: "numeric", month: "long", day: "numeric", numberingSystem: "latn", timeZone: "UTC" }).format(new Date(`${day}T12:00:00Z`));
+}

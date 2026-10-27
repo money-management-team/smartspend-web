@@ -5,16 +5,17 @@ import { Outlet, useLocation } from "react-router-dom";
 import logo from "../../assets/smart-spend-logo.png";
 import "../i18n/register.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
-import { MOBILE_ACCOUNTS, MOBILE_SCREENS } from "../navigation.js";
+import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_SCREENS } from "../navigation.js";
 import { normalizePathname } from "../presentation/resolver.js";
 import MobileMenu from "./MobileMenu.jsx";
 import MobileNav from "./MobileNav.jsx";
 import MobileSheet from "./MobileSheet.jsx";
+import { ShellModalContext } from "./modalContext.js";
 import { MobilePortalContext } from "./portalContext.js";
 import { useCompactNav } from "./useCompactNav.js";
 
 // Proves in a built bundle that this code shipped; see tests/mobileBundle.test.mjs.
-export const MOBILE_BUILD_MARKER = "SMARTSPEND_MOBILE_S04B1";
+export const MOBILE_BUILD_MARKER = "SMARTSPEND_MOBILE_S04B2";
 
 function getTitleKey(pathname) {
   const path = normalizePathname(pathname);
@@ -23,6 +24,8 @@ function getTitleKey(pathname) {
   if (screen) return `titles.${screen.id}`;
   if (path === MOBILE_ACCOUNTS) return "titles.accounts";
   if (path.startsWith(`${MOBILE_ACCOUNTS}/`) && !path.slice(MOBILE_ACCOUNTS.length + 1).includes("/")) return "titles.accountDetail";
+
+  if (path.startsWith(`${MOBILE_ACTIVITY}/`) && !path.slice(MOBILE_ACTIVITY.length + 1).includes("/")) return "titles.transaction";
 
   return "titles.notAvailable";
 }
@@ -70,10 +73,13 @@ export default function MobileAppShell() {
 
   const menuOpen = overlay === "menu" && compact;
   const addOpen = overlay === "add";
-  const modalOpen = menuOpen || addOpen;
+  // A sheet that a screen opened (see modalContext.js) counts too.
+  const [screenModal, setScreenModal] = useState(false);
+  const modalOpen = menuOpen || addOpen || screenModal;
 
   return (
     <MobilePortalContext.Provider value={portal}>
+      <ShellModalContext.Provider value={setScreenModal}>
       <div className="sm-root" data-sm-build={MOBILE_BUILD_MARKER} data-sm-nav={compact ? "compact" : "standard"}>
         <header className="sm-bar" inert={modalOpen}>
           <a className="sm-skip" href="#sm-main">{t("skip")}</a>
@@ -111,6 +117,7 @@ export default function MobileAppShell() {
 
         <MobileMenu open={menuOpen} onClose={closeOverlay} returnFocusRef={menuRef} />
       </div>
+      </ShellModalContext.Provider>
     </MobilePortalContext.Provider>
   );
 }

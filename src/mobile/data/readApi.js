@@ -1,4 +1,5 @@
 import { accountsApi } from "../../features/Dashboards/User/api/accountsApi.js";
+import { categoriesApi } from "../../features/Dashboards/User/api/categoriesApi.js";
 import { getStoredWorkspace } from "../../features/Dashboards/User/api/apiClient.js";
 import { dashboardApi } from "../../features/Dashboards/User/api/dashboardApi.js";
 import { financialAlertsApi } from "../../features/Dashboards/User/api/financialAlertsApi.js";
@@ -20,6 +21,9 @@ import { transactionsApi } from "../../features/Dashboards/User/api/transactions
  *   GET /accounts                       accounts[] (active)
  *   GET /accounts/{id}                  account
  *   GET /transactions?account_id=       a page of that account's movements
+ *   GET /transactions?…filters          a page of Activity (type, status, account, category, dates, sort)
+ *   GET /transactions/{id}              one transaction
+ *   GET /categories                     the filter's category choices (active ones)
  *
  * The period is fixed at the API's default, "month": Mobile has no period
  * picker yet. The workspace filter is the session's workspace, read from
@@ -50,3 +54,12 @@ export const readAccountMovements = (accountId, page, signal) =>
     { account_id: accountId, page, per_page: MOVEMENTS_PER_PAGE, sort_by: "occurred_at", sort_dir: "desc" },
     { signal },
   );
+
+// Activity: the filters are exactly those the Desktop list sends (docs/transactions/api.md); the query is built by models/activity.js.
+export const ACTIVITY_PER_PAGE = 20;
+
+export const readTransactions = (query, signal) => transactionsApi.list(query, { signal });
+
+export const readTransaction = (transactionId, signal) => transactionsApi.get(transactionId, { signal });
+
+export const readCategories = (signal) => categoriesApi.list({ workspace_id: workspaceId() }, { signal });

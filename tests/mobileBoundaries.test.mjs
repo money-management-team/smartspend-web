@@ -48,7 +48,7 @@ const withExtension = (target) => ["", ".js", ".jsx", "/index.js", "/index.jsx"]
 
 const specifiers = (source) => {
   const found = [];
-  for (const match of source.matchAll(/(?:import|export)\s[^;]*?from\s*["']([^"']+)["']/g)) found.push(match[1]);
+  for (const match of source.matchAll(/(?:import|export)\s[^;]*?\bfrom\s*["']([^"']+)["']/g)) found.push(match[1]);
   for (const match of source.matchAll(/import\s*["']([^"']+)["']/g)) found.push(match[1]);
   for (const match of source.matchAll(/import\(\s*["']([^"']+)["']\s*\)/g)) found.push(match[1]);
   return found;

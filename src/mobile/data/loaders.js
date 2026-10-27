@@ -1,4 +1,4 @@
-import { readAccount, readAccountMovements, readAccounts, readAlerts, readDashboard } from "./readApi.js";
+import { readAccount, readAccountMovements, readAccounts, readAlerts, readCategories, readDashboard, readTransaction, readTransactions } from "./readApi.js";
 
 /*
  * What each store entry loads: the response's `data`, as the backend sent it.
@@ -15,7 +15,17 @@ export const accountLoader = (accountId) => async (signal) => (await readAccount
 // A movements page is returned whole (the envelope), because the paginator numbers live beside `data`.
 export const movementsLoader = (accountId, page) => (signal) => readAccountMovements(accountId, page, signal);
 
+export const loadCategories = async (signal) => (await readCategories(signal)).data;
+
+export const transactionLoader = (transactionId) => async (signal) => (await readTransaction(transactionId, signal)).data;
+
+// An Activity page is returned whole (the envelope): the paginator numbers live beside `data`.
+export const activityLoader = (query) => (signal) => readTransactions(query, signal);
+
 export const keys = {
+  categories: "categories",
+  transaction: (id) => `transaction:${id}`,
+  activity: (signature, page) => `activity:${signature}:${page}`,
   dashboard: "dashboard",
   alerts: "alerts",
   accounts: "accounts",

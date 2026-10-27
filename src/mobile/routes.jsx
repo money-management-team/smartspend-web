@@ -1,5 +1,7 @@
 import { RequireAuth } from "../routes/RouteGuards";
 import MobileAccountDetail from "./accounts/MobileAccountDetail.jsx";
+import MobileActivity from "./activity/MobileActivity.jsx";
+import MobileTransactionDetail from "./activity/MobileTransactionDetail.jsx";
 import MobileAccounts from "./accounts/MobileAccounts.jsx";
 import MobileHome from "./home/MobileHome.jsx";
 import IdentityBoundary from "./identity/IdentityBoundary.jsx";
@@ -15,8 +17,8 @@ import MobileAppShell from "./shell/MobileAppShell.jsx";
  * visitor is sent to sign-in and returns here afterwards, exactly as on
  * Desktop. Everything inside the shell sits in the identity boundary, which
  * owns the in-memory data and takes the screen down if the signed-in identity
- * stops being consistent. Nothing here writes financial data: Home, Accounts
- * and an account's page only read (see data/readApi.js).
+ * stops being consistent. Nothing here writes financial data: Home, Accounts,
+ * Activity and a transaction's page only read (see data/readApi.js).
  *
  * /m/enter is outside the shell on purpose (it is the way in, not a screen of
  * the app) but behind the same sign-in guard.
@@ -43,7 +45,8 @@ export const mobileRoutes = [
       { index: true, element: <MobileHome /> },
       { path: "accounts", element: <MobileAccounts /> },
       { path: "accounts/:accountId", element: <MobileAccountDetail /> },
-      { path: "activity", element: <PlaceholderScreen id="activity" /> },
+      { path: "activity", element: <MobileActivity /> },
+      { path: "activity/:transactionId", element: <MobileTransactionDetail /> },
       { path: "planning", element: <PlaceholderScreen id="planning" /> },
       { path: "more", element: <MobileMore /> },
       { path: "*", element: <MobileNotAvailable /> },

@@ -251,6 +251,8 @@ Flag off vs the original baseline: §13. Desktop API behaviour and authenticatio
 - One more small request on every page of a flag-on build (`useAuthContext`, 231 bytes), §13.
 - CLAUDE.md is not edited. To record there when Mobile is released: strings in the `mobile` namespace instead of `src/locales` (S04A); `src/mobile` reading the Experience feature's preference store; Mobile-only money formatting that does not use `formatMoney`.
 
+> **Correction made in S04B2:** §8 said a missing or forbidden account is reported "without saying which", but a 403 said "You don't have access to this" and a 404 said "may not exist, or you may not have access". Both now use the second wording (`ErrorPanel hideExistence`), with a test. The S04B1 "Not in Mobile" list also changed: recent transactions on Home and an account's movements now open a transaction's page (S04B2).
+
 ## 16. Next proposed slice
 
 **S04B2: read-only Activity (a transactions list and a transaction's page)**, on the same pieces: `GET /transactions` (the paginator reader already exists for an account's movements), the money layer, the identity boundary and the read-only tests (extend the facade's allow-list and the source scan, nothing else). It needs the Activity filters decided (type, status, date range), and `fromCanonical` stays off for Activity, because Desktop's Financial operations page can record money and Mobile's cannot. The Desktop `AuthProvider` storage listener should be approved separately before any production use of Mobile. Planning (budgets, goals) after that. Still no write flow, service worker or manifest.

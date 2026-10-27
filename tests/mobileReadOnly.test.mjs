@@ -35,7 +35,7 @@ describe("the source", () => {
     const byFile = Object.fromEntries(sources.map((file) => [rel(file), importsOf(file)]).filter(([, modules]) => modules.length));
 
     assert.deepEqual(byFile, {
-      "src/mobile/data/readApi.js": ["accountsApi", "apiClient", "dashboardApi", "financialAlertsApi", "transactionsApi"],
+      "src/mobile/data/readApi.js": ["accountsApi", "categoriesApi", "apiClient", "dashboardApi", "financialAlertsApi", "transactionsApi"],
       "src/mobile/identity/guard.js": ["apiClient"],
     });
   });
@@ -61,7 +61,7 @@ describe("the source", () => {
   });
 
   it("imports nothing about WhatsApp, AI, imports, reports exports, transfers, recurring or other write flows", () => {
-    assert.deepEqual(find(/from\s*["'][^"']*(whatsapp|aiCopilot|aiExpense|aiVoice|importsApi|reportExports|transfersApi|recurringTransactions|savingsGoalsApi|savingsPlansApi|debtsApi|budgetsApi|authApi|categoriesApi|calendarApi|notificationsApi)[^"']*["']/i), []);
+    assert.deepEqual(find(/from\s*["'][^"']*(whatsapp|aiCopilot|aiExpense|aiVoice|importsApi|reportExports|transfersApi|recurringTransactions|savingsGoalsApi|savingsPlansApi|debtsApi|budgetsApi|authApi|calendarApi|notificationsApi)[^"']*["']/i), []);
   });
 
   it("does not use the shared money helpers: formatMoney (rounds, shows bad data as 0.00) and the float-free sums are not needed and not imported", () => {
@@ -105,7 +105,7 @@ describe("the facade", () => {
   it("exports reads only", async () => {
     const readApi = await import("../src/mobile/data/readApi.js");
 
-    assert.deepEqual(Object.keys(readApi).sort(), ["DASHBOARD_PERIOD", "MOVEMENTS_PER_PAGE", "isAccountId", "readAccount", "readAccountMovements", "readAccounts", "readAlerts", "readDashboard"]);
+    assert.deepEqual(Object.keys(readApi).sort(), ["ACTIVITY_PER_PAGE", "DASHBOARD_PERIOD", "MOVEMENTS_PER_PAGE", "isAccountId", "readAccount", "readAccountMovements", "readAccounts", "readAlerts", "readCategories", "readDashboard", "readTransaction", "readTransactions"]);
   });
 
   it("each read sends a GET to its documented endpoint, with only documented filters", async () => {

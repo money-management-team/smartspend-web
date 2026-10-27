@@ -32,8 +32,12 @@ export function createResourceStore(guard, { now = Date.now } = {}) {
   const inflight = new Map();
   const listeners = new Set();
   let disposed = false;
+  let version = 0;
 
-  const emit = () => listeners.forEach((listener) => listener());
+  const emit = () => {
+    version += 1;
+    listeners.forEach((listener) => listener());
+  };
   const set = (key, entry) => {
     entries.set(key, Object.freeze(entry));
     emit();
@@ -109,5 +113,40 @@ export function createResourceStore(guard, { now = Date.now } = {}) {
       emit();
     },
     isDisposed: () => disposed,
+    /** Changes whenever any entry does, for screens that read several keys at once. */
+    getVersion: () => version,
+    /** Forgets entries whose key passes the test (and cancels their reads): a refresh that must not reuse older pages. */
+    drop(test) {
+      for (const [key, record] of [...inflight]) {
+        if (test(key)) {
+          record.controller.abort();
+          inflight.delete(key);
+        }
+      }
+
+      let changed = false;
+      for (const key of [...entries.keys()]) {
+        if (test(key)) {
+          entries.delete(key);
+          changed = true;
+        }
+      }
+      if (changed) emit();
+    },
+    /** Stops a read that has not produced anything yet (its screen moved on); finished entries stay. */
+    cancel(key) {
+      const record = inflight.get(key);
+      const entry = entries.get(key);
+      if (!record) return;
+
+      record.controller.abort();
+      inflight.delete(key);
+      if (entry?.status === "loading") {
+        entries.delete(key);
+        emit();
+      } else if (entry?.status === "refreshing") {
+        set(key, { status: "ready", data: entry.data, error: null, updatedAt: entry.updatedAt });
+      }
+    },
   };
 }

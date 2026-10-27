@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 
 import { getAccountDetailsPath } from "../../routes/Path.js";
 import { accountLoader, keys, movementsLoader } from "../data/loaders.js";
@@ -11,7 +11,7 @@ import { formatDay } from "../money/format.js";
 import Money from "../money/Money.jsx";
 import { buildAccountDetail } from "../models/accounts.js";
 import { buildMovementPage } from "../models/movements.js";
-import { MOBILE_ACCOUNTS } from "../navigation.js";
+import { MOBILE_ACCOUNTS, activityDetailPath } from "../navigation.js";
 import { useAuthContext } from "../../contexts/auth/useAuthContext";
 import Chevron from "../ui/Chevron.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
@@ -34,6 +34,7 @@ function Fact({ label, children }) {
 // One page of movements. The pages stack: "Load more" (shown under the last page only) adds the next one.
 function MovementsPage({ account, page, last, onMore, locale, timeZone }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
+  const location = useLocation();
   const loader = useMemo(() => movementsLoader(account.id, page), [account.id, page]);
   const result = useResource(keys.movements(account.id, page), loader);
   const parsed = useMemo(() => {
@@ -73,7 +74,8 @@ function MovementsPage({ account, page, last, onMore, locale, timeZone }) {
             const label = row.title ?? t(`movements.kind.${kind}`, { defaultValue: t(`types.${typeKey(row.type)}`) });
 
             return (
-              <li key={row.id} className="sm-row sm-row-static" data-sm-direction={row.direction}>
+              <li key={row.id} data-sm-direction={row.direction}>
+                <Link className="sm-row" to={activityDetailPath(row.id)} state={{ from: `${location.pathname}${location.search}` }}>
                 <span className="sm-row-main">
                   <span className="sm-row-title sm-user-text">{label}</span>
                   <span className="sm-row-meta">
@@ -83,9 +85,13 @@ function MovementsPage({ account, page, last, onMore, locale, timeZone }) {
                     {row.reversed ? ` · ${t("movements.reversed")}` : ""}
                   </span>
                 </span>
-                <span className="sm-row-amount">
-                  <Money plus value={row.amount} currency={account.currency} />
+                <span className="sm-row-end">
+                  <span className="sm-row-amount">
+                    <Money plain plus value={row.amount} currency={account.currency} />
+                  </span>
+                  <Chevron />
                 </span>
+                </Link>
               </li>
             );
           })}
@@ -223,7 +229,7 @@ export default function MobileAccountDetail() {
   if (resource.status === "error" || !account) {
     return (
       <section className="sm-page" data-sm-screen="account-detail" data-sm-state="error">
-        <ErrorPanel error={resource.error ?? MALFORMED} onRetry={resource.reload} retrying={resource.refreshing} />
+        <ErrorPanel error={resource.error ?? MALFORMED} onRetry={resource.reload} retrying={resource.refreshing} hideExistence />
         <Link className="sm-link-row sm-back" to={MOBILE_ACCOUNTS}><Chevron back /><span>{t("detail.back")}</span></Link>
       </section>
     );

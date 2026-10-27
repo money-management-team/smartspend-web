@@ -156,7 +156,7 @@ describe("Mobile shell: structure", () => {
   });
 
   it("shows placeholders only: no money figures, no form, no input", async () => {
-    for (const entry of ["/m/activity", "/m/planning"]) {
+    for (const entry of ["/m/planning"]) {
       await mount({ entry });
       const text = q("main").textContent;
 

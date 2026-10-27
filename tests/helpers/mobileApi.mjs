@@ -220,3 +220,62 @@ export function healthyBackend({ dashboardData = dashboard(), alerts = { generat
     return failure(404, "Not found");
   };
 }
+
+/* ---------- Transactions (Activity) ---------- */
+
+export const tx = (id, over = {}) => ({
+  id,
+  workspace_id: 1,
+  type: "expense",
+  status: "posted",
+  amount: "45.2500",
+  currency_code: "ILS",
+  description: `Payment ${id}`,
+  reference_number: null,
+  occurred_at: "2026-10-20T10:00:00.000000Z",
+  posted_at: "2026-10-20T10:00:05.000000Z",
+  category: { id: 4, name: "Food" },
+  category_id: 4,
+  transfer_id: null,
+  reversal_of_id: null,
+  related_transaction_id: null,
+  ledger_entries: [{ id: id * 10, workspace_id: 1, transaction_id: id, account_id: 1, currency_code: "ILS", signed_amount: "-45.2500", entry_role: "expense", account: { id: 1, name: "Everyday wallet" } }],
+  creator: { id: 1, name: "Alex Example" },
+  ...over,
+});
+
+/*
+ * A backend that behaves like GET /transactions on a fixed set of transactions:
+ * it filters (type, status, account_id, category_id, date_from, date_to), sorts
+ * by occurred_at, and pages with a Laravel-shaped paginator. A test can wrap it
+ * to delay or fail particular requests.
+ */
+export function transactionsBackend(all, { categories = [{ id: 4, name: "Food", type: "expense" }, { id: 5, name: "Salary", type: "income" }], accounts = [account()] } = {}) {
+  return (call) => {
+    if (call.path === "/transactions") {
+      const q = call.query;
+      let rows = all.filter((row) => (!q.type || row.type === q.type) && (!q.status || row.status === q.status) && (!q.category_id || String(row.category_id) === q.category_id) && (!q.account_id || row.ledger_entries.some((entry) => String(entry.account_id) === q.account_id)));
+      const day = (row) => (row.occurred_at ?? "").slice(0, 10);
+      if (q.date_from) rows = rows.filter((row) => day(row) >= q.date_from);
+      if (q.date_to) rows = rows.filter((row) => day(row) <= q.date_to);
+      rows = [...rows].sort((a, b) => (q.sort_dir === "asc" ? 1 : -1) * (a.occurred_at ?? "").localeCompare(b.occurred_at ?? ""));
+      const perPage = Number(q.per_page ?? 20);
+      const page = Number(q.page ?? 1);
+      return { body: envelope(movementPage(rows.slice((page - 1) * perPage, page * perPage), { page, perPage, total: rows.length })) };
+    }
+    const one = /^\/transactions\/(\d+)$/.exec(call.path);
+    if (one) {
+      const found = all.find((row) => String(row.id) === one[1]);
+      return found ? { body: envelope({ transaction: found }) } : failure(404, "Not found");
+    }
+    if (call.path === "/categories") return { body: envelope({ categories }) };
+    if (call.path === "/accounts") return { body: envelope({ accounts }) };
+    if (/^\/accounts\/\d+$/.test(call.path)) {
+      const found = accounts.find((item) => `/accounts/${item.id}` === call.path);
+      return found ? { body: envelope({ account: found }) } : failure(404, "Not found");
+    }
+    if (call.path === "/dashboard") return { body: envelope(dashboard()) };
+    if (call.path === "/financial-alerts") return { body: envelope({ alerts: [] }) };
+    return failure(404, "Not found");
+  };
+}

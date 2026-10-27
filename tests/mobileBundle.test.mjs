@@ -20,12 +20,14 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const VITE = path.join(ROOT, "node_modules/vite/bin/vite.js");
-const SENTINEL = "SMARTSPEND_MOBILE_S04B1";
+const SENTINEL = "SMARTSPEND_MOBILE_S04B2";
 const MOBILE_STRINGS = [
   SENTINEL, "sm-root", "data-sm-build", "smartspend:presentation", "Mobile Foundation preview", "virtual:smartspend-mobile", "sm-sheet",
   // S04B1: the screens, the identity guard, the money layer and the entry
   "sm-money", "sm-identity", "sm-boot", "data-sm-identity", "smartspend:storage-probe", "Your session changed", "Balances by currency",
   "Open the Mobile version?", "MobileApp", "MobileEntry", "/m/enter", "--sm-",
+  // S04B2: Activity, filters, a transaction's page
+  "sm-tx", "sm-day-title", "sm-filter-form", "sm-status", "Reset all filters", "Unknown status", "The movements SmartSpend recorded on each account", "/m/activity",
 ];
 
 const cleanEnv = (extra = {}) => {

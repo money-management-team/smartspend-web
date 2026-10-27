@@ -1,5 +1,5 @@
 /* =========================================================
-   SmartSpend Mobile (S04A foundation, S04B1 read-only screens)
+   SmartSpend Mobile (S04A foundation, S04B1 and S04B2 read-only screens)
 
    Isolation rules, enforced by tests/mobileBoundaries.test.mjs:
    - every selector starts with `.sm-root` (or `:root[data-theme=...] .sm-root`);
@@ -493,6 +493,15 @@
   overflow-wrap: anywhere;
 }
 
+/* A very long amount gets a smaller type size before it ever has to wrap. */
+.sm-root .sm-money[data-sm-len="long"] .sm-money-number {
+  font-size: 0.85em;
+}
+
+.sm-root .sm-money[data-sm-len="xlong"] .sm-money-number {
+  font-size: 0.7em;
+}
+
 .sm-root .sm-money-currency {
   font-size: 0.8125em;
   font-weight: 700;
@@ -864,6 +873,296 @@
   font-weight: 800;
   line-height: 1.3;
   overflow-wrap: anywhere;
+}
+
+/* ---------- Activity and a transaction's page (S04B2) ---------- */
+
+.sm-root .sm-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sm-root .sm-chips,
+.sm-root .sm-chips-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sm-root .sm-chip-button {
+  min-height: var(--sm-target);
+  padding-inline: 0.875rem;
+  gap: 0.375rem;
+  cursor: pointer;
+  font-family: var(--sm-font-ui);
+}
+
+.sm-root .sm-chip-button svg {
+  flex: none;
+}
+
+.sm-root .sm-chip-quiet {
+  border-style: dashed;
+  color: var(--sm-nav-active);
+  background: transparent;
+}
+
+.sm-root .sm-card-link,
+.sm-root .sm-card-link:hover {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--sm-target);
+  color: var(--sm-nav-active);
+  font-weight: 700;
+}
+
+.sm-root .sm-ledger {
+  gap: 0;
+  padding-block: 0.25rem;
+}
+
+.sm-root .sm-day-title {
+  padding-block: 0.875rem 0.25rem;
+  font-family: var(--sm-font-ui);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--sm-muted);
+  overflow-wrap: anywhere;
+}
+
+/* Icon and text side by side; the amount goes beside them, or under them when the text is enlarged and there is no room. */
+.sm-root .sm-tx {
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.sm-root .sm-tx .sm-row-main {
+  flex: 1 1 7rem;
+  gap: 0.125rem;
+  justify-items: start;
+}
+
+.sm-root .sm-tx-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-block-start: 0.125rem;
+  border-radius: 50%;
+  color: var(--sm-nav-active);
+  background: var(--sm-bg);
+  font-size: 1.125rem;
+}
+
+.sm-root .sm-hero .sm-tx-icon {
+  color: var(--sm-cyan);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sm-root .sm-tx-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.sm-root .sm-tx-head .sm-card-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* A grid item is as wide as its widest content unless told it may shrink: without this, one long amount widens the whole page. */
+.sm-root .sm-page > * {
+  min-width: 0;
+}
+
+/* Links inside text and in fact rows still get a 44px target. */
+.sm-root .sm-links a,
+.sm-root .sm-stat dd a,
+.sm-root .sm-note-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--sm-target);
+  min-height: var(--sm-target);
+  padding-inline: 0.25rem;
+}
+
+.sm-root .sm-sheet > *,
+.sm-root .sm-filter-form > * {
+  min-width: 0;
+}
+
+.sm-root .sm-input,
+.sm-root .sm-select {
+  min-width: 0;
+}
+
+.sm-root .sm-tx .sm-row-end {
+  flex: 0 1 auto;
+  align-self: center;
+  max-inline-size: 100%;
+}
+
+.sm-root .sm-struck .sm-money-run {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+/* Status: Posted is the only success state and the only one that may be green; nothing else borrows it. */
+.sm-root .sm-status {
+  width: fit-content;
+}
+
+.sm-root .sm-status[data-sm-status="posted"] {
+  color: #0a5c3a;
+  background: #dff5ea;
+  border-color: #9ad7b9;
+}
+
+.sm-root .sm-status[data-sm-status="pending_review"] {
+  color: #1d4ed8;
+  background: #e4ecff;
+  border-color: #b4c8f8;
+}
+
+.sm-root .sm-status[data-sm-status="reversed"] {
+  color: #7a4a00;
+  background: #fff1d6;
+  border-color: #efc982;
+}
+
+.sm-root .sm-status[data-sm-status="failed"] {
+  color: #8f1d12;
+  background: #fde8e5;
+  border-color: #f0b3ac;
+}
+
+.sm-root .sm-status[data-sm-status="unknown"],
+.sm-root .sm-status[data-sm-status="missing"],
+.sm-root .sm-status[data-sm-status="draft"] {
+  color: var(--sm-text);
+  background: var(--sm-bg);
+  border-color: var(--sm-muted);
+}
+
+:root[data-theme="dark"] .sm-root .sm-status[data-sm-status="posted"] {
+  color: #8be0b6;
+  background: #0f2e22;
+  border-color: #1f6a49;
+}
+
+:root[data-theme="dark"] .sm-root .sm-status[data-sm-status="pending_review"] {
+  color: #9bbcff;
+  background: #12254d;
+  border-color: #2d4f94;
+}
+
+:root[data-theme="dark"] .sm-root .sm-status[data-sm-status="reversed"] {
+  color: #f5c76f;
+  background: #36270a;
+  border-color: #7d5a14;
+}
+
+:root[data-theme="dark"] .sm-root .sm-status[data-sm-status="failed"] {
+  color: #ffb4a8;
+  background: #3a1612;
+  border-color: #8a3a31;
+}
+
+.sm-root .sm-hero .sm-status {
+  color: var(--sm-navy);
+  background: #ffffff;
+  border-color: #ffffff;
+}
+
+.sm-root .sm-hero .sm-status[data-sm-status="posted"] {
+  color: #0a5c3a;
+  background: #dff5ea;
+}
+
+/* ---------- Filter sheet ---------- */
+
+.sm-root .sm-filter-form {
+  display: grid;
+  gap: 0.875rem;
+}
+
+.sm-root .sm-field-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  gap: 0.75rem;
+}
+
+.sm-root .sm-select,
+.sm-root .sm-input {
+  width: 100%;
+  min-height: var(--sm-target);
+  padding-inline: 0.75rem;
+  border: 1px solid var(--sm-border);
+  border-radius: 0.75rem;
+  color: var(--sm-text);
+  background: var(--sm-bg);
+  font-family: var(--sm-font-ui);
+  font-size: 1rem;
+}
+
+.sm-root .sm-input[aria-invalid="true"] {
+  border-color: var(--sm-neg);
+}
+
+.sm-root .sm-form-error {
+  color: var(--sm-neg);
+  font-weight: 700;
+}
+
+/* Apply, Reset and Cancel stay in view at the bottom of the sheet while the fields scroll. */
+.sm-root .sm-actions {
+  position: sticky;
+  inset-block-end: calc(-1rem - var(--sm-safe-bottom));
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-block-end: calc(-1rem - var(--sm-safe-bottom));
+  padding-block: 0.75rem calc(1rem + var(--sm-safe-bottom));
+  background: var(--sm-surface);
+  border-block-start: 1px solid var(--sm-border);
+}
+
+.sm-root .sm-actions .sm-button:first-child {
+  grid-column: 1 / -1;
+}
+
+.sm-root .sm-filter-form .sm-segment {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 4.75rem), 1fr));
+}
+
+.sm-root .sm-links {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.25rem 0.75rem;
+}
+
+.sm-root .sm-links a {
+  color: var(--sm-nav-active);
+  font-weight: 700;
+}
+
+.sm-root .sm-stat dd a {
+  color: var(--sm-nav-active);
+  font-weight: 700;
+}
+
+.sm-root .sm-card [role="note"] {
+  margin: 0;
 }
 
 /* ---------- Sheets ---------- */
