@@ -155,17 +155,13 @@ describe("Mobile shell: structure", () => {
     assert.equal(q("#sm-main").tagName, "MAIN");
   });
 
-  it("shows placeholders only: no money figures, no form, no input", async () => {
-    for (const entry of ["/m/planning"]) {
-      await mount({ entry });
-      const text = q("main").textContent;
+  it("Planning has no form and no input, and the shell never shows a figure of its own", async () => {
+    await mount({ entry: "/m/planning" });
+    const text = q("main").textContent;
 
-      assert.doesNotMatch(text, /\d[\d,.]*\s?(ILS|USD|EUR|₪|\$)/);
-      assert.equal(qa("form, input, textarea, select", q("main")).length, 0);
-      assert.match(text, /not available in mobile yet/i);
-      await mounted.unmount();
-      mounted = null;
-    }
+    assert.doesNotMatch(text, /\d[\d,.]*\s?(ILS|USD|EUR|₪|\$)/);
+    assert.equal(qa("form, input, textarea, select", q("main")).length, 0);
+    assert.doesNotMatch(text, /not available in mobile yet/i);
   });
 
   it("shows 'not available' for an unknown Mobile address, inside the shell", async () => {

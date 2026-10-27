@@ -35,7 +35,9 @@ describe("the source", () => {
     const byFile = Object.fromEntries(sources.map((file) => [rel(file), importsOf(file)]).filter(([, modules]) => modules.length));
 
     assert.deepEqual(byFile, {
-      "src/mobile/data/readApi.js": ["accountsApi", "categoriesApi", "apiClient", "dashboardApi", "financialAlertsApi", "transactionsApi"],
+      "src/mobile/data/readApi.js": ["accountsApi", "budgetsApi", "categoriesApi", "apiClient", "dashboardApi", "financialAlertsApi", "recurringTransactionsApi", "savingsGoalsApi", "transactionsApi"],
+      // The Smart Savings plan read, in its own file so a build without the flag has no way to ask for a plan.
+      "src/mobile/data/readPlanApi.js": ["savingsPlansApi"],
       "src/mobile/identity/guard.js": ["apiClient"],
     });
   });
@@ -61,7 +63,10 @@ describe("the source", () => {
   });
 
   it("imports nothing about WhatsApp, AI, imports, reports exports, transfers, recurring or other write flows", () => {
-    assert.deepEqual(find(/from\s*["'][^"']*(whatsapp|aiCopilot|aiExpense|aiVoice|importsApi|reportExports|transfersApi|recurringTransactions|savingsGoalsApi|savingsPlansApi|debtsApi|budgetsApi|authApi|calendarApi|notificationsApi)[^"']*["']/i), []);
+    assert.deepEqual(find(/from\s*["'][^"']*(whatsapp|aiCopilot|aiExpense|aiVoice|importsApi|reportExports|transfersApi|debtsApi|plannedSavingsApi|authApi|calendarApi|notificationsApi)[^"']*["']/i), []);
+    // Budgets, goals, plans and recurring rules are read in the two facade files and nowhere else.
+    const facades = ["src/mobile/data/readApi.js", "src/mobile/data/readPlanApi.js"];
+    assert.deepEqual(find(/from\s*["'][^"']*(recurringTransactions|savingsGoalsApi|savingsPlansApi|budgetsApi)[^"']*["']/i).sort(), facades);
   });
 
   it("does not use the shared money helpers: formatMoney (rounds, shows bad data as 0.00) and the float-free sums are not needed and not imported", () => {
@@ -105,7 +110,9 @@ describe("the facade", () => {
   it("exports reads only", async () => {
     const readApi = await import("../src/mobile/data/readApi.js");
 
-    assert.deepEqual(Object.keys(readApi).sort(), ["ACTIVITY_PER_PAGE", "DASHBOARD_PERIOD", "MOVEMENTS_PER_PAGE", "isAccountId", "readAccount", "readAccountMovements", "readAccounts", "readAlerts", "readCategories", "readDashboard", "readTransaction", "readTransactions"]);
+    assert.deepEqual(Object.keys(readApi).sort(), ["ACTIVITY_PER_PAGE", "BUDGETS_PER_PAGE", "DASHBOARD_PERIOD", "GOALS_PER_PAGE", "MOVEMENTS_PER_PAGE", "RULES_PER_PAGE", "isAccountId", "planningWorkspaceId", "readAccount", "readAccountMovements", "readAccounts", "readAlerts", "readBudget", "readBudgets", "readCategories", "readDashboard", "readGoal", "readGoals", "readRule", "readRules", "readTransaction", "readTransactions"]);
+    const plan = await import("../src/mobile/data/readPlanApi.js");
+    assert.deepEqual(Object.keys(plan), ["readGoalPlan"]);
   });
 
   it("each read sends a GET to its documented endpoint, with only documented filters", async () => {

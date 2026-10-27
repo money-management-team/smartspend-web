@@ -18,15 +18,32 @@ export const activityDetailPath = (transactionId) => `${MOBILE_ACTIVITY}/${encod
 export const accountDetailPath = (accountId) => `${MOBILE_ACCOUNTS}/${encodeURIComponent(accountId)}`;
 
 /*
+ * Planning (S04B3): the overview at /m/planning and, under it, the read-only
+ * lists and pages of budgets, savings goals and recurring rules. Debts,
+ * Calendar, Categories and Reports are not Mobile screens; the overview links
+ * to their full-version pages.
+ */
+export const MOBILE_PLANNING = `${MOBILE_PREFIX}/planning`;
+export const MOBILE_BUDGETS = `${MOBILE_PLANNING}/budgets`;
+export const MOBILE_GOALS = `${MOBILE_PLANNING}/goals`;
+export const MOBILE_RECURRING = `${MOBILE_PLANNING}/recurring`;
+export const budgetDetailPath = (budgetId) => `${MOBILE_BUDGETS}/${encodeURIComponent(budgetId)}`;
+export const goalDetailPath = (goalId) => `${MOBILE_GOALS}/${encodeURIComponent(goalId)}`;
+export const recurringDetailPath = (ruleId) => `${MOBILE_RECURRING}/${encodeURIComponent(ruleId)}`;
+
+/*
  * The four primary destinations. Add is an action (a button that opens a
  * sheet), not a fifth destination, so it is not listed here.
  *
  * `canonical` is the Desktop page that covers the same ground.
  * `fromCanonical` says whether a visit to that Desktop page is sent to the
  * Mobile screen when Mobile is the chosen presentation. Only Home is: it is a
- * real read-only screen. Activity and Planning are still placeholders, and
- * More is a different page from Desktop's Settings, so a working Desktop page
- * is never replaced by something that does less. Accounts is not listed here
+ * real read-only screen. Planning is real and read-only in S04B3 and still not
+ * listed: Desktop's Budgets, Savings goals and Recurring pages create, edit,
+ * contribute, confirm and skip, which Mobile cannot, so those stay Desktop until
+ * there is parity or an approved fallback. More is a different page from
+ * Desktop's Settings, so a working Desktop page is never replaced by something
+ * that does less. Accounts is not listed here
  * either: Desktop's Accounts page can create, edit and archive, and Mobile's
  * is read-only, so /dashboard/accounts stays Desktop. Activity is real and
  * read-only in S04B2, and still not listed: Desktop's Financial operations page
@@ -37,7 +54,7 @@ export const accountDetailPath = (accountId) => `${MOBILE_ACCOUNTS}/${encodeURIC
 export const MOBILE_SCREENS = Object.freeze([
   { id: "home", mobile: MOBILE_PREFIX, canonical: PATH.USER.DASHBOARD, fromCanonical: true },
   { id: "activity", mobile: `${MOBILE_PREFIX}/activity`, canonical: PATH.USER.FINANCIAL_OPERATIONS, fromCanonical: false, within: [`${MOBILE_PREFIX}/activity`] },
-  { id: "planning", mobile: `${MOBILE_PREFIX}/planning`, canonical: PATH.USER.BUDGETS, fromCanonical: false },
+  { id: "planning", mobile: `${MOBILE_PREFIX}/planning`, canonical: PATH.USER.BUDGETS, fromCanonical: false, within: [`${MOBILE_PREFIX}/planning`] },
   { id: "more", mobile: `${MOBILE_PREFIX}/more`, canonical: PATH.USER.SETTING, fromCanonical: false, within: [`${MOBILE_PREFIX}/accounts`] },
 ]);
 

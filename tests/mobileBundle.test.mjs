@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const VITE = path.join(ROOT, "node_modules/vite/bin/vite.js");
-const SENTINEL = "SMARTSPEND_MOBILE_S04B2";
+const SENTINEL = "SMARTSPEND_MOBILE_S04B3";
 const MOBILE_STRINGS = [
   SENTINEL, "sm-root", "data-sm-build", "smartspend:presentation", "Mobile Foundation preview", "virtual:smartspend-mobile", "sm-sheet",
   // S04B1: the screens, the identity guard, the money layer and the entry
@@ -28,6 +28,8 @@ const MOBILE_STRINGS = [
   "Open the Mobile version?", "MobileApp", "MobileEntry", "/m/enter", "--sm-",
   // S04B2: Activity, filters, a transaction's page
   "sm-tx", "sm-day-title", "sm-filter-form", "sm-status", "Reset all filters", "Unknown status", "The movements SmartSpend recorded on each account", "/m/activity",
+  // S04B3: Planning, budgets, goals and recurring rules
+  "sm-progress", "sm-plan-row", "sm-plan-link", "Mobile shows your plan", "These are rules, not transactions", "/m/planning",
 ];
 
 const cleanEnv = (extra = {}) => {
@@ -73,10 +75,13 @@ function topLevelRules(css) {
 
 let off;
 let on;
+let onWithPlans;
 
 before(() => {
   off = build("off", {});
   on = build("on", { VITE_MOBILE_ENABLED: "true" }, ["--mode", "preview"]);
+  // Mobile on AND Smart Savings on, in a local preview build (the production workflow pins Smart Savings off).
+  onWithPlans = build("on-plans", { VITE_MOBILE_ENABLED: "true", VITE_SMART_SAVINGS_ENABLED: "true" }, ["--mode", "preview"]);
 });
 
 after(() => {
@@ -153,6 +158,33 @@ describe("a production build with Mobile on (local testing mode)", () => {
     const onNames = names(on);
 
     for (const name of offNames) assert.ok(onNames.has(name), `missing ${name}`);
+  });
+});
+
+// What only the Smart Savings plan section has: its strings and its own chunk. (The section's request is a GET /savings-goals/{id}/plan.)
+const PLAN_STRINGS = ["This goal has no Smart Savings plan", "Smart Savings plan", "planning.goals.plan.title", "smart-plan"];
+
+describe("Smart Savings in the Mobile bundle", () => {
+  it("with Smart Savings off (the production setting) there is no plan section, no plan string and no plan request in any Mobile file", () => {
+    assert.deepEqual(files(on).filter((file) => /SmartPlanSection|smartPlanMessages/.test(path.basename(file))), []);
+
+    const mobile = files(on).filter((file) => /MobileApp-[^\/]+\.js$/.test(file));
+    assert.equal(mobile.length, 1);
+    for (const needle of PLAN_STRINGS.slice(0, 3)) assert.ok(!text(mobile[0]).includes(needle), `the Mobile chunk contains "${needle}"`);
+    // The facade file's plan read is a template with "/plan" at its end: it must not be in the chunk either.
+    assert.doesNotMatch(text(mobile[0]), /\/plan[`"']/);
+  });
+
+  it("with Smart Savings on, the plan section is its own lazy chunk: not in the entry, not in the Mobile chunk", () => {
+    const chunks = files(onWithPlans).filter((file) => /SmartPlanSection-[^\/]+\.js$/.test(file));
+    assert.equal(chunks.length, 1);
+    assert.ok(text(chunks[0]).includes("This goal has no Smart Savings plan"));
+
+    const mobile = files(onWithPlans).filter((file) => /MobileApp-[^\/]+\.js$/.test(file));
+    assert.equal(mobile.length, 1);
+    assert.ok(!text(mobile[0]).includes("This goal has no Smart Savings plan"));
+    assert.ok(!text(entryOf(onWithPlans)).includes("This goal has no Smart Savings plan"));
+    assert.match(text(mobile[0]), /SmartPlanSection-[A-Za-z0-9_-]{8}\.js/, "the goal's page loads it on demand");
   });
 });
 

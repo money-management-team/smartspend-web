@@ -626,7 +626,7 @@ describe("chevrons follow the reading direction", () => {
 
 describe("Every Mobile screen reads, and only reads", () => {
   it("made no non-GET request, no request with a body, and no request outside the documented endpoints", async () => {
-    const allowed = new Set(["/dashboard", "/financial-alerts", "/accounts", "/transactions"]);
+    const allowed = new Set(["/dashboard", "/financial-alerts", "/accounts", "/transactions", "/budgets", "/savings-goals", "/recurring-transactions"]);
     const seen = [];
 
     for (const entry of ["/m", "/m/accounts", "/m/accounts/1", "/m/more", "/m/activity", "/m/planning"]) {
@@ -637,8 +637,8 @@ describe("Every Mobile screen reads, and only reads", () => {
       api.restore();
     }
 
-    // Home 2 (dashboard, alerts) + Accounts 1 + an account 2 (account, movements) + Activity 1 (a page of transactions); More and Planning read nothing.
-    assert.equal(seen.length, 6);
+    // Home 2 (dashboard, alerts) + Accounts 1 + an account 2 (account, movements) + Activity 1 (a page of transactions) + Planning 5 (alerts; the first pages of budgets, exceeded budgets, goals and rules); More reads nothing.
+    assert.equal(seen.length, 11);
     for (const call of seen) {
       assert.equal(call.method, "GET");
       assert.equal(call.hasBody, false);

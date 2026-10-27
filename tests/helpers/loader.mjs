@@ -5,11 +5,13 @@ import { transformWithOxc } from "vite";
 /*
  * Node module hooks for tests only:
  * - .jsx is compiled with Vite's own transform (automatic JSX runtime);
- * - `import.meta.env` is replaced by a fixed test object;
+ * - `import.meta.env` is replaced by a fixed test object (Smart Savings off unless SMARTSPEND_TEST_SMART_SAVINGS=true);
  * - .css and image imports become empty modules;
  * - .json imported the Vite way (no import attribute) becomes a default export;
  * - extensionless relative imports resolve like Vite does (.jsx, .js, /index).
  */
+// SMARTSPEND_TEST_SMART_SAVINGS=true lets a test run (in its own process) with the Smart Savings build flag on; it is off otherwise.
+const TEST_ENV = `({ DEV: false, PROD: false, MODE: "test"${process.env.SMARTSPEND_TEST_SMART_SAVINGS === "true" ? ', VITE_SMART_SAVINGS_ENABLED: "true"' : ""} })`;
 const SUFFIXES = ["", ".jsx", ".js", "/index.jsx", "/index.js"];
 const STUBBED = /\.(css|png|jpe?g|svg|webp|woff2?|ttf)$/i;
 
@@ -61,7 +63,7 @@ export async function load(url, context, nextLoad) {
     const { code } = await transformWithOxc(source, filename, {
       lang: isJsx ? "jsx" : "js",
       jsx: { runtime: "automatic" },
-      define: { "import.meta.env": '({ DEV: false, PROD: false, MODE: "test" })' },
+      define: { "import.meta.env": TEST_ENV },
     });
     return { format: "module", source: code, shortCircuit: true };
   }

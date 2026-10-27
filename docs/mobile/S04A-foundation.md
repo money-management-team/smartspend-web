@@ -64,8 +64,8 @@ So the Mobile code enters the build through one virtual module, `virtual:smartsp
 | Route | Screen |
 |---|---|
 | `/m` | Home (S04A: placeholder; **S04B1: real, read-only**) |
-| `/m/activity` | Activity placeholder |
-| `/m/planning` | Planning placeholder |
+| `/m/activity` | Activity placeholder (**S04B2: real, read-only**) |
+| `/m/planning` | Planning placeholder (**S04B3: real, read-only**, with budgets, goals and recurring pages under it) |
 | `/m/more` | Accounts link, theme, language, and the presentation switch |
 | `/m/accounts`, `/m/accounts/{id}` | S04B1: read-only Accounts list and account page |
 | `/m/enter` | S04B1: asks before switching a Desktop-mode visitor to Mobile |

@@ -1,8 +1,11 @@
 import { accountsApi } from "../../features/Dashboards/User/api/accountsApi.js";
+import { budgetsApi } from "../../features/Dashboards/User/api/budgetsApi.js";
 import { categoriesApi } from "../../features/Dashboards/User/api/categoriesApi.js";
 import { getStoredWorkspace } from "../../features/Dashboards/User/api/apiClient.js";
 import { dashboardApi } from "../../features/Dashboards/User/api/dashboardApi.js";
 import { financialAlertsApi } from "../../features/Dashboards/User/api/financialAlertsApi.js";
+import { recurringTransactionsApi } from "../../features/Dashboards/User/api/recurringTransactionsApi.js";
+import { savingsGoalsApi } from "../../features/Dashboards/User/api/savingsGoalsApi.js";
 import { transactionsApi } from "../../features/Dashboards/User/api/transactionsApi.js";
 
 /*
@@ -63,3 +66,37 @@ export const readTransactions = (query, signal) => transactionsApi.list(query, {
 export const readTransaction = (transactionId, signal) => transactionsApi.get(transactionId, { signal });
 
 export const readCategories = (signal) => categoriesApi.list({ workspace_id: workspaceId() }, { signal });
+
+/*
+ * Planning (S04B3): budgets, savings goals and recurring rules, read-only. The
+ * lists use the page sizes of the Desktop lists, so a Mobile page asks the
+ * backend for the same slice the full version would.
+ *
+ *   GET /budgets?status=&progress_status=       a page of budgets, each with its `progress`
+ *   GET /budgets/{id}                           one budget with its `progress`
+ *   GET /savings-goals?status=                  a page of goals, each with its `progress`
+ *   GET /savings-goals/{id}                     one goal with its `progress`
+ *   GET /recurring-transactions?status=&type=   a page of rules
+ *   GET /recurring-transactions/{id}            one rule with its `schedule`
+ *
+ * The Smart Savings plan read (GET /savings-goals/{id}/plan) is NOT here: it is
+ * in data/readPlanApi.js, which only a build with Smart Savings on includes.
+ */
+export const BUDGETS_PER_PAGE = 20;
+export const GOALS_PER_PAGE = 12;
+export const RULES_PER_PAGE = 15;
+
+export const readBudgets = (query, signal) => budgetsApi.list(query, { signal });
+
+export const readBudget = (budgetId, signal) => budgetsApi.get(budgetId, { signal });
+
+export const readGoals = (query, signal) => savingsGoalsApi.list(query, { signal });
+
+export const readGoal = (goalId, signal) => savingsGoalsApi.get(goalId, { signal });
+
+export const readRules = (query, signal) => recurringTransactionsApi.list(query, { signal });
+
+export const readRule = (ruleId, signal) => recurringTransactionsApi.get(ruleId, { signal });
+
+/** The session's workspace for a Planning list query (read from storage, never written). */
+export const planningWorkspaceId = workspaceId;

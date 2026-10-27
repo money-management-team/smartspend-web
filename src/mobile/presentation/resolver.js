@@ -1,5 +1,5 @@
-import { PATH, getAccountDetailsPath, getTransactionDetailsPath } from "../../routes/Path.js";
-import { MOBILE_ACCOUNTS, MOBILE_ENTER, MOBILE_PREFIX, MOBILE_SCREENS } from "../navigation.js";
+import { PATH, getAccountDetailsPath, getBudgetDetailsPath, getRecurringDetailsPath, getSavingsGoalDetailsPath, getTransactionDetailsPath } from "../../routes/Path.js";
+import { MOBILE_ACCOUNTS, MOBILE_BUDGETS, MOBILE_ENTER, MOBILE_GOALS, MOBILE_PREFIX, MOBILE_RECURRING, MOBILE_SCREENS } from "../navigation.js";
 
 /*
  * Maps a location to the presentation that should show it. Pure: no React, no
@@ -14,8 +14,9 @@ import { MOBILE_ACCOUNTS, MOBILE_ENTER, MOBILE_PREFIX, MOBILE_SCREENS } from "..
  * - Mode "mobile": a canonical page with a Mobile equivalent that is marked
  *   `fromCanonical` goes to it. Anything else stays where it is, so a page
  *   without a Mobile screen keeps showing the Desktop page.
- * - Mode "desktop": a Mobile URL goes back to its canonical page (Accounts and
- *   an account's page included); an unknown Mobile URL goes to the dashboard.
+ * - Mode "desktop": a Mobile URL goes back to its canonical page (Accounts, an
+ *   account's page, a transaction's page and Planning's lists and pages
+ *   included); an unknown Mobile URL goes to the dashboard.
  *   /m/enter is the one exception: it is how someone in this mode asks to
  *   switch to Mobile, so it stays.
  * - Pathname, query and hash are carried across unchanged.
@@ -87,6 +88,19 @@ export function getRedirect(location, { enabled, authenticated, mode }) {
 
     const transaction = /^\/m\/activity\/([1-9]\d{0,14})$/.exec(pathname);
     if (transaction) return { pathname: getTransactionDetailsPath(transaction[1]), search, hash };
+
+    // Planning's lists and pages go back to the Desktop page of the same thing; an id is digits only, as in every Mobile address.
+    const planning = [
+      [MOBILE_BUDGETS, PATH.USER.BUDGETS, getBudgetDetailsPath],
+      [MOBILE_GOALS, PATH.USER.SAVINGS_GOALS, getSavingsGoalDetailsPath],
+      [MOBILE_RECURRING, PATH.USER.RECURRING, getRecurringDetailsPath],
+    ];
+    for (const [mobile, list, details] of planning) {
+      if (pathname === mobile) return { pathname: list, search, hash };
+
+      const record = pathname.startsWith(`${mobile}/`) ? /^[1-9]\d{0,14}$/.exec(pathname.slice(mobile.length + 1)) : null;
+      if (record) return { pathname: details(record[0]), search, hash };
+    }
 
     return { pathname: PATH.USER.DASHBOARD, search: "", hash: "" };
   }

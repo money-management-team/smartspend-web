@@ -1,4 +1,4 @@
-import { readAccount, readAccountMovements, readAccounts, readAlerts, readCategories, readDashboard, readTransaction, readTransactions } from "./readApi.js";
+import { readAccount, readAccountMovements, readAccounts, readAlerts, readBudget, readBudgets, readCategories, readDashboard, readGoal, readGoals, readRule, readRules, readTransaction, readTransactions } from "./readApi.js";
 
 /*
  * What each store entry loads: the response's `data`, as the backend sent it.
@@ -22,7 +22,23 @@ export const transactionLoader = (transactionId) => async (signal) => (await rea
 // An Activity page is returned whole (the envelope): the paginator numbers live beside `data`.
 export const activityLoader = (query) => (signal) => readTransactions(query, signal);
 
+// Planning lists are returned whole (the envelope), like Activity: the paginator numbers live beside `data`.
+export const budgetsLoader = (query) => (signal) => readBudgets(query, signal);
+export const goalsLoader = (query) => (signal) => readGoals(query, signal);
+export const rulesLoader = (query) => (signal) => readRules(query, signal);
+
+export const budgetLoader = (budgetId) => async (signal) => (await readBudget(budgetId, signal)).data;
+export const goalLoader = (goalId) => async (signal) => (await readGoal(goalId, signal)).data;
+export const ruleLoader = (ruleId) => async (signal) => (await readRule(ruleId, signal)).data;
+
 export const keys = {
+  budgets: (signature, page) => `budgets:${signature}:${page}`,
+  budget: (id) => `budget:${id}`,
+  goals: (signature, page) => `goals:${signature}:${page}`,
+  goal: (id) => `goal:${id}`,
+  goalPlan: (id) => `goalPlan:${id}`,
+  rules: (signature, page) => `rules:${signature}:${page}`,
+  rule: (id) => `rule:${id}`,
   categories: "categories",
   transaction: (id) => `transaction:${id}`,
   activity: (signature, page) => `activity:${signature}:${page}`,

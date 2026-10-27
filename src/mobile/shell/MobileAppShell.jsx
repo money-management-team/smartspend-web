@@ -5,7 +5,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import logo from "../../assets/smart-spend-logo.png";
 import "../i18n/register.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
-import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_SCREENS } from "../navigation.js";
+import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_BUDGETS, MOBILE_GOALS, MOBILE_RECURRING, MOBILE_SCREENS } from "../navigation.js";
 import { normalizePathname } from "../presentation/resolver.js";
 import MobileMenu from "./MobileMenu.jsx";
 import MobileNav from "./MobileNav.jsx";
@@ -15,7 +15,7 @@ import { MobilePortalContext } from "./portalContext.js";
 import { useCompactNav } from "./useCompactNav.js";
 
 // Proves in a built bundle that this code shipped; see tests/mobileBundle.test.mjs.
-export const MOBILE_BUILD_MARKER = "SMARTSPEND_MOBILE_S04B2";
+export const MOBILE_BUILD_MARKER = "SMARTSPEND_MOBILE_S04B3";
 
 function getTitleKey(pathname) {
   const path = normalizePathname(pathname);
@@ -26,6 +26,11 @@ function getTitleKey(pathname) {
   if (path.startsWith(`${MOBILE_ACCOUNTS}/`) && !path.slice(MOBILE_ACCOUNTS.length + 1).includes("/")) return "titles.accountDetail";
 
   if (path.startsWith(`${MOBILE_ACTIVITY}/`) && !path.slice(MOBILE_ACTIVITY.length + 1).includes("/")) return "titles.transaction";
+
+  for (const [prefix, list, record] of [[MOBILE_BUDGETS, "titles.budgets", "titles.budget"], [MOBILE_GOALS, "titles.goals", "titles.goal"], [MOBILE_RECURRING, "titles.recurring", "titles.rule"]]) {
+    if (path === prefix) return list;
+    if (path.startsWith(`${prefix}/`) && !path.slice(prefix.length + 1).includes("/")) return record;
+  }
 
   return "titles.notAvailable";
 }

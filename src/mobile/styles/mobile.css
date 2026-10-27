@@ -1279,3 +1279,162 @@
     animation: none;
   }
 }
+
+/* ---------- Planning (S04B3, read-only) ---------- */
+
+.sm-root .sm-plan-filters {
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.sm-root .sm-plan-filters .sm-field {
+  min-width: 0;
+}
+
+/* A filter group wraps instead of squeezing: four labels in a row do not fit at 320px or at enlarged text. */
+.sm-root .sm-segment-wrap {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 7rem), 1fr));
+}
+
+/* Tight padding: at 2x text on a 320px screen a word like "Archived" must fit its own button, not break inside it. */
+.sm-root .sm-segment-wrap {
+  padding: 0.125rem;
+}
+
+.sm-root .sm-segment-wrap .sm-segment-button {
+  padding-inline: 0.25rem;
+  overflow-wrap: break-word;
+}
+
+.sm-root .sm-plan-list {
+  padding-block: 0.25rem;
+}
+
+.sm-root .sm-plan-row {
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+
+.sm-root .sm-plan-row .sm-row-main {
+  gap: 0.25rem;
+  justify-items: start;
+}
+
+.sm-root .sm-plan-row > .sm-chevron {
+  margin-block-start: 0.25rem;
+}
+
+/* Spent / limit and saved / target: side by side while there is room, stacked when text is enlarged. */
+.sm-root .sm-plan-figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.125rem 1rem;
+  max-inline-size: 100%;
+  color: var(--sm-muted);
+  font-size: 0.875rem;
+}
+
+.sm-root .sm-plan-figures > span {
+  min-width: 0;
+}
+
+.sm-root .sm-plan-link {
+  align-items: flex-start;
+}
+
+.sm-root .sm-plan-link[data-sm-plan-link="unavailable"] .sm-row-meta {
+  font-style: italic;
+}
+
+.sm-root .sm-plan-chip[data-sm-tone="calm"] {
+  color: var(--sm-nav-active);
+  border-color: var(--sm-nav-active);
+}
+
+.sm-root .sm-plan-chip[data-sm-tone="warn"],
+.sm-root .sm-chip[data-sm-tone="warn"] {
+  color: #7a4b00;
+  background: #fff3d6;
+  border-color: #e3b04a;
+}
+
+.sm-root .sm-plan-chip[data-sm-tone="bad"] {
+  color: #ffffff;
+  background: var(--sm-neg);
+  border-color: var(--sm-neg);
+}
+
+.sm-root .sm-plan-chip[data-sm-tone="neutral"] {
+  color: var(--sm-muted);
+}
+
+:root[data-theme="dark"] .sm-root .sm-plan-chip[data-sm-tone="warn"],
+:root[data-theme="dark"] .sm-root .sm-chip[data-sm-tone="warn"] {
+  color: #ffd98a;
+  background: #3a2a05;
+  border-color: #8a6a1d;
+}
+
+:root[data-theme="dark"] .sm-root .sm-plan-chip[data-sm-tone="bad"] {
+  color: #1a0604;
+}
+
+.sm-root .sm-hero .sm-plan-chip {
+  color: var(--sm-navy);
+  background: var(--sm-cyan);
+  border-color: var(--sm-cyan);
+}
+
+/* The bar is decoration: the percentage beside it is text, and the state is a chip in words. */
+.sm-root .sm-progress {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.5rem;
+  inline-size: 100%;
+}
+
+.sm-root .sm-progress-track {
+  display: block;
+  block-size: 0.5rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--sm-border);
+}
+
+.sm-root .sm-progress-fill {
+  display: block;
+  block-size: 100%;
+  border-radius: 999px;
+  background: var(--sm-blue);
+}
+
+.sm-root .sm-progress[data-sm-tone="warn"] .sm-progress-fill {
+  background: #c98a00;
+}
+
+.sm-root .sm-progress[data-sm-tone="bad"] .sm-progress-fill {
+  background: var(--sm-neg);
+}
+
+.sm-root .sm-progress[data-sm-tone="neutral"] .sm-progress-fill {
+  background: var(--sm-muted);
+}
+
+:root[data-theme="dark"] .sm-root .sm-progress-fill {
+  background: var(--sm-cyan);
+}
+
+:root[data-theme="dark"] .sm-root .sm-progress[data-sm-tone="warn"] .sm-progress-fill {
+  background: #f0b840;
+}
+
+:root[data-theme="dark"] .sm-root .sm-progress[data-sm-tone="bad"] .sm-progress-fill {
+  background: var(--sm-neg);
+}
+
+.sm-root .sm-progress-text {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--sm-text);
+}
