@@ -5,11 +5,11 @@
  * Mobile section there would ship in builds where Mobile is off.
  *
  * The screens added in the full Mobile sprint keep their strings in one file
- * each under ./features/ (see ./features/index.js); they are merged in below.
+ * each under ./sections/ (see ./sections/index.js); they are merged in below.
  *
  * tests/mobileShell.test.mjs keeps the two languages in exact key parity.
  */
-import { FEATURE_MESSAGES } from "./features/index.js";
+import { FEATURE_MESSAGES } from "./sections/index.js";
 
 export const MOBILE_NAMESPACE = "mobile";
 

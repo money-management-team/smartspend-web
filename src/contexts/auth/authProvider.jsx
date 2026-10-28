@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   authApi,
   normalizeCurrentUser,
@@ -13,6 +13,7 @@ import {
   updateStoredWorkspace,
 } from "../../features/Dashboards/User/api/apiClient";
 import { AuthContext } from "./authContext";
+import { crossTabChange } from "./crossTabSession";
 import { createWelcomeNotice, dismissWelcomeNotice } from "./welcomeNotice";
 
 const emptySession = {
@@ -176,6 +177,49 @@ export default function AuthProvider({ children }) {
     };
   }, [clearAuth]);
 
+  // Another tab signed out, signed in as someone else or switched the workspace
+  // (crossTabSession.js). Signed out: this tab is signed out too (the other tab
+  // already told the server). Switched: this tab takes the stored session and
+  // everything under the provider is mounted again (`generation`), so no page
+  // keeps what it read for the previous identity, and GET /user confirms the
+  // new one. A bfcache restore is checked the same way.
+  const shownTokenRef = useRef(session.token);
+  const [generation, setGeneration] = useState(0);
+
+  useEffect(() => {
+    shownTokenRef.current = session.token;
+  }, [session.token]);
+
+  useEffect(() => {
+    const react = (event) => {
+      const stored = getStoredAuthSession();
+      const change = crossTabChange(event, shownTokenRef.current, stored.token);
+
+      if (!change) return;
+
+      googleAttemptRef.current++;
+      freshTokenRef.current = null;
+      shownTokenRef.current = stored.token;
+      setWelcomeNotice(null);
+      setInitializationError(null);
+      setSession(change === "signed-out" ? emptySession : { token: stored.token, user: stored.user, workspace: stored.workspace, role: stored.role });
+      setInitializing(change !== "signed-out");
+      setGeneration((value) => value + 1);
+    };
+    const onStorage = (event) => react(event);
+    const onPageShow = (event) => {
+      if (event.persisted) react({ key: null, oldValue: null, newValue: null });
+    };
+
+    globalThis.addEventListener?.("storage", onStorage);
+    globalThis.addEventListener?.("pageshow", onPageShow);
+
+    return () => {
+      globalThis.removeEventListener?.("storage", onStorage);
+      globalThis.removeEventListener?.("pageshow", onPageShow);
+    };
+  }, []);
+
   useEffect(() => {
     if (!session.token) {
       return undefined;
@@ -213,7 +257,8 @@ export default function AuthProvider({ children }) {
 
     restoreSession();
     return () => controller.abort();
-  }, [clearAuth, session.token, updateUser, updateWorkspace]);
+    // `generation` too: a cross-tab workspace switch keeps the token and is confirmed the same way.
+  }, [clearAuth, session.token, generation, updateUser, updateWorkspace]);
 
   const value = useMemo(
     () => ({
@@ -250,5 +295,9 @@ export default function AuthProvider({ children }) {
     ],
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      <Fragment key={generation}>{children}</Fragment>
+    </AuthContext.Provider>
+  );
 }
