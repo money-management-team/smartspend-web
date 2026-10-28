@@ -13,7 +13,7 @@ export default function WriteClosedNotice({ operation, fullPath, compact = false
   const { t } = useTranslation(MOBILE_NAMESPACE);
 
   return (
-    <div className="sm-card sm-closed" role="note" data-sm-note="write-closed" data-sm-write={operation}>
+    <div className={compact ? "sm-closed sm-closed-compact" : "sm-card sm-closed"} role="note" data-sm-note="write-closed" data-sm-write={operation}>
       {!compact && <h2 className="sm-card-title">{t("writes.closedTitle")}</h2>}
       <p className="sm-text sm-muted">{t("writes.closedBody")}</p>
       {fullPath && (

@@ -19,11 +19,15 @@
  * tests/mobileBundle.test.mjs builds both ways and checks the output.
  */
 
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import path from "node:path";
+
+import { PWA_ENTRY_ID, pwaEntrySource, pwaManifest, swSource } from "./mobilePwa.mjs";
 
 export const MOBILE_ENTRY_ID = "virtual:smartspend-mobile";
 const RESOLVED_ID = `\0${MOBILE_ENTRY_ID}`;
-
+const RESOLVED_PWA_ID = `\0${PWA_ENTRY_ID}`;
 export function mobileEntrySource(enabled, root) {
   if (!enabled) return "export const MobileEntry = null;\n";
 
@@ -32,8 +36,14 @@ export function mobileEntrySource(enabled, root) {
   return `export { default as MobileEntry } from ${JSON.stringify(entry)};\n`;
 }
 
-export function mobileEntryPlugin(enabled) {
+/*
+ * `pwa` (scripts/mobilePwa.mjs) is only ever true in a non-production build with
+ * Mobile on. Then the worker, the manifest and the icon are emitted under m/;
+ * otherwise nothing is, and "virtual:smartspend-mobile-pwa" says MOBILE_PWA = false.
+ */
+export function mobileEntryPlugin(enabled, { pwa = false } = {}) {
   let root = process.cwd();
+  const withPwa = Boolean(enabled && pwa);
 
   return {
     name: "smartspend-mobile-entry",
@@ -41,10 +51,22 @@ export function mobileEntryPlugin(enabled) {
       root = config.root;
     },
     resolveId(id) {
-      return id === MOBILE_ENTRY_ID ? RESOLVED_ID : null;
+      if (id === MOBILE_ENTRY_ID) return RESOLVED_ID;
+      if (id === PWA_ENTRY_ID) return RESOLVED_PWA_ID;
+      return null;
     },
     load(id) {
-      return id === RESOLVED_ID ? mobileEntrySource(enabled, root) : null;
+      if (id === RESOLVED_ID) return mobileEntrySource(enabled, root);
+      if (id === RESOLVED_PWA_ID) return pwaEntrySource(withPwa, "");
+      return null;
+    },
+    generateBundle(_options, bundle) {
+      if (!withPwa) return;
+      // The worker's version follows the build's own file names, so a new build is a new cache.
+      const version = createHash("sha256").update(Object.keys(bundle).sort().join(",")).digest("hex").slice(0, 12);
+      this.emitFile({ type: "asset", fileName: "m/sw.js", source: swSource(version) });
+      this.emitFile({ type: "asset", fileName: "m/manifest.webmanifest", source: JSON.stringify(pwaManifest(), null, 2) });
+      this.emitFile({ type: "asset", fileName: "m/icon-256.png", source: readFileSync(path.resolve(root, "src/assets/smartspend-logo-256.png")) });
     },
   };
 }

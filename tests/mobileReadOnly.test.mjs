@@ -99,8 +99,10 @@ describe("the source", () => {
     assert.deepEqual(find(/Math\.(round|floor|trunc)/, amountFiles), []);
   });
 
-  it("has no service worker, cache, IndexedDB or manifest", () => {
-    assert.deepEqual(find(/serviceWorker|indexedDB|\bcaches\b|CacheStorage|workbox|manifest|BackgroundSync|periodicSync/i), []);
+  it("touches the service worker and caches in one file only, and never IndexedDB, background sync or a queue", () => {
+    // pwa/worker.js registers /m/sw.js in a local/staging PWA build, and removes it in every other build (scripts/mobilePwa.mjs).
+    assert.deepEqual(find(/serviceWorker|\bcaches\b|CacheStorage|manifest/i), ["src/mobile/pwa/worker.js"]);
+    assert.deepEqual(find(/indexedDB|workbox|BackgroundSync|periodicSync|\bsync\.register/i), []);
   });
 
   it("writes to browser storage in exactly one place: the single presentation word", () => {

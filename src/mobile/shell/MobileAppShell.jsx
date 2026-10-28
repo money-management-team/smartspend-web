@@ -7,6 +7,9 @@ import "../i18n/register.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_BUDGETS, MOBILE_CALENDAR, MOBILE_CATEGORIES, MOBILE_CATEGORY_NEW, MOBILE_DEBTS, MOBILE_EXPORTS, MOBILE_GOALS, MOBILE_IMPORTS, MOBILE_NOTIFICATIONS, MOBILE_REPORTS, MOBILE_RECURRING, MOBILE_SCREENS, MOBILE_TRANSFERS } from "../navigation.js";
 import { normalizePathname } from "../presentation/resolver.js";
+import PwaNotices from "../pwa/PwaNotices.jsx";
+import { PwaContext } from "../pwa/pwaContext.js";
+import { usePwa } from "../pwa/usePwa.js";
 import MobileMenu from "./MobileMenu.jsx";
 import MobileNav from "./MobileNav.jsx";
 import MobileSheet from "./MobileSheet.jsx";
@@ -60,6 +63,7 @@ export default function MobileAppShell() {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const { pathname } = useLocation();
   const compact = useCompactNav();
+  const pwa = usePwa();
 
   const [overlay, setOverlay] = useState(null); // null | "add" | "menu"
   const [portal, setPortal] = useState(null);
@@ -105,7 +109,10 @@ export default function MobileAppShell() {
         </header>
 
         <main id="sm-main" className="sm-main" inert={modalOpen}>
-          <Outlet />
+          <PwaNotices pwa={pwa} />
+          <PwaContext.Provider value={pwa}>
+            <Outlet />
+          </PwaContext.Provider>
         </main>
 
         <div className="sm-nav-wrap" inert={modalOpen}>

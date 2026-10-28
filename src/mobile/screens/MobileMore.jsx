@@ -7,6 +7,9 @@ import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { MOBILE_ACCOUNTS, MOBILE_IMPORTS, MOBILE_NOTIFICATIONS, MOBILE_REPORTS, MOBILE_TRANSFERS } from "../navigation.js";
 import { PRESENTATION_PREFERENCES } from "../presentation/preference.js";
 import { usePresentation } from "../presentation/usePresentation.js";
+import { InstallCard } from "../pwa/PwaNotices.jsx";
+import { usePwaState } from "../pwa/pwaContext.js";
+import { PWA_BUILD } from "../pwa/worker.js";
 import Chevron from "../ui/Chevron.jsx";
 
 function MoreLink({ to, title, hint }) {
@@ -32,6 +35,7 @@ export default function MobileMore() {
   const { theme, changeTheme } = useThemeContext();
   const { language, setLanguage } = useLanguageContext();
   const { preference, setPreference } = usePresentation();
+  const pwa = usePwaState();
 
   return (
     <section className="sm-page" data-sm-screen="more">
@@ -81,6 +85,8 @@ export default function MobileMore() {
           </div>
         </div>
       </div>
+
+      <InstallCard pwa={pwa} enabled={PWA_BUILD} />
 
       <div className="sm-card">
         <fieldset className="sm-fieldset">

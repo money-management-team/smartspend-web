@@ -163,6 +163,20 @@ describe("a production build with Mobile on (local testing mode)", () => {
   });
 });
 
+describe("the Mobile PWA in the bundle", () => {
+  it("a build with Mobile on but no PWA has no worker file, no manifest and no registration code; only the clean-up path", () => {
+    assert.equal(files(on).some((file) => /[\\/]m[\\/](sw\.js|manifest\.webmanifest)$/.test(file)), false);
+    const js = assets(on).filter((file) => file.endsWith(".js")).map(text).join(" ");
+    for (const needle of ["m/sw.js", "updateViaCache", "manifest.webmanifest"]) assert.ok(!js.includes(needle), `found ${needle}`);
+    assert.ok(js.includes("sm-pwa-"), "the clean-up of an earlier worker's caches is there");
+  });
+
+  it("the flag-off build has nothing of the PWA at all", () => {
+    const js = assets(off).map(text).join(" ");
+    for (const needle of ["m/sw.js", "sm-pwa-", "getRegistrations"]) assert.ok(!js.includes(needle), `found ${needle}`);
+  });
+});
+
 // What only the Smart Savings plan section has: its strings and its own chunk. (The section's request is a GET /savings-goals/{id}/plan.)
 const PLAN_STRINGS = ["This goal has no Smart Savings plan", "Smart Savings plan", "planning.goals.plan.title", "smart-plan"];
 

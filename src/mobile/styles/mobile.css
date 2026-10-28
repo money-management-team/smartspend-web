@@ -1641,7 +1641,13 @@
 .sm-root .sm-bar-label { font-size: 0.8125rem; overflow-wrap: anywhere; }
 .sm-root .sm-bar-track { block-size: 0.5rem; border-radius: 999px; background: var(--sm-track, rgba(127, 127, 127, 0.18)); overflow: hidden; }
 .sm-root .sm-bar-fill { display: block; block-size: 100%; border-radius: inherit; background: var(--sm-accent, #2563eb); }
-.sm-root .sm-cal-bar { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-.sm-root .sm-cal-month { flex: 1 1 auto; text-align: center; margin: 0; }
+.sm-root .sm-closed { min-inline-size: 0; overflow-wrap: break-word; }
+/* Inside another card (a page's "Changes" section): a quiet block, not a card in a card. */
+.sm-root .sm-closed-compact { padding-inline-start: 0.75rem; }
+/* The month on its own row (it never shrinks to a sliver at large text); Previous and Next below it, at either end. */
+.sm-root .sm-cal-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.sm-root .sm-cal-bar > .sm-button { flex: none; padding-inline: 0.5rem; min-inline-size: 44px; }
+.sm-root .sm-cal-month { order: -1; flex: 1 0 100%; text-align: center; margin: 0; }
 .sm-root .sm-button-small:has(.sm-chevron) { min-inline-size: 44px; min-block-size: 44px; }
 .sm-root .sm-note-row { align-items: flex-start; }
+.sm-root .sm-pwa-note { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 0.75rem; }

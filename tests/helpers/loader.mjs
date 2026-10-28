@@ -18,8 +18,15 @@ const STUBBED = /\.(css|png|jpe?g|svg|webp|woff2?|ttf)$/i;
 // Vite answers this virtual module in a real build (scripts/mobileEntryPlugin.mjs).
 // Tests see Mobile switched off, which is also what the route table must do by default.
 const MOBILE_ENTRY = "virtual:smartspend-mobile";
+// The Mobile PWA module (scripts/mobilePwa.mjs): off in tests, as in every build but a local/staging one.
+const MOBILE_PWA = "virtual:smartspend-mobile-pwa";
+const MOBILE_PWA_SOURCE = 'export const MOBILE_PWA = false; export const PWA_VERSION = ""; export const PWA_SW_PATH = "/m/sw.js"; export const PWA_SCOPE = "/m/"; export const PWA_CACHE_PREFIX = "sm-pwa-";';
 
 export async function resolve(specifier, context, nextResolve) {
+  if (specifier === MOBILE_PWA) {
+    return { url: `data:text/javascript,${encodeURIComponent(MOBILE_PWA_SOURCE)}`, format: "module", shortCircuit: true };
+  }
+
   if (specifier === MOBILE_ENTRY) {
     return { url: "data:text/javascript,export const MobileEntry = null;", format: "module", shortCircuit: true };
   }

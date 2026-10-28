@@ -43,6 +43,8 @@ const ALLOWED_OUTSIDE = [
 ];
 
 const ALLOWED_PACKAGES = ["react", "react-dom", "react-router-dom", "react-i18next", "react-icons/lu"];
+// The PWA build switch, answered by scripts/mobileEntryPlugin.mjs (only pwa/worker.js imports it).
+const ALLOWED_VIRTUAL = ["virtual:smartspend-mobile-pwa"];
 
 const withExtension = (target) => ["", ".js", ".jsx", "/index.js", "/index.jsx"].map((suffix) => target + suffix).find((candidate) => { try { return statSync(candidate).isFile(); } catch { return false; } }) ?? target;
 
@@ -70,6 +72,8 @@ describe("Mobile import boundaries", () => {
           const targetRel = rel(target);
           if (targetRel.startsWith("src/mobile/")) continue;
           if (!ALLOWED_OUTSIDE.some((pattern) => pattern.test(targetRel))) violations.push(`${rel(file)} -> ${specifier}`);
+        } else if (ALLOWED_VIRTUAL.includes(specifier)) {
+          if (rel(file) !== "src/mobile/pwa/worker.js") violations.push(`${rel(file)} -> ${specifier}`);
         } else if (!ALLOWED_PACKAGES.includes(specifier)) {
           violations.push(`${rel(file)} -> ${specifier}`);
         }
