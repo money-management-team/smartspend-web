@@ -15,8 +15,9 @@ import MobileSheet from "../shell/MobileSheet.jsx";
 import Chevron from "../ui/Chevron.jsx";
 import CategoryOutcome from "./CategoryOutcome.jsx";
 import { useCategoryMutation } from "./useCategoryMutation.js";
+import { useLeaveGuard } from "./useLeaveGuard.js";
 
-const REJECTION_KEYS = { VALIDATION_ERROR: "validation", FORBIDDEN: "forbidden", NOT_FOUND: "notFound", CONFLICT: "conflict", RATE_LIMITED: "rate", UNAUTHENTICATED: "session" };
+const REJECTION_KEYS = { VALIDATION_ERROR: "validation", FORBIDDEN: "forbidden", NOT_FOUND: "notFound" };
 
 /*
  * The category form, for a new category or a rename.
@@ -42,9 +43,9 @@ function CategoryForm({ mode, category, backTo }) {
   const [name, setName] = useState(() => (mode === "edit" ? category.name ?? "" : ""));
   const [type, setType] = useState("");
   const [attempted, setAttempted] = useState(false);
-  const [discarding, setDiscarding] = useState(false);
   const summaryRef = useRef(null);
-  const cancelRef = useRef(null);
+  // Where the person was in the form when a navigation was held: "Keep editing" puts the focus back there.
+  const lastFieldRef = useRef(null);
   const [workspaceId] = useState(() => (mode === "create" ? workspaceIdForBody(sessionWorkspace()) : null));
 
   const original = mode === "edit" ? category.name ?? "" : "";
@@ -57,17 +58,9 @@ function CategoryForm({ mode, category, backTo }) {
   const blocked = mode === "create" && workspaceId === null;
   const showSummary = (attempted && (local.name || local.type)) || rejected;
 
-  // While something is unsaved or a request is running, leaving the page asks first (a reload or a closed tab).
-  useEffect(() => {
-    if (!dirty && !mutation.submitting) return undefined;
-
-    const warn = (event) => {
-      event.preventDefault();
-      event.returnValue = "";
-    };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty, mutation.submitting]);
+  // Unsaved edits, or a request on its way: every navigation away is held and asked about (useLeaveGuard.js).
+  const editing = mutation.phase === "editing" || mutation.phase === "rejected";
+  const guard = useLeaveGuard((dirty && editing) || mutation.submitting);
 
   // A new problem (on submit, or the server's answer) moves the focus to the summary.
   const problemSignal = `${attempted && (local.name || local.type) ? "local" : ""}:${rejected ? mutation.code : ""}`;
@@ -75,8 +68,8 @@ function CategoryForm({ mode, category, backTo }) {
     if (problemSignal !== ":") summaryRef.current?.focus();
   }, [problemSignal]);
 
-  if (mutation.phase === "confirmed" || mutation.phase === "unknown") {
-    return <CategoryOutcome kind={mutation.phase} mode={mode} category={mutation.category} categoryId={category?.id} />;
+  if (mutation.phase === "confirmed" || mutation.phase === "unknown" || mutation.phase === "changed") {
+    return <CategoryOutcome kind={mutation.phase} mode={mode} category={mutation.category} categoryId={category?.id} code={mutation.code} status={mutation.status} />;
   }
 
   const submit = (event) => {
@@ -89,19 +82,25 @@ function CategoryForm({ mode, category, backTo }) {
 
     if (mode === "create") {
       const payload = buildCreatePayload({ workspaceId, name, type });
-      mutation.start({ send: () => sendCategoryCreate(payload), prove: (data) => confirmCreate(data, { name: payload.name, type: payload.type, workspaceId }) });
+      mutation.start({
+        operation: "create",
+        send: () => sendCategoryCreate(payload),
+        prove: (data) => confirmCreate(data, { name: payload.name, type: payload.type, workspaceId }),
+        // The workspace it was sent for must still be the session's when the answer arrives, or the answer is not shown as this screen's.
+        stillCurrent: () => workspaceIdForBody(sessionWorkspace()) === workspaceId,
+      });
     } else {
       const payload = buildUpdatePayload({ name });
-      mutation.start({ send: () => sendCategoryUpdate(category.id, payload), prove: (data) => confirmUpdate(data, category.id, payload.name) });
+      mutation.start({ operation: "update", send: () => sendCategoryUpdate(category.id, payload), prove: (data) => confirmUpdate(data, category.id, payload.name) });
     }
   };
 
-  const leave = () => navigate(backTo);
-  const cancel = () => {
-    if (mutation.submitting) return;
-    if (dirty) setDiscarding(true);
-    else leave();
+  // Only the form's own fields: the leave dialog is portalled, and its focus events reach this form through React.
+  const rememberFocus = (event) => {
+    if (event.currentTarget.contains(event.target)) lastFieldRef.current = event.target;
   };
+  // Cancel is a navigation like any other: with a draft, the guard asks first.
+  const cancel = () => navigate(backTo);
   const focusField = (id) => (event) => {
     event.preventDefault();
     document.getElementById(id)?.focus();
@@ -109,10 +108,10 @@ function CategoryForm({ mode, category, backTo }) {
   const nameId = `${ids}-name`;
   const typeId = `${ids}-type`;
   const rejectionText = rejected ? t(`categories.form.rejected.${REJECTION_KEYS[mutation.code] ?? "other"}`) : null;
-  const serverMessage = rejected && ["VALIDATION_ERROR", "CONFLICT"].includes(mutation.code) && mutation.rejection?.message ? mutation.rejection.message.slice(0, 300) : null;
+  const serverMessage = rejected && mutation.code === "VALIDATION_ERROR" && mutation.rejection?.message ? mutation.rejection.message.slice(0, 300) : null;
 
   return (
-    <form className="sm-cat-form" onSubmit={submit} noValidate aria-busy={mutation.submitting} data-sm-form={mode} data-sm-phase={mutation.phase}>
+    <form className="sm-cat-form" onSubmit={submit} onFocusCapture={rememberFocus} noValidate aria-busy={mutation.submitting} data-sm-form={mode} data-sm-phase={mutation.phase}>
       {showSummary && (
         <div className="sm-card sm-error sm-cat-summary" role="alert" tabIndex={-1} ref={summaryRef} aria-labelledby={`${ids}-summary`} data-sm-summary={rejected ? `rejected:${mutation.code}` : "local"}>
           <h2 id={`${ids}-summary`} className="sm-card-title">{t(rejected ? "categories.form.summaryRejected" : "categories.form.summary")}</h2>
@@ -183,17 +182,17 @@ function CategoryForm({ mode, category, backTo }) {
         <button type="submit" className="sm-button" disabled={mutation.submitting || blocked || (mode === "edit" && !dirty)} aria-busy={mutation.submitting} data-sm-action="submit">
           {t(mutation.submitting ? `categories.form.${mode}Busy` : `categories.form.${mode}Submit`)}
         </button>
-        <button type="button" className="sm-button sm-button-quiet" onClick={cancel} disabled={mutation.submitting} ref={cancelRef} data-sm-action="cancel">
+        <button type="button" className="sm-button sm-button-quiet" onClick={cancel} disabled={mutation.submitting} data-sm-action="cancel">
           {t("categories.form.cancel")}
         </button>
       </div>
       {mutation.submitting && <p className="sm-text sm-muted sm-fine" role="status">{t("categories.form.sending")}</p>}
 
-      <MobileSheet open={discarding} onClose={() => setDiscarding(false)} titleId={`${ids}-discard`} title={t("categories.form.discardTitle")} returnFocusRef={cancelRef}>
-        <p className="sm-text">{t("categories.form.discardBody")}</p>
-        <div className="sm-actions">
-          <button type="button" className="sm-button" onClick={() => setDiscarding(false)}>{t("categories.form.keepEditing")}</button>
-          <button type="button" className="sm-button sm-button-quiet" onClick={leave} data-sm-action="discard">{t("categories.form.discard")}</button>
+      <MobileSheet open={guard.blocked} onClose={guard.stay} titleId={`${ids}-leave`} title={t(mutation.submitting ? "categories.form.leaveSendingTitle" : "categories.form.discardTitle")} returnFocusRef={lastFieldRef}>
+        <p className="sm-text">{t(mutation.submitting ? "categories.form.leaveSendingBody" : "categories.form.discardBody")}</p>
+        <div className="sm-actions sm-leave-actions">
+          <button type="button" className="sm-button" onClick={guard.stay} data-sm-action="stay">{t(mutation.submitting ? "categories.form.stayWhileSending" : "categories.form.keepEditing")}</button>
+          <button type="button" className="sm-button sm-button-quiet" onClick={guard.leave} data-sm-action="discard">{t(mutation.submitting ? "categories.form.leaveAnyway" : "categories.form.discard")}</button>
         </div>
       </MobileSheet>
     </form>

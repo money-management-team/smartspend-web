@@ -164,7 +164,7 @@ describe("a category write under a changing identity", () => {
     }
   });
 
-  it("the person leaves the form while it is sending: nothing is claimed, nothing is resent, and the list they go to is read fresh", async () => {
+  it("the person leaves the form while it is sending (after being told it won't stop it): nothing is claimed, nothing is resent, the list is read fresh", async () => {
     const held = hold();
     await setup("/m/planning/categories", {
       onCreate: (body, call, state) =>
@@ -180,6 +180,10 @@ describe("a category write under a changing identity", () => {
     await click(submit());
 
     await click(qa("nav.sm-nav a").find((item) => item.textContent.trim() === "Home"));
+    await settle();
+    assert.match(text(q("[role='dialog']")), /still being sent.*Leaving won't stop it/);
+    assert.equal(location(), "/m/planning/categories/new", "held until the person decides");
+    await click(q("[data-sm-action='discard']"));
     await settle();
     held.release(created({ name: "Rent" }));
     await settle();
@@ -203,6 +207,8 @@ describe("a category write under a changing identity", () => {
     await click(submit());
 
     await click(qa("a", q("main")).find((item) => item.textContent.trim() === "Back to the category"));
+    await settle();
+    await click(q("[data-sm-action='discard']"));
     await settle();
     await click(qa("a", q("main")).find((item) => item.textContent.trim() === "Back to categories"));
     await settle();

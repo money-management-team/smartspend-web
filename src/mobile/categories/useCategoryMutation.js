@@ -7,12 +7,12 @@ import { classifyOutcome } from "../models/categoryForm.js";
 // What the app has read about categories: forgotten after a write, so the next read is a fresh one.
 const isCategoryKey = (key) => key === "categories" || key.startsWith("categoryList:") || key.startsWith("category:");
 
-const EDITING = Object.freeze({ phase: "editing", rejection: null, category: null, code: null });
+const EDITING = Object.freeze({ phase: "editing", rejection: null, category: null, code: null, status: 0 });
 
 /*
  * The life of one category write (create or rename):
  *
- *   editing -> submitting -> confirmed | rejected | unknown
+ *   editing -> submitting -> confirmed | rejected | unknown | changed
  *
  * ("validating" is the synchronous check the form does before it calls start.)
  *
@@ -28,6 +28,10 @@ const EDITING = Object.freeze({ phase: "editing", rejection: null, category: nul
  *     one call.
  *   - "confirmed" needs proof in the answer (`request.prove`); an answer that
  *     is not that proof is "unknown", because the request may have been processed.
+ *   - "rejected" only where the contract says the server refused it (models/categoryForm.js
+ *     classifyOutcome); every other failure is "unknown".
+ *   - "changed": the session's workspace is not the one the request was sent for any
+ *     more, so the answer is not presented as this screen's result.
  *   - "unknown" is never shown as a failure, and after it this form sends nothing.
  *   - The identity guard is asserted in the turn the request leaves (so the token
  *     it carries is the one that was checked) and again when the answer arrives.
@@ -51,12 +55,14 @@ export function useCategoryMutation() {
     };
   }, []);
 
-  /** @param {{ send: () => Promise<{ data: unknown }>, prove: (data: unknown) => object | null }} request */
+  /**
+   * @param {{ operation: "create" | "update", send: () => Promise<{ data: unknown }>, prove: (data: unknown) => object | null, stillCurrent?: () => boolean }} request
+   */
   const start = useCallback(
     async (request) => {
       if (busy.current) return;
       busy.current = true;
-      setState({ phase: "submitting", rejection: null, category: null, code: null });
+      setState({ phase: "submitting", rejection: null, category: null, code: null, status: 0 });
 
       let outcome;
 
@@ -66,9 +72,12 @@ export function useCategoryMutation() {
         guard.assert();
 
         const proof = request.prove(response?.data);
-        outcome = proof ? { kind: "confirmed", category: proof } : { kind: "unknown", code: "UNCONFIRMED" };
+        if (request.stillCurrent && !request.stillCurrent()) outcome = { kind: "changed", code: "WORKSPACE_CHANGED" };
+        else outcome = proof ? { kind: "confirmed", category: proof } : { kind: "unknown", code: "UNCONFIRMED" };
       } catch (error) {
-        outcome = classifyOutcome(error);
+        // An error is looked at only while the identity still holds: a 401 clears the session, and an answer
+        // that arrives after a sign-out or a switch belongs to no one on this screen.
+        outcome = guard.check() ? classifyOutcome(error, request.operation) : { kind: "identity" };
       }
 
       if (outcome.kind === "identity") return;
@@ -81,7 +90,8 @@ export function useCategoryMutation() {
 
       if (outcome.kind === "confirmed") setState({ phase: "confirmed", rejection: null, category: outcome.category, code: null });
       else if (outcome.kind === "rejected") setState({ phase: "rejected", rejection: outcome.error, category: null, code: outcome.code });
-      else setState({ phase: "unknown", rejection: null, category: null, code: outcome.code });
+      else if (outcome.kind === "changed") setState({ phase: "changed", rejection: null, category: null, code: outcome.code });
+      else setState({ phase: "unknown", rejection: null, category: null, code: outcome.code, status: outcome.status ?? 0 });
     },
     [guard, store],
   );

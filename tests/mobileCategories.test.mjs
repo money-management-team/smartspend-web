@@ -280,15 +280,30 @@ describe("a new category", () => {
     assert.ok(q("[data-sm-outcome='confirmed']"));
   });
 
-  for (const [status, code, words] of [[403, "FORBIDDEN", /can't change this category/], [409, "CONFLICT", /conflicts with another/], [429, "RATE_LIMITED", /Too many requests/]]) {
-    it(`a ${status} is a refusal: said in words, nothing claimed, nothing resent`, async () => {
+  it("a 403 is a refusal by the contract: said in words, the draft stays, nothing resent", async () => {
+    await open("/m/planning/categories/new", { hooks: { onCreate: () => failure(403, "refused") } });
+    await fillCreate();
+    await click(submitButton());
+    await settle();
+
+    assert.equal(q("[data-sm-summary]").dataset.smSummary, "rejected:FORBIDDEN");
+    assert.match(text(q("[data-sm-summary]")), /can't change this category.*Nothing was saved/);
+    assert.equal(nameInput().value, "Rent");
+    assert.equal(writes().length, 1);
+  });
+
+  for (const [status, reason] of [[400, "unclear"], [404, "unclear"], [408, "noAnswer"], [409, "conflict"], [429, "rate"]]) {
+    it(`a ${status} on a create is unknown, not a refusal: no "nothing was saved", no resend`, async () => {
       await open("/m/planning/categories/new", { hooks: { onCreate: () => failure(status, "refused") } });
       await fillCreate();
       await click(submitButton());
       await settle();
 
-      assert.equal(q("[data-sm-summary]").dataset.smSummary, `rejected:${code}`);
-      assert.match(text(q("[data-sm-summary]")), words);
+      const outcome = q("[data-sm-outcome='unknown']");
+      assert.ok(outcome, String(status));
+      assert.equal(q("[data-sm-reason]").dataset.smReason, reason);
+      assert.doesNotMatch(text(outcome), /Nothing was saved|didn't accept/);
+      assert.equal(qa("button", outcome).length, 0);
       assert.equal(writes().length, 1);
     });
   }
@@ -336,18 +351,27 @@ describe("a new category", () => {
 
   it("Cancel with nothing typed leaves at once; with a draft it asks first, and Keep editing keeps it", async () => {
     await open("/m/planning/categories/new");
-    await change(nameInput(), "Draft");
-
     await click(button("Cancel"));
+    await settle();
+    assert.equal(location(), "/m/planning/categories");
+
+    await click(link("New category"));
+    await settle();
+    await change(nameInput(), "Draft");
+    await click(button("Cancel"));
+    await settle();
     const sheet = q("[role='dialog']");
     assert.match(text(sheet), /Discard your changes\?.*hasn't been sent/);
 
     await click(button("Keep editing", sheet));
+    await settle();
     assert.equal(q("[role='dialog']"), null);
     assert.equal(nameInput().value, "Draft");
+    assert.equal(location(), "/m/planning/categories/new");
 
     await click(button("Cancel"));
-    await click(button("Discard", q("[role='dialog']")));
+    await settle();
+    await click(button("Discard changes", q("[role='dialog']")));
     await settle();
     assert.equal(location(), "/m/planning/categories");
     assert.deepEqual(writes(), []);
@@ -416,15 +440,34 @@ describe("a rename", () => {
     assert.equal(nameInput(), null);
   });
 
-  it("a 409 is a conflict: the draft stays, nothing is claimed", async () => {
+  it("a 409 on a rename is unknown (no category meaning is documented): nothing claimed either way, no resend", async () => {
     await open("/m/planning/categories/1/edit", { hooks: { onUpdate: () => failure(409, "Changed meanwhile") } });
     await change(nameInput(), "New name");
     await click(submitButton());
     await settle();
 
-    assert.equal(q("[data-sm-summary]").dataset.smSummary, "rejected:CONFLICT");
-    assert.match(text(q("[data-sm-summary]")), /Changed meanwhile/);
+    assert.ok(q("[data-sm-outcome='unknown']"));
+    assert.equal(q("[data-sm-reason]").dataset.smReason, "conflict");
+    assert.equal(writes().length, 1);
+  });
+
+  it("a 404 on a rename is a refusal by the contract: the category isn't available, the draft stays", async () => {
+    await open("/m/planning/categories/1/edit", { hooks: { onUpdate: () => failure(404, "Not found") } });
+    await change(nameInput(), "New name");
+    await click(submitButton());
+    await settle();
+
+    assert.equal(q("[data-sm-summary]").dataset.smSummary, "rejected:NOT_FOUND");
     assert.equal(nameInput().value, "New name");
+  });
+
+  it("the rename page and form say what a rename may change, and claim nothing about balances", async () => {
+    await open("/m/planning/categories/1");
+    assert.match(text(q("main")), /may also change how existing transactions using it are labelled/);
+    await click(link("Rename category"));
+    await settle();
+    assert.match(text(q("main")), /may also change how existing transactions using this category are labelled/);
+    assert.doesNotMatch(text(q("main")), /balance|ledger|no financial/i);
   });
 
   it("an unknown rename offers to check the category and the list, nothing else", async () => {

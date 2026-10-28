@@ -64,24 +64,37 @@ export function confirmUpdate(data, categoryId, sentName) {
 }
 
 /*
- * What an error means for the write that caused it.
+ * What an error means for the write that caused it, for each operation.
+ *
+ * "rejected" is claimed only where the documented contract says the server
+ * refused the request (docs/categories/api.md): a 422 is its validation of the
+ * fields (name, type), a 403 is "system category, or one you can't manage", and,
+ * for a rename only, a 404 is "doesn't exist or isn't yours". The backend source
+ * was not available, so even these rest on the documentation, not on the code.
+ *
+ * Everything else is "unknown", because nothing documented says the write did not
+ * happen: 400, 408, 409 (no category meaning is documented), 429 (a rate limit may
+ * sit before or after the work), 401 (where the token is checked is not verified),
+ * a 404 for a create, 5xx, no answer (network, timeout, abort), an answer that is
+ * not the envelope, a failure envelope with a success status.
  *
  *   identity   the signed-in identity changed: the screen is gone, nothing is claimed
- *   rejected   the server answered with a 4xx: it looked at the request and refused it,
- *              so the write did not happen (401 session ended, 403, 404, 409, 422, 429, ...)
- *   unknown    everything else: no answer (network, timeout, the user left), a 5xx, an
- *              answer that is not the documented envelope, an envelope that says
- *              failure with a success status. The server may have done it.
- *
- * "Unknown" is never shown as a failure and never retried by itself.
+ *   rejected   the server refused it, by the contract: the person may change and send again
+ *   unknown    it may or may not have happened: shown as such, never sent again by itself
  */
-export function classifyOutcome(error) {
+const REJECTED_BY_CONTRACT = {
+  create: { 403: "FORBIDDEN", 422: "VALIDATION_ERROR" },
+  update: { 403: "FORBIDDEN", 404: "NOT_FOUND", 422: "VALIDATION_ERROR" },
+};
+
+export function classifyOutcome(error, operation) {
   if (error?.code === "IDENTITY_CHANGED") return { kind: "identity" };
 
   const status = Number.isInteger(error?.status) ? error.status : 0;
-  if (error?.name === "ApiError" && status >= 400 && status < 500) return { kind: "rejected", code: error.code, error };
+  const code = REJECTED_BY_CONTRACT[operation]?.[status];
+  if (error?.name === "ApiError" && code && error.code === code) return { kind: "rejected", code, error };
 
-  return { kind: "unknown", code: error?.code ?? "UNKNOWN" };
+  return { kind: "unknown", code: error?.code ?? error?.name ?? "UNKNOWN", status };
 }
 
 /** Field messages from a 422: the first message of each field Mobile has an input for. */

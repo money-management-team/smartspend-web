@@ -130,20 +130,39 @@ describe("what counts as proof", () => {
 describe("what an error means", () => {
   const api = (status, code) => new ApiError("x", { status, code });
 
-  it("a 4xx is a refusal: the write did not happen", () => {
-    for (const [status, code] of [[401, "UNAUTHENTICATED"], [403, "FORBIDDEN"], [404, "NOT_FOUND"], [409, "CONFLICT"], [422, "VALIDATION_ERROR"], [429, "RATE_LIMITED"], [400, "REQUEST_FAILED"]]) {
-      assert.equal(classifyOutcome(api(status, code)).kind, "rejected", code);
+  it("is a refusal only where the documented contract says so: 422 and 403 for both, 404 for a rename", () => {
+    for (const operation of ["create", "update"]) {
+      assert.equal(classifyOutcome(api(422, "VALIDATION_ERROR"), operation).kind, "rejected", `${operation} 422`);
+      assert.equal(classifyOutcome(api(403, "FORBIDDEN"), operation).kind, "rejected", `${operation} 403`);
     }
+    assert.equal(classifyOutcome(api(404, "NOT_FOUND"), "update").kind, "rejected");
+    assert.equal(classifyOutcome(api(404, "NOT_FOUND"), "create").kind, "unknown", "no 404 is documented for a create");
+  });
+
+  it("every other status is unknown, for both operations: 400, 401, 408, 409, 429, 5xx", () => {
+    for (const operation of ["create", "update"]) {
+      for (const [status, code] of [[400, "REQUEST_FAILED"], [401, "UNAUTHENTICATED"], [405, "REQUEST_FAILED"], [408, "REQUEST_FAILED"], [409, "CONFLICT"], [413, "REQUEST_FAILED"], [429, "RATE_LIMITED"], [500, "SERVER_ERROR"], [502, "SERVER_ERROR"], [503, "SERVER_ERROR"]]) {
+        const outcome = classifyOutcome(api(status, code), operation);
+        assert.equal(outcome.kind, "unknown", `${operation} ${status}`);
+        assert.equal(outcome.status, status);
+      }
+    }
+  });
+
+  it("a status the contract names but with an unexpected code is not taken as that refusal", () => {
+    assert.equal(classifyOutcome(api(422, "REQUEST_FAILED"), "create").kind, "unknown");
+    assert.equal(classifyOutcome({ name: "Error", status: 422, code: "VALIDATION_ERROR" }, "create").kind, "unknown", "only the API client's own errors count");
+    assert.equal(classifyOutcome(api(422, "VALIDATION_ERROR")).kind, "unknown", "no operation, no contract");
   });
 
   it("no answer, a 5xx, a malformed answer or a failure envelope with a success status is unknown, never a failure", () => {
     for (const error of [new ApiError("", { code: "NETWORK_ERROR" }), new ApiError("", { code: "TIMEOUT" }), api(500, "SERVER_ERROR"), api(503, "SERVER_ERROR"), new ApiError("", { status: 200, code: "MALFORMED_RESPONSE" }), api(200, "REQUEST_FAILED"), Object.assign(new Error("aborted"), { name: "AbortError" }), new Error("anything")]) {
-      assert.equal(classifyOutcome(error).kind, "unknown", error.code ?? error.name);
+      for (const operation of ["create", "update"]) assert.equal(classifyOutcome(error, operation).kind, "unknown", error.code ?? error.name);
     }
   });
 
   it("a changed identity claims nothing", () => {
-    assert.equal(classifyOutcome(new IdentityError("changed-elsewhere")).kind, "identity");
+    assert.equal(classifyOutcome(new IdentityError("changed-elsewhere"), "create").kind, "identity");
   });
 
   it("takes the first server message of each field Mobile has an input for", () => {

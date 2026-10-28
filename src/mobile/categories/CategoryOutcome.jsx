@@ -12,6 +12,8 @@ import Chevron from "../ui/Chevron.jsx";
  *
  *   confirmed  the server's answer proves it: its own category (name and type) is
  *              shown, not what was typed;
+ *   changed    the session's workspace changed while it was on its way: its answer is
+ *              not shown as this screen's result, and the same checks are offered;
  *   unknown    it could not be confirmed. The page says so, does NOT call it a
  *              failure, offers only reads to check (the list and, for a rename, the
  *              category), and has no way to send it again: a second create would
@@ -19,7 +21,16 @@ import Chevron from "../ui/Chevron.jsx";
  *
  * Focus moves to the heading, so the result is the first thing announced.
  */
-export default function CategoryOutcome({ kind, mode, category, categoryId }) {
+// Why the result is unknown, in the person's words. The advice is the same for every reason: check before trying again.
+function reasonOf(code, status) {
+  if (code === "RATE_LIMITED") return "rate";
+  if (code === "CONFLICT") return "conflict";
+  if (code === "TIMEOUT" || code === "NETWORK_ERROR" || code === "AbortError" || status === 408) return "noAnswer";
+  if (code === "SERVER_ERROR") return "server";
+  return "unclear";
+}
+
+export default function CategoryOutcome({ kind, mode, category, categoryId, code, status }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const headingRef = useRef(null);
   const key = `categories.outcome.${kind}.${mode}`;
@@ -46,9 +57,10 @@ export default function CategoryOutcome({ kind, mode, category, categoryId }) {
   }
 
   return (
-    <section className="sm-card sm-cat-outcome" role="alert" data-sm-outcome="unknown" aria-labelledby="sm-cat-outcome">
+    <section className="sm-card sm-cat-outcome" role="alert" data-sm-outcome={kind} aria-labelledby="sm-cat-outcome">
       <h2 id="sm-cat-outcome" className="sm-card-title" ref={headingRef} tabIndex={-1}>{t(`${key}.title`)}</h2>
       <p className="sm-text">{t(`${key}.body`)}</p>
+      {kind === "unknown" && <p className="sm-text sm-muted" data-sm-reason={reasonOf(code, status)}>{t(`categories.outcome.reason.${reasonOf(code, status)}`)}</p>}
       <p className="sm-text">{t(`${key}.advice`)}</p>
       <p className="sm-text sm-muted sm-fine">{t("categories.outcome.unknown.noResend")}</p>
       {mode === "edit" && categoryId && (

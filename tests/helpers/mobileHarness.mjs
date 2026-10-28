@@ -1,6 +1,6 @@
 import "./domSetup.mjs";
-import { act, createElement as h, useState } from "react";
-import { MemoryRouter, useLocation, useNavigate } from "react-router-dom";
+import { Fragment, act, createElement as h, useState } from "react";
+import { RouterProvider, createMemoryRouter, useLocation, useNavigate } from "react-router-dom";
 import { flush, installDom, render } from "./dom.mjs";
 
 /*
@@ -86,18 +86,25 @@ export async function mountMobile({ entry = "/m", auth, preference = "mobile" } 
 
   const value = auth ?? { isAuthenticated: true, initializing: false, token: TOKEN_A, user: USER_A, workspace: { id: 1, base_currency_code: "ILS", timezone: "UTC" } };
   const desktop = h("div", { id: "desktop" }, stub("desktop-page"));
+  // A data router, as in the app (src/main.jsx), so screens can block navigation (useBlocker).
+  const router = createMemoryRouter([{ path: "*", element: h(Fragment, null, h(Probe), h(MobileEntry, { desktop })) }], { initialEntries: [entry] });
 
   const view = await render(
     h(ThemeProvider, null,
       h(LanguageProvider, null,
         h(AuthHarness, { initial: value },
-          h(MemoryRouter, { initialEntries: [entry] }, h(Probe), h(MobileEntry, { desktop }))))),
+          h(RouterProvider, { router })))),
   );
 
   await settle();
 
   return {
     ...view,
+    router,
+    unmount: async () => {
+      await view.unmount();
+      router.dispose();
+    },
     /** Changes what the AuthProvider would report (same tab: login, logout, session end). */
     setAuth: (next) => act(async () => { setAuthFromOutside(next); }),
   };

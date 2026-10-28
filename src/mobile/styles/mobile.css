@@ -132,10 +132,11 @@
 .sm-root .sm-bar {
   position: relative;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.25rem 0.75rem;
   min-height: calc(var(--sm-bar-height) + var(--sm-safe-top));
-  padding-block: var(--sm-safe-top) 0;
+  padding-block: var(--sm-safe-top) 0.25rem;
   padding-inline: calc(1rem + var(--sm-safe-start)) calc(1rem + var(--sm-safe-end));
   color: var(--sm-on-bar);
   background: var(--sm-navy);
@@ -153,15 +154,21 @@
   object-fit: contain;
 }
 
+/*
+ * The title keeps its words whole. Beside the logo while it fits; when enlarged text leaves less than about
+ * ten characters there, it moves to its own line under the logo (the bar wraps) and uses the full width.
+ * Only a single word longer than the whole bar is broken, with a hyphen where the language allows one.
+ */
 .sm-root .sm-bar-title {
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: 1 1 10ch;
+  min-width: min(100%, 10ch);
   font-family: var(--sm-font-heading);
   font-size: 1.25rem;
   font-weight: 800;
   line-height: 1.3;
   color: var(--sm-on-bar);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .sm-root .sm-bar-title:focus {
@@ -1612,4 +1619,16 @@
 /* Short labels on one row; still one per row when enlarged text leaves no room. */
 .sm-root .sm-segment-tight {
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 5rem), 1fr));
+}
+
+/* The leave question: both answers full width, the safe one first; a long label wraps inside its own button. */
+.sm-root .sm-leave-actions {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.sm-root .sm-leave-actions > .sm-button {
+  grid-column: auto;
+  min-width: 0;
+  overflow-wrap: break-word;
+  text-align: center;
 }

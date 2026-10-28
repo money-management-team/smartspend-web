@@ -87,7 +87,7 @@ Both: labelled fields with "(required)", inline messages under the field, an err
 - **One request per submission.** A ref is set synchronously before anything is awaited, so a second tap or a second submit event in the same turn does nothing (tested with two clicks and a submit event in one turn: one request). It is released only by a rejection.
 - While submitting the fields and buttons are disabled and the page says "it isn't sent twice".
 - **Confirmed** requires proof in the answer: for a create, the server's category with an id, the name and type that were sent, not a system category, and (when it says) the same workspace; for a rename, the same id with the new name. The outcome page shows the **server's** name. A similarly named category in a later list is never taken as proof.
-- **Rejected:** any 4xx (401, 403, 404, 409, 422, 429, …) means the server looked and refused; the draft stays, the reason is said in words, and the person may change it and send again **by hand**.
+- **Rejected:** only where the documented contract says the server refused it (422 and 403 for both writes, 404 for a rename); the draft stays, the reason is said in words, and the person may change it and send again **by hand**. (S04B4 first treated every 4xx as a refusal; corrected in [S04B4.1-mutation-safety-hardening.md](S04B4.1-mutation-safety-hardening.md) §4: 400, 401, 408, 409, 429 and a create's 404 are now unknown.)
 - **Unknown:** no answer (network failure, timeout, leaving), a 5xx, an answer that is not the documented envelope, a failure envelope with a success status, or a success that does not prove the write.
 - After a write that may have happened (confirmed or unknown) everything read about categories is forgotten, so the next view is a fresh read.
 - No retry after a timeout, after reconnecting, after the tab returns, in the background; no queue; no idempotency key (none exists for this endpoint); nothing in storage (tested: the typed name appears nowhere in local or session storage).
@@ -104,7 +104,7 @@ The identity guard of the scope is given to the write (`identity/guardContext.js
 - another tab signed in as B and this tab missed the event: the tap is refused at the check, B's token is never used;
 - sign-out or a switch to B while the request is on its way: the answer is not shown (not as success, not at all) and nothing is claimed; the identity notice replaces the screen;
 - the identity changes with no event before the answer arrives: the check on arrival refuses it;
-- a 401 while saving: a refusal; the app's own 401 flow ends the session;
+- a 401 while saving: the app's own 401 flow ends the session, and (since S04B4.1) the identity check then shows the session notice, not a result;
 - storage blocked at the tap: nothing is sent;
 - leaving the form while it is sending: the request is not aborted (it is already on its way; aborting would not prove anything about the server), its answer is shown to no one, nothing is resent, and the list the person goes to is read fresh (and shows the result);
 - a rename's late answer for a category the person left is not shown on the next category's form;
@@ -183,7 +183,7 @@ Desktop parity on the final flag-off build and the flag-on build before the last
 
 - **Server-side side effects of create and rename are unverified** (§4): the backend source is needed before Mobile writes are enabled anywhere real.
 - **Duplicate names:** unknown backend behaviour; Mobile neither checks nor warns.
-- Leaving the page with the bottom navigation while a draft exists discards it **without a prompt** (Cancel and Back links ask; the route-level blocker needs the data router, which the test harness does not use, so it was not added).
+- ~~Leaving the page with the bottom navigation while a draft exists discards it without a prompt.~~ Fixed in S04B4.1: every in-app way out is held by the router blocker (the app always had a data router; only the test harness did not).
 - Colour, icon, type change and archive remain full-version only.
 - S03.5 has no drawing for the create form or the outcomes; §18's screen specification was written for this slice and is **not product-owner approved**.
 
