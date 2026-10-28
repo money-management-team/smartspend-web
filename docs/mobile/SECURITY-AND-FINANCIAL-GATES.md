@@ -13,7 +13,7 @@ The write facade (`data/writeApi.js`) checks the gate before calling the wrapper
 
 The screens never offer a closed write. The category list, a category's page and both form addresses show `WriteClosedNotice`, which links to the full version. The form addresses render no form and make no request.
 
-Mobile has no code at all for any other write:
+Mobile has no code at all for any other write, and the PWA (PWA-AND-DEVICE-QA.md) queues nothing and caches no API answer:
 - transactions, transfers and reversals;
 - debt payments;
 - savings contributions and installments;
@@ -70,25 +70,58 @@ The open questions are listed in [BACKEND-CONTRACT-GAPS.md](BACKEND-CONTRACT-GAP
 
 ## 4. Shared authentication: cross-tab identity (shared change)
 
-**Problem.** `apiRequest` reads the token from storage on every call. Suppose another tab signs in as someone else. This tab still showed the first person, while its requests carried the second person's token. Mobile's identity boundary already protected Mobile screens, but Desktop pages were not protected.
+**The problem.** `apiRequest` reads the token from storage on every call, so another tab's sign-in changes the token this tab sends. Before the fix, in a real browser on the pre-fix build (`eff8fff`):
+- A sign-in as user B in another tab left this tab showing user A, while its next requests would carry B's token.
+- A sign-out in another tab left `/dashboard` showing user A, with no token behind it.
 
-**Why a Mobile-only fix is not enough.** The mismatch is in the shared provider that every Desktop page reads.
+Mobile's own identity boundary already blanked its screens; Desktop had no such protection.
 
-**Change.** This is the minimal diff, in `src/contexts/auth/authProvider.jsx` plus a new pure module, `src/contexts/auth/crossTabSession.js`:
-- The provider listens for `storage` events and for bfcache `pageshow` restores.
-- **Signed out elsewhere:** this tab is signed out. No logout request is sent, because the other tab already did that.
-- **Another token, or a different workspace id elsewhere:**
-  - this tab adopts the stored session and marks itself initializing, so the guards show Loading instead of the old pages;
+**Why a Mobile-only fix is not enough.** Every Desktop page reads the shared provider.
+
+**The change.** Two commits, both in `src/contexts/auth/` (provider plus `crossTabSession.js`):
+
+`9fe88c7`:
+- The provider listens for `storage` events and for bfcache `pageshow`.
+- **Signed out elsewhere:** this tab signs out. No logout request is sent, because the other tab did that.
+- **Another token, or a different workspace id:**
+  - this tab adopts the stored session and marks itself initializing, so the guards show Loading;
   - it re-reads `GET /user`;
-  - it remounts everything under the provider (`key={generation}`), so no page keeps figures read for the earlier identity.
+  - it remounts everything under the provider (`key={generation}`).
 - **Ignored:** a profile edit (same token), the same workspace written again, and unrelated keys.
-- **Workspace changes:** these compare the event's old value with its new value, not with this tab's own state. Desktop's `resolveWorkspaceId` writes storage without telling the provider.
 
-**Tests.** `tests/authCrossTab.test.mjs` (7 tests) runs against the real provider. The full suite, including every Desktop auth and page test, passed after the change (1,464 of 1,465 at that point; the one failure was an unrelated Mobile boundary rename, fixed in the next commit).
+`355ee62`, found by the browser check:
+- After another tab's workspace switch, the re-read of `GET /user` was writing the server's workspace back to shared storage. That undid the other tab's choice and made it re-read too.
+- A workspace-only switch now confirms the person and leaves the stored workspace alone.
 
-**Not covered:**
-- `sessionStorage`-only sessions in other tabs. Browsers send no cross-tab events for them, and they cannot change this tab's token.
-- Real-browser cross-tab behaviour. It was not re-run after this change and is UNVERIFIED in a real browser.
+### Automated tests
+
+`tests/authCrossTab.test.mjs` has 9 tests against the real provider in jsdom. The full suite, with every Desktop auth, redirect and page test, passes 1,508 of 1,508.
+
+### Real two-tab browser check
+
+Setup:
+- Headless Chrome 156, flag-on build at `355ee62`, fictional users A and B.
+- A real second tab on the same origin changes `localStorage`, exactly as a sign-in or sign-out there does.
+- The page's `fetch` was wrapped to record, at the moment of each request, its token and whether the screen showed A or B.
+- Harness: scratchpad `shoot8.mjs`; results in `xtab-final_on3`.
+
+| Scenario | Desktop (`/dashboard`, `/dashboard/accounts`) | Mobile (`/m`, `/m/accounts`) |
+|---|---|---|
+| Another tab signs in as B | A's screen is gone before B's first request. Then `GET /user` with B and Blake is shown. **0 requests with B's token while A was visible**; 0 requests with A's token after B's first. | same |
+| Another tab signs out | Goes to `/signin`; no further request | same |
+| Another tab switches workspace | Remount; `GET /user` re-read with A's token; stays A; the other tab's workspace kept | same |
+| Unrelated key (theme) | Nothing happens | same |
+| B signs in while A's slow request (4 s) is in flight | A's late answer never appears; 0 B-while-A | same, on `/m/activity` |
+| JavaScript errors, writes | 0, 0 | 0, 0 |
+
+To guard against an empty log hiding problems: the fetch log held 6, 4 and 9 B-token requests in three sample jobs, and none of them happened while A was shown.
+
+### Not covered
+
+- **`sessionStorage`-only sessions in other tabs:** browsers send no cross-tab events for them, and they cannot change this tab's token.
+- **Google sign-in:** its lifecycle was not exercised in a browser; it needs Google's script, and all external hosts are blocked.
+- **Blocked storage:** covered by the existing provider code, which treats unreadable storage as no token, not by a browser run.
+- **Signed email links:** the reset and verify pages sit outside the provider's guarded routes. They were not re-run in the browser in this pass.
 
 ## 5. Financial integrity rules (unchanged, enforced by tests)
 

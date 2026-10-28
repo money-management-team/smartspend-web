@@ -40,3 +40,35 @@ No backend repository was available on this machine (`F:\Projects` holds only `s
 ## Read contracts Mobile relies on (from the frontend docs, not verified on a server)
 
 `/dashboard`, `/financial-alerts`, `/accounts`, `/transactions`, `/categories`, `/budgets`, `/savings-goals`, `/savings-goals/{id}/plan`, `/recurring-transactions`, `/debts`, `/debts/{id}/payments`, `/transfers`, `/notifications`, `/calendar`, `/reports/{type}`, `/report-exports`, `/report-exports/{id}/download`, `/imports`, `/imports/{id}`. Each has tests against a fake backend shaped like the docs. None was run against a real server in this sprint.
+
+## External evidence checklist (each item needs backend source plus a staging run with fictional data)
+
+Each item is unanswered today, because no backend was available.
+
+| # | Item | Evidence that settles it |
+|---|---|---|
+| 1 | Idempotency-key storage | The table or cache that holds keys, and the middleware that reads it |
+| 2 | Key scope | Whether a key is per user, per route, per body hash or global |
+| 3 | Key expiry | Retention period; what a reuse after expiry does |
+| 4 | Same key, same body | Returns the stored status and body, with no second effect (shown by a staging test) |
+| 5 | Same key, changed body | Rejected (409 or 422), never applied |
+| 6 | Same key while the first request is still running | Waits or 409; never two effects (staging test with a slowed handler) |
+| 7 | Atomic money writes | Ledger rows and balance update in one database transaction; a failure leaves neither |
+| 8 | One-time reversals (transaction, transfer, debt payment, funding leg, import) | Database-level guard (unique reversal row, or a status check under a row lock); a parallel double request gives exactly one reversal |
+| 9 | Import confirm and cancel | Confirm is idempotent under its key; what cancel does after confirm; queue-worker failure behaviour |
+| 10 | Recurring confirm-next | Server-derived key: two parallel confirms give one transaction |
+| 11 | Category create and rename | Name uniqueness rule (database or application); what a duplicate create returns; side effects of a rename on existing transactions |
+| 12 | HTTP 408 | Which layer can answer 408 (app server, proxy, Hostinger, Laravel Cloud), and whether it can do so after reading the body |
+| 13 | Protocol on the path | HTTP/1.1 or HTTP/2 from browser to origin. Chrome resends after a 408 or a reset reused socket only on HTTP/1.1 (local evidence, SECURITY-AND-FINANCIAL-GATES.md §2) |
+| 14 | Read-only reconciliation | For each write, the GET that shows whether it happened (by id or by key), not "a similar row exists" |
+| 15 | Token and workspace authorization | Each read and write checks the record's workspace against the token's user; a foreign id gives 403 or 404, never data |
+
+## Ready-to-run read check
+
+`scripts/mobileReadContract.mjs` sends GET requests only. It validates every Mobile read with the same models the screens use: debts, transfers, notifications, calendar, exports, imports and the ten reports.
+
+- **Safeguards:** it refuses to run unless the operator sets `SMARTSPEND_CONTRACT_OK=isolated-fictional-data`, and it accepts only an HTTPS or local target.
+- **Dry run:** 16 of 16 passed against a local fictional server.
+- **Not run against a real backend**, because none was available.
+
+There is no write-contract script. Writing one is pointless until items 1–8 above are answered, and running it would need an approved isolated backend.

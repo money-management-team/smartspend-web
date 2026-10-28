@@ -1,63 +1,74 @@
-# Mobile — full implementation sprint: report
+﻿# Mobile — implementation report (after the safe completion pass)
 
-**Verdict: IMPLEMENTATION PARTIAL — BLOCKED BY EXTERNAL DEPENDENCIES.** No backend repository was available, and no physical devices.
+**Verdict: IMPLEMENTATION PARTIAL — UNBLOCKED WORK STILL REMAINS.**
 
-- **Branch:** local `integration/mobile`, started at `eff8fff`.
-- **Commits in this sprint:** `b21b760`, `9fe88c7`, `abe0ed9`, and the commit that adds this file.
-- **Not done:** no push, no merge, no deployment. The production Mobile flag is unchanged (off).
+- **Verification:** this pass completed the shared-auth gate, the Desktop and Mobile browser regression, the PWA, and the backend evidence checklist.
+- **Not done:** the gated forms and several read-only feature groups were not built (FEATURE-COVERAGE-MATRIX.md lists them).
+- **Backend:** none was available, so every write stays closed.
 
-## Levels of completion, kept apart
+Branch: local `integration/mobile`.
+
+| Sprint | Range | Commits |
+|---|---|---|
+| Earlier sprint | `eff8fff` → `2f00120` | `b21b760`, `9fe88c7`, `abe0ed9`, `2f00120` |
+| This pass | `2f00120` → final | `355ee62`, `a45799b`, and the documentation commit |
+
+No push, merge or deployment was made.
+
+## Completion levels
 
 | Level | State |
 |---|---|
-| Code implemented | The screens listed below, the write gate, the cross-tab auth fix |
-| Verified with mocks | Yes: 1,493 / 1,493 tests, including fake-backend screen tests for every new screen |
-| Backend integration verified | **No.** No backend was available |
-| Financially safe to enable writes | **No.** Every write is closed (SECURITY-AND-FINANCIAL-GATES.md) |
-| Ready for controlled release | **No.** See RELEASE-AND-ROLLBACK.md |
+| Implemented in source | Read-only screens through P27/P33/P36, the write gate, the cross-tab auth fix, the PWA |
+| Tested with fictional mocks | Yes: 1,508 / 1,508 tests; 114 Mobile and 36 × 4 Desktop browser jobs; the PWA lifecycle; the two-tab run |
+| Verified against an actual backend | **No** |
+| Financially safe for real users | **No:** no write is enabled |
+| PWA locally tested | Yes, in headless Chrome on a local origin |
+| Verified on physical devices | **No** |
+| Release-ready | **No** |
 | Deployed | **No** |
 
-## Done in this sprint
+## Evidence from this pass
 
-1. **The 408 investigation.** Reproduced 3 out of 3 times on Chrome 156:
-   - On HTTP/1.1, Chrome resends a POST or PATCH by itself after a 408, or after a dropped reused connection. The server can process the write twice while the page sees one success.
-   - On HTTP/2, nothing was resent.
-   - Details in SECURITY-AND-FINANCIAL-GATES.md §2.
-2. **The write gate.** Every Mobile write is closed in source, including the S04B4 category create and rename. Screens explain why and link to the full version. The facade refuses before any request is made.
-3. **A shared AuthProvider cross-tab fix.** Another tab's sign-out, sign-in as someone else, or workspace switch is now followed, and the app tree is remounted. Tested against the real provider, and the full Desktop suite passes.
-4. **New read-only screens:**
-   - Debts (list and detail, with the latest payments);
-   - Transfers (list and detail, with ledger entries);
-   - Notifications (the inbox, without marking anything read);
-   - Calendar (a monthly agenda);
-   - Reports (all ten types: per-currency summaries, documented items with pagination, bars drawn with BigInt and a text alternative);
-   - Export history (download only when `download_available` is true);
-   - Imports (history and status; processing is never shown as finished).
-5. **New ways in** from Planning and More. Titles, English and Arabic strings, and tests for all of them.
+**Shared auth (two-tab, real browser).** On Desktop and Mobile:
+- No request carried B's token while A was visible.
+- No A-token request was sent after B's first.
+- An in-flight A response never reappeared.
+- Sign-out goes to `/signin`.
+- The workspace-switch write-back bug was found and fixed (`355ee62`).
 
-## Not done (open)
+Details in SECURITY-AND-FINANCIAL-GATES.md §4.
 
-- **Writes:** transactions, transfers, reversals, debt payments, savings, recurring actions, account, budget, goal and debt create and edit, category writes, imports, exports, AI, WhatsApp. All are blocked by unverified backend deduplication (BACKEND-CONTRACT-GAPS.md).
-- **PWA:** none built (PWA-AND-DEVICE-QA.md has the design constraints).
-- **Not on Mobile yet:** AI assistant reads, WhatsApp, profile and password, the Home period picker, search, monthly review, templates, saved report filters, dashboard blocks, statement PDF.
-- **Browser and device evidence:** the new screens have had no real-browser screenshot pass. There has been no device, VoiceOver or TalkBack testing, and no cross-tab test of the auth change in a real browser.
+**Desktop parity.** 36 jobs (18 pages × English light and Arabic dark) were run on four builds: the original baseline `33070de`, `eff8fff`, flag-off and flag-on in Desktop mode.
+- URL, visible text, API calls, JavaScript errors (0) and the absence of the Mobile chunk were identical everywhere.
+- Every pixel difference is the 377/388 px logo anti-aliasing patch. `eff8fff` shows the same patch against the baseline, without the auth change.
+- One 129-px header variation appeared in 1 of 3 runs on the same flag-off build, and in 0 of 3 on the baseline. It is run-to-run noise: the same build differs from itself.
+- One DOM difference on Reports (Arabic, dark) did not repeat in 3 further runs per build.
+- **The final flag-off build is byte-identical to the build that was compared.** Its stylesheet is byte-identical to the original baseline.
 
-## Evidence
+**Mobile.** 114 jobs: every new screen plus Home, Accounts, Activity, Planning, Categories and More, in four states each:
+- 390 px in English light and in Arabic dark;
+- 320 px at 2× text;
+- 430 px at 1.5× text in Arabic;
+- plus empty and error states, 1.25× text and landscape.
 
-- **Tests:** `npm test` passes 1,493 of 1,493 (1,449 at the start). The new files are:
-  - `mobileWriteGate` (9 tests);
-  - `authCrossTab` (7);
-  - `mobileMoreScreens` (18);
-  - `mobileReports` (10).
-- **Lint:** clean.
-- **Flag-off build:** the stylesheet is byte-identical to the original baseline (sha-256 `141bb8a9…`, `style-CdLHj2cm.css`), and the output has no Mobile marker or `sm-root`. The entry chunk differs from the baseline because of the shared AuthProvider change. That difference is expected and was not pixel-compared in this sprint.
-- **Flag-on build:** builds successfully.
-- **Not re-run in this sprint:** the 54-job Desktop visual parity and the Mobile browser matrix. They must be re-run before review.
+Results:
+- 0 JavaScript errors, 0 page overflow and 0 clipped amounts; every request a GET; one `h1` per page.
+- Defects found and fixed: a card nested inside a card overflowing at 2× text, and the calendar month bar collapsing at 2× text. The second passed the geometric checks and was caught only by eye.
+- Left as is: a 1-px overhang on Notifications at 2× / 320 px, with no scroll; small presentation radios (24 px) inside 44-px labels, as before.
 
-## Resume checkpoint
+**The intermittent `experienceRendering` failures.** Reproduced: 5 tests fail only when the working directory uses a lowercase drive letter (`f:`). Node then loads a second React instance, and `useContext` reads null. From `F:` the suite passes 1,508 of 1,508. Diagnostics are kept in the scratchpad (`full2-diagnostic.txt`).
 
-To continue:
-1. Run the browser screenshot and parity pass with the scratchpad harness (`shoot7.mjs`) on the new routes.
-2. Build the PWA slice to the constraints in PWA-AND-DEVICE-QA.md.
-3. Add AI insights, WhatsApp status and profile as read-only screens.
-4. Open no write until the backend questions are answered.
+**HTTP 408.** The earlier local evidence stands, unchanged (SECURITY-AND-FINANCIAL-GATES.md §2). It is not a claim about production.
+
+**Visual review package:** `F:\Projects\smartspend-mobile-review\smartspend-mobile-safe-completion-review.zip` (outside the repository): 240 screenshots and `INDEX.txt`, with no source, credentials, environment files or fonts.
+
+## Outstanding
+
+- **Unblocked work not done:** see FEATURE-COVERAGE-MATRIX.md, "Still open, and could be built without the backend".
+- **External blockers:**
+  - backend source or an isolated backend (the 15 checklist items in BACKEND-CONTRACT-GAPS.md);
+  - physical iOS and Android devices with VoiceOver and TalkBack;
+  - a staging origin to verify hosting headers and the PWA;
+  - product and legal decisions for WhatsApp;
+  - a release approval.

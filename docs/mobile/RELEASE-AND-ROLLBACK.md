@@ -27,5 +27,12 @@
 ## Rollback
 
 - **Mobile:** rebuild with `VITE_MOBILE_ENABLED` unset. Every `/m/*` URL then reaches the app's NotFound through the catch-all route, and canonical `/dashboard/*` URLs are untouched. Deep links to `/m/*` do not break the app.
-- **No service worker exists,** so there is nothing to unregister.
-- **The cross-tab auth change** is one commit (`9fe88c7`, `fix(auth): …`) and can be reverted on its own. Reverting it brings back the cross-tab identity mismatch described in SECURITY-AND-FINANCIAL-GATES.md §4.
+- **The PWA has never been built for production:** a production-mode build refuses it (`scripts/mobilePwa.mjs`).
+  - If a staging origin ever ran the PWA build, the next non-PWA build removes the `/m/` worker and its caches on the first Mobile page load. This was tested in Chrome; see PWA-AND-DEVICE-QA.md.
+  - On such an origin, `/m/sw.js` must then not be served as a real file from an old deploy.
+  - **Gap:** a *flag-off* build has no Mobile code, so it cannot remove that worker. The worker is harmless (network-first navigations, hashed assets only, never `/api`), but it stays. To roll a PWA staging origin all the way back:
+    - deploy one Mobile-on non-PWA build first; or
+    - serve, at `/m/sw.js`, a worker that clears the `sm-pwa-*` caches and calls `self.registration.unregister()`.
+
+    This path has not been tested.
+- **The cross-tab auth change** is two commits (`9fe88c7`, `355ee62`) and can be reverted on its own. Reverting it brings back the cross-tab identity mismatch described in SECURITY-AND-FINANCIAL-GATES.md §4.
