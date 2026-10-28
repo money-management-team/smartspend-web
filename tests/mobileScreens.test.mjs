@@ -646,13 +646,15 @@ describe("Every Mobile screen reads, and only reads", () => {
     }
   });
 
-  it("the Add sheet is informational and sends nothing", async () => {
+  it("the Add sheet lists the Mobile forms, says nothing is sent from them, and requests nothing itself", async () => {
     await open("/m/more", healthyBackend());
     const before = api.calls.length;
 
     await click$(qa("nav.sm-nav button").find((item) => item.textContent.trim() === "Add"));
-    assert.match(text(q("[role='dialog']")), /Nothing can be recorded from here/);
-    assert.equal(qa("form, input, textarea, select", q("[role='dialog']")).length, 0);
+    const dialog = q("[role='dialog']");
+    assert.match(text(dialog), /Mobile doesn't send it yet/);
+    assert.deepEqual(qa("a", dialog).map((link) => link.getAttribute("href")), ["/m/add/expense", "/m/add/income", "/m/add/transfer", "/m/add/account", "/m/add/budget", "/m/add/goal", "/m/add/recurring", "/m/add/debt"]);
+    assert.equal(qa("form, input, textarea, select", dialog).length, 0);
     assert.equal(api.calls.length, before);
   });
 });

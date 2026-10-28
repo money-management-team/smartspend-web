@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
+import DraftLinks from "../forms/DraftLinks.jsx";
 
 import { getSavingsGoalDetailsPath } from "../../routes/Path.js";
 import { goalLoader, keys } from "../data/loaders.js";
@@ -83,6 +84,7 @@ function Detail({ goal, locale }) {
       <section className="sm-card" aria-labelledby="sm-goal-changes">
         <h2 id="sm-goal-changes" className="sm-card-title">{t("planning.changesTitle")}</h2>
         <p className="sm-text sm-muted">{t("planning.goals.changesBody")}</p>
+        <DraftLinks ids={{ goalId: goal.id }} actions={goal.archived ? [] : goal.status === "active" ? ["goal-contribute", "goal-withdraw", "goal-plan", "goal-edit"] : ["goal-withdraw", "goal-edit"]} />
         <Link className="sm-link-row" to={getSavingsGoalDetailsPath(goal.id)}>
           <span>{t("planning.goals.openFullOne")}</span>
           <Chevron />

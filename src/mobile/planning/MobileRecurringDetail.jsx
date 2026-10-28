@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
+import DraftLinks from "../forms/DraftLinks.jsx";
 
 import { getRecurringDetailsPath } from "../../routes/Path.js";
 import { keys, ruleLoader } from "../data/loaders.js";
@@ -74,6 +75,7 @@ function Detail({ rule, locale }) {
       <section className="sm-card" aria-labelledby="sm-rule-changes">
         <h2 id="sm-rule-changes" className="sm-card-title">{t("planning.changesTitle")}</h2>
         <p className="sm-text sm-muted">{t("planning.recurring.changesBody")}</p>
+        <DraftLinks ids={{ ruleId: rule.id }} actions={rule.status === "active" ? ["recurring-confirm", "recurring-skip", "recurring-edit"] : rule.archived || rule.status === "completed" ? [] : ["recurring-edit"]} />
         <Link className="sm-link-row" to={getRecurringDetailsPath(rule.id)}>
           <span>{t("planning.recurring.openFullOne")}</span>
           <Chevron />

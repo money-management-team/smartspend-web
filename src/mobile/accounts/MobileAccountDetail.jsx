@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useParams } from "react-router-dom";
+import DraftLinks from "../forms/DraftLinks.jsx";
 
 import { getAccountDetailsPath } from "../../routes/Path.js";
 import { accountLoader, keys, movementsLoader } from "../data/loaders.js";
@@ -181,6 +182,7 @@ function Detail({ account, resource, locale, timeZone }) {
       <section className="sm-card" aria-labelledby="sm-account-changes">
         <h2 id="sm-account-changes" className="sm-card-title">{t("detail.changesTitle")}</h2>
         <p className="sm-text sm-muted">{t("detail.changesBody")}</p>
+        <DraftLinks ids={{ accountId: account.id }} actions={!account.archived && !account.isGoal ? ["account-edit", "account-archive"] : []} />
         <Link className="sm-link-row" to={getAccountDetailsPath(account.id)}>
           <span>{t("detail.openFull")}</span>
           <Chevron />

@@ -55,7 +55,11 @@ describe("the source", () => {
     const WRITE = "src/mobile/data/writeApi.js";
     const others = sources.filter((file) => rel(file) !== WRITE);
     assert.deepEqual(find(/\.(create\w*|update|archive|correct|reverse|post|patch|put|confirm\w*|submit\w*)\s*\(/, others), []);
-    assert.deepEqual(find(/categoriesApi\.(archive|delete)|\/archive[`"']/), [], "no archive, no delete");
+    // forms/ names the full version's endpoints as text ("POST /accounts/{id}/archive") and has a Mobile address
+    // ending in /archive (a review that sends nothing); tests/mobileForms.test.mjs checks that forms/ has no request code.
+    const notForms = sources.filter((file) => !rel(file).startsWith("src/mobile/forms/"));
+    assert.deepEqual(find(/categoriesApi\.(archive|delete)|\/archive[`"']/, notForms), [], "no archive, no delete");
+    assert.deepEqual(find(/categoriesApi|accountsApi|Api\.archive/, sources.filter((file) => rel(file).startsWith("src/mobile/forms/"))), [], "forms/ names no API wrapper at all");
     assert.deepEqual([...code(path.join(ROOT, WRITE)).matchAll(/(\w+)\.(\w+)\s*\(/g)].map((match) => `${match[1]}.${match[2]}`), ["categoriesApi.create", "categoriesApi.update"]);
     // Only the category form sends: no other screen imports the write facade.
     assert.deepEqual(find(/from\s*["'][^"']*data\/writeApi(?:\.js)?["']/), ["src/mobile/categories/MobileCategoryForm.jsx"]);

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 
 import logo from "../../assets/smart-spend-logo.png";
 import "../i18n/register.js";
@@ -10,6 +10,8 @@ import { normalizePathname } from "../presentation/resolver.js";
 import PwaNotices from "../pwa/PwaNotices.jsx";
 import { PwaContext } from "../pwa/pwaContext.js";
 import { usePwa } from "../pwa/usePwa.js";
+import { newEntryPath, workflowAt } from "../forms/actionRoutes.js";
+import { NEW_ENTRY_ORDER, WORKFLOWS } from "../forms/workflows.js";
 import MobileMenu from "./MobileMenu.jsx";
 import MobileNav from "./MobileNav.jsx";
 import MobileSheet from "./MobileSheet.jsx";
@@ -25,6 +27,9 @@ function getTitleKey(pathname) {
   const screen = MOBILE_SCREENS.find((item) => item.mobile === path);
 
   if (screen) return `titles.${screen.id}`;
+
+  const workflow = workflowAt(path);
+  if (workflow && Object.hasOwn(WORKFLOWS, workflow)) return `forms.flows.${workflow}.title`;
   if (path === MOBILE_ACCOUNTS) return "titles.accounts";
   if (path.startsWith(`${MOBILE_ACCOUNTS}/`) && !path.slice(MOBILE_ACCOUNTS.length + 1).includes("/")) return "titles.accountDetail";
 
@@ -56,8 +61,9 @@ function getTitleKey(pathname) {
  * app's own providers (theme, language, session), so it holds no session or
  * theme state of its own.
  *
- * Add is a button. It opens an informational sheet and nothing else: no form,
- * no request. Recording money is not part of Mobile yet.
+ * Add is a button. It opens a sheet listing the Mobile forms (forms/): each can
+ * be filled in and reviewed, and none is sent from Mobile yet (the review says
+ * so and links to the full version).
  */
 export default function MobileAppShell() {
   const { t } = useTranslation(MOBILE_NAMESPACE);
@@ -135,8 +141,18 @@ export default function MobileAppShell() {
           title={t("add.title")}
           returnFocusRef={addRef}
         >
-          <p className="sm-text">{t("add.body")}</p>
-          <button type="button" className="sm-button" onClick={closeOverlay}>{t("add.close")}</button>
+          <p className="sm-text sm-muted">{t("forms.addBody")}</p>
+          <nav className="sm-add-list" aria-label={t("add.title")}>
+            {NEW_ENTRY_ORDER.map((id) => (
+              <Link key={id} className="sm-link-row" to={newEntryPath(id)} state={{ from: pathname }} onClick={closeOverlay} data-sm-action={`add-${id}`}>
+                <span className="sm-row-main">
+                  <span className="sm-row-title">{t(`forms.flows.${id}.link`)}</span>
+                  <span className="sm-row-meta">{t(`forms.flows.${id}.addHint`)}</span>
+                </span>
+              </Link>
+            ))}
+          </nav>
+          <button type="button" className="sm-button sm-button-quiet" onClick={closeOverlay}>{t("add.close")}</button>
         </MobileSheet>
 
         <MobileMenu open={menuOpen} onClose={closeOverlay} returnFocusRef={menuRef} />

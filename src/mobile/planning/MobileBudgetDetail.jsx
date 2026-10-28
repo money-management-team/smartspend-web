@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
+import DraftLinks from "../forms/DraftLinks.jsx";
 
 import { getBudgetDetailsPath } from "../../routes/Path.js";
 import { budgetLoader, keys } from "../data/loaders.js";
@@ -74,6 +75,7 @@ function Detail({ budget, locale }) {
       <section className="sm-card" aria-labelledby="sm-budget-changes">
         <h2 id="sm-budget-changes" className="sm-card-title">{t("planning.changesTitle")}</h2>
         <p className="sm-text sm-muted">{t("planning.budgets.changesBody")}</p>
+        <DraftLinks ids={{ budgetId: budget.id }} actions={!budget.archived ? ["budget-edit"] : []} />
         <Link className="sm-link-row" to={getBudgetDetailsPath(budget.id)}>
           <span>{t("planning.budgets.openFullOne")}</span>
           <Chevron />

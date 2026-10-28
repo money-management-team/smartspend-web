@@ -197,7 +197,7 @@ describe("Mobile shell: Add action", () => {
     return add;
   };
 
-  it("opens an informational dialog with no form, and nothing is requested", async () => {
+  it("opens a dialog that lists the Mobile forms, with no field of its own, and nothing is requested", async () => {
     await mount();
     await openAdd();
     const dialog = q('[role="dialog"]');
@@ -205,7 +205,8 @@ describe("Mobile shell: Add action", () => {
     assert.ok(dialog);
     assert.equal(dialog.getAttribute("aria-modal"), "true");
     assert.equal(q(`#${dialog.getAttribute("aria-labelledby")}`).textContent, "Add");
-    assert.match(dialog.textContent, /not available/i);
+    assert.match(dialog.textContent, /doesn't send it yet/i);
+    assert.equal(qa("a", dialog).length, 8);
     assert.equal(qa("form, input, textarea, select", dialog).length, 0);
     assert.ok(q(".sm-portal").contains(dialog), "the dialog lives in the Mobile overlay container");
     assert.ok(q(".sm-root").contains(dialog), "and inside the Mobile root");
@@ -229,7 +230,7 @@ describe("Mobile shell: Add action", () => {
     await mount();
     await openAdd();
     const dialog = q('[role="dialog"]');
-    const [first, last] = [qa("button", dialog)[0], qa("button", dialog).at(-1)];
+    const [first, last] = [qa("a, button", dialog)[0], qa("a, button", dialog).at(-1)];
 
     last.focus();
     await pressKey("Tab");

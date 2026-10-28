@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
+import DraftLinks from "../forms/DraftLinks.jsx";
 
 import { getTransferDetailsPath } from "../../routes/Path.js";
 import { keys, transferLoader } from "../data/loaders.js";
@@ -70,6 +71,7 @@ function Detail({ transfer, locale }) {
       <section className="sm-card" aria-labelledby="sm-transfer-changes">
         <h2 id="sm-transfer-changes" className="sm-card-title">{t("planning.changesTitle")}</h2>
         <WriteClosedNotice operation="transfer.reverse" compact />
+        <DraftLinks ids={{ transferId: transfer.id }} actions={transfer.status === "posted" ? ["transfer-reverse"] : []} />
         <Link className="sm-link-row" to={getTransferDetailsPath(transfer.id)}>
           <span>{t("transfers.openFullOne")}</span>
           <Chevron />

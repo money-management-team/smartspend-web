@@ -6,6 +6,8 @@ import MobileAccounts from "./accounts/MobileAccounts.jsx";
 import MobileCategories from "./categories/MobileCategories.jsx";
 import MobileCategoryDetail from "./categories/MobileCategoryDetail.jsx";
 import { MobileCategoryCreate, MobileCategoryEdit } from "./categories/MobileCategoryForm.jsx";
+import { RECORD_ACTIONS } from "./forms/actionRoutes.js";
+import { MobileNewEntry, MobileRecordAction } from "./forms/MobileWorkflow.jsx";
 import MobileHome from "./home/MobileHome.jsx";
 import IdentityBoundary from "./identity/IdentityBoundary.jsx";
 import { MOBILE_ENTER, MOBILE_PREFIX } from "./navigation.js";
@@ -39,6 +41,8 @@ import MobileTransfers from "./transfers/MobileTransfers.jsx";
  * stops being consistent. Nothing here writes: every screen only reads (see
  * data/readApi.js). The category form (data/writeApi.js) is the only code that
  * could send a write, and the write gate keeps it closed (data/writeGate.js).
+ * The other forms (forms/, at /m/add/... and the record actions in
+ * forms/actionRoutes.js) end at a review and have no code that sends.
  *
  * /m/enter is outside the shell on purpose (it is the way in, not a screen of
  * the app) but behind the same sign-in guard.
@@ -89,6 +93,8 @@ export const mobileRoutes = [
       { path: "exports", element: <MobileExports /> },
       { path: "imports", element: <MobileImports /> },
       { path: "imports/:importId", element: <MobileImportDetail /> },
+      { path: "add/:workflow", element: <MobileNewEntry /> },
+      ...RECORD_ACTIONS.map((action) => ({ path: action.path, element: <MobileRecordAction workflowId={action.workflow} /> })),
       { path: "more", element: <MobileMore /> },
       { path: "*", element: <MobileNotAvailable /> },
     ],

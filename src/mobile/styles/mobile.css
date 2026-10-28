@@ -1651,3 +1651,21 @@
 .sm-root .sm-button-small:has(.sm-chevron) { min-inline-size: 44px; min-block-size: 44px; }
 .sm-root .sm-note-row { align-items: flex-start; }
 .sm-root .sm-pwa-note { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 0.75rem; }
+
+/* ---------- Forms (forms/): fill in and review; nothing is sent ---------- */
+.sm-root .sm-draft-form,
+.sm-root .sm-form-review { display: grid; gap: 0.75rem; min-inline-size: 0; }
+.sm-root .sm-flow-head .sm-text { margin-block-end: 0; }
+.sm-root .sm-amount-input { display: flex; align-items: center; gap: 0.5rem; min-inline-size: 0; }
+.sm-root .sm-amount-input .sm-input { flex: 1 1 auto; min-inline-size: 0; font-family: var(--sm-font-heading); font-variant-numeric: tabular-nums; }
+.sm-root .sm-amount-currency { flex: none; color: var(--sm-muted); font-weight: 600; }
+.sm-root .sm-textarea { min-block-size: 5.5rem; resize: vertical; }
+.sm-root .sm-review-list .sm-stat dt { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; }
+.sm-root .sm-review-list .sm-stat dd { overflow-wrap: anywhere; }
+.sm-root .sm-review-changed { font-size: 0.75rem; }
+.sm-root .sm-review-effect { margin-block-start: 0.75rem; padding: 0.75rem; border-radius: 0.75rem; background: var(--sm-bg); border: 1px solid var(--sm-border); }
+.sm-root .sm-form-actions { padding-block: 0.25rem 0.75rem; }
+.sm-root .sm-form-actions .sm-button:disabled { cursor: not-allowed; }
+.sm-root .sm-add-list { display: grid; margin-block: 0.25rem 0.75rem; max-block-size: 55vh; overflow-y: auto; overscroll-behavior: contain; }
+.sm-root .sm-draft-links { display: grid; margin-block-start: 0.25rem; }
+.sm-root .sm-draft-form .sm-button-small { justify-self: start; margin-block-start: 0.25rem; min-block-size: 44px; }

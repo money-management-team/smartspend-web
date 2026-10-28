@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
+import { actionPath } from "../forms/actionRoutes.js";
+import DraftLinks from "../forms/DraftLinks.jsx";
 
 import { getDebtDetailsPath } from "../../routes/Path.js";
 import { debtLoader, keys, paymentsLoader } from "../data/loaders.js";
@@ -55,6 +57,7 @@ function Payments({ debt, locale }) {
                   {payment.account?.name && <> · <bdi className="sm-user-text">{payment.account.name}</bdi></>}
                 </span>
                 <span className="sm-chips-inline"><StateChip state={payment.status} known={payment.statusKnown} labels="debts.paymentStatus" tones={PAYMENT_TONES} /></span>
+                {!payment.reversed && debt.lifecycle !== "archived" && <Link className="sm-note-link" to={actionPath("debt-payment-reverse", { debtId: debt.id, paymentId: payment.id })} data-sm-action="debt-payment-reverse">{t("forms.flows.debt-payment-reverse.link")}</Link>}
                 {payment.transactionId && (
                   <Link className="sm-note-link" to={activityDetailPath(payment.transactionId)}>{t("debts.payments.movement")}</Link>
                 )}
@@ -124,6 +127,7 @@ function Detail({ debt, locale }) {
       <section className="sm-card" aria-labelledby="sm-debt-changes">
         <h2 id="sm-debt-changes" className="sm-card-title">{t("planning.changesTitle")}</h2>
         <WriteClosedNotice operation="debt.payment" compact />
+        <DraftLinks ids={{ debtId: debt.id }} actions={["archived", "paid"].includes(debt.status) || debt.lifecycle === "archived" ? [] : ["debt-payment", "debt-edit"]} />
         <Link className="sm-link-row" to={getDebtDetailsPath(debt.id)}>
           <span>{t("debts.openFullOne")}</span>
           <Chevron />

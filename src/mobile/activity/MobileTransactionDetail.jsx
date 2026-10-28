@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useParams } from "react-router-dom";
+import DraftLinks from "../forms/DraftLinks.jsx";
 
 import { useAuthContext } from "../../contexts/auth/useAuthContext";
 import { getTransactionDetailsPath } from "../../routes/Path.js";
@@ -164,6 +165,7 @@ function Detail({ transaction, resource, backTo, backState, locale, timeZone }) 
       <section className="sm-card" aria-labelledby="sm-tx-changes">
         <h2 id="sm-tx-changes" className="sm-card-title">{t("tx.changesTitle")}</h2>
         <p className="sm-text sm-muted">{t("tx.changesBody")}</p>
+        <DraftLinks ids={{ transactionId: transaction.id }} actions={transaction.status === "posted" && !transaction.isReversal && !transaction.isTransfer ? [...(["income", "expense"].includes(transaction.type) ? ["transaction-correct"] : []), "transaction-reverse"] : []} />
         <Link className="sm-link-row" to={getTransactionDetailsPath(transaction.id)}>
           <span>{t("detail.openFull")}</span>
           <Chevron />
