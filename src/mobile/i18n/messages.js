@@ -4,11 +4,16 @@
  * src/locales/*.json: those files are bundled into the main i18n chunk, so a
  * Mobile section there would ship in builds where Mobile is off.
  *
+ * The screens added in the full Mobile sprint keep their strings in one file
+ * each under ./features/ (see ./features/index.js); they are merged in below.
+ *
  * tests/mobileShell.test.mjs keeps the two languages in exact key parity.
  */
+import { FEATURE_MESSAGES } from "./features/index.js";
+
 export const MOBILE_NAMESPACE = "mobile";
 
-export const MOBILE_MESSAGES = {
+const BASE_MESSAGES = {
   en: {
     skip: "Skip to content",
     loading: "Loading",
@@ -246,6 +251,7 @@ export const MOBILE_MESSAGES = {
           forbidden: "You can't change this category. Nothing was saved.",
           notFound: "This category isn't available. It may not exist, or you may not have access to it. Nothing was saved.",
           other: "SmartSpend refused this request. Nothing was saved.",
+          closed: "Saving categories from Mobile is switched off. Nothing was sent.",
         },
         discardTitle: "Discard your changes?",
         discardBody: "What you typed hasn't been sent and will be lost.",
@@ -811,6 +817,7 @@ export const MOBILE_MESSAGES = {
           forbidden: "لا يمكنك تغيير هذه الفئة. لم يُحفظ شيء.",
           notFound: "هذه الفئة غير متاحة. قد لا تكون موجودة، أو ليس لديك صلاحية الوصول إليها. لم يُحفظ شيء.",
           other: "رفض SmartSpend هذا الطلب. لم يُحفظ شيء.",
+          closed: "حفظ الفئات من نسخة الجوال متوقف. لم يُرسل شيء.",
         },
         discardTitle: "تجاهل التغييرات؟",
         discardBody: "ما كتبته لم يُرسل وسيضيع.",
@@ -1140,3 +1147,10 @@ export const MOBILE_MESSAGES = {
     },
   },
 };
+
+// A feature file may add titles; every other top-level section it adds must be new (tests/mobileShell.test.mjs).
+const merge = (base, extra) => ({ ...base, ...extra, titles: { ...base.titles, ...extra.titles } });
+
+export const MOBILE_MESSAGES = { en: merge(BASE_MESSAGES.en, FEATURE_MESSAGES.en), ar: merge(BASE_MESSAGES.ar, FEATURE_MESSAGES.ar) };
+
+export const BASE_SECTIONS = Object.freeze(Object.keys(BASE_MESSAGES.en));

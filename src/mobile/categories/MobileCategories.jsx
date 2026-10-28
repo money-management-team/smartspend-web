@@ -10,7 +10,9 @@ import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { arrangeCategories, buildCategoryList, categoryFiltersToSearch, readCategoryFilters } from "../models/categories.js";
 import { MOBILE_CATEGORY_NEW, MOBILE_PLANNING, categoryDetailPath } from "../navigation.js";
 import FilterTabs from "../planning/FilterTabs.jsx";
+import { isWriteOpen } from "../data/writeGate.js";
 import Chevron from "../ui/Chevron.jsx";
+import WriteClosedNotice from "../ui/WriteClosedNotice.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
 import StaleNotice from "../ui/StaleNotice.jsx";
@@ -131,6 +133,7 @@ export default function MobileCategories() {
   }
 
   const sections = arrangeCategories(parsed.items);
+  const createOpen = isWriteOpen("category.create");
   const none = parsed.items.length === 0;
   const onlySystem = !none && sections.custom.length === 0;
 
@@ -138,7 +141,7 @@ export default function MobileCategories() {
     <section className="sm-page" data-sm-screen="categories" data-sm-state={none ? (filtered ? "empty-filtered" : "empty") : resource.stale ? "stale" : "ready"} data-sm-stale={resource.stale ? "true" : undefined}>
       {toolbar}
 
-      <Link className="sm-button" to={MOBILE_CATEGORY_NEW} state={{ from: here }} data-sm-action="new-category">{t("categories.new")}</Link>
+      {createOpen ? <Link className="sm-button" to={MOBILE_CATEGORY_NEW} state={{ from: here }} data-sm-action="new-category">{t("categories.new")}</Link> : <WriteClosedNotice operation="category.create" fullPath={PATH.USER.CATEGORIES} />}
 
       <div className="sm-greeting">
         <p className="sm-text sm-muted">{t("categories.intro")}</p>
@@ -153,7 +156,7 @@ export default function MobileCategories() {
         <div className="sm-card">
           <h2 className="sm-card-title">{t(filtered ? "categories.emptyFiltered.title" : "categories.empty.title")}</h2>
           <p className="sm-text">{t(filtered ? "categories.emptyFiltered.body" : "categories.empty.body")}</p>
-          {filtered ? <button type="button" className="sm-button sm-button-quiet" onClick={() => setType("")}>{t("categories.showAll")}</button> : <Link className="sm-link-row" to={MOBILE_CATEGORY_NEW}><span>{t("categories.new")}</span><Chevron /></Link>}
+          {filtered ? <button type="button" className="sm-button sm-button-quiet" onClick={() => setType("")}>{t("categories.showAll")}</button> : createOpen ? <Link className="sm-link-row" to={MOBILE_CATEGORY_NEW}><span>{t("categories.new")}</span><Chevron /></Link> : null}
         </div>
       ) : (
         <>

@@ -6,18 +6,21 @@ import { categoryLoader, keys } from "../data/loaders.js";
 import { isAccountId, sessionWorkspace } from "../data/readApi.js";
 import { useResource } from "../data/useResource.js";
 import { sendCategoryCreate, sendCategoryUpdate } from "../data/writeApi.js";
+import { isWriteOpen } from "../data/writeGate.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { CATEGORY_TYPES, NAME_MAX, buildCategoryDetail } from "../models/categories.js";
 import { buildCreatePayload, buildUpdatePayload, confirmCreate, confirmUpdate, fieldErrorsOf, validateName, validateType, workspaceIdForBody } from "../models/categoryForm.js";
 import { MOBILE_CATEGORIES, backPathFrom, categoryDetailPath } from "../navigation.js";
 import RecordScreen from "../planning/RecordScreen.jsx";
 import MobileSheet from "../shell/MobileSheet.jsx";
+import { PATH, getCategoryDetailsPath } from "../../routes/Path.js";
 import Chevron from "../ui/Chevron.jsx";
+import WriteClosedNotice from "../ui/WriteClosedNotice.jsx";
 import CategoryOutcome from "./CategoryOutcome.jsx";
 import { useCategoryMutation } from "./useCategoryMutation.js";
 import { useLeaveGuard } from "./useLeaveGuard.js";
 
-const REJECTION_KEYS = { VALIDATION_ERROR: "validation", FORBIDDEN: "forbidden", NOT_FOUND: "notFound" };
+const REJECTION_KEYS = { VALIDATION_ERROR: "validation", FORBIDDEN: "forbidden", NOT_FOUND: "notFound", WRITE_CLOSED: "closed" };
 
 /*
  * The category form, for a new category or a rename.
@@ -211,7 +214,7 @@ export function MobileCategoryCreate() {
         <Chevron back />
         <span>{t("categories.detail.back")}</span>
       </Link>
-      <CategoryForm mode="create" backTo={backTo} />
+      {isWriteOpen("category.create") ? <CategoryForm mode="create" backTo={backTo} /> : <WriteClosedNotice operation="category.create" fullPath={PATH.USER.CATEGORIES} />}
     </section>
   );
 }
@@ -228,13 +231,26 @@ export function MobileCategoryEdit() {
   const location = useLocation();
   const backTo = backPathFrom(location.state, categoryDetailPath(categoryId));
   const loader = useMemo(() => categoryLoader(categoryId), [categoryId]);
-  const resource = useResource(keys.category(categoryId), loader, { enabled: isAccountId(categoryId) });
+  const resource = useResource(keys.category(categoryId), loader, { enabled: isAccountId(categoryId) && isWriteOpen("category.update") });
   const record = useMemo(() => (resource.data !== undefined && isAccountId(categoryId) ? buildCategoryDetail(resource.data, categoryId) : null), [resource.data, categoryId]);
   const [frozen, setFrozen] = useState(null);
 
   // Adjusted during render, as React recommends: a new address forgets the old record, a first good read keeps this one.
   if (frozen && frozen.id !== String(categoryId)) setFrozen(null);
   else if (!frozen && record?.manageable) setFrozen(record);
+
+  // A closed write gets no form at all, so nothing typed here could be sent (data/writeGate.js).
+  if (!isWriteOpen("category.update")) {
+    return (
+      <section className="sm-page" data-sm-screen="category-edit" data-sm-state="closed">
+        <Link className="sm-link-row sm-back" to={backTo}>
+          <Chevron back />
+          <span>{t("categories.detail.backToCategory")}</span>
+        </Link>
+        <WriteClosedNotice operation="category.update" fullPath={isAccountId(categoryId) ? getCategoryDetailsPath(categoryId) : PATH.USER.CATEGORIES} />
+      </section>
+    );
+  }
 
   if (frozen && frozen.id === String(categoryId)) {
     return (

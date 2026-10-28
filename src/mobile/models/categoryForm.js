@@ -89,6 +89,8 @@ const REJECTED_BY_CONTRACT = {
 
 export function classifyOutcome(error, operation) {
   if (error?.code === "IDENTITY_CHANGED") return { kind: "identity" };
+  // The write gate refused before anything was sent (data/writeGate.js): certainly not applied.
+  if (error?.name === "WriteClosedError") return { kind: "rejected", code: "WRITE_CLOSED", error };
 
   const status = Number.isInteger(error?.status) ? error.status : 0;
   const code = REJECTED_BY_CONTRACT[operation]?.[status];

@@ -6,6 +6,10 @@ import { CATEGORY_WRITES, envelope, failure, installFakeApi } from "./helpers/mo
 import { TOKEN_A, USER_A, dom, goBack, location, mountMobile, q, qa, resetEnvironment, settle, storeSession, window } from "./helpers/mobileHarness.mjs";
 import { categoriesBackend, category } from "./helpers/categoryFixture.mjs";
 import { change, click } from "./helpers/dom.mjs";
+import { setWriteApprovalsForTests } from "../src/mobile/data/writeGate.js";
+
+// These suites test the category writes themselves, so they open the two (closed in the product; see mobileWriteGate.test.mjs).
+setWriteApprovalsForTests(["category.create", "category.update"]);
 
 /*
  * Mobile Categories: the list, a category's page, a new category and a rename,

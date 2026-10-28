@@ -8,7 +8,9 @@ import { formatDay } from "../money/format.js";
 import { buildCategoryDetail } from "../models/categories.js";
 import { MOBILE_CATEGORIES, categoryEditPath } from "../navigation.js";
 import RecordScreen from "../planning/RecordScreen.jsx";
+import { isWriteOpen } from "../data/writeGate.js";
 import Chevron from "../ui/Chevron.jsx";
+import WriteClosedNotice from "../ui/WriteClosedNotice.jsx";
 import CategoryBadge from "./CategoryBadge.jsx";
 
 const keyOf = keys.category;
@@ -71,7 +73,9 @@ function Detail({ category, locale }) {
 
       <section className="sm-card" aria-labelledby="sm-cat-changes">
         <h2 id="sm-cat-changes" className="sm-card-title">{t("planning.changesTitle")}</h2>
-        {category.manageable ? (
+        {category.manageable && !isWriteOpen("category.update") ? (
+          <WriteClosedNotice operation="category.update" compact />
+        ) : category.manageable ? (
           <>
             <p className="sm-text sm-muted">{t("categories.canRename")}</p>
             <Link className="sm-button" to={categoryEditPath(category.id)} state={{ from: `${location.pathname}${location.search}` }} data-sm-action="edit-category">{t("categories.rename")}</Link>

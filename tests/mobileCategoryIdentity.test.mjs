@@ -5,6 +5,10 @@ import { CATEGORY_WRITES, envelope, failure, installFakeApi } from "./helpers/mo
 import { TOKEN_A, TOKEN_B, USER_A, USER_B, clearSessionStorage, dom, location, mountMobile, otherTabWrote, q, qa, resetEnvironment, settle, storeSession, window } from "./helpers/mobileHarness.mjs";
 import { categoriesBackend, category } from "./helpers/categoryFixture.mjs";
 import { change, click } from "./helpers/dom.mjs";
+import { setWriteApprovalsForTests } from "../src/mobile/data/writeGate.js";
+
+// These suites test the category writes themselves, so they open the two (closed in the product; see mobileWriteGate.test.mjs).
+setWriteApprovalsForTests(["category.create", "category.update"]);
 
 /*
  * A category write under a changing identity. The rules: a write is never sent
