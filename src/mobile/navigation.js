@@ -38,6 +38,30 @@ export const goalDetailPath = (goalId) => `${MOBILE_GOALS}/${encodeURIComponent(
 export const recurringDetailPath = (ruleId) => `${MOBILE_RECURRING}/${encodeURIComponent(ruleId)}`;
 
 /*
+ * Added in the full Mobile sprint, all read-only. Debts and the calendar are
+ * under Planning; transfers, notifications, reports and exports, imports, the
+ * AI assistant's insights, WhatsApp and the profile are reached from More.
+ */
+export const MOBILE_DEBTS = `${MOBILE_PLANNING}/debts`;
+export const debtDetailPath = (debtId) => `${MOBILE_DEBTS}/${encodeURIComponent(debtId)}`;
+export const MOBILE_CALENDAR = `${MOBILE_PLANNING}/calendar`;
+export const MOBILE_TRANSFERS = `${MOBILE_PREFIX}/transfers`;
+export const transferDetailPath = (transferId) => `${MOBILE_TRANSFERS}/${encodeURIComponent(transferId)}`;
+export const MOBILE_NOTIFICATIONS = `${MOBILE_PREFIX}/notifications`;
+export const MOBILE_REPORTS = `${MOBILE_PREFIX}/reports`;
+export const reportPath = (type) => `${MOBILE_REPORTS}/${encodeURIComponent(type)}`;
+export const MOBILE_EXPORTS = `${MOBILE_PREFIX}/exports`;
+export const MOBILE_IMPORTS = `${MOBILE_PREFIX}/imports`;
+export const importDetailPath = (importId) => `${MOBILE_IMPORTS}/${encodeURIComponent(importId)}`;
+export const MOBILE_AI = `${MOBILE_PREFIX}/assistant`;
+export const MOBILE_WHATSAPP = `${MOBILE_PREFIX}/whatsapp`;
+export const MOBILE_PROFILE = `${MOBILE_PREFIX}/profile`;
+export const MOBILE_ADD_ENTRY = `${MOBILE_PREFIX}/add`;
+
+/* The More pages: More's current-page marker stays on inside them. */
+const MORE_WITHIN = [MOBILE_ACCOUNTS, MOBILE_TRANSFERS, MOBILE_NOTIFICATIONS, MOBILE_REPORTS, MOBILE_EXPORTS, MOBILE_IMPORTS, MOBILE_AI, MOBILE_WHATSAPP, MOBILE_PROFILE];
+
+/*
  * The four primary destinations. Add is an action (a button that opens a
  * sheet), not a fifth destination, so it is not listed here.
  *
@@ -61,7 +85,7 @@ export const MOBILE_SCREENS = Object.freeze([
   { id: "home", mobile: MOBILE_PREFIX, canonical: PATH.USER.DASHBOARD, fromCanonical: true },
   { id: "activity", mobile: `${MOBILE_PREFIX}/activity`, canonical: PATH.USER.FINANCIAL_OPERATIONS, fromCanonical: false, within: [`${MOBILE_PREFIX}/activity`] },
   { id: "planning", mobile: `${MOBILE_PREFIX}/planning`, canonical: PATH.USER.BUDGETS, fromCanonical: false, within: [`${MOBILE_PREFIX}/planning`] },
-  { id: "more", mobile: `${MOBILE_PREFIX}/more`, canonical: PATH.USER.SETTING, fromCanonical: false, within: [`${MOBILE_PREFIX}/accounts`] },
+  { id: "more", mobile: `${MOBILE_PREFIX}/more`, canonical: PATH.USER.SETTING, fromCanonical: false, within: MORE_WITHIN },
 ]);
 
 /*
@@ -96,3 +120,23 @@ export function backPathFrom(state, fallback) {
 
   return from;
 }
+
+/*
+ * The Mobile page of the record a notification or a calendar event refers to
+ * (the backend sends `subject_type` + `subject_id`, never a URL), mirroring the
+ * full version's getSubjectPath. An unknown type or an id that is not a plain
+ * positive integer gives null: the item is shown without a link.
+ */
+const SUBJECT_PATHS = {
+  recurring_transaction: recurringDetailPath,
+  debt: debtDetailPath,
+  budget: budgetDetailPath,
+  savings_goal: goalDetailPath,
+  transaction: activityDetailPath,
+  transfer: transferDetailPath,
+  account: accountDetailPath,
+  category: categoryDetailPath,
+};
+
+export const mobileSubjectPath = (subjectType, subjectId) =>
+  typeof subjectType === "string" && Object.hasOwn(SUBJECT_PATHS, subjectType) && /^[1-9]\d{0,14}$/.test(String(subjectId ?? "")) ? SUBJECT_PATHS[subjectType](subjectId) : null;

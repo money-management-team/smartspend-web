@@ -1,12 +1,16 @@
 import { accountsApi } from "../../features/Dashboards/User/api/accountsApi.js";
 import { budgetsApi } from "../../features/Dashboards/User/api/budgetsApi.js";
+import { calendarApi } from "../../features/Dashboards/User/api/calendarApi.js";
 import { categoriesApi } from "../../features/Dashboards/User/api/categoriesApi.js";
 import { getStoredWorkspace } from "../../features/Dashboards/User/api/apiClient.js";
 import { dashboardApi } from "../../features/Dashboards/User/api/dashboardApi.js";
+import { debtsApi } from "../../features/Dashboards/User/api/debtsApi.js";
 import { financialAlertsApi } from "../../features/Dashboards/User/api/financialAlertsApi.js";
+import { notificationsApi } from "../../features/Dashboards/User/api/notificationsApi.js";
 import { recurringTransactionsApi } from "../../features/Dashboards/User/api/recurringTransactionsApi.js";
 import { savingsGoalsApi } from "../../features/Dashboards/User/api/savingsGoalsApi.js";
 import { transactionsApi } from "../../features/Dashboards/User/api/transactionsApi.js";
+import { transfersApi } from "../../features/Dashboards/User/api/transfersApi.js";
 
 /*
  * Every request Mobile makes, in one file, and every one of them a GET.
@@ -112,3 +116,38 @@ export const readCategory = (categoryId, signal) => categoriesApi.get(categoryId
 
 /** The workspace the session stored at sign-in, as the list queries use it (read from storage, never written). */
 export const sessionWorkspace = () => getStoredWorkspace();
+
+/*
+ * The full Mobile sprint: debts, transfers, the notification inbox and the
+ * financial calendar, all read-only (only list / get / listPayments of the
+ * wrappers are named; record, reverse, mark-read and the rest are not).
+ *
+ *   GET /debts?direction=&status=           a page of debts (data.debts), each with the backend's amounts and status
+ *   GET /debts/{id}                         one debt (data.debt)
+ *   GET /debts/{id}/payments                a page of its payments (data.payments), reversed ones included
+ *   GET /transfers?status=                  a page of transfers (data.transfers); no workspace filter exists
+ *   GET /transfers/{id}                     one transfer with its transactions and ledger entries
+ *   GET /notifications?status=              a page of the person's inbox (data.notifications); no workspace
+ *   GET /calendar?month=&year=&view=month   the month's events (data.events) and the backend's counts
+ *
+ * Listing notifications does not mark them read (that is a PATCH Mobile does
+ * not send), so reading the inbox here changes nothing on the server.
+ */
+export const DEBTS_PER_PAGE = 20;
+export const PAYMENTS_PER_PAGE = 10;
+export const TRANSFERS_PER_PAGE = 20;
+export const NOTIFICATIONS_PER_PAGE = 20;
+
+export const readDebts = (query, signal) => debtsApi.list(query, { signal });
+
+export const readDebt = (debtId, signal) => debtsApi.get(debtId, { signal });
+
+export const readDebtPayments = (debtId, page, signal) => debtsApi.listPayments(debtId, { per_page: PAYMENTS_PER_PAGE, page }, { signal });
+
+export const readTransfers = (query, signal) => transfersApi.list(query, { signal });
+
+export const readTransfer = (transferId, signal) => transfersApi.get(transferId, { signal });
+
+export const readNotifications = (query, signal) => notificationsApi.list(query, { signal });
+
+export const readCalendarMonth = (month, year, signal) => calendarApi.get({ month, year, view: "month", workspace_id: workspaceId() }, { signal });

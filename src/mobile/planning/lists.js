@@ -1,5 +1,8 @@
-import { budgetsLoader, goalsLoader, keys, rulesLoader } from "../data/loaders.js";
-import { BUDGETS_PER_PAGE, GOALS_PER_PAGE, RULES_PER_PAGE, planningWorkspaceId } from "../data/readApi.js";
+import { budgetsLoader, debtsLoader, goalsLoader, keys, notificationsLoader, rulesLoader, transfersLoader } from "../data/loaders.js";
+import { BUDGETS_PER_PAGE, DEBTS_PER_PAGE, GOALS_PER_PAGE, NOTIFICATIONS_PER_PAGE, RULES_PER_PAGE, TRANSFERS_PER_PAGE, planningWorkspaceId } from "../data/readApi.js";
+import { buildDebtsPage, debtFilterSignature, debtFiltersToQuery, debtFiltersToSearchParams, hasActiveDebtFilters, readDebtFilters } from "../models/debts.js";
+import { buildNotificationsPage, hasActiveNotificationFilters, notificationFilterSignature, notificationFiltersToQuery, notificationFiltersToSearchParams, readNotificationFilters } from "../models/notifications.js";
+import { buildTransfersPage, hasActiveTransferFilters, readTransferFilters, transferFilterSignature, transferFiltersToQuery, transferFiltersToSearchParams } from "../models/transfers.js";
 import { budgetFilterSignature, budgetFiltersToQuery, budgetFiltersToSearchParams, buildBudgetsPage, hasActiveBudgetFilters, readBudgetFilters } from "../models/budgets.js";
 import { buildGoalsPage, goalFilterSignature, goalFiltersToQuery, goalFiltersToSearchParams, hasActiveGoalFilters, readGoalFilters } from "../models/goals.js";
 import { buildRulesPage, hasActiveRuleFilters, readRuleFilters, ruleFilterSignature, ruleFiltersToQuery, ruleFiltersToSearchParams } from "../models/recurring.js";
@@ -44,6 +47,42 @@ export const RULE_LIST = Object.freeze({
   toQuery: ruleFiltersToQuery,
   loaderOf: rulesLoader,
   isFiltered: hasActiveRuleFilters,
+});
+
+export const DEBT_LIST = Object.freeze({
+  keyOf: keys.debts,
+  perPage: DEBTS_PER_PAGE,
+  build: buildDebtsPage,
+  readFilters: readDebtFilters,
+  toSearchParams: debtFiltersToSearchParams,
+  signatureOf: debtFilterSignature,
+  toQuery: debtFiltersToQuery,
+  loaderOf: debtsLoader,
+  isFiltered: hasActiveDebtFilters,
+});
+
+export const TRANSFER_LIST = Object.freeze({
+  keyOf: keys.transfers,
+  perPage: TRANSFERS_PER_PAGE,
+  build: buildTransfersPage,
+  readFilters: readTransferFilters,
+  toSearchParams: transferFiltersToSearchParams,
+  signatureOf: transferFilterSignature,
+  toQuery: transferFiltersToQuery,
+  loaderOf: transfersLoader,
+  isFiltered: hasActiveTransferFilters,
+});
+
+export const NOTIFICATION_LIST = Object.freeze({
+  keyOf: keys.notifications,
+  perPage: NOTIFICATIONS_PER_PAGE,
+  build: buildNotificationsPage,
+  readFilters: readNotificationFilters,
+  toSearchParams: notificationFiltersToSearchParams,
+  signatureOf: notificationFilterSignature,
+  toQuery: notificationFiltersToQuery,
+  loaderOf: notificationsLoader,
+  isFiltered: hasActiveNotificationFilters,
 });
 
 /** The loader of one page of a list for the given (already sanitised) filters. */

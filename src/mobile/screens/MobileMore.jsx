@@ -4,13 +4,25 @@ import { Link } from "react-router-dom";
 import { useLanguageContext } from "../../contexts/language/useLanguageContext";
 import { useThemeContext } from "../../contexts/theme/useThemeContext";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
-import { MOBILE_ACCOUNTS } from "../navigation.js";
+import { MOBILE_ACCOUNTS, MOBILE_NOTIFICATIONS, MOBILE_TRANSFERS } from "../navigation.js";
 import { PRESENTATION_PREFERENCES } from "../presentation/preference.js";
 import { usePresentation } from "../presentation/usePresentation.js";
 import Chevron from "../ui/Chevron.jsx";
 
+function MoreLink({ to, title, hint }) {
+  return (
+    <Link className="sm-link-row" to={to}>
+      <span className="sm-row-main">
+        <span className="sm-row-title">{title}</span>
+        <span className="sm-row-meta">{hint}</span>
+      </span>
+      <Chevron />
+    </Link>
+  );
+}
+
 /*
- * More: Accounts (read-only), the display choices that already exist elsewhere in
+ * More: Accounts and the other read-only pages (transfers, notifications, ...), the display choices that already exist elsewhere in
  * the app (theme, language) plus the presentation switch. The switch is how
  * a visitor leaves Mobile for the full version; it stores one word on this
  * device and nothing else.
@@ -32,6 +44,12 @@ export default function MobileMore() {
           </span>
           <Chevron />
         </Link>
+        <MoreLink to={MOBILE_TRANSFERS} title={t("moreLinks.transfers")} hint={t("moreLinks.transfersHint")} />
+      </div>
+
+      <div className="sm-card">
+        <h2 className="sm-card-title">{t("moreLinks.updates")}</h2>
+        <MoreLink to={MOBILE_NOTIFICATIONS} title={t("moreLinks.notifications")} hint={t("moreLinks.notificationsHint")} />
       </div>
 
       <div className="sm-card">

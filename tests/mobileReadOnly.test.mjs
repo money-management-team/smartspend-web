@@ -35,7 +35,7 @@ describe("the source", () => {
     const byFile = Object.fromEntries(sources.map((file) => [rel(file), importsOf(file)]).filter(([, modules]) => modules.length));
 
     assert.deepEqual(byFile, {
-      "src/mobile/data/readApi.js": ["accountsApi", "budgetsApi", "categoriesApi", "apiClient", "dashboardApi", "financialAlertsApi", "recurringTransactionsApi", "savingsGoalsApi", "transactionsApi"],
+      "src/mobile/data/readApi.js": ["accountsApi", "budgetsApi", "calendarApi", "categoriesApi", "apiClient", "dashboardApi", "debtsApi", "financialAlertsApi", "notificationsApi", "recurringTransactionsApi", "savingsGoalsApi", "transactionsApi", "transfersApi"],
       // The Smart Savings plan read, in its own file so a build without the flag has no way to ask for a plan.
       "src/mobile/data/readPlanApi.js": ["savingsPlansApi"],
       // S04B4: the one write facade, for categories only.
@@ -73,8 +73,12 @@ describe("the source", () => {
     assert.deepEqual(find(/\bfetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|EventSource|apiRequest|apiDownload|axios/), []);
   });
 
-  it("imports nothing about WhatsApp, AI, imports, reports exports, transfers, recurring or other write flows", () => {
-    assert.deepEqual(find(/from\s*["'][^"']*(whatsapp|aiCopilot|aiExpense|aiVoice|importsApi|reportExports|transfersApi|debtsApi|plannedSavingsApi|authApi|calendarApi|notificationsApi)[^"']*["']/i), []);
+  it("imports nothing about WhatsApp, AI, imports, reports exports, planned savings or auth outside the read facade", () => {
+    assert.deepEqual(find(/from\s*["'][^"']*(whatsapp|aiCopilot|aiExpense|aiVoice|importsApi|reportExports|plannedSavingsApi|authApi)[^"']*["']/i), []);
+    // Debts, transfers, notifications and the calendar are read in the facade only, and only through these methods.
+    assert.deepEqual(find(/from\s*["'][^"']*(transfersApi|debtsApi|calendarApi|notificationsApi)[^"']*["']/i), ["src/mobile/data/readApi.js"]);
+    const used = [...code(path.join(MOBILE, "data/readApi.js")).matchAll(/\b(debtsApi|transfersApi|notificationsApi|calendarApi)\.(\w+)\(/g)].map((match) => `${match[1]}.${match[2]}`);
+    assert.deepEqual([...new Set(used)].sort(), ["calendarApi.get", "debtsApi.get", "debtsApi.list", "debtsApi.listPayments", "notificationsApi.list", "transfersApi.get", "transfersApi.list"]);
     // Budgets, goals, plans and recurring rules are read in the two facade files and nowhere else.
     const facades = ["src/mobile/data/readApi.js", "src/mobile/data/readPlanApi.js"];
     assert.deepEqual(find(/from\s*["'][^"']*(recurringTransactions|savingsGoalsApi|savingsPlansApi|budgetsApi)[^"']*["']/i).sort(), facades);
@@ -123,7 +127,7 @@ describe("the facade", () => {
   it("exports reads only", async () => {
     const readApi = await import("../src/mobile/data/readApi.js");
 
-    assert.deepEqual(Object.keys(readApi).sort(), ["ACTIVITY_PER_PAGE", "BUDGETS_PER_PAGE", "DASHBOARD_PERIOD", "GOALS_PER_PAGE", "MOVEMENTS_PER_PAGE", "RULES_PER_PAGE", "isAccountId", "planningWorkspaceId", "readAccount", "readAccountMovements", "readAccounts", "readAlerts", "readBudget", "readBudgets", "readCategories", "readCategory", "readCategoryList", "readDashboard", "readGoal", "readGoals", "readRule", "readRules", "readTransaction", "readTransactions", "sessionWorkspace"]);
+    assert.deepEqual(Object.keys(readApi).sort(), ["ACTIVITY_PER_PAGE", "BUDGETS_PER_PAGE", "DASHBOARD_PERIOD", "DEBTS_PER_PAGE", "GOALS_PER_PAGE", "MOVEMENTS_PER_PAGE", "NOTIFICATIONS_PER_PAGE", "PAYMENTS_PER_PAGE", "RULES_PER_PAGE", "TRANSFERS_PER_PAGE", "isAccountId", "planningWorkspaceId", "readAccount", "readAccountMovements", "readAccounts", "readAlerts", "readBudget", "readBudgets", "readCalendarMonth", "readCategories", "readCategory", "readCategoryList", "readDashboard", "readDebt", "readDebtPayments", "readDebts", "readGoal", "readGoals", "readNotifications", "readRule", "readRules", "readTransaction", "readTransactions", "readTransfer", "readTransfers", "sessionWorkspace"]);
     const plan = await import("../src/mobile/data/readPlanApi.js");
     assert.deepEqual(Object.keys(plan), ["readGoalPlan"]);
     const write = await import("../src/mobile/data/writeApi.js");

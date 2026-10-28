@@ -24,8 +24,9 @@ const invalid = () => Object.assign(new Error("Planning data could not be valida
  * @param {{ page: number, perPage: number }} expected
  * @param {string} key where the paginator sits under `data` (`budgets`, `savings_goals`, ...)
  * @param {(raw: unknown) => object | null} normalize reads one row, or null when it is unusable
+ * @param {{ rangeOptional?: boolean }} [options]
  */
-export function buildPlanningPage(response, expected, key, normalize) {
+export function buildPlanningPage(response, expected, key, normalize, { rangeOptional = false } = {}) {
   const page = response?.data?.[key];
   const integer = (value, min) => Number.isSafeInteger(value) && value >= min;
 
@@ -52,7 +53,9 @@ export function buildPlanningPage(response, expected, key, normalize) {
 
   const from = rows.length ? (page.current_page - 1) * page.per_page + 1 : null;
   const to = rows.length ? from + rows.length - 1 : null;
-  if ((to != null && to > page.total) || (page.from ?? null) !== from || (page.to ?? null) !== to) throw invalid();
+  // Some contracts document a paginator without from/to (rangeOptional): only then may both be absent.
+  const rangeAbsent = rangeOptional && page.from === undefined && page.to === undefined;
+  if ((to != null && to > page.total) || (!rangeAbsent && ((page.from ?? null) !== from || (page.to ?? null) !== to))) throw invalid();
 
   return { rows, total: page.total, page: page.current_page, lastPage: page.last_page };
 }

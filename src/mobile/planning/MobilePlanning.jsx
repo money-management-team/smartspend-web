@@ -7,7 +7,7 @@ import { keys, loadAlerts } from "../data/loaders.js";
 import { useResource } from "../data/useResource.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { buildAlertsModel } from "../models/home.js";
-import { MOBILE_BUDGETS, MOBILE_CATEGORIES, MOBILE_GOALS, MOBILE_RECURRING } from "../navigation.js";
+import { MOBILE_BUDGETS, MOBILE_CALENDAR, MOBILE_CATEGORIES, MOBILE_DEBTS, MOBILE_GOALS, MOBILE_RECURRING } from "../navigation.js";
 import Chevron from "../ui/Chevron.jsx";
 import { BUDGET_LIST, GOAL_LIST, RULE_LIST, pageLoader } from "./lists.js";
 import { useCount } from "./useCount.js";
@@ -138,7 +138,7 @@ export default function MobilePlanning() {
             <PlanLink to={MOBILE_RECURRING} title={t("planning.overview.recurring")} hint={summary(rules, t, "planning.overview.recurringCount")} state={rules.failed ? "unavailable" : rules.loading ? "loading" : "ready"} />
           </li>
           <li>
-            <PlanLink to={PATH.USER.DEBTS} title={t("planning.overview.debts")} hint={t("planning.overview.fullOnly")} state="full" />
+            <PlanLink to={MOBILE_DEBTS} title={t("planning.overview.debts")} hint={t("planning.overview.debtsHint")} state="mobile" />
           </li>
         </ul>
       </section>
@@ -146,7 +146,7 @@ export default function MobilePlanning() {
       <section className="sm-card" aria-labelledby="sm-plan-tools">
         <h2 id="sm-plan-tools" className="sm-card-title">{t("planning.overview.tools")}</h2>
         <ul className="sm-list">
-          <li><PlanLink to={PATH.USER.CALENDAR} title={t("planning.overview.calendar")} hint={t("planning.overview.fullOnly")} state="full" /></li>
+          <li><PlanLink to={MOBILE_CALENDAR} title={t("planning.overview.calendar")} hint={t("planning.overview.calendarHint")} state="mobile" /></li>
           <li><PlanLink to={MOBILE_CATEGORIES} title={t("planning.overview.categories")} hint={t("planning.overview.categoriesHint")} state="mobile" /></li>
           <li><PlanLink to={PATH.USER.REPORTS} title={t("planning.overview.reports")} hint={t("planning.overview.fullOnly")} state="full" /></li>
         </ul>

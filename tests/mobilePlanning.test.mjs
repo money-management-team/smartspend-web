@@ -78,16 +78,13 @@ describe("Planning overview", () => {
     assert.equal(qa("a[href='/m/planning/recurring']").length, 1);
   });
 
-  it("Debts and the tools are links to the full version, said to be so, and read nothing", async () => {
+  it("Debts and the tools are Mobile screens or links, and the overview reads nothing for them", async () => {
     await open("/m/planning", { budgets: [], goals: [], rules: [] });
 
-    // Categories became a Mobile screen in S04B4; the rest stay full-version links.
-    assert.equal(link("Categories").getAttribute("href"), "/m/planning/categories");
-    for (const [name, href] of [["Debts", "/dashboard/debts"], ["Calendar", "/dashboard/calendar"], ["Reports and exports", "/dashboard/reports"]]) {
-      const item = link(name);
-      assert.equal(item.getAttribute("href"), href, name);
-      assert.match(item.textContent, /Open in the full version/);
-    }
+    // Categories became a Mobile screen in S04B4, Debts and Calendar in the full Mobile sprint; Reports is the full version.
+    for (const [name, href] of [["Categories", "/m/planning/categories"], ["Debts", "/m/planning/debts"], ["Calendar", "/m/planning/calendar"]]) assert.equal(link(name).getAttribute("href"), href, name);
+    assert.equal(link("Reports and exports").getAttribute("href"), "/dashboard/reports");
+    assert.match(link("Reports and exports").textContent, /Open in the full version/);
     assert.equal(api.calls.some((call) => /debts|calendar|categories|reports/.test(call.path)), false, "the overview reads nothing for the tools");
   });
 

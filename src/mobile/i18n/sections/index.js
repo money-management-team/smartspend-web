@@ -1,3 +1,4 @@
+import { debtsTransfers } from "./debtsTransfers.js";
 import { writes } from "./writes.js";
 
 /*
@@ -5,7 +6,7 @@ import { writes } from "./writes.js";
  * feature, each `{ en: { section: … }, ar: { section: … } }`. Sections must not
  * clash with each other or with messages.js (except `titles`, which is merged).
  */
-const FEATURES = [writes];
+const FEATURES = [writes, debtsTransfers];
 
 const join = (language) =>
   FEATURES.reduce((all, feature) => ({ ...all, ...feature[language], titles: { ...all.titles, ...feature[language].titles } }), { titles: {} });

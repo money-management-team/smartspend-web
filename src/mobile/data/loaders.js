@@ -1,4 +1,4 @@
-import { readAccount, readAccountMovements, readAccounts, readAlerts, readBudget, readBudgets, readCategories, readCategory, readCategoryList, readDashboard, readGoal, readGoals, readRule, readRules, readTransaction, readTransactions } from "./readApi.js";
+import { readAccount, readAccountMovements, readAccounts, readAlerts, readBudget, readBudgets, readCalendarMonth, readCategories, readCategory, readCategoryList, readDashboard, readDebt, readDebtPayments, readDebts, readGoal, readGoals, readNotifications, readRule, readRules, readTransaction, readTransactions, readTransfer, readTransfers } from "./readApi.js";
 
 /*
  * What each store entry loads: the response's `data`, as the backend sent it.
@@ -34,7 +34,22 @@ export const ruleLoader = (ruleId) => async (signal) => (await readRule(ruleId, 
 export const categoryListLoader = (type) => async (signal) => (await readCategoryList(type, signal)).data;
 export const categoryLoader = (categoryId) => async (signal) => (await readCategory(categoryId, signal)).data;
 
+// Debts, transfers and notifications are pages (the envelope); one debt or transfer is its `data`.
+export const debtsLoader = (query) => (signal) => readDebts(query, signal);
+export const debtLoader = (debtId) => async (signal) => (await readDebt(debtId, signal)).data;
+export const paymentsLoader = (debtId, page) => (signal) => readDebtPayments(debtId, page, signal);
+export const transfersLoader = (query) => (signal) => readTransfers(query, signal);
+export const transferLoader = (transferId) => async (signal) => (await readTransfer(transferId, signal)).data;
+export const notificationsLoader = (query) => (signal) => readNotifications(query, signal);
+export const calendarLoader = (month, year) => async (signal) => (await readCalendarMonth(month, year, signal)).data;
+
 export const keys = {
+  debts: (signature, page) => `debts:${signature}:${page}`,
+  debt: (id) => `debt:${id}`,
+  payments: (id, page) => `payments:${id}:${page}`,
+  transfers: (signature, page) => `transfers:${signature}:${page}`,
+  transfer: (id) => `transfer:${id}`,
+  notifications: (signature, page) => `notifications:${signature}:${page}`,
   categoryList: (type) => `categoryList:${type || "all"}`,
   category: (id) => `category:${id}`,
   budgets: (signature, page) => `budgets:${signature}:${page}`,
