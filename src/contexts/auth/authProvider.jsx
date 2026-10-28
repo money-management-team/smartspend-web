@@ -184,6 +184,9 @@ export default function AuthProvider({ children }) {
   // keeps what it read for the previous identity, and GET /user confirms the
   // new one. A bfcache restore is checked the same way.
   const shownTokenRef = useRef(session.token);
+  // A workspace-only switch elsewhere: the re-read confirms the person but must
+  // not write its workspace back over the one the other tab chose.
+  const keepStoredWorkspaceRef = useRef(false);
   const [generation, setGeneration] = useState(0);
 
   useEffect(() => {
@@ -199,6 +202,7 @@ export default function AuthProvider({ children }) {
 
       googleAttemptRef.current++;
       freshTokenRef.current = null;
+      keepStoredWorkspaceRef.current = change === "switched" && stored.token === shownTokenRef.current;
       shownTokenRef.current = stored.token;
       setWelcomeNotice(null);
       setInitializationError(null);
@@ -239,7 +243,8 @@ export default function AuthProvider({ children }) {
           const { user, workspace } = normalizeCurrentUser(response.data);
 
           updateUser(user);
-          if (workspace) updateWorkspace(workspace);
+          if (workspace && !keepStoredWorkspaceRef.current) updateWorkspace(workspace);
+          keepStoredWorkspaceRef.current = false;
           setInitializationError(null);
         }
       } catch (error) {

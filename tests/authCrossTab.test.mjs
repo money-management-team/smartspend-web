@@ -119,6 +119,18 @@ describe("another tab and this tab's session", () => {
     assert.equal(shown(), "ready|token-a|Alex Example");
   });
 
+  it("after another tab's workspace switch, the re-read of GET /user does not write its workspace back over that choice", async () => {
+    await otherTab("workspace", JSON.stringify({ id: 7 }), JSON.stringify({ id: 1 }));
+    assert.equal(calls.length, 2, "the person is confirmed again");
+    assert.equal(JSON.parse(window.localStorage.getItem("workspace")).id, 7, "the other tab's workspace stays");
+  });
+
+  it("a sign-in elsewhere still takes the new person's workspace from GET /user", async () => {
+    window.localStorage.setItem("user", JSON.stringify(USER_B));
+    await otherTab("ACCESS_TOKEN", "token-b", "token-a");
+    assert.equal(JSON.parse(window.localStorage.getItem("workspace")).id, 2);
+  });
+
   it("a profile edit elsewhere (same token, same person) and keys that are not the session's change nothing", async () => {
     await otherTab("user", JSON.stringify({ ...USER_A, name: "Alex E." }), JSON.stringify(USER_A));
     await otherTab("theme", "dark");
