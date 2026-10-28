@@ -83,8 +83,7 @@ describe("Planning overview", () => {
 
     // Categories became a Mobile screen in S04B4, Debts and Calendar in the full Mobile sprint; Reports is the full version.
     for (const [name, href] of [["Categories", "/m/planning/categories"], ["Debts", "/m/planning/debts"], ["Calendar", "/m/planning/calendar"]]) assert.equal(link(name).getAttribute("href"), href, name);
-    assert.equal(link("Reports and exports").getAttribute("href"), "/dashboard/reports");
-    assert.match(link("Reports and exports").textContent, /Open in the full version/);
+    assert.equal(link("Reports and exports").getAttribute("href"), "/m/reports");
     assert.equal(api.calls.some((call) => /debts|calendar|categories|reports/.test(call.path)), false, "the overview reads nothing for the tools");
   });
 

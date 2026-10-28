@@ -5,6 +5,10 @@ export const debtsTransfers = {
     moreLinks: {
       transfers: "Transfers",
       transfersHint: "Money moved between your accounts",
+      reports: "Reports and exports",
+      reportsHint: "Ten reports and your export files",
+      imports: "Imports",
+      importsHint: "Statements you've imported",
       updates: "Updates",
       notifications: "Notifications",
       notificationsHint: "What SmartSpend has told you",
@@ -112,6 +116,10 @@ export const debtsTransfers = {
     moreLinks: {
       transfers: "التحويلات",
       transfersHint: "الأموال المنقولة بين حساباتك",
+      reports: "التقارير والتصدير",
+      reportsHint: "عشرة تقارير وملفات التصدير",
+      imports: "الاستيراد",
+      importsHint: "الكشوف التي استوردتها",
       updates: "التحديثات",
       notifications: "الإشعارات",
       notificationsHint: "ما أخبرك به SmartSpend",

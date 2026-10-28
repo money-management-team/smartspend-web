@@ -158,10 +158,10 @@ describe("Planning's links", () => {
 
     assert.ok(hrefs.size > 10);
     for (const href of hrefs) {
-      assert.match(href, /^\/(m(\/(planning|accounts|activity)(\/[1-9]\d{0,14}|\/(budgets|goals|recurring|categories)(\/[1-9]\d{0,14})?)?)?|dashboard\/[a-z-]+(\/\d+)?)(\?[a-z_=&-]+)?$/, href);
+      assert.match(href, /^\/(m(\/(planning|accounts|activity|reports)(\/[1-9]\d{0,14}|\/(budgets|goals|recurring|categories|debts|calendar)(\/[1-9]\d{0,14})?)?)?|dashboard\/[a-z-]+(\/\d+)?)(\?[a-z_=&-]+)?$/, href);
     }
     // The full version is the way to do anything that changes data: it is linked, and it is a page the app already has.
-    assert.ok(hrefs.has(PATH.USER.DEBTS) && hrefs.has(PATH.USER.BUDGETS) && hrefs.has(getBudgetDetailsPath(1)));
+    assert.ok(hrefs.has("/m/planning/debts") && hrefs.has(PATH.USER.BUDGETS) && hrefs.has(getBudgetDetailsPath(1)));
     assert.equal(q("body > a"), null);
   });
 });

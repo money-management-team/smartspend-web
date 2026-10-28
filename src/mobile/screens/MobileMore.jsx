@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useLanguageContext } from "../../contexts/language/useLanguageContext";
 import { useThemeContext } from "../../contexts/theme/useThemeContext";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
-import { MOBILE_ACCOUNTS, MOBILE_NOTIFICATIONS, MOBILE_TRANSFERS } from "../navigation.js";
+import { MOBILE_ACCOUNTS, MOBILE_IMPORTS, MOBILE_NOTIFICATIONS, MOBILE_REPORTS, MOBILE_TRANSFERS } from "../navigation.js";
 import { PRESENTATION_PREFERENCES } from "../presentation/preference.js";
 import { usePresentation } from "../presentation/usePresentation.js";
 import Chevron from "../ui/Chevron.jsx";
@@ -45,6 +45,8 @@ export default function MobileMore() {
           <Chevron />
         </Link>
         <MoreLink to={MOBILE_TRANSFERS} title={t("moreLinks.transfers")} hint={t("moreLinks.transfersHint")} />
+        <MoreLink to={MOBILE_REPORTS} title={t("moreLinks.reports")} hint={t("moreLinks.reportsHint")} />
+        <MoreLink to={MOBILE_IMPORTS} title={t("moreLinks.imports")} hint={t("moreLinks.importsHint")} />
       </div>
 
       <div className="sm-card">

@@ -6,8 +6,11 @@ import { getStoredWorkspace } from "../../features/Dashboards/User/api/apiClient
 import { dashboardApi } from "../../features/Dashboards/User/api/dashboardApi.js";
 import { debtsApi } from "../../features/Dashboards/User/api/debtsApi.js";
 import { financialAlertsApi } from "../../features/Dashboards/User/api/financialAlertsApi.js";
+import { importsApi } from "../../features/Dashboards/User/api/importsApi.js";
 import { notificationsApi } from "../../features/Dashboards/User/api/notificationsApi.js";
 import { recurringTransactionsApi } from "../../features/Dashboards/User/api/recurringTransactionsApi.js";
+import { reportExportsApi } from "../../features/Dashboards/User/api/reportExportsApi.js";
+import { reportsApi } from "../../features/Dashboards/User/api/reportsApi.js";
 import { savingsGoalsApi } from "../../features/Dashboards/User/api/savingsGoalsApi.js";
 import { transactionsApi } from "../../features/Dashboards/User/api/transactionsApi.js";
 import { transfersApi } from "../../features/Dashboards/User/api/transfersApi.js";
@@ -151,3 +154,47 @@ export const readTransfer = (transferId, signal) => transfersApi.get(transferId,
 export const readNotifications = (query, signal) => notificationsApi.list(query, { signal });
 
 export const readCalendarMonth = (month, year, signal) => calendarApi.get({ month, year, view: "month", workspace_id: workspaceId() }, { signal });
+
+/*
+ * Reports (the ten of them), read-only: GET /reports/{type}?from=&to= (and
+ * per_page, page for the list reports). The backend scopes reports by the token;
+ * no workspace is sent. Exports are not here (creating one is a write).
+ */
+const REPORT_READERS = {
+  overview: (query, signal) => reportsApi.getOverviewReport(query, { signal }),
+  "income-expense": (query, signal) => reportsApi.getIncomeExpenseReport(query, { signal }),
+  "cash-flow": (query, signal) => reportsApi.getCashFlowReport(query, { signal }),
+  accounts: (query, signal) => reportsApi.getAccountsReport(query, { signal }),
+  categories: (query, signal) => reportsApi.getCategoriesReport(query, { signal }),
+  transfers: (query, signal) => reportsApi.getTransfersReport(query, { signal }),
+  budgets: (query, signal) => reportsApi.getBudgetsReport(query, { signal }),
+  "savings-goals": (query, signal) => reportsApi.getSavingsGoalsReport(query, { signal }),
+  debts: (query, signal) => reportsApi.getDebtsReport(query, { signal }),
+  recurring: (query, signal) => reportsApi.getRecurringReport(query, { signal }),
+};
+
+export const readReport = (type, query, signal) => {
+  if (!Object.hasOwn(REPORT_READERS, type)) throw Object.assign(new Error("Unknown report."), { code: "NOT_FOUND" });
+  return REPORT_READERS[type](query, signal);
+};
+
+/*
+ * The export history and statement imports, read-only:
+ *   GET /report-exports?status=          a page of exports (data.report_exports)
+ *   GET /report-exports/{id}/download    the file, only when the export says download_available
+ *   GET /imports?status=                 a page of imports (data.imports)
+ *   GET /imports/{id}                    one import with its status and row counts
+ * Queueing, cancelling or revoking an export, and uploading, mapping,
+ * validating, confirming, cancelling or reversing an import, are writes and are
+ * not named here.
+ */
+export const EXPORTS_PER_PAGE = 20;
+export const IMPORTS_PER_PAGE = 20;
+
+export const readExports = (query, signal) => reportExportsApi.list(query, { signal });
+
+export const readExportFile = (exportId, signal) => reportExportsApi.download(exportId, { signal });
+
+export const readImports = (query, signal) => importsApi.list(query, { signal });
+
+export const readImport = (importId, signal) => importsApi.get(importId, { signal });

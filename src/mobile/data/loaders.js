@@ -1,4 +1,4 @@
-import { readAccount, readAccountMovements, readAccounts, readAlerts, readBudget, readBudgets, readCalendarMonth, readCategories, readCategory, readCategoryList, readDashboard, readDebt, readDebtPayments, readDebts, readGoal, readGoals, readNotifications, readRule, readRules, readTransaction, readTransactions, readTransfer, readTransfers } from "./readApi.js";
+import { readAccount, readAccountMovements, readAccounts, readAlerts, readBudget, readBudgets, readCalendarMonth, readCategories, readCategory, readCategoryList, readDashboard, readDebt, readDebtPayments, readDebts, readExports, readGoal, readGoals, readImport, readImports, readNotifications, readReport, readRule, readRules, readTransaction, readTransactions, readTransfer, readTransfers } from "./readApi.js";
 
 /*
  * What each store entry loads: the response's `data`, as the backend sent it.
@@ -43,7 +43,17 @@ export const transferLoader = (transferId) => async (signal) => (await readTrans
 export const notificationsLoader = (query) => (signal) => readNotifications(query, signal);
 export const calendarLoader = (month, year) => async (signal) => (await readCalendarMonth(month, year, signal)).data;
 
+export const reportLoader = (type, query) => async (signal) => (await readReport(type, query, signal)).data;
+
+export const exportsLoader = (query) => (signal) => readExports(query, signal);
+export const importsLoader = (query) => (signal) => readImports(query, signal);
+export const importLoader = (importId) => async (signal) => (await readImport(importId, signal)).data;
+
 export const keys = {
+  exports: (signature, page) => `exports:${signature}:${page}`,
+  imports: (signature, page) => `imports:${signature}:${page}`,
+  statementImport: (id) => `import:${id}`,
+  report: (type, from, to, page) => `report:${type}:${from}:${to}:${page}`,
   debts: (signature, page) => `debts:${signature}:${page}`,
   debt: (id) => `debt:${id}`,
   payments: (id, page) => `payments:${id}:${page}`,

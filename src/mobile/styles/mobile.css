@@ -1632,3 +1632,16 @@
   overflow-wrap: break-word;
   text-align: center;
 }
+
+/* Full Mobile sprint: closed-write notes, report bars, the calendar month bar. */
+.sm-root .sm-closed { border-inline-start: 3px solid var(--sm-border-strong, currentColor); }
+.sm-root .sm-report-group + .sm-report-group { margin-block-start: 0.75rem; padding-block-start: 0.75rem; border-block-start: 1px solid var(--sm-border, rgba(127, 127, 127, 0.25)); }
+.sm-root .sm-bars { display: grid; gap: 0.375rem; margin-block-start: 0.5rem; }
+.sm-root .sm-bar-row { display: grid; grid-template-columns: minmax(0, 9rem) minmax(0, 1fr); gap: 0.5rem; align-items: center; }
+.sm-root .sm-bar-label { font-size: 0.8125rem; overflow-wrap: anywhere; }
+.sm-root .sm-bar-track { block-size: 0.5rem; border-radius: 999px; background: var(--sm-track, rgba(127, 127, 127, 0.18)); overflow: hidden; }
+.sm-root .sm-bar-fill { display: block; block-size: 100%; border-radius: inherit; background: var(--sm-accent, #2563eb); }
+.sm-root .sm-cal-bar { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.sm-root .sm-cal-month { flex: 1 1 auto; text-align: center; margin: 0; }
+.sm-root .sm-button-small:has(.sm-chevron) { min-inline-size: 44px; min-block-size: 44px; }
+.sm-root .sm-note-row { align-items: flex-start; }

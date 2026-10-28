@@ -1,5 +1,6 @@
-import { budgetsLoader, debtsLoader, goalsLoader, keys, notificationsLoader, rulesLoader, transfersLoader } from "../data/loaders.js";
-import { BUDGETS_PER_PAGE, DEBTS_PER_PAGE, GOALS_PER_PAGE, NOTIFICATIONS_PER_PAGE, RULES_PER_PAGE, TRANSFERS_PER_PAGE, planningWorkspaceId } from "../data/readApi.js";
+import { budgetsLoader, debtsLoader, exportsLoader, goalsLoader, importsLoader, keys, notificationsLoader, rulesLoader, transfersLoader } from "../data/loaders.js";
+import { BUDGETS_PER_PAGE, DEBTS_PER_PAGE, EXPORTS_PER_PAGE, GOALS_PER_PAGE, IMPORTS_PER_PAGE, NOTIFICATIONS_PER_PAGE, RULES_PER_PAGE, TRANSFERS_PER_PAGE, planningWorkspaceId } from "../data/readApi.js";
+import { buildExportsPage, buildImportsPage, exportFiltersToQuery, hasStatusFilter, importFiltersToQuery, readExportFilters, readImportFilters, statusFilterSignature, statusFiltersToSearchParams } from "../models/exportsImports.js";
 import { buildDebtsPage, debtFilterSignature, debtFiltersToQuery, debtFiltersToSearchParams, hasActiveDebtFilters, readDebtFilters } from "../models/debts.js";
 import { buildNotificationsPage, hasActiveNotificationFilters, notificationFilterSignature, notificationFiltersToQuery, notificationFiltersToSearchParams, readNotificationFilters } from "../models/notifications.js";
 import { buildTransfersPage, hasActiveTransferFilters, readTransferFilters, transferFilterSignature, transferFiltersToQuery, transferFiltersToSearchParams } from "../models/transfers.js";
@@ -83,6 +84,30 @@ export const NOTIFICATION_LIST = Object.freeze({
   toQuery: notificationFiltersToQuery,
   loaderOf: notificationsLoader,
   isFiltered: hasActiveNotificationFilters,
+});
+
+export const EXPORT_LIST = Object.freeze({
+  keyOf: keys.exports,
+  perPage: EXPORTS_PER_PAGE,
+  build: buildExportsPage,
+  readFilters: readExportFilters,
+  toSearchParams: statusFiltersToSearchParams,
+  signatureOf: statusFilterSignature,
+  toQuery: exportFiltersToQuery,
+  loaderOf: exportsLoader,
+  isFiltered: hasStatusFilter,
+});
+
+export const IMPORT_LIST = Object.freeze({
+  keyOf: keys.imports,
+  perPage: IMPORTS_PER_PAGE,
+  build: buildImportsPage,
+  readFilters: readImportFilters,
+  toSearchParams: statusFiltersToSearchParams,
+  signatureOf: statusFilterSignature,
+  toQuery: importFiltersToQuery,
+  loaderOf: importsLoader,
+  isFiltered: hasStatusFilter,
 });
 
 /** The loader of one page of a list for the given (already sanitised) filters. */

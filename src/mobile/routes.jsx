@@ -23,7 +23,11 @@ import MobileAppShell from "./shell/MobileAppShell.jsx";
 import MobileCalendar from "./calendar/MobileCalendar.jsx";
 import MobileDebtDetail from "./debts/MobileDebtDetail.jsx";
 import MobileDebts from "./debts/MobileDebts.jsx";
+import MobileImports, { MobileImportDetail } from "./imports/MobileImports.jsx";
 import MobileNotifications from "./notifications/MobileNotifications.jsx";
+import MobileExports from "./reports/MobileExports.jsx";
+import MobileReport from "./reports/MobileReport.jsx";
+import MobileReports from "./reports/MobileReports.jsx";
 import MobileTransferDetail from "./transfers/MobileTransferDetail.jsx";
 import MobileTransfers from "./transfers/MobileTransfers.jsx";
 
@@ -80,6 +84,11 @@ export const mobileRoutes = [
       { path: "transfers", element: <MobileTransfers /> },
       { path: "transfers/:transferId", element: <MobileTransferDetail /> },
       { path: "notifications", element: <MobileNotifications /> },
+      { path: "reports", element: <MobileReports /> },
+      { path: "reports/:reportType", element: <MobileReport /> },
+      { path: "exports", element: <MobileExports /> },
+      { path: "imports", element: <MobileImports /> },
+      { path: "imports/:importId", element: <MobileImportDetail /> },
       { path: "more", element: <MobileMore /> },
       { path: "*", element: <MobileNotAvailable /> },
     ],

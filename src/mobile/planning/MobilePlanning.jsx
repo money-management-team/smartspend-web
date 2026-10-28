@@ -2,12 +2,11 @@ import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
-import { PATH } from "../../routes/Path.js";
 import { keys, loadAlerts } from "../data/loaders.js";
 import { useResource } from "../data/useResource.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { buildAlertsModel } from "../models/home.js";
-import { MOBILE_BUDGETS, MOBILE_CALENDAR, MOBILE_CATEGORIES, MOBILE_DEBTS, MOBILE_GOALS, MOBILE_RECURRING } from "../navigation.js";
+import { MOBILE_BUDGETS, MOBILE_CALENDAR, MOBILE_CATEGORIES, MOBILE_DEBTS, MOBILE_GOALS, MOBILE_RECURRING, MOBILE_REPORTS } from "../navigation.js";
 import Chevron from "../ui/Chevron.jsx";
 import { BUDGET_LIST, GOAL_LIST, RULE_LIST, pageLoader } from "./lists.js";
 import { useCount } from "./useCount.js";
@@ -148,7 +147,7 @@ export default function MobilePlanning() {
         <ul className="sm-list">
           <li><PlanLink to={MOBILE_CALENDAR} title={t("planning.overview.calendar")} hint={t("planning.overview.calendarHint")} state="mobile" /></li>
           <li><PlanLink to={MOBILE_CATEGORIES} title={t("planning.overview.categories")} hint={t("planning.overview.categoriesHint")} state="mobile" /></li>
-          <li><PlanLink to={PATH.USER.REPORTS} title={t("planning.overview.reports")} hint={t("planning.overview.fullOnly")} state="full" /></li>
+          <li><PlanLink to={MOBILE_REPORTS} title={t("planning.overview.reports")} hint={t("planning.overview.reportsHint")} state="mobile" /></li>
         </ul>
       </section>
 

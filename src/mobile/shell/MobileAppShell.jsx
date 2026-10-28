@@ -5,7 +5,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import logo from "../../assets/smart-spend-logo.png";
 import "../i18n/register.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
-import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_BUDGETS, MOBILE_CALENDAR, MOBILE_CATEGORIES, MOBILE_CATEGORY_NEW, MOBILE_DEBTS, MOBILE_GOALS, MOBILE_NOTIFICATIONS, MOBILE_RECURRING, MOBILE_SCREENS, MOBILE_TRANSFERS } from "../navigation.js";
+import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_BUDGETS, MOBILE_CALENDAR, MOBILE_CATEGORIES, MOBILE_CATEGORY_NEW, MOBILE_DEBTS, MOBILE_EXPORTS, MOBILE_GOALS, MOBILE_IMPORTS, MOBILE_NOTIFICATIONS, MOBILE_REPORTS, MOBILE_RECURRING, MOBILE_SCREENS, MOBILE_TRANSFERS } from "../navigation.js";
 import { normalizePathname } from "../presentation/resolver.js";
 import MobileMenu from "./MobileMenu.jsx";
 import MobileNav from "./MobileNav.jsx";
@@ -37,8 +37,9 @@ function getTitleKey(pathname) {
 
   if (path === MOBILE_CALENDAR) return "titles.calendar";
   if (path === MOBILE_NOTIFICATIONS) return "titles.notifications";
+  if (path === MOBILE_EXPORTS) return "titles.exports";
 
-  for (const [prefix, list, record] of [[MOBILE_BUDGETS, "titles.budgets", "titles.budget"], [MOBILE_GOALS, "titles.goals", "titles.goal"], [MOBILE_RECURRING, "titles.recurring", "titles.rule"], [MOBILE_DEBTS, "titles.debts", "titles.debt"], [MOBILE_TRANSFERS, "titles.transfers", "titles.transfer"]]) {
+  for (const [prefix, list, record] of [[MOBILE_BUDGETS, "titles.budgets", "titles.budget"], [MOBILE_GOALS, "titles.goals", "titles.goal"], [MOBILE_RECURRING, "titles.recurring", "titles.rule"], [MOBILE_DEBTS, "titles.debts", "titles.debt"], [MOBILE_TRANSFERS, "titles.transfers", "titles.transfer"], [MOBILE_REPORTS, "titles.reports", "titles.report"], [MOBILE_IMPORTS, "titles.imports", "titles.statementImport"]]) {
     if (path === prefix) return list;
     if (path.startsWith(`${prefix}/`) && !path.slice(prefix.length + 1).includes("/")) return record;
   }
