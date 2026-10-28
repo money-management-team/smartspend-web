@@ -6,6 +6,7 @@ import { createResourceStore } from "../data/resourceStore.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { MoneyPrivacyProvider } from "../money/MoneyPrivacy.jsx";
 import { createIdentityGuard, identityOf } from "./guard.js";
+import { GuardContext } from "./guardContext.js";
 import { StoreContext, reloadPage } from "./storeContext.js";
 
 const SESSION_KEYS = /^(ACCESS_TOKEN|token|token_type|user|ROLE|workspace|remember_login)$/;
@@ -64,9 +65,11 @@ function IdentityScope({ identity, children }) {
   if (!status.ok) return <IdentityChanged reason={status.reason} />;
 
   return (
-    <StoreContext.Provider value={store}>
-      <MoneyPrivacyProvider>{children}</MoneyPrivacyProvider>
-    </StoreContext.Provider>
+    <GuardContext.Provider value={guard}>
+      <StoreContext.Provider value={store}>
+        <MoneyPrivacyProvider>{children}</MoneyPrivacyProvider>
+      </StoreContext.Provider>
+    </GuardContext.Provider>
   );
 }
 

@@ -52,3 +52,5 @@ Categories list ── click a card ──▶ Category details
 | `src/locales/{en,ar}/*.json` → `dashboard.categories.*`, `dashboard.sidebar.categories` | All copy |
 
 Budgets (`type: "expense"`) and Financial Operations also call `categoriesApi.list`; they are unchanged by this section.
+
+The Mobile presentation (behind its build flag, off in production) has its own Categories screens under `/m/planning/categories`: a list, a category, a new category (name and type) and a rename of your own; no type, colour or icon change and no archive. See [../mobile/S04B4-category-management.md](../mobile/S04B4-category-management.md).

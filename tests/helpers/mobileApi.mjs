@@ -9,10 +9,32 @@
  * around the check by not using fetch.
  */
 
+const safeJson = (text) => {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+};
+
 export const envelope = (data) => ({ status: true, message: "ok", data });
 export const failure = (status, message = "failed", code) => ({ status, body: { status: false, message, ...(code ? { code } : {}), errors: {} } });
 
-export function installFakeApi(handler) {
+/*
+ * The only writes a test may allow (S04B4): a new category and a category's
+ * rename. Anything else that is not a GET stays a violation, allowed or not.
+ */
+export const CATEGORY_WRITES = Object.freeze([
+  { method: "POST", path: /^\/categories$/ },
+  { method: "PATCH", path: /^\/categories\/[1-9]\d{0,14}$/ },
+]);
+
+/**
+ * @param {(call) => unknown} handler
+ * @param {{ allowWrites?: { method: string, path: RegExp }[] }} options `allowWrites` must be a subset of CATEGORY_WRITES
+ */
+export function installFakeApi(handler, { allowWrites = [] } = {}) {
+  if (allowWrites.some((rule) => !CATEGORY_WRITES.includes(rule))) throw new Error("Only the category writes can be allowed.");
   const calls = [];
   const violations = [];
   const pending = [];
@@ -28,12 +50,14 @@ export function installFakeApi(handler) {
       headers: init.headers ?? {},
       auth: init.headers?.Authorization ?? null,
       hasBody: init.body !== undefined,
+      body: typeof init.body === "string" ? safeJson(init.body) : init.body,
       signal: init.signal,
     };
 
     calls.push(call);
 
-    if (method !== "GET" || call.hasBody) {
+    const allowed = method !== "GET" && allowWrites.some((rule) => rule.method === method && rule.path.test(call.path));
+    if (!allowed && (method !== "GET" || call.hasBody)) {
       violations.push(`${method} ${call.path}`);
       throw new Error(`FORBIDDEN: Mobile sent ${method} ${call.path}`);
     }

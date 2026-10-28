@@ -1,4 +1,4 @@
-import { readAccount, readAccountMovements, readAccounts, readAlerts, readBudget, readBudgets, readCategories, readDashboard, readGoal, readGoals, readRule, readRules, readTransaction, readTransactions } from "./readApi.js";
+import { readAccount, readAccountMovements, readAccounts, readAlerts, readBudget, readBudgets, readCategories, readCategory, readCategoryList, readDashboard, readGoal, readGoals, readRule, readRules, readTransaction, readTransactions } from "./readApi.js";
 
 /*
  * What each store entry loads: the response's `data`, as the backend sent it.
@@ -31,7 +31,12 @@ export const budgetLoader = (budgetId) => async (signal) => (await readBudget(bu
 export const goalLoader = (goalId) => async (signal) => (await readGoal(goalId, signal)).data;
 export const ruleLoader = (ruleId) => async (signal) => (await readRule(ruleId, signal)).data;
 
+export const categoryListLoader = (type) => async (signal) => (await readCategoryList(type, signal)).data;
+export const categoryLoader = (categoryId) => async (signal) => (await readCategory(categoryId, signal)).data;
+
 export const keys = {
+  categoryList: (type) => `categoryList:${type || "all"}`,
+  category: (id) => `category:${id}`,
   budgets: (signature, page) => `budgets:${signature}:${page}`,
   budget: (id) => `budget:${id}`,
   goals: (signature, page) => `goals:${signature}:${page}`,

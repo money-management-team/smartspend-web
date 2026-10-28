@@ -1438,3 +1438,178 @@
   font-weight: 700;
   color: var(--sm-text);
 }
+
+/* ---------- Categories (S04B4) ---------- */
+
+/* Badge, name and chevron on one line while they fit; with enlarged text the name moves under the badge instead of widening the page. */
+.sm-root .sm-cat-row {
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.sm-root .sm-cat-row .sm-row-main {
+  flex: 1 1 6rem;
+  min-width: 0;
+  gap: 0.25rem;
+  justify-items: start;
+}
+
+.sm-root .sm-cat-row .sm-chips-inline {
+  max-inline-size: 100%;
+}
+
+.sm-root [data-sm-screen^="categor"] .sm-card-title {
+  overflow-wrap: anywhere;
+}
+
+.sm-root .sm-cat-children {
+  margin-inline-start: 0.75rem;
+  padding-inline-start: 0.5rem;
+  border-inline-start: 2px solid var(--sm-border);
+}
+
+.sm-root .sm-cat-child .sm-row-title {
+  font-weight: 600;
+}
+
+/* The tint is a wash behind the icon; the icon itself keeps the text colour, so contrast never depends on the stored colour. */
+.sm-root .sm-cat-badge {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  color: var(--sm-text);
+  background: var(--sm-bg);
+  font-size: 1.125rem;
+}
+
+.sm-root .sm-cat-badge[data-sm-tinted="true"] {
+  background: color-mix(in srgb, var(--sm-cat-color) 22%, var(--sm-surface));
+}
+
+.sm-root .sm-hero .sm-cat-badge {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sm-root .sm-hero .sm-cat-badge[data-sm-tinted="true"] {
+  background: color-mix(in srgb, var(--sm-cat-color) 45%, var(--sm-navy));
+}
+
+.sm-root .sm-cat-swatch {
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  vertical-align: middle;
+  border: 1px solid var(--sm-border);
+  border-radius: 50%;
+  background: var(--sm-cat-color);
+}
+
+.sm-root .sm-cat-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.sm-root .sm-cat-form > *,
+.sm-root .sm-cat-fields > * {
+  min-width: 0;
+}
+
+.sm-root .sm-cat-fields {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--sm-border);
+}
+
+.sm-root .sm-cat-fields:disabled {
+  opacity: 0.7;
+}
+
+.sm-root .sm-required {
+  color: var(--sm-muted);
+  font-weight: 400;
+  font-size: 0.875rem;
+}
+
+.sm-root .sm-cat-choice {
+  border: 1px solid var(--sm-border);
+  border-radius: 0.75rem;
+  padding-inline: 0.75rem;
+}
+
+.sm-root .sm-cat-choice + .sm-cat-choice {
+  margin-block-start: 0.5rem;
+}
+
+.sm-root .sm-cat-choice:has(input:checked) {
+  border-color: var(--sm-blue);
+  box-shadow: inset 0 0 0 1px var(--sm-blue);
+}
+
+.sm-root .sm-fieldset[aria-invalid="true"] .sm-cat-choice {
+  border-color: var(--sm-neg);
+}
+
+.sm-root .sm-cat-summary {
+  border-color: var(--sm-neg);
+  border-inline-start-width: 4px;
+}
+
+.sm-root .sm-cat-summary-list {
+  display: grid;
+  gap: 0.25rem;
+  padding-inline-start: 1.25rem;
+  list-style: disc;
+}
+
+.sm-root .sm-cat-summary-list a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--sm-target);
+  color: var(--sm-nav-active);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+/*
+ * The actions follow the fields directly (the forms are short). They are not sticky: with enlarged text on a
+ * small screen a sticky bar would cover a quarter of what is visible.
+ */
+.sm-root .sm-cat-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr));
+  gap: 0.5rem;
+  padding-block: 0.75rem;
+  border-block-start: 1px solid var(--sm-border);
+  background: var(--sm-bg);
+}
+
+.sm-root .sm-cat-outcome .sm-button {
+  justify-self: stretch;
+}
+
+.sm-root .sm-strong {
+  font-weight: 800;
+}
+
+.sm-root .sm-button:disabled,
+.sm-root .sm-button[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.sm-root .sm-cat-lock {
+  gap: 0.25rem;
+  color: var(--sm-muted);
+}
+
+/* Short labels on one row; still one per row when enlarged text leaves no room. */
+.sm-root .sm-segment-tight {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 5rem), 1fr));
+}

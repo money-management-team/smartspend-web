@@ -58,7 +58,7 @@ Follows the S03.5 direction: **what needs attention first, then the things you p
 
 1. **Needs attention:** the backend's own alerts from `GET /financial-alerts` (the key Home already uses), up to three, severity chip in words; **the section does not exist when there are none**; a failed read shows a small "Alerts aren't available" with Try again.
 2. **Plan:** Budgets (active count, and a red "Over the limit: n" chip when the backend says some are), Savings goals (active count), Recurring rules (active count), Debts (full version).
-3. **Tools:** Calendar, Categories, Reports and exports, all "Open in the full version".
+3. **Tools:** Calendar, Categories, Reports and exports, all "Open in the full version". (S04B4: Categories is now a Mobile screen, with a new-category and a rename form; see [S04B4-category-management.md](S04B4-category-management.md).)
 
 Every number is a count the backend gave (a paginator's `total`) and **nothing is added up**: no combined budget, no total saved, because those would mix currencies. Each of the four reads is independent: a failing one says "Not available right now" on its own row (the row still links) and the rest stand. A response that does not hold together is "Not available", never a number. Refresh reads the alerts and the four lists again, nothing else. Reads: alerts, budgets (active), budgets (active and over the limit), goals (active), rules (active), each the **first page of the list it summarises through that list's own store key**, so opening the list afterwards finds the page already read. No fabricated events, no "upcoming" strip.
 

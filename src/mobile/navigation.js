@@ -20,13 +20,19 @@ export const accountDetailPath = (accountId) => `${MOBILE_ACCOUNTS}/${encodeURIC
 /*
  * Planning (S04B3): the overview at /m/planning and, under it, the read-only
  * lists and pages of budgets, savings goals and recurring rules. Debts,
- * Calendar, Categories and Reports are not Mobile screens; the overview links
- * to their full-version pages.
+ * Calendar and Reports are not Mobile screens; the overview links to their
+ * full-version pages. Categories (S04B4) are the one place under Planning that
+ * can be written to: add a category and rename your own (planning/categories/new
+ * and planning/categories/{id}/edit); nothing about money.
  */
 export const MOBILE_PLANNING = `${MOBILE_PREFIX}/planning`;
 export const MOBILE_BUDGETS = `${MOBILE_PLANNING}/budgets`;
 export const MOBILE_GOALS = `${MOBILE_PLANNING}/goals`;
 export const MOBILE_RECURRING = `${MOBILE_PLANNING}/recurring`;
+export const MOBILE_CATEGORIES = `${MOBILE_PLANNING}/categories`;
+export const MOBILE_CATEGORY_NEW = `${MOBILE_CATEGORIES}/new`;
+export const categoryDetailPath = (categoryId) => `${MOBILE_CATEGORIES}/${encodeURIComponent(categoryId)}`;
+export const categoryEditPath = (categoryId) => `${categoryDetailPath(categoryId)}/edit`;
 export const budgetDetailPath = (budgetId) => `${MOBILE_BUDGETS}/${encodeURIComponent(budgetId)}`;
 export const goalDetailPath = (goalId) => `${MOBILE_GOALS}/${encodeURIComponent(goalId)}`;
 export const recurringDetailPath = (ruleId) => `${MOBILE_RECURRING}/${encodeURIComponent(ruleId)}`;

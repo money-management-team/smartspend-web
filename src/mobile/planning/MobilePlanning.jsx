@@ -7,7 +7,7 @@ import { keys, loadAlerts } from "../data/loaders.js";
 import { useResource } from "../data/useResource.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { buildAlertsModel } from "../models/home.js";
-import { MOBILE_BUDGETS, MOBILE_GOALS, MOBILE_RECURRING } from "../navigation.js";
+import { MOBILE_BUDGETS, MOBILE_CATEGORIES, MOBILE_GOALS, MOBILE_RECURRING } from "../navigation.js";
 import Chevron from "../ui/Chevron.jsx";
 import { BUDGET_LIST, GOAL_LIST, RULE_LIST, pageLoader } from "./lists.js";
 import { useCount } from "./useCount.js";
@@ -90,7 +90,7 @@ function AttentionCard({ alerts }) {
  *
  * Every number here is a count the backend gave (a paginator's total) and nothing
  * is added up: no combined budget, no total saved across goals, because those
- * would mix currencies. Debts, Calendar, Categories and Reports are not Mobile
+ * would mix currencies. Debts, Calendar and Reports are not Mobile
  * screens yet; they are links to the full version, each said to be so.
  */
 export default function MobilePlanning() {
@@ -147,7 +147,7 @@ export default function MobilePlanning() {
         <h2 id="sm-plan-tools" className="sm-card-title">{t("planning.overview.tools")}</h2>
         <ul className="sm-list">
           <li><PlanLink to={PATH.USER.CALENDAR} title={t("planning.overview.calendar")} hint={t("planning.overview.fullOnly")} state="full" /></li>
-          <li><PlanLink to={PATH.USER.CATEGORIES} title={t("planning.overview.categories")} hint={t("planning.overview.fullOnly")} state="full" /></li>
+          <li><PlanLink to={MOBILE_CATEGORIES} title={t("planning.overview.categories")} hint={t("planning.overview.categoriesHint")} state="mobile" /></li>
           <li><PlanLink to={PATH.USER.REPORTS} title={t("planning.overview.reports")} hint={t("planning.overview.fullOnly")} state="full" /></li>
         </ul>
       </section>

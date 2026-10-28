@@ -98,5 +98,17 @@ export const readRules = (query, signal) => recurringTransactionsApi.list(query,
 
 export const readRule = (ruleId, signal) => recurringTransactionsApi.get(ruleId, { signal });
 
-/** The session's workspace for a Planning list query (read from storage, never written). */
+/** The session's workspace for a list query or a category's creation (read from storage, never written). */
 export const planningWorkspaceId = workspaceId;
+
+/*
+ * Categories (S04B4). The list is the same GET /categories the Activity filter
+ * reads, with the backend's own `type` filter; a category is GET /categories/{id}.
+ * Both answer for the session's workspace only.
+ */
+export const readCategoryList = (type, signal) => categoriesApi.list({ workspace_id: workspaceId(), type: type || undefined }, { signal });
+
+export const readCategory = (categoryId, signal) => categoriesApi.get(categoryId, { signal });
+
+/** The workspace the session stored at sign-in, as the list queries use it (read from storage, never written). */
+export const sessionWorkspace = () => getStoredWorkspace();

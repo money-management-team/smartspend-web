@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { after, afterEach, beforeEach, describe, it } from "node:test";
 
-import { PATH, getBudgetDetailsPath, getRecurringDetailsPath, getSavingsGoalDetailsPath } from "../src/routes/Path.js";
+import { PATH, getBudgetDetailsPath, getCategoryDetailsPath, getRecurringDetailsPath, getSavingsGoalDetailsPath } from "../src/routes/Path.js";
 import { MOBILE_SCREENS, budgetDetailPath, currentOf, goalDetailPath, recurringDetailPath } from "../src/mobile/navigation.js";
 import { getRedirect, resolveLocation } from "../src/mobile/presentation/resolver.js";
 import { installFakeApi } from "./helpers/mobileApi.mjs";
@@ -36,6 +36,7 @@ const CANONICAL = [
   "/dashboard/debts/7",
   PATH.USER.CALENDAR,
   PATH.USER.CATEGORIES,
+  getCategoryDetailsPath(7),
   PATH.USER.REPORTS,
   PATH.USER.REPORT_EXPORTS,
 ];
@@ -68,6 +69,9 @@ describe("Mobile Planning addresses go back to the Desktop page of the same thin
     ["/m/planning/goals/7", getSavingsGoalDetailsPath(7)],
     ["/m/planning/recurring", PATH.USER.RECURRING],
     ["/m/planning/recurring/7", getRecurringDetailsPath(7)],
+    // S04B4
+    ["/m/planning/categories", PATH.USER.CATEGORIES],
+    ["/m/planning/categories/7", getCategoryDetailsPath(7)],
   ];
 
   it("in the full-version presentation, carrying the query and the hash", () => {
@@ -77,13 +81,19 @@ describe("Mobile Planning addresses go back to the Desktop page of the same thin
   });
 
   it("an id that is not plain digits, an extra segment or an unknown Planning page is not forwarded as an id", () => {
-    for (const from of ["/m/planning/budgets/007", "/m/planning/budgets/abc", "/m/planning/budgets/7/deeper", "/m/planning/goals/0", "/m/planning/recurring/1e3", "/m/planning/debts", "/m/planning/budgets/%2e%2e"]) {
+    for (const from of ["/m/planning/categories/007", "/m/planning/categories/7/delete", "/m/planning/categories/new/edit", "/m/planning/budgets/007", "/m/planning/budgets/abc", "/m/planning/budgets/7/deeper", "/m/planning/goals/0", "/m/planning/recurring/1e3", "/m/planning/debts", "/m/planning/budgets/%2e%2e"]) {
       assert.deepEqual(getRedirect({ pathname: from, search: "?a=1", hash: "" }, desktop), { pathname: PATH.USER.DASHBOARD, search: "", hash: "" }, from);
     }
   });
 
   it("in the Mobile presentation nothing under /m/planning moves", () => {
     for (const [from] of cases) assert.equal(getRedirect({ pathname: from, search: "", hash: "" }, mobile), null, from);
+  });
+
+  it("a form address goes to the Desktop page without its query: a form's state is never carried into another page", () => {
+    assert.deepEqual(getRedirect({ pathname: "/m/planning/categories/new", search: "?type=income", hash: "#f" }, desktop), { pathname: PATH.USER.CATEGORIES, search: "", hash: "#f" });
+    assert.deepEqual(getRedirect({ pathname: "/m/planning/categories/7/edit", search: "?x=1", hash: "" }, desktop), { pathname: getCategoryDetailsPath(7), search: "", hash: "" });
+    assert.equal(getRedirect({ pathname: "/m/planning/categories/new", search: "", hash: "" }, mobile), null);
   });
 
   it("never loops: a result is never sent anywhere else, and a Desktop result is not a Mobile address", () => {
@@ -148,7 +158,7 @@ describe("Planning's links", () => {
 
     assert.ok(hrefs.size > 10);
     for (const href of hrefs) {
-      assert.match(href, /^\/(m(\/(planning|accounts|activity)(\/[1-9]\d{0,14}|\/(budgets|goals|recurring)(\/[1-9]\d{0,14})?)?)?|dashboard\/[a-z-]+(\/\d+)?)(\?[a-z_=&-]+)?$/, href);
+      assert.match(href, /^\/(m(\/(planning|accounts|activity)(\/[1-9]\d{0,14}|\/(budgets|goals|recurring|categories)(\/[1-9]\d{0,14})?)?)?|dashboard\/[a-z-]+(\/\d+)?)(\?[a-z_=&-]+)?$/, href);
     }
     // The full version is the way to do anything that changes data: it is linked, and it is a page the app already has.
     assert.ok(hrefs.has(PATH.USER.DEBTS) && hrefs.has(PATH.USER.BUDGETS) && hrefs.has(getBudgetDetailsPath(1)));

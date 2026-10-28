@@ -1,5 +1,5 @@
-import { PATH, getAccountDetailsPath, getBudgetDetailsPath, getRecurringDetailsPath, getSavingsGoalDetailsPath, getTransactionDetailsPath } from "../../routes/Path.js";
-import { MOBILE_ACCOUNTS, MOBILE_BUDGETS, MOBILE_ENTER, MOBILE_GOALS, MOBILE_PREFIX, MOBILE_RECURRING, MOBILE_SCREENS } from "../navigation.js";
+import { PATH, getAccountDetailsPath, getBudgetDetailsPath, getCategoryDetailsPath, getRecurringDetailsPath, getSavingsGoalDetailsPath, getTransactionDetailsPath } from "../../routes/Path.js";
+import { MOBILE_ACCOUNTS, MOBILE_BUDGETS, MOBILE_CATEGORIES, MOBILE_CATEGORY_NEW, MOBILE_ENTER, MOBILE_GOALS, MOBILE_PREFIX, MOBILE_RECURRING, MOBILE_SCREENS } from "../navigation.js";
 
 /*
  * Maps a location to the presentation that should show it. Pure: no React, no
@@ -101,6 +101,12 @@ export function getRedirect(location, { enabled, authenticated, mode }) {
       const record = pathname.startsWith(`${mobile}/`) ? /^[1-9]\d{0,14}$/.exec(pathname.slice(mobile.length + 1)) : null;
       if (record) return { pathname: details(record[0]), search, hash };
     }
+
+    // Categories: the list (and the new-category form, which Desktop has as a dialog on the list), a category, its rename form.
+    if (pathname === MOBILE_CATEGORIES || pathname === MOBILE_CATEGORY_NEW) return { pathname: PATH.USER.CATEGORIES, search: pathname === MOBILE_CATEGORY_NEW ? "" : search, hash };
+
+    const category = pathname.startsWith(`${MOBILE_CATEGORIES}/`) ? /^([1-9]\d{0,14})(\/edit)?$/.exec(pathname.slice(MOBILE_CATEGORIES.length + 1)) : null;
+    if (category) return { pathname: getCategoryDetailsPath(category[1]), search: category[2] ? "" : search, hash };
 
     return { pathname: PATH.USER.DASHBOARD, search: "", hash: "" };
   }

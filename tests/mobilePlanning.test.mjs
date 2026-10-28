@@ -81,12 +81,14 @@ describe("Planning overview", () => {
   it("Debts and the tools are links to the full version, said to be so, and read nothing", async () => {
     await open("/m/planning", { budgets: [], goals: [], rules: [] });
 
-    for (const [name, href] of [["Debts", "/dashboard/debts"], ["Calendar", "/dashboard/calendar"], ["Categories", "/dashboard/categories"], ["Reports and exports", "/dashboard/reports"]]) {
+    // Categories became a Mobile screen in S04B4; the rest stay full-version links.
+    assert.equal(link("Categories").getAttribute("href"), "/m/planning/categories");
+    for (const [name, href] of [["Debts", "/dashboard/debts"], ["Calendar", "/dashboard/calendar"], ["Reports and exports", "/dashboard/reports"]]) {
       const item = link(name);
       assert.equal(item.getAttribute("href"), href, name);
       assert.match(item.textContent, /Open in the full version/);
     }
-    assert.equal(api.calls.some((call) => /debts|calendar|categories|reports/.test(call.path)), false);
+    assert.equal(api.calls.some((call) => /debts|calendar|categories|reports/.test(call.path)), false, "the overview reads nothing for the tools");
   });
 
   it("shows alerts first, and only when the backend has some", async () => {

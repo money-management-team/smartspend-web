@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const VITE = path.join(ROOT, "node_modules/vite/bin/vite.js");
-const SENTINEL = "SMARTSPEND_MOBILE_S04B3";
+const SENTINEL = "SMARTSPEND_MOBILE_S04B4";
 const MOBILE_STRINGS = [
   SENTINEL, "sm-root", "data-sm-build", "smartspend:presentation", "Mobile Foundation preview", "virtual:smartspend-mobile", "sm-sheet",
   // S04B1: the screens, the identity guard, the money layer and the entry
@@ -30,6 +30,8 @@ const MOBILE_STRINGS = [
   "sm-tx", "sm-day-title", "sm-filter-form", "sm-status", "Reset all filters", "Unknown status", "The movements SmartSpend recorded on each account", "/m/activity",
   // S04B3: Planning, budgets, goals and recurring rules
   "sm-progress", "sm-plan-row", "sm-plan-link", "Mobile shows your plan", "These are rules, not transactions", "/m/planning",
+  // S04B4: categories, the first write
+  "sm-cat-badge", "sm-cat-form", "We couldn't confirm the result", "Mobile won't send it again by itself", "/m/planning/categories",
 ];
 
 const cleanEnv = (extra = {}) => {

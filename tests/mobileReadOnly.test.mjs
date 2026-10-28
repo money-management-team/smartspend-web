@@ -38,6 +38,8 @@ describe("the source", () => {
       "src/mobile/data/readApi.js": ["accountsApi", "budgetsApi", "categoriesApi", "apiClient", "dashboardApi", "financialAlertsApi", "recurringTransactionsApi", "savingsGoalsApi", "transactionsApi"],
       // The Smart Savings plan read, in its own file so a build without the flag has no way to ask for a plan.
       "src/mobile/data/readPlanApi.js": ["savingsPlansApi"],
+      // S04B4: the one write facade, for categories only.
+      "src/mobile/data/writeApi.js": ["categoriesApi"],
       "src/mobile/identity/guard.js": ["apiClient"],
     });
   });
@@ -49,8 +51,17 @@ describe("the source", () => {
     assert.deepEqual(named(path.join(MOBILE, "data/readApi.js")), ["getStoredWorkspace"]);
   });
 
-  it("names no write method of any wrapper, and no way to build a write request", () => {
-    assert.deepEqual(find(/\.(create\w*|update|archive|correct|reverse|post|patch|put|confirm\w*|submit\w*)\s*\(/), []);
+  it("names no write method of any wrapper outside the category write facade, and that one names exactly create and update of categories", () => {
+    const WRITE = "src/mobile/data/writeApi.js";
+    const others = sources.filter((file) => rel(file) !== WRITE);
+    assert.deepEqual(find(/\.(create\w*|update|archive|correct|reverse|post|patch|put|confirm\w*|submit\w*)\s*\(/, others), []);
+    assert.deepEqual(find(/categoriesApi\.(archive|delete)|\/archive[`"']/), [], "no archive, no delete");
+    assert.deepEqual([...code(path.join(ROOT, WRITE)).matchAll(/(\w+)\.(\w+)\s*\(/g)].map((match) => `${match[1]}.${match[2]}`), ["categoriesApi.create", "categoriesApi.update"]);
+    // Only the category form sends: no other screen imports the write facade.
+    assert.deepEqual(find(/from\s*["'][^"']*data\/writeApi(?:\.js)?["']/), ["src/mobile/categories/MobileCategoryForm.jsx"]);
+  });
+
+  it("has no way to build a write request of its own", () => {
     assert.deepEqual(find(/["'`](POST|PATCH|PUT|DELETE)["'`]/i), []);
     assert.deepEqual(find(/\bmethod\s*:/), []);
     // (`body:` as a message key in the i18n tables is text, not a request body.)
@@ -97,7 +108,9 @@ describe("the source", () => {
   it("reads the full app's preference store but never updates it", () => {
     assert.deepEqual(find(/experienceStore/), ["src/mobile/money/MoneyPrivacy.jsx"]);
     assert.match(code(path.join(MOBILE, "money/MoneyPrivacy.jsx")), /import\s*\{\s*createExperienceStore\s*\}/);
-    assert.deepEqual(find(/\bstore\.update\b|\.update\s*\(/), []);
+    // The category rename in the write facade is the wrapper's `update`, not the store's.
+    assert.deepEqual(find(/\bstore\.update\b|\.update\s*\(/).filter((file) => file !== "src/mobile/data/writeApi.js"), []);
+    assert.doesNotMatch(code(path.join(MOBILE, "data/writeApi.js")), /experience|store\./i);
   });
 
   it("has no second authentication context or token storage of its own", () => {
@@ -110,9 +123,11 @@ describe("the facade", () => {
   it("exports reads only", async () => {
     const readApi = await import("../src/mobile/data/readApi.js");
 
-    assert.deepEqual(Object.keys(readApi).sort(), ["ACTIVITY_PER_PAGE", "BUDGETS_PER_PAGE", "DASHBOARD_PERIOD", "GOALS_PER_PAGE", "MOVEMENTS_PER_PAGE", "RULES_PER_PAGE", "isAccountId", "planningWorkspaceId", "readAccount", "readAccountMovements", "readAccounts", "readAlerts", "readBudget", "readBudgets", "readCategories", "readDashboard", "readGoal", "readGoals", "readRule", "readRules", "readTransaction", "readTransactions"]);
+    assert.deepEqual(Object.keys(readApi).sort(), ["ACTIVITY_PER_PAGE", "BUDGETS_PER_PAGE", "DASHBOARD_PERIOD", "GOALS_PER_PAGE", "MOVEMENTS_PER_PAGE", "RULES_PER_PAGE", "isAccountId", "planningWorkspaceId", "readAccount", "readAccountMovements", "readAccounts", "readAlerts", "readBudget", "readBudgets", "readCategories", "readCategory", "readCategoryList", "readDashboard", "readGoal", "readGoals", "readRule", "readRules", "readTransaction", "readTransactions", "sessionWorkspace"]);
     const plan = await import("../src/mobile/data/readPlanApi.js");
     assert.deepEqual(Object.keys(plan), ["readGoalPlan"]);
+    const write = await import("../src/mobile/data/writeApi.js");
+    assert.deepEqual(Object.keys(write).sort(), ["sendCategoryCreate", "sendCategoryUpdate"]);
   });
 
   it("each read sends a GET to its documented endpoint, with only documented filters", async () => {
