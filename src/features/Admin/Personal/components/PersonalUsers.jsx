@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { FiArrowUpRight, FiCheckCircle, FiAlertCircle, FiSearch, FiFilter, FiDownload } from "react-icons/fi";
 
 // Synthetic identities only. No customer API or personal financial fields.
-const users = [
+export const users = [
   { id: "lina", initials: "LS", email: "lina@smartspend.demo", plan: "pro", verified: true, status: "active", ago: 8, unit: "minutesAgo" },
   { id: "omar", initials: "OK", email: "omar.khalil@example.com", plan: "plus", verified: true, status: "active", ago: 24, unit: "minutesAgo" },
   { id: "sarah", initials: "SA", email: "sarah.a@example.com", plan: "free", verified: false, status: "active", ago: 2, unit: "hoursAgo" },
@@ -33,7 +34,7 @@ export default function PersonalUsers({ fullList, onViewAll }) {
           <td><span className={`admin-pill${user.status === "suspended" ? " admin-personal-suspended" : ""}`}>{p(user.status)}</span></td>
           <td><span className={`admin-pill admin-personal-risk admin-personal-risk--${user.status === "suspended" ? "high" : user.verified ? "low" : "medium"}`}>{p(user.status === "suspended" ? "high" : user.verified ? "low" : "medium")}</span></td>
           <td className="admin-personal-last-signin">{p(user.unit, { count: user.ago })}</td>
-          <td><button className="admin-icon-button admin-personal-row-link" aria-label={`${p("names." + user.id)} details`}><FiArrowUpRight /></button></td>
+          <td><Link className="admin-icon-button admin-personal-row-link" to={`/admin/personal/users/${user.id}`} aria-label={`${p("names." + user.id)} details`}><FiArrowUpRight /></Link></td>
         </tr>)}
           {!filtered.length && <tr><td colSpan={7} className="admin-personal-users__empty">{p("noUsers")}</td></tr>}
         </tbody>

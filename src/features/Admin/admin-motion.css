@@ -1,0 +1,18 @@
+/* Shared timing matches the user dashboard. */
+.admin-app .admin-sidebar { transition: width 200ms ease, transform 220ms ease; }
+.admin-app .admin-workspace { transition: margin-inline-start 200ms ease; }
+.admin-app :is(button,a,input,select,textarea) { transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease; }
+.admin-app .admin-panel { transition: border-color 160ms ease, box-shadow 160ms ease; }
+.admin-app :is(.admin-product,.admin-metric,.billing-metrics article,.support-metrics article):hover { border-color: color-mix(in srgb,var(--admin-accent) 28%,var(--admin-border)); box-shadow: 0 3px 12px #00000006; }
+.admin-app tbody tr { transition: background-color 160ms ease; }
+.admin-app tbody tr:hover { background-color: color-mix(in srgb,var(--admin-soft) 45%,transparent); }
+.admin-page-transition { animation: admin-content-enter 200ms ease both; }
+.admin-app dialog[open] { animation: admin-dialog-enter 180ms ease both; }
+.admin-app dialog[open]::backdrop { animation: admin-backdrop-enter 160ms ease both; }
+.admin-app :is(.admin-business-progress em,.admin-business-budget em) { transition: width 220ms ease; }
+@keyframes admin-content-enter { from { opacity: 0; translate: 0 5px; } to { opacity: 1; translate: 0 0; } }
+@keyframes admin-dialog-enter { from { opacity: 0; translate: 0 6px; scale: .985; } to { opacity: 1; translate: 0 0; scale: 1; } }
+@keyframes admin-backdrop-enter { from { opacity: 0; } to { opacity: 1; } }
+@media(prefers-reduced-motion: reduce) {
+  .admin-app *, .admin-app *::before, .admin-app *::after, .admin-app dialog::backdrop { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

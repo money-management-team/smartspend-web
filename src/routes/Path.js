@@ -2,6 +2,11 @@ export const PATH = {
   ADMIN: "/admin",
   ADMIN_PERSONAL: "/admin/personal",
   ADMIN_BUSINESS: "/admin/business",
+  ADMIN_BILLING: "/admin/billing",
+  ADMIN_SUPPORT: "/admin/support",
+  ADMIN_AI: "/admin/ai",
+  ADMIN_SECURITY: "/admin/security",
+  ADMIN_SETTINGS: "/admin/settings",
   HOME: "/",
   AUTH: {
     ACCOUNT_TYPE: "/account-type",
