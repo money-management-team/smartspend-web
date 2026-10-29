@@ -1783,3 +1783,15 @@
 .sm-root .sm-trend-axis { display: flex; justify-content: space-between; gap: 0.5rem; color: var(--sm-muted); font-size: 0.8125rem; overflow-wrap: anywhere; }
 .sm-root .sm-trend-table summary { min-block-size: 44px; display: flex; align-items: center; cursor: pointer; }
 :root[data-theme="dark"] .sm-root .sm-trend-bar { fill: var(--sm-cyan); }
+
+/* ---------- Mobile sign-in and registration ---------- */
+.sm-root.sm-auth { overflow-y: auto; padding-block: max(1rem, var(--sm-safe-top)) max(1rem, var(--sm-safe-bottom)); padding-inline: max(1rem, var(--sm-safe-start)) max(1rem, var(--sm-safe-end)); }
+.sm-root .sm-auth-body { display: grid; gap: 0.75rem; max-inline-size: 28rem; margin-inline: auto; min-inline-size: 0; }
+.sm-root .sm-auth-logo { justify-self: start; }
+.sm-root .sm-auth-form { display: grid; gap: 0.75rem; min-inline-size: 0; }
+.sm-root .sm-auth-label-row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.25rem 0.75rem; }
+.sm-root .sm-password { display: flex; gap: 0.5rem; align-items: stretch; min-inline-size: 0; }
+.sm-root .sm-password .sm-input { flex: 1 1 auto; min-inline-size: 0; }
+.sm-root .sm-password .sm-button-small { flex: none; min-inline-size: 44px; min-block-size: 44px; }
+.sm-root .sm-link-button { background: none; border: 0; padding: 0.5rem 0; min-block-size: 44px; color: var(--sm-blue); font: inherit; text-decoration: underline; cursor: pointer; justify-self: start; }
+:root[data-theme="dark"] .sm-root .sm-link-button { color: var(--sm-cyan); }

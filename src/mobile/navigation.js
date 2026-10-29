@@ -78,6 +78,10 @@ export const MOBILE_SEARCH = `${MOBILE_PREFIX}/search`;
 export const MOBILE_REVIEW = `${MOBILE_PREFIX}/review`;
 export const MOBILE_TEMPLATES = `${MOBILE_PREFIX}/templates`;
 
+// Mobile's own sign-in and registration pages (auth/), outside the shell; they use the app's one AuthProvider.
+export const MOBILE_SIGNIN = `${MOBILE_PREFIX}/signin`;
+export const MOBILE_REGISTER = `${MOBILE_PREFIX}/register`;
+
 /* The More pages: More's current-page marker stays on inside them. */
 const MORE_WITHIN = [MOBILE_ACCOUNTS, MOBILE_TRANSFERS, MOBILE_NOTIFICATIONS, MOBILE_REPORTS, MOBILE_EXPORTS, MOBILE_IMPORTS, MOBILE_AI, MOBILE_WHATSAPP, MOBILE_PROFILE, MOBILE_CAPTURES, MOBILE_SEARCH, MOBILE_REVIEW, MOBILE_TEMPLATES];
 

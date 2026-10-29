@@ -525,8 +525,8 @@ describe("session end and a new session", () => {
     await view.setAuth({ isAuthenticated: false, initializing: false, token: null, user: null });
     await settle();
 
-    assert.equal(location(), "/signin");
-    assert.equal(q("[data-sm-screen]"), null, "no Mobile screen left");
+    assert.equal(location(), "/m/signin", "Mobile sign-in (auth/guards.jsx): a Mobile visitor stays in Mobile");
+    assert.deepEqual(qa("[data-sm-screen]").map((node) => node.dataset.smScreen), ["signin"], "no Mobile screen left but sign-in");
   });
 
   it("a 401 on a refresh drops the figures that were on screen (they are not kept as stale)", async () => {

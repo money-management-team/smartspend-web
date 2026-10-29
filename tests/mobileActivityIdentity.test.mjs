@@ -208,8 +208,8 @@ describe("a transaction's page under a changing identity", () => {
     await view.setAuth({ isAuthenticated: false, initializing: false, token: null, user: null });
     await settle();
 
-    assert.equal(location(), "/signin");
-    assert.equal(q("[data-sm-screen]"), null);
+    assert.equal(location(), "/m/signin", "Mobile sign-in (auth/guards.jsx): a Mobile visitor stays in Mobile");
+    assert.deepEqual(qa("[data-sm-screen]").map((node) => node.dataset.smScreen), ["signin"]);
     assert.doesNotMatch(document.body.textContent, SECRETS);
   });
 });

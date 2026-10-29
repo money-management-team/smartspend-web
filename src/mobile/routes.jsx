@@ -12,6 +12,8 @@ import MobileAssistant, { MobileConversation } from "./assist/MobileAssistant.js
 import MobileCaptures, { MobileCaptureDetail } from "./assist/MobileCaptures.jsx";
 import MobileReceiptNew from "./assist/MobileReceiptNew.jsx";
 import MobileVoiceNew from "./assist/MobileVoiceNew.jsx";
+import { MobileGuestOnly, MobileRequireAuth } from "./auth/guards.jsx";
+import { MobileRegister, MobileSignIn } from "./auth/MobileAuth.jsx";
 import MobileHome from "./home/MobileHome.jsx";
 import MobileProfile, { MobileProfileForm } from "./settings/MobileProfile.jsx";
 import MobileReview from "./tools/MobileReview.jsx";
@@ -19,7 +21,7 @@ import MobileSearch from "./tools/MobileSearch.jsx";
 import MobileTemplates from "./tools/MobileTemplates.jsx";
 import MobileWhatsApp, { MobileWhatsAppDraft, MobileWhatsAppDrafts } from "./whatsapp/MobileWhatsApp.jsx";
 import IdentityBoundary from "./identity/IdentityBoundary.jsx";
-import { MOBILE_ENTER, MOBILE_PREFIX } from "./navigation.js";
+import { MOBILE_ENTER, MOBILE_PREFIX, MOBILE_REGISTER, MOBILE_SIGNIN } from "./navigation.js";
 import MobileEnter from "./screens/MobileEnter.jsx";
 import MobileMore from "./screens/MobileMore.jsx";
 import MobileNotAvailable from "./screens/MobileNotAvailable.jsx";
@@ -55,7 +57,11 @@ import MobileTransfers from "./transfers/MobileTransfers.jsx";
  * forms/actionRoutes.js) end at a review and have no code that sends.
  *
  * /m/enter is outside the shell on purpose (it is the way in, not a screen of
- * the app) but behind the same sign-in guard.
+ * the app) but behind the app's own sign-in guard (a visitor who chose the full
+ * version signs in there). The shell's screens use MobileRequireAuth, the same
+ * rule with Mobile's own sign-in page (auth/): /m/signin and /m/register sit
+ * outside the shell, for signed-out visitors only, and sign in through the
+ * app's one AuthProvider.
  */
 export const mobileRoutes = [
   {
@@ -66,14 +72,16 @@ export const mobileRoutes = [
       </RequireAuth>
     ),
   },
+  { path: MOBILE_SIGNIN, element: <MobileGuestOnly><MobileSignIn /></MobileGuestOnly> },
+  { path: MOBILE_REGISTER, element: <MobileGuestOnly><MobileRegister /></MobileGuestOnly> },
   {
     path: MOBILE_PREFIX,
     element: (
-      <RequireAuth>
+      <MobileRequireAuth>
         <IdentityBoundary>
           <MobileAppShell />
         </IdentityBoundary>
-      </RequireAuth>
+      </MobileRequireAuth>
     ),
     children: [
       { index: true, element: <MobileHome /> },

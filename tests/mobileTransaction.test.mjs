@@ -394,7 +394,7 @@ describe("canonical routing", () => {
 
   it("a signed-out visit to a transaction goes to sign-in and remembers it", async () => {
     await open("/m/activity/5?x=1", undefined, { auth: { isAuthenticated: false, initializing: false, token: null, user: null } });
-    assert.equal(location(), "/signin");
+    assert.equal(location(), "/m/signin", "Mobile sign-in (auth/guards.jsx): a Mobile visitor stays in Mobile");
   });
 
   it("works in Arabic with Arabic labels and Latin digits", async () => {

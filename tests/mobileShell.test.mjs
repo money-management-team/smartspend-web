@@ -452,7 +452,7 @@ describe("Presentation: redirects, preference and safety", () => {
     await mounted.unmount();
     mounted = null;
     await mount({ entry: "/m/activity?x=1", authenticated: false });
-    assert.equal(location(), "/signin");
+    assert.equal(location(), "/m/signin", "Mobile sign-in (auth/guards.jsx): a Mobile visitor stays in Mobile");
     assert.equal(q("#probe").dataset.from, "/m/activity?x=1");
   });
 
