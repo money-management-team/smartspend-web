@@ -1,7 +1,10 @@
+import { useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { PATH } from "../../routes/Path.js";
+import { keys, loadUnreadCount } from "../data/loaders.js";
+import { useResource } from "../data/useResource.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { formatMoment } from "../money/format.js";
 import Money from "../money/Money.jsx";
@@ -13,6 +16,29 @@ import PagedListView from "../planning/PagedListView.jsx";
 import { useListScreen } from "../planning/useListScreen.js";
 
 const SEVERITY_TONES = { info: "neutral", warning: "warn", critical: "bad" };
+
+/*
+ * Mark as read, for one unread notification. Marking is a write
+ * (PATCH /notifications/{id}/read) that Mobile does not make: the control opens
+ * an explanation with a disabled button, and the row keeps the server's read
+ * state. Opening a notification's subject never marks it read either.
+ */
+function MarkRead({ id }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const ids = useId();
+  const [open, setOpen] = useState(false);
+  return (
+    <span className="sm-mark-read" data-sm-mark-read={id}>
+      <button type="button" className="sm-button sm-button-quiet sm-button-small" aria-expanded={open} aria-controls={`${ids}-panel`} onClick={() => setOpen(!open)} data-sm-action="mark-read">{t("notifications.markRead")}</button>
+      {open && (
+        <span id={`${ids}-panel`} className="sm-mark-read-panel" role="note" data-sm-note="write-closed" data-sm-write="notifications.markRead">
+          <span className="sm-text sm-muted sm-fine">{t("notifications.markReadClosed")}</span>
+          <button type="button" className="sm-button sm-button-small" disabled data-sm-action="send">{t("notifications.markRead")}</button>
+        </span>
+      )}
+    </span>
+  );
+}
 
 function NotificationRow({ notification, locale }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
@@ -31,8 +57,27 @@ function NotificationRow({ notification, locale }) {
         {notification.amount && <span className="sm-row-meta"><Money plain value={notification.amount} currency={notification.currency} /></span>}
         {when && <span className="sm-row-meta"><bdi>{when}</bdi></span>}
         {subject && <Link className="sm-note-link" to={subject}>{t("notifications.open")}</Link>}
+        {notification.read === false && <MarkRead id={notification.id} />}
       </span>
     </article>
+  );
+}
+
+/* The server's unread count, and Mark all as read (disabled, a write: POST /notifications/read-all). */
+function UnreadSummary() {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const resource = useResource(keys.unreadCount, loadUnreadCount);
+  const count = Number.isSafeInteger(resource.data?.unread_count) && resource.data.unread_count >= 0 ? resource.data.unread_count : null;
+  return (
+    <div className="sm-unread-summary" data-sm-unread={count ?? "unknown"}>
+      <p className="sm-text" role="status">{count === null ? t("notifications.unreadUnknown") : t("notifications.unreadCount", { count })}</p>
+      {count !== 0 && (
+        <>
+          <button type="button" className="sm-button sm-button-quiet sm-button-small" disabled aria-describedby="sm-mark-all-closed" data-sm-action="mark-all-read">{t("notifications.markAll")}</button>
+          <p id="sm-mark-all-closed" className="sm-text sm-muted sm-fine" role="note" data-sm-note="write-closed" data-sm-write="notifications.markAllRead">{t("notifications.markReadClosed")}</p>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -49,6 +94,7 @@ export default function MobileNotifications() {
 
   const toolbar = (
     <div className="sm-card sm-plan-filters">
+      <UnreadSummary />
       <FilterTabs
         tight
         label={t("notifications.filterStatus")}

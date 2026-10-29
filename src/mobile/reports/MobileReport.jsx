@@ -8,12 +8,13 @@ import { useResource } from "../data/useResource.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { formatDay } from "../money/format.js";
 import Money from "../money/Money.jsx";
-import { REPORT_ITEMS, REPORT_TYPES, barLengths, buildReport, readReportRange, reportQuery, validReportRange } from "../models/reports.js";
+import { REPORT_GROUPS, REPORT_ITEMS, REPORT_TYPES, barLengths, buildReport, readReportGroup, readReportRange, reportQuery, validReportRange } from "../models/reports.js";
 import { MOBILE_REPORTS, reportPath } from "../navigation.js";
 import Chevron from "../ui/Chevron.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
 import SavedViews from "../tools/SavedViews.jsx";
+import TrendChart from "./TrendChart.jsx";
 import StaleNotice from "../ui/StaleNotice.jsx";
 
 const MALFORMED = Object.freeze({ code: "MALFORMED_RESPONSE" });
@@ -120,8 +121,9 @@ export default function MobileReport() {
   const { from, to } = range;
   const pageParam = Number.parseInt(new URLSearchParams(location.search).get("page") ?? "1", 10);
   const page = REPORT_ITEMS[type] && pageParam > 1 && pageParam <= 500 ? pageParam : 1;
-  const loader = useMemo(() => reportLoader(type, reportQuery(type, { from, to }, page)), [type, from, to, page]);
-  const resource = useResource(keys.report(type, from, to, page), loader, { enabled: known });
+  const group = readReportGroup(location.search);
+  const loader = useMemo(() => reportLoader(type, reportQuery(type, { from, to }, page, group)), [type, from, to, page, group]);
+  const resource = useResource(keys.report(type, from, to, group === "month" ? page : `${page}:${group}`), loader, { enabled: known });
   const report = useMemo(() => {
     if (resource.data === undefined) return null;
     try {
@@ -132,7 +134,14 @@ export default function MobileReport() {
   }, [resource.data, type]);
 
   const setSearch = (next) => navigate({ pathname: location.pathname, search: next.toString() ? `?${next}` : "" }, { replace: true });
-  const apply = (next) => setSearch(new URLSearchParams(next ? { from: next.from, to: next.to } : {}));
+  const apply = (next) => setSearch(new URLSearchParams({ ...(next ? { from: next.from, to: next.to } : {}), ...(group !== "month" ? { group_by: group } : {}) }));
+  const chooseGroup = (next) => {
+    const params = new URLSearchParams(location.search);
+    params.delete("page");
+    if (next === "month") params.delete("group_by");
+    else params.set("group_by", next);
+    setSearch(params);
+  };
   const goPage = (next) => {
     const params = new URLSearchParams(location.search);
     if (next > 1) params.set("page", String(next));
@@ -182,6 +191,15 @@ export default function MobileReport() {
           ))
         )}
         {report.currencies.length > 1 && <p className="sm-text sm-muted sm-fine">{t("reports.perCurrency")}</p>}
+
+        <section className="sm-card" aria-labelledby="sm-rep-trend" data-sm-section="trend">
+          <h2 id="sm-rep-trend" className="sm-card-title">{t("reports.trend")}</h2>
+          <div className="sm-segment" role="group" aria-label={t("reports.groupBy")}>
+            {REPORT_GROUPS.map((value) => <button key={value} type="button" className="sm-segment-button" aria-pressed={group === value} onClick={() => chooseGroup(value)} data-sm-group={value}>{t(`reports.group.${value}`)}</button>)}
+          </div>
+          {report.trend.length === 0 ? <p className="sm-text sm-muted" data-sm-empty="trend">{t("reports.trendEmpty")}</p> : report.trend.map((row) => <TrendChart key={row.currency} trend={row} />)}
+          {report.trend.length > 1 && <p className="sm-text sm-muted sm-fine">{t("reports.trendPerCurrency")}</p>}
+        </section>
 
         {spec && (
           <section className="sm-card" aria-labelledby="sm-rep-items">

@@ -135,7 +135,24 @@ describe("Notifications", () => {
     assert.equal(q("[data-sm-notification='1']").dataset.smRead, "false");
     assert.ok(qa("a", q("[data-sm-notification='1']")).some((link) => link.getAttribute("href") === "/m/planning/recurring/3"));
     assert.equal(qa("a", q("[data-sm-notification='2']")).length, 0, "an unknown subject has no link");
-    assert.deepEqual(api.summary(), ["GET /notifications"], "listing is the only request: no mark-read");
+    assert.deepEqual(api.summary().sort(), ["GET /notifications", "GET /notifications/unread-count"], "reads only: no mark-read");
+  });
+
+  it("Mark as read is offered on unread rows only, explains itself, never sends, and changes nothing shown", async () => {
+    await open("/m/notifications", { notifications: [notification(1), notification(2, { is_read: true }), notification(3)] });
+    assert.equal(q("[data-sm-unread]").dataset.smUnread, "2", "the server's own count");
+    assert.equal(qa("[data-sm-mark-read]").length, 2);
+    assert.equal(q("[data-sm-notification='2'] [data-sm-mark-read]"), null);
+    await click(q("[data-sm-notification='1'] [data-sm-action='mark-read']"));
+    const panel = q("[data-sm-notification='1'] [data-sm-note='write-closed']");
+    assert.ok(panel);
+    const send = q("[data-sm-action='send']", panel);
+    assert.equal(send.disabled, true);
+    await click(send);
+    await click(q("[data-sm-action='mark-all-read']"));
+    assert.equal(q("[data-sm-notification='1']").dataset.smRead, "false");
+    assert.equal(q("[data-sm-unread]").dataset.smUnread, "2", "no optimistic change");
+    assert.ok(api.calls.every((call) => call.method === "GET"));
     assert.equal(api.calls[0].query.workspace_id, undefined);
   });
 

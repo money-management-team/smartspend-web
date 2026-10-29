@@ -1,3 +1,4 @@
+import { buildTrend } from "./trend.js";
 import { isCurrencyCode, parseDecimal } from "../money/decimal.js";
 import { idText, isRecord, textOrNull } from "./values.js";
 
@@ -73,7 +74,14 @@ export function readReportRange(search, today = new Date()) {
 /** Whether a range typed in the form may be sent: two real dates, the first not after the second. */
 export const validReportRange = (from, to) => isRealDate(from) && isRealDate(to) && from <= to;
 
-export const reportQuery = (type, range, page = 1) => ({ from: range.from, to: range.to, ...(REPORT_ITEMS[type] ? { per_page: REPORT_PER_PAGE, page: page > 1 ? page : undefined } : {}) });
+// The trend's bucket size (docs/reports/api.md `group_by`); the backend's default is month, so month is not sent.
+export const REPORT_GROUPS = Object.freeze(["day", "week", "month"]);
+export const readReportGroup = (search) => {
+  const value = new URLSearchParams(search ?? "").get("group_by");
+  return REPORT_GROUPS.includes(value) ? value : "month";
+};
+
+export const reportQuery = (type, range, page = 1, group = "month") => ({ from: range.from, to: range.to, ...(group !== "month" && REPORT_GROUPS.includes(group) ? { group_by: group } : {}), ...(REPORT_ITEMS[type] ? { per_page: REPORT_PER_PAGE, page: page > 1 ? page : undefined } : {}) });
 
 const invalid = () => Object.assign(new Error("Report data could not be validated."), { code: "MALFORMED_RESPONSE" });
 
@@ -137,6 +145,7 @@ export function buildReport(data, type) {
     currencies: readSummary(data.summary_by_currency ?? [], type),
     items: readItems(data.items, type),
     pagination: REPORT_ITEMS[type] ? readPagination(data.pagination) : null,
+    trend: buildTrend(isRecord(data.analytics) ? data.analytics.trend_by_currency : null),
   };
 }
 

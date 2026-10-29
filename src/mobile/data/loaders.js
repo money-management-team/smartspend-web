@@ -1,4 +1,4 @@
-import { readAccount, readAccountMovements, readAccounts, readAlerts, readBudget, readBudgets, readCalendarMonth, readCategories, readCategory, readCategoryList, readDashboard, readDebt, readDebtPayments, readDebts, readExports, readGoal, readGoals, readImport, readImports, readNotifications, readReport, readRule, readRules, readTransaction, readTransactions, readTransfer, readTransfers } from "./readApi.js";
+import { readAccount, readAccountMovements, readAccounts, readAlerts, readBudget, readBudgets, readCalendarMonth, readCategories, readCategory, readCategoryList, readDashboard, readDebt, readDebtPayments, readDebts, readExports, readGoal, readGoals, readImport, readImports, readNotifications, readReport, readUnreadCount, readRule, readRules, readTransaction, readTransactions, readTransfer, readTransfers } from "./readApi.js";
 
 /*
  * What each store entry loads: the response's `data`, as the backend sent it.
@@ -43,6 +43,7 @@ export const paymentsLoader = (debtId, page) => (signal) => readDebtPayments(deb
 export const transfersLoader = (query) => (signal) => readTransfers(query, signal);
 export const transferLoader = (transferId) => async (signal) => (await readTransfer(transferId, signal)).data;
 export const notificationsLoader = (query) => (signal) => readNotifications(query, signal);
+export const loadUnreadCount = async (signal) => (await readUnreadCount(signal)).data;
 export const calendarLoader = (month, year) => async (signal) => (await readCalendarMonth(month, year, signal)).data;
 
 export const reportLoader = (type, query) => async (signal) => (await readReport(type, query, signal)).data;
@@ -62,6 +63,7 @@ export const keys = {
   transfers: (signature, page) => `transfers:${signature}:${page}`,
   transfer: (id) => `transfer:${id}`,
   notifications: (signature, page) => `notifications:${signature}:${page}`,
+  unreadCount: "notifications:unread-count",
   categoryList: (type) => `categoryList:${type || "all"}`,
   category: (id) => `category:${id}`,
   budgets: (signature, page) => `budgets:${signature}:${page}`,

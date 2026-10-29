@@ -90,7 +90,7 @@ describe("the source", () => {
     // Debts, transfers, notifications and the calendar are read in the facade only, and only through these methods.
     assert.deepEqual(find(/from\s*["'][^"']*(transfersApi|debtsApi|calendarApi|notificationsApi|importsApi|reportExports|reportsApi)[^"']*["']/i), ["src/mobile/data/readApi.js", "src/mobile/data/readAssistApi.js"]);
     const used = [...code(path.join(MOBILE, "data/readApi.js")).matchAll(/\b(debtsApi|transfersApi|notificationsApi|calendarApi|importsApi|reportExportsApi)\.(\w+)\(/g)].map((match) => `${match[1]}.${match[2]}`);
-    assert.deepEqual([...new Set(used)].sort(), ["calendarApi.get", "debtsApi.get", "debtsApi.list", "debtsApi.listPayments", "importsApi.get", "importsApi.list", "notificationsApi.list", "reportExportsApi.download", "reportExportsApi.list", "transfersApi.get", "transfersApi.list"]);
+    assert.deepEqual([...new Set(used)].sort(), ["calendarApi.get", "debtsApi.get", "debtsApi.list", "debtsApi.listPayments", "importsApi.get", "importsApi.list", "notificationsApi.list", "notificationsApi.unreadCount", "reportExportsApi.download", "reportExportsApi.list", "transfersApi.get", "transfersApi.list"]);
     // Budgets, goals, plans and recurring rules are read in the two facade files and nowhere else.
     const facades = ["src/mobile/data/readApi.js", "src/mobile/data/readPlanApi.js"];
     assert.deepEqual(find(/from\s*["'][^"']*(recurringTransactions|savingsGoalsApi|savingsPlansApi|budgetsApi)[^"']*["']/i).sort(), facades);
@@ -149,9 +149,11 @@ describe("the facade", () => {
   it("exports reads only", async () => {
     const readApi = await import("../src/mobile/data/readApi.js");
 
-    assert.deepEqual(Object.keys(readApi).sort(), ["ACTIVITY_PER_PAGE", "BUDGETS_PER_PAGE", "DASHBOARD_PERIOD", "DASHBOARD_PERIODS", "DEBTS_PER_PAGE", "EXPORTS_PER_PAGE", "GOALS_PER_PAGE", "IMPORTS_PER_PAGE", "MOVEMENTS_PER_PAGE", "NOTIFICATIONS_PER_PAGE", "PAYMENTS_PER_PAGE", "RULES_PER_PAGE", "TRANSFERS_PER_PAGE", "isAccountId", "planningWorkspaceId", "readAccount", "readAccountMovements", "readAccounts", "readAlerts", "readBudget", "readBudgets", "readCalendarMonth", "readCategories", "readCategory", "readCategoryList", "readDashboard", "readDebt", "readDebtPayments", "readDebts", "readExportFile", "readExports", "readGoal", "readGoals", "readImport", "readImports", "readNotifications", "readReport", "readRule", "readRules", "readTransaction", "readTransactions", "readTransfer", "readTransfers", "sessionWorkspace"]);
+    assert.deepEqual(Object.keys(readApi).sort(), ["ACTIVITY_PER_PAGE", "BUDGETS_PER_PAGE", "DASHBOARD_PERIOD", "DASHBOARD_PERIODS", "DEBTS_PER_PAGE", "EXPORTS_PER_PAGE", "GOALS_PER_PAGE", "IMPORTS_PER_PAGE", "MOVEMENTS_PER_PAGE", "NOTIFICATIONS_PER_PAGE", "PAYMENTS_PER_PAGE", "RULES_PER_PAGE", "TRANSFERS_PER_PAGE", "isAccountId", "planningWorkspaceId", "readAccount", "readAccountMovements", "readAccounts", "readAlerts", "readBudget", "readBudgets", "readCalendarMonth", "readCategories", "readCategory", "readCategoryList", "readDashboard", "readDebt", "readDebtPayments", "readDebts", "readExportFile", "readExports", "readGoal", "readGoals", "readImport", "readImports", "readNotifications", "readReport", "readRule", "readRules", "readTransaction", "readTransactions", "readTransfer", "readTransfers", "readUnreadCount", "sessionWorkspace"]);
     const plan = await import("../src/mobile/data/readPlanApi.js");
-    assert.deepEqual(Object.keys(plan), ["readGoalPlan"]);
+    assert.deepEqual(Object.keys(plan).sort(), ["readConfirmationPreview", "readGoalPlan", "readPlanOptions"]);
+    const planUses = [...code(path.join(MOBILE, "data/readPlanApi.js")).matchAll(/savingsPlansApi\.(\w+)\(/g)].map((match) => match[1]).sort();
+    assert.deepEqual(planUses, ["getActive", "getConfirmationPreview", "getOptions"], "the plan facade reads only");
     const assist = await import("../src/mobile/data/readAssistApi.js");
     assert.ok(Object.keys(assist).every((name) => /^read[A-Z]|_PER_PAGE$/.test(name)), "the assistant facade exports reads only");
     const write = await import("../src/mobile/data/writeApi.js");

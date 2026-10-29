@@ -76,6 +76,21 @@ export const assist = {
       issuesTitle: "Still needed", issue: { other: "Something still needs checking.", missing_account: "Choose an account.", missing_category: "Choose a category.", missing_amount: "Enter the amount.", missing_date: "Enter the date." },
       version: "Review version {{version}}. If the draft changes elsewhere, open it again to see the latest.", openFull: "Open it in the full version",
     },
+    aiFeedback: {
+      open: "Rate", title: { message: "Rate this answer", insight: "Rate this insight" },
+      rating: "How was it?", ratings: { helpful: "Helpful", not_helpful: "Not helpful", inaccurate: "Inaccurate" }, ratingRequired: "Choose a rating.",
+      reason: "Reason", reasons: { normal_activity: "Normal activity", not_useful: "Not useful", inaccurate: "Inaccurate", unclear: "Unclear", other: "Other" },
+      comment: "Comment", check: "Check", ready: "Your feedback is complete.", send: "Send feedback",
+      closed: "Sending feedback isn't available in Mobile yet. Nothing has been sent.", full: "Rate it in the full version",
+      discardBody: "Your comment hasn't been sent or saved. If you leave, it's gone.",
+    },
+    aiDelete: {
+      open: "Delete this conversation…", title: "Delete this conversation?",
+      means: "The full version removes it from your conversations once SmartSpend confirms.",
+      records: "Your accounts, transactions and other records are not affected.",
+      retention: "How long SmartSpend keeps related data follows its privacy settings, which Mobile doesn't confirm.",
+      closed: "Deleting isn't available in Mobile yet. Nothing has been deleted.", keep: "Keep it", confirm: "Delete it", full: "Delete it in the full version",
+    },
     profile: {
       who: "Signed in as", workspace: "Workspace", baseCurrency: "Main currency", timezone: "Time zone",
       emailTitle: "Email address", email: { verified: "Your email address is verified.", unverified: "Your email address isn't verified yet.", loading: "Checking your email address…", error: "Your email status couldn't be checked.", unknown: "Your email status isn't known right now." },
@@ -160,6 +175,21 @@ export const assist = {
       draftsEmpty: "لا توجد مسودات بعد.", draftsEmptyFiltered: "لا توجد مسودات بهذه الحالة.", loadingDraft: "جارٍ تحميل المسودة", missingDraft: "إذا حُذفت هذه المسودة أو لم تكن لك، فلا يمكن عرضها.",
       issuesTitle: "ما زال مطلوبًا", issue: { other: "ما زال هناك ما يحتاج إلى تحقق.", missing_account: "اختر حسابًا.", missing_category: "اختر تصنيفًا.", missing_amount: "أدخل المبلغ.", missing_date: "أدخل التاريخ." },
       version: "نسخة المراجعة {{version}}. إذا تغيّرت المسودة في مكان آخر، افتحها من جديد لترى أحدث نسخة.", openFull: "افتحها في النسخة الكاملة",
+    },
+    aiFeedback: {
+      open: "قيّم", title: { message: "قيّم هذه الإجابة", insight: "قيّم هذه الملاحظة" },
+      rating: "كيف كانت؟", ratings: { helpful: "مفيدة", not_helpful: "غير مفيدة", inaccurate: "غير دقيقة" }, ratingRequired: "اختر تقييمًا.",
+      reason: "السبب", reasons: { normal_activity: "نشاط معتاد", not_useful: "غير مفيدة", inaccurate: "غير دقيقة", unclear: "غير واضحة", other: "أخرى" },
+      comment: "تعليق", check: "تحقّق", ready: "تقييمك مكتمل.", send: "أرسل التقييم",
+      closed: "إرسال التقييم غير متاح في نسخة الجوال بعد. لم يُرسل شيء.", full: "قيّمها في النسخة الكاملة",
+      discardBody: "تعليقك لم يُرسل ولم يُحفظ. إذا غادرت فسيضيع.",
+    },
+    aiDelete: {
+      open: "حذف هذه المحادثة…", title: "حذف هذه المحادثة؟",
+      means: "تزيلها النسخة الكاملة من محادثاتك بعد أن يؤكد SmartSpend ذلك.",
+      records: "لا تتأثر حساباتك ولا عملياتك ولا سجلاتك الأخرى.",
+      retention: "مدة احتفاظ SmartSpend بالبيانات المتعلقة تتبع إعدادات الخصوصية، ولا تؤكدها نسخة الجوال.",
+      closed: "الحذف غير متاح في نسخة الجوال بعد. لم يُحذف شيء.", keep: "احتفظ بها", confirm: "احذف", full: "احذفها في النسخة الكاملة",
     },
     profile: {
       who: "مسجّل الدخول باسم", workspace: "مساحة العمل", baseCurrency: "العملة الرئيسية", timezone: "المنطقة الزمنية",

@@ -14,6 +14,9 @@ import PagedListView from "../planning/PagedListView.jsx";
 import { useListScreen } from "../planning/useListScreen.js";
 import StateChip from "../ui/StateChip.jsx";
 
+// The full version's built name when the server sends none (docs/report-exports/download.md): smartspend-{report}-{id}.{format}, csv for an unknown format.
+const exportFileName = (item) => `smartspend-${item.report ?? "report"}-${item.id}.${["csv", "xlsx", "pdf"].includes(item.format) ? item.format : "csv"}`;
+
 const EXPORT_TONES = { queued: "warn", processing: "warn", completed: "good", failed: "bad", expired: "neutral", cancelled: "neutral" };
 
 /*
@@ -49,7 +52,7 @@ function ExportRow({ item, locale, onDownload, state }) {
         <span className="sm-chips-inline"><StateChip state={item.status} known={item.statusKnown} labels="exports.status" tones={EXPORT_TONES} /></span>
         {item.downloadable ? (
           <button type="button" className="sm-button sm-button-quiet sm-button-small" onClick={() => onDownload(item)} disabled={state === "busy"} aria-busy={state === "busy" || undefined}>
-            {t(state === "busy" ? "exports.downloading" : "exports.download")}
+            {state === "busy" ? t("exports.downloading") : t("exports.downloadFormat", { format: (item.format ?? "csv").toUpperCase() })}
           </button>
         ) : (
           <span className="sm-row-meta">{t(item.status === "queued" || item.status === "processing" ? "exports.notReady" : "exports.noFile")}</span>
@@ -87,7 +90,7 @@ export default function MobileExports() {
       const file = await readExportFile(item.id);
       // A file that arrives after the signed-in person changed is not saved here.
       if (!guard.check()) return;
-      saveFile(linkRef.current, file.blob, file.filename ?? item.fileName ?? `smartspend-${item.report ?? "report"}`);
+      saveFile(linkRef.current, file.blob, file.filename ?? item.fileName ?? exportFileName(item));
       setStates((current) => ({ ...current, [item.id]: "saved" }));
     } catch {
       if (guard.check()) setStates((current) => ({ ...current, [item.id]: "failed" }));
@@ -98,6 +101,7 @@ export default function MobileExports() {
 
   const toolbar = (
     <div className="sm-card sm-plan-filters">
+      <p className="sm-text sm-muted sm-fine" data-sm-note="pdf">{t("exports.pdfNote")}</p>
       <Link className="sm-button sm-button-small sm-new-link" to={"/m/add/export"} data-sm-action="new-export">{t("newLinks.exportFile")}</Link>
       <FilterTabs
         label={t("exports.filterStatus")}

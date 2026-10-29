@@ -28,6 +28,7 @@ export const reportsImports = {
   en: {
     titles: { reports: "Reports", report: "Report", exports: "Export history", imports: "Imports", statementImport: "Import" },
     reports: {
+      trend: "Trend", groupBy: "Group by", group: { day: "Day", week: "Week", month: "Month" }, trendTitle: "{{currency}}", trendEmpty: "SmartSpend sent no trend for this period.", trendPerCurrency: "One trend per currency: amounts in different currencies are never combined.", trendFigures: "Show the figures ({{count}} periods)", trendCaption: "Trend in {{currency}}", trendPeriod: "Period", noFigure: "No figure", trendHidden: "Amounts are hidden, so the trend isn't drawn.",
       intro: "SmartSpend's reports, read-only. Every figure is SmartSpend's own, shown for each currency on its own.",
       listLabel: "Reports",
       back: "Back to reports",
@@ -67,6 +68,7 @@ export const reportsImports = {
       },
     },
     exports: {
+      downloadFormat: "Download {{format}}", pdfNote: "PDF, CSV and Excel files SmartSpend has built can be downloaded here. Building a PDF on this device is only in the full version.",
       loading: "Loading exports",
       openFull: "Open exports in the full version",
       readOnly: "To ask for a new export, or cancel one, use the full version.",
@@ -109,6 +111,7 @@ export const reportsImports = {
   ar: {
     titles: { reports: "التقارير", report: "تقرير", exports: "سجل التصدير", imports: "الاستيراد", statementImport: "استيراد" },
     reports: {
+      trend: "الاتجاه", groupBy: "التجميع حسب", group: { day: "يوم", week: "أسبوع", month: "شهر" }, trendTitle: "{{currency}}", trendEmpty: "لم يرسل SmartSpend اتجاهًا لهذه الفترة.", trendPerCurrency: "اتجاه واحد لكل عملة: لا تُجمع المبالغ بعملات مختلفة أبدًا.", trendFigures: "اعرض الأرقام ({{count}} فترات)", trendCaption: "الاتجاه بعملة {{currency}}", trendPeriod: "الفترة", noFigure: "بلا رقم", trendHidden: "المبالغ مخفية، لذلك لا يُرسم الاتجاه.",
       intro: "تقارير SmartSpend للعرض فقط. كل رقم هو رقم SmartSpend نفسه، معروض لكل عملة على حدة.",
       listLabel: "التقارير",
       back: "العودة إلى التقارير",
@@ -148,6 +151,7 @@ export const reportsImports = {
       },
     },
     exports: {
+      downloadFormat: "تنزيل {{format}}", pdfNote: "يمكن هنا تنزيل ملفات PDF وCSV وExcel التي أعدّها SmartSpend. إنشاء PDF على هذا الجهاز متاح في النسخة الكاملة فقط.",
       loading: "جارٍ تحميل عمليات التصدير",
       openFull: "افتح التصدير في النسخة الكاملة",
       readOnly: "لطلب تصدير جديد أو إلغاء تصدير، استخدم النسخة الكاملة.",

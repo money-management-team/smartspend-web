@@ -104,6 +104,7 @@ export function moreBackend({ debts = [], payments = {}, transfers = [], notific
       return found ? { body: envelope({ transfer: found }) } : failure(404, "Not found");
     }
 
+    if (call.path === "/notifications/unread-count") return { body: envelope({ unread_count: notifications.filter((row) => !row.is_read).length }) };
     if (call.path === "/notifications") {
       const rows = notifications.filter((row) => !q.status || (q.status === "read") === row.is_read);
       return { body: envelope({ notifications: withoutRange(paginator(rows, page)), unread_count: notifications.filter((row) => !row.is_read).length }) };

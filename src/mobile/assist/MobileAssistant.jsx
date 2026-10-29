@@ -16,6 +16,7 @@ import MobileSheet from "../shell/MobileSheet.jsx";
 import Chevron from "../ui/Chevron.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
+import { DeleteConversation, FeedbackButton } from "./AiFeedback.jsx";
 import PagedRead from "./PagedRead.jsx";
 
 export const MESSAGE_MAX = 4000;
@@ -260,6 +261,7 @@ export default function MobileAssistant() {
                   {insight.summary && <p className="sm-text sm-user-text">{insight.summary}</p>}
                   {insight.explanation && <p className="sm-text sm-muted sm-user-text">{insight.explanation}</p>}
                   <Sources sources={insight.sources} />
+                  <span className="sm-ai-tools"><FeedbackButton kind="insight" id={insight.id} /></span>
                 </span>
               </article>
             )}
@@ -343,10 +345,12 @@ export function MobileConversation() {
                 <p className="sm-text sm-fine sm-muted">{t(`assist.role.${message.role}`)}{message.role === "assistant" && <> · <AiLabel /></>}</p>
                 <p className="sm-text sm-user-text sm-ai-content">{message.content}</p>
                 <Sources sources={message.sources} />
+                {message.role === "assistant" && <span className="sm-ai-tools"><FeedbackButton kind="message" id={message.id} /></span>}
               </article>
             )}
           />
           <p className="sm-text sm-muted sm-fine" role="note" data-sm-note="write-closed" data-sm-write="ai.message">{t("assist.replyClosed")}</p>
+          <DeleteConversation />
         </div>
       )}
     </section>

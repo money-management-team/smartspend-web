@@ -29,9 +29,9 @@ export const FORM_CURRENCIES = Object.freeze(["ILS", "USD", "EUR", "JOD", "SAR",
 export const ACCOUNT_TYPES = Object.freeze(["cash", "bank", "wallet", "savings", "custom"]);
 export const REASON = Object.freeze({ min: 3, max: 500 });
 export const PASSWORD_MIN = 8;
-// The report names and the formats the export queue builds (docs/report-exports/overview.md). PDF is built in the browser by the full version, not queued.
+// The report names and the formats the export queue takes (docs/report-exports/overview.md: csv, xlsx, pdf). The full version builds a PDF on the device instead; Mobile can't (it doesn't import that code), so its form offers the queue's PDF.
 export const EXPORT_REPORTS = Object.freeze(["overview", "income-expense", "cash-flow", "accounts", "categories", "transfers", "budgets", "savings-goals", "debts", "recurring"]);
-export const EXPORT_FORMATS = Object.freeze(["csv", "xlsx"]);
+export const EXPORT_FORMATS = Object.freeze(["csv", "xlsx", "pdf"]);
 
 const text = (value) => (typeof value === "string" ? value : "");
 const digits = (value) => {

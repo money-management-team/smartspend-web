@@ -104,6 +104,7 @@ export const debtsTransfers = {
       severity: { info: "Info", warning: "Warning", critical: "Important" },
       unread: "Unread",
       untitled: "Notification",
+      markRead: "Mark as read", markAll: "Mark all as read", markReadClosed: "Marking notifications as read isn't available in Mobile yet. Nothing has changed; the read state shown is SmartSpend's.", unreadCount: "Unread: {{count}}", unreadUnknown: "The unread count isn't available right now.",
       open: "Open what this is about",
     },
     calendar: {
@@ -225,6 +226,7 @@ export const debtsTransfers = {
       severity: { info: "معلومة", warning: "تنبيه", critical: "مهم" },
       unread: "غير مقروء",
       untitled: "إشعار",
+      markRead: "تعليم كمقروء", markAll: "تعليم الكل كمقروء", markReadClosed: "تعليم الإشعارات كمقروءة غير متاح في نسخة الجوال بعد. لم يتغير شيء، وحالة القراءة المعروضة هي حالة SmartSpend.", unreadCount: "غير المقروءة: {{count}}", unreadUnknown: "عدد غير المقروءة غير متاح الآن.",
       open: "افتح ما يتعلق به",
     },
     calendar: {

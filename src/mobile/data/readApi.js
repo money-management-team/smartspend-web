@@ -156,6 +156,9 @@ export const readTransfer = (transferId, signal) => transfersApi.get(transferId,
 
 export const readNotifications = (query, signal) => notificationsApi.list(query, { signal });
 
+// The server's own unread count (GET /notifications/unread-count); never worked out from a page of the list.
+export const readUnreadCount = (signal) => notificationsApi.unreadCount({ signal });
+
 export const readCalendarMonth = (month, year, signal) => calendarApi.get({ month, year, view: "month", workspace_id: workspaceId() }, { signal });
 
 /*
