@@ -58,8 +58,28 @@ export const MOBILE_WHATSAPP = `${MOBILE_PREFIX}/whatsapp`;
 export const MOBILE_PROFILE = `${MOBILE_PREFIX}/profile`;
 export const MOBILE_ADD_ENTRY = `${MOBILE_PREFIX}/add`;
 
+/*
+ * Added in the unblocked-feature pass: the assistant's conversations, receipt
+ * and voice captures, WhatsApp drafts, the profile and password forms, search,
+ * the monthly review and quick-entry templates. All read, or fill in and
+ * review only (forms/).
+ */
+export const MOBILE_MORE = `${MOBILE_PREFIX}/more`;
+export const aiConversationPath = (conversationId) => `${MOBILE_AI}/conversations/${encodeURIComponent(conversationId)}`;
+export const MOBILE_CAPTURES = `${MOBILE_PREFIX}/captures`;
+export const MOBILE_RECEIPT_NEW = `${MOBILE_CAPTURES}/receipts/new`;
+export const MOBILE_VOICE_NEW = `${MOBILE_CAPTURES}/voice/new`;
+export const captureDetailPath = (source, captureId) => `${MOBILE_CAPTURES}/${source === "voice" ? "voice" : "receipts"}/${encodeURIComponent(captureId)}`;
+export const MOBILE_WHATSAPP_DRAFTS = `${MOBILE_WHATSAPP}/drafts`;
+export const whatsappDraftPath = (draftId) => `${MOBILE_WHATSAPP_DRAFTS}/${encodeURIComponent(draftId)}`;
+export const MOBILE_PROFILE_EDIT = `${MOBILE_PROFILE}/edit`;
+export const MOBILE_PASSWORD = `${MOBILE_PROFILE}/password`;
+export const MOBILE_SEARCH = `${MOBILE_PREFIX}/search`;
+export const MOBILE_REVIEW = `${MOBILE_PREFIX}/review`;
+export const MOBILE_TEMPLATES = `${MOBILE_PREFIX}/templates`;
+
 /* The More pages: More's current-page marker stays on inside them. */
-const MORE_WITHIN = [MOBILE_ACCOUNTS, MOBILE_TRANSFERS, MOBILE_NOTIFICATIONS, MOBILE_REPORTS, MOBILE_EXPORTS, MOBILE_IMPORTS, MOBILE_AI, MOBILE_WHATSAPP, MOBILE_PROFILE];
+const MORE_WITHIN = [MOBILE_ACCOUNTS, MOBILE_TRANSFERS, MOBILE_NOTIFICATIONS, MOBILE_REPORTS, MOBILE_EXPORTS, MOBILE_IMPORTS, MOBILE_AI, MOBILE_WHATSAPP, MOBILE_PROFILE, MOBILE_CAPTURES, MOBILE_SEARCH, MOBILE_REVIEW, MOBILE_TEMPLATES];
 
 /*
  * The four primary destinations. Add is an action (a button that opens a

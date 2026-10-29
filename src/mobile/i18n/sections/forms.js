@@ -26,6 +26,12 @@ const FLOWS_EN = [
   ["debt-edit", "Edit this debt", "Change the name, dates, notes, or the amount before the first payment.", "Edit the debt", "Save the changes", "Edit it in the full version", "Check the changes before they are saved."],
   ["debt-payment", "Record a payment", "A payment moves money on the account you choose.", "Record a payment or collection", "Record it", "Record it in the full version", "Check the payment before it is recorded."],
   ["debt-payment-reverse", "Reverse this payment", "A reversal cancels the payment's movement and adds the amount back to what is owed.", "Reverse the payment", "Reverse the payment", "Reverse it in the full version", "Check the reversal before it is made."],
+  ["receipt-review", "Review this receipt", "What SmartSpend read from the receipt. Check every detail: it is a suggestion, not a recorded expense.", "Review the details", "Confirm and record the expense", "Confirm it in the full version", "Check the expense that would be recorded from this receipt."],
+  ["voice-review", "Review this recording", "What SmartSpend understood from the recording. Check every detail: it is a suggestion, not a recorded expense.", "Review the details", "Confirm and record the expense", "Confirm it in the full version", "Check the expense that would be recorded from this recording."],
+  ["whatsapp-draft", "Review this WhatsApp draft", "An expense you sent on WhatsApp. Nothing is recorded until it is confirmed.", "Review the draft", "Confirm and record the expense", "Confirm it in the full version", "Check the expense that would be recorded from this draft."],
+  ["profile-edit", "Edit your profile", "Your name, email address and phone number.", "Edit your profile", "Save the profile", "Edit it in the full version", "Check the changes before they are saved."],
+  ["password-change", "Change your password", "Signing in elsewhere ends on other devices after a change; this device stays signed in.", "Change your password", "Change the password", "Change it in the full version", "Check before changing. Passwords are never shown."],
+  ["export", "Export a report", "A CSV or Excel file of a report, built by SmartSpend and listed under Exports when it is ready.", "New export", "Request the export", "Request it in the full version", "Check the export before it is requested."],
 ];
 
 const FLOWS_AR = [
@@ -53,6 +59,12 @@ const FLOWS_AR = [
   ["debt-edit", "تعديل هذا الدين", "غيّر الاسم أو التواريخ أو الملاحظات، أو المبلغ قبل أول دفعة.", "تعديل الدين", "احفظ التغييرات", "عدّله في النسخة الكاملة", "راجع التغييرات قبل حفظها."],
   ["debt-payment", "تسجيل دفعة", "الدفعة تحرّك المال على الحساب الذي تختاره.", "تسجيل دفعة أو تحصيل", "سجّلها", "سجّلها في النسخة الكاملة", "راجع الدفعة قبل تسجيلها."],
   ["debt-payment-reverse", "عكس هذه الدفعة", "العكس يلغي حركة الدفعة ويعيد المبلغ إلى المتبقي.", "عكس الدفعة", "اعكس الدفعة", "اعكسها في النسخة الكاملة", "راجع العكس قبل تنفيذه."],
+  ["receipt-review", "مراجعة هذا الإيصال", "ما قرأه SmartSpend من الإيصال. راجع كل تفصيل: إنه اقتراح وليس مصروفًا مسجّلًا.", "مراجعة التفاصيل", "أكّد وسجّل المصروف", "أكّده في النسخة الكاملة", "راجع المصروف الذي سيُسجَّل من هذا الإيصال."],
+  ["voice-review", "مراجعة هذا التسجيل", "ما فهمه SmartSpend من التسجيل. راجع كل تفصيل: إنه اقتراح وليس مصروفًا مسجّلًا.", "مراجعة التفاصيل", "أكّد وسجّل المصروف", "أكّده في النسخة الكاملة", "راجع المصروف الذي سيُسجَّل من هذا التسجيل."],
+  ["whatsapp-draft", "مراجعة مسودة واتساب هذه", "مصروف أرسلته عبر واتساب. لا يُسجَّل شيء حتى يتم تأكيده.", "مراجعة المسودة", "أكّد وسجّل المصروف", "أكّدها في النسخة الكاملة", "راجع المصروف الذي سيُسجَّل من هذه المسودة."],
+  ["profile-edit", "تعديل ملفك الشخصي", "اسمك وبريدك الإلكتروني ورقم هاتفك.", "تعديل الملف الشخصي", "احفظ الملف الشخصي", "عدّله في النسخة الكاملة", "راجع التغييرات قبل حفظها."],
+  ["password-change", "تغيير كلمة المرور", "بعد التغيير تنتهي الجلسات على الأجهزة الأخرى، ويبقى هذا الجهاز مسجّل الدخول.", "تغيير كلمة المرور", "غيّر كلمة المرور", "غيّرها في النسخة الكاملة", "راجع قبل التغيير. لا تُعرض كلمات المرور أبدًا."],
+  ["export", "تصدير تقرير", "ملف CSV أو Excel لتقرير، يُعدّه SmartSpend ويظهر في التصدير عندما يجهز.", "تصدير جديد", "اطلب التصدير", "اطلبه في النسخة الكاملة", "راجع التصدير قبل طلبه."],
 ];
 
 const flows = (rows, legendPrefix, noFields) =>
@@ -83,6 +95,7 @@ export const forms = {
       no: "No",
       changed: "Changed",
       fillRemaining: "Use the full remaining amount",
+      passwordEntered: "Entered (not shown)",
       loadingChoices: "Loading your accounts and categories",
       loadingRecord: "Loading",
       discardTitle: "Discard this draft?",
@@ -98,6 +111,8 @@ export const forms = {
         frequency: "Repeats", interval: "Every", start_date: "First date", end_date: "Last date", max_occurrences: "Number of times", processing_mode: "How each occurrence is recorded",
         direction: "Who owes", counterparty_name: "Person or company", original_amount: "Amount", issued_at: "Date of the debt", due_date: "Due date", debtAccount: "Account for the opening movement",
         reason: "Reason", paid_at: "Payment date", paymentAccount: "Account", planned_date: "Planned date", toAccount: "To account",
+        merchant_name: "Shop or merchant", transaction_date: "Date", email: "Email address", phone: "Phone number", current_password: "Current password", password: "New password", password_confirmation: "Confirm the new password",
+        report: "Report", format: "File type", from: "From", to: "To", currency: "Currency (optional)",
       },
       errors: {
         required: "Fill this in.", format: "Use digits, with a point for decimals.", decimals: "Use at most 4 decimal places.", positive: "Enter an amount above zero.",
@@ -105,6 +120,7 @@ export const forms = {
         choice: "Choose one of the options.", sameAccount: "Choose two different accounts.", currencyMismatch: "Both accounts must use the same currency.",
         endBeforeStart: "The end can't be before the start.", pastDate: "Choose today or a later date.", futureDate: "Choose today or an earlier date.", dueBeforeIssue: "The due date can't be before the date of the debt.",
         aboveRemaining: "The amount can't be more than what is still owed.", aboveSaved: "The amount can't be more than what is saved.", noChange: "Nothing has changed yet.",
+        email: "Enter an email address like name@example.com.", passwordShort: "Use at least 8 characters.", passwordMix: "Use at least one letter and one digit.", passwordSame: "Choose a password different from the current one.", passwordMismatch: "The two passwords don't match.", captureCurrency: "Choose an account in the currency SmartSpend read.",
       },
       hints: {
         reasonHint: "Kept with the record. 3 to 500 characters.", feeHint: "Leave empty for no fee.", openingHint: "The balance the account starts with. 0 is fine.",
@@ -112,6 +128,7 @@ export const forms = {
         scopeHint: "A general budget covers every expense in its currency.", scopeLocked: "Fixed once created.", intervalHint: "1 is every week, month or year; 2 is every other one.",
         modeHint: "Manual: you confirm each one. Automatic: it is recorded on its date.", debtAccountHint: "Optional. With an account, the debt's amount is also recorded as a movement on it.",
         directionLocked: "Fixed once created.", originalLockedHint: "Can only change before the first payment.",
+        emailHint: "A new address needs to be verified again.", passwordHint: "At least 8 characters, with a letter and a digit.", formatHint: "PDF reports are built in the full version.",
       },
       options: {
         accountType: { cash: "Cash", bank: "Bank", wallet: "Wallet", savings: "Savings", custom: "Other" },
@@ -120,6 +137,8 @@ export const forms = {
         frequency: { weekly: "Weekly", monthly: "Monthly", yearly: "Yearly" },
         processingMode: { manual: "Manual", automatic: "Automatic" },
         debtDirection: { payable: "I owe", receivable: "Owed to me" },
+        reportType: { overview: "Overview", "income-expense": "Income and expenses", "cash-flow": "Cash flow", accounts: "Accounts", categories: "Categories", transfers: "Transfers", budgets: "Budgets", "savings-goals": "Savings goals", debts: "Debts", recurring: "Recurring" },
+        exportFormat: { csv: "CSV", xlsx: "Excel (.xlsx)" },
       },
       noChoices: { account: "No account can be used here.", category: "No category of this type." },
       summaryFields: { name: "Name", amount: "Amount", date: "Date", account: "Account", from: "From", to: "To" },
@@ -136,11 +155,15 @@ export const forms = {
         paymentReverseEffect: "The payment's movement would be cancelled and the amount owed would go back up.",
         contributeEffect: "Money would move from the chosen account into the goal.",
         withdrawEffect: "Money would move from the goal into the chosen account.",
+        draftEffect: "An expense would be recorded on the chosen account, and the draft closed.",
+        captureEffect: "An expense would be recorded on the chosen account with these details.",
+        exportEffect: "SmartSpend would build the file; it would appear under Exports when ready.",
       },
       ineligible: {
         notCorrectable: "Only a posted income or expense can be corrected.", notReversible: "Only a posted entry can be reversed.", archived: "This is archived.",
         goalAccount: "This is a savings goal's account. Manage it from the goal.", goalNotActive: "This goal isn't active.", ruleClosed: "This rule has ended.",
         ruleNotActive: "This rule isn't active.", debtClosed: "This debt is settled or archived.", alreadyReversed: "This payment is already reversed.",
+        draftExpired: "This draft has expired. Send the expense again on WhatsApp.", draftClosed: "This draft is already confirmed or discarded.", captureProcessing: "SmartSpend is still reading this. Check again in a moment.", captureFailed: "SmartSpend couldn't read this. Retrying is done in the full version.", captureClosed: "This is already confirmed or discarded.",
       },
       flows: flows(FLOWS_EN, "", "There is nothing to fill in. Review it to see what would happen."),
     },
@@ -169,6 +192,7 @@ export const forms = {
       no: "لا",
       changed: "معدّل",
       fillRemaining: "استخدم المبلغ المتبقي كاملًا",
+      passwordEntered: "مُدخلة (غير معروضة)",
       loadingChoices: "جارٍ تحميل حساباتك وتصنيفاتك",
       loadingRecord: "جارٍ التحميل",
       discardTitle: "تجاهل هذه المسودة؟",
@@ -184,6 +208,8 @@ export const forms = {
         frequency: "التكرار", interval: "كل", start_date: "أول تاريخ", end_date: "آخر تاريخ", max_occurrences: "عدد المرات", processing_mode: "طريقة تسجيل كل موعد",
         direction: "من المدين", counterparty_name: "الشخص أو الجهة", original_amount: "المبلغ", issued_at: "تاريخ الدين", due_date: "تاريخ الاستحقاق", debtAccount: "حساب الحركة الافتتاحية",
         reason: "السبب", paid_at: "تاريخ الدفع", paymentAccount: "الحساب", planned_date: "التاريخ المخطط", toAccount: "إلى حساب",
+        merchant_name: "المتجر أو الجهة", transaction_date: "التاريخ", email: "البريد الإلكتروني", phone: "رقم الهاتف", current_password: "كلمة المرور الحالية", password: "كلمة المرور الجديدة", password_confirmation: "تأكيد كلمة المرور الجديدة",
+        report: "التقرير", format: "نوع الملف", from: "من", to: "إلى", currency: "العملة (اختياري)",
       },
       errors: {
         required: "املأ هذا الحقل.", format: "استخدم أرقامًا، مع نقطة للكسور.", decimals: "استخدم 4 منازل عشرية على الأكثر.", positive: "أدخل مبلغًا أكبر من صفر.",
@@ -191,6 +217,7 @@ export const forms = {
         choice: "اختر أحد الخيارات.", sameAccount: "اختر حسابين مختلفين.", currencyMismatch: "يجب أن يكون للحسابين العملة نفسها.",
         endBeforeStart: "لا يمكن أن تكون النهاية قبل البداية.", pastDate: "اختر اليوم أو تاريخًا لاحقًا.", futureDate: "اختر اليوم أو تاريخًا سابقًا.", dueBeforeIssue: "لا يمكن أن يسبق تاريخ الاستحقاق تاريخ الدين.",
         aboveRemaining: "لا يمكن أن يزيد المبلغ على المتبقي.", aboveSaved: "لا يمكن أن يزيد المبلغ على المدّخر.", noChange: "لم يتغير شيء بعد.",
+        email: "أدخل بريدًا إلكترونيًا مثل name@example.com.", passwordShort: "استخدم 8 أحرف على الأقل.", passwordMix: "استخدم حرفًا واحدًا ورقمًا واحدًا على الأقل.", passwordSame: "اختر كلمة مرور مختلفة عن الحالية.", passwordMismatch: "كلمتا المرور غير متطابقتين.", captureCurrency: "اختر حسابًا بالعملة التي قرأها SmartSpend.",
       },
       hints: {
         reasonHint: "يُحفظ مع السجل. من 3 إلى 500 حرف.", feeHint: "اتركه فارغًا إن لم تكن هناك رسوم.", openingHint: "الرصيد الذي يبدأ به الحساب. الصفر مقبول.",
@@ -198,6 +225,7 @@ export const forms = {
         scopeHint: "الميزانية العامة تشمل كل المصروفات بعملتها.", scopeLocked: "ثابت بعد الإنشاء.", intervalHint: "1 تعني كل أسبوع أو شهر أو سنة، و2 تعني مرة كل اثنين.",
         modeHint: "يدوي: تؤكد كل موعد بنفسك. تلقائي: يُسجَّل في موعده.", debtAccountHint: "اختياري. مع حساب، يُسجَّل مبلغ الدين أيضًا حركةً عليه.",
         directionLocked: "ثابت بعد الإنشاء.", originalLockedHint: "لا يتغير إلا قبل أول دفعة.",
+        emailHint: "العنوان الجديد يحتاج إلى تأكيد من جديد.", passwordHint: "8 أحرف على الأقل، مع حرف ورقم.", formatHint: "تقارير PDF تُنشأ في النسخة الكاملة.",
       },
       options: {
         accountType: { cash: "نقد", bank: "بنك", wallet: "محفظة", savings: "ادخار", custom: "آخر" },
@@ -206,6 +234,8 @@ export const forms = {
         frequency: { weekly: "أسبوعيًا", monthly: "شهريًا", yearly: "سنويًا" },
         processingMode: { manual: "يدوي", automatic: "تلقائي" },
         debtDirection: { payable: "عليّ", receivable: "لي" },
+        reportType: { overview: "نظرة عامة", "income-expense": "الدخل والمصروفات", "cash-flow": "التدفق النقدي", accounts: "الحسابات", categories: "التصنيفات", transfers: "التحويلات", budgets: "الميزانيات", "savings-goals": "أهداف الادخار", debts: "الديون", recurring: "المتكررة" },
+        exportFormat: { csv: "CSV", xlsx: "Excel (.xlsx)" },
       },
       noChoices: { account: "لا يوجد حساب يمكن استخدامه هنا.", category: "لا يوجد تصنيف من هذا النوع." },
       summaryFields: { name: "الاسم", amount: "المبلغ", date: "التاريخ", account: "الحساب", from: "من", to: "إلى" },
@@ -222,11 +252,15 @@ export const forms = {
         paymentReverseEffect: "ستُلغى حركة الدفعة ويرتفع المتبقي من جديد.",
         contributeEffect: "سينتقل المال من الحساب المختار إلى الهدف.",
         withdrawEffect: "سينتقل المال من الهدف إلى الحساب المختار.",
+        draftEffect: "سيُسجَّل مصروف على الحساب المختار وتُغلق المسودة.",
+        captureEffect: "سيُسجَّل مصروف على الحساب المختار بهذه التفاصيل.",
+        exportEffect: "سيُعدّ SmartSpend الملف، ويظهر في التصدير عندما يجهز.",
       },
       ineligible: {
         notCorrectable: "لا يمكن تصحيح إلا دخل أو مصروف مُرحَّل.", notReversible: "لا يمكن عكس إلا قيد مُرحَّل.", archived: "هذا مؤرشف.",
         goalAccount: "هذا حساب هدف ادخار، فأدره من الهدف.", goalNotActive: "هذا الهدف غير نشط.", ruleClosed: "انتهت هذه القاعدة.",
         ruleNotActive: "هذه القاعدة غير نشطة.", debtClosed: "هذا الدين مسدد أو مؤرشف.", alreadyReversed: "هذه الدفعة معكوسة بالفعل.",
+        draftExpired: "انتهت صلاحية هذه المسودة. أرسل المصروف مرة أخرى عبر واتساب.", draftClosed: "هذه المسودة مؤكدة أو متجاهلة بالفعل.", captureProcessing: "ما زال SmartSpend يقرأ هذا. تحقّق بعد قليل.", captureFailed: "تعذّر على SmartSpend قراءة هذا. إعادة المحاولة تتم في النسخة الكاملة.", captureClosed: "هذا مؤكد أو متجاهل بالفعل.",
       },
       flows: flows(FLOWS_AR, "", "لا يوجد ما تملؤه. راجعه لترى ما سيحدث."),
     },

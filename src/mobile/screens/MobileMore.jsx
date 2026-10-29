@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { useLanguageContext } from "../../contexts/language/useLanguageContext";
 import { useThemeContext } from "../../contexts/theme/useThemeContext";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
-import { MOBILE_ACCOUNTS, MOBILE_IMPORTS, MOBILE_NOTIFICATIONS, MOBILE_REPORTS, MOBILE_TRANSFERS } from "../navigation.js";
+import { MOBILE_ACCOUNTS, MOBILE_AI, MOBILE_CAPTURES, MOBILE_IMPORTS, MOBILE_NOTIFICATIONS, MOBILE_PROFILE, MOBILE_REPORTS, MOBILE_REVIEW, MOBILE_SEARCH, MOBILE_TEMPLATES, MOBILE_TRANSFERS, MOBILE_WHATSAPP } from "../navigation.js";
 import { PRESENTATION_PREFERENCES } from "../presentation/preference.js";
 import { usePresentation } from "../presentation/usePresentation.js";
 import { InstallCard } from "../pwa/PwaNotices.jsx";
@@ -54,8 +54,19 @@ export default function MobileMore() {
       </div>
 
       <div className="sm-card">
+        <h2 className="sm-card-title">{t("moreLinks.tools")}</h2>
+        <MoreLink to={MOBILE_SEARCH} title={t("moreLinks.search")} hint={t("moreLinks.searchHint")} />
+        <MoreLink to={MOBILE_REVIEW} title={t("moreLinks.review")} hint={t("moreLinks.reviewHint")} />
+        <MoreLink to={MOBILE_TEMPLATES} title={t("moreLinks.templates")} hint={t("moreLinks.templatesHint")} />
+        <MoreLink to={MOBILE_AI} title={t("moreLinks.assistant")} hint={t("moreLinks.assistantHint")} />
+        <MoreLink to={MOBILE_CAPTURES} title={t("moreLinks.captures")} hint={t("moreLinks.capturesHint")} />
+        <MoreLink to={MOBILE_WHATSAPP} title={t("moreLinks.whatsapp")} hint={t("moreLinks.whatsappHint")} />
+      </div>
+
+      <div className="sm-card">
         <h2 className="sm-card-title">{t("moreLinks.updates")}</h2>
         <MoreLink to={MOBILE_NOTIFICATIONS} title={t("moreLinks.notifications")} hint={t("moreLinks.notificationsHint")} />
+        <MoreLink to={MOBILE_PROFILE} title={t("moreLinks.profile")} hint={t("moreLinks.profileHint")} />
       </div>
 
       <div className="sm-card">

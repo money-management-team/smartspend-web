@@ -38,6 +38,8 @@ describe("the source", () => {
       "src/mobile/data/readApi.js": ["accountsApi", "budgetsApi", "calendarApi", "categoriesApi", "apiClient", "dashboardApi", "debtsApi", "financialAlertsApi", "importsApi", "notificationsApi", "recurringTransactionsApi", "reportExportsApi", "reportsApi", "savingsGoalsApi", "transactionsApi", "transfersApi"],
       // The Smart Savings plan read, in its own file so a build without the flag has no way to ask for a plan.
       "src/mobile/data/readPlanApi.js": ["savingsPlansApi"],
+      // The assistant, captures, WhatsApp and notification-preference reads: GET only (see below).
+      "src/mobile/data/readAssistApi.js": ["aiCopilotApi", "aiExpenseCapturesApi", "aiInputQuotasApi", "aiVoiceExpenseCapturesApi", "notificationsApi", "whatsappApi"],
       // S04B4: the one write facade, for categories only.
       "src/mobile/data/writeApi.js": ["categoriesApi"],
       "src/mobile/identity/guard.js": ["apiClient"],
@@ -54,7 +56,8 @@ describe("the source", () => {
   it("names no write method of any wrapper outside the category write facade, and that one names exactly create and update of categories", () => {
     const WRITE = "src/mobile/data/writeApi.js";
     const others = sources.filter((file) => rel(file) !== WRITE);
-    assert.deepEqual(find(/\.(create\w*|update|archive|correct|reverse|post|patch|put|confirm\w*|submit\w*)\s*\(/, others), []);
+    // (`URL.createObjectURL` is the browser's own, for showing a chosen photo or a recording on this device.)
+    assert.deepEqual(find(/(?<!\bURL)\.(create\w*|update|archive|correct|reverse|post|patch|put|confirm\w*|submit\w*)\s*\(/, others), []);
     // forms/ names the full version's endpoints as text ("POST /accounts/{id}/archive") and has a Mobile address
     // ending in /archive (a review that sends nothing); tests/mobileForms.test.mjs checks that forms/ has no request code.
     const notForms = sources.filter((file) => !rel(file).startsWith("src/mobile/forms/"));
@@ -77,10 +80,14 @@ describe("the source", () => {
     assert.deepEqual(find(/\bfetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket|EventSource|apiRequest|apiDownload|axios/), []);
   });
 
-  it("imports nothing about WhatsApp, AI, imports, reports exports, planned savings or auth outside the read facade", () => {
-    assert.deepEqual(find(/from\s*["'][^"']*(whatsapp|aiCopilot|aiExpense|aiVoice|plannedSavingsApi|authApi)[^"']*["']/i), []);
+  it("imports nothing about WhatsApp, AI, imports, reports exports, planned savings or auth outside the read facades", () => {
+    assert.deepEqual(find(/from\s*["'][^"']*(plannedSavingsApi|authApi)[^"']*["']/i), []);
+    // WhatsApp, the assistant and captures are read in their own facade, through these GET methods and no other.
+    assert.deepEqual(find(/from\s*["'][^"']*(whatsappApi|whatsappContract|aiCopilot|aiExpense|aiVoice|aiInputQuotas)[^"']*["']/i), ["src/mobile/data/readAssistApi.js"]);
+    const assistUsed = [...code(path.join(MOBILE, "data/readAssistApi.js")).matchAll(/\b(aiCopilotApi|aiExpenseCapturesApi|aiInputQuotasApi|aiVoiceExpenseCapturesApi|notificationsApi|whatsappApi)\.(\w+)\(/g)].map((match) => `${match[1]}.${match[2]}`);
+    assert.deepEqual([...new Set(assistUsed)].sort(), ["aiCopilotApi.conversation", "aiCopilotApi.conversations", "aiCopilotApi.forecast", "aiCopilotApi.insights", "aiCopilotApi.settings", "aiExpenseCapturesApi.get", "aiExpenseCapturesApi.list", "aiInputQuotasApi.get", "aiVoiceExpenseCapturesApi.get", "aiVoiceExpenseCapturesApi.list", "notificationsApi.getPreferences", "whatsappApi.getDraft", "whatsappApi.getIntegration", "whatsappApi.listDrafts"]);
     // Debts, transfers, notifications and the calendar are read in the facade only, and only through these methods.
-    assert.deepEqual(find(/from\s*["'][^"']*(transfersApi|debtsApi|calendarApi|notificationsApi|importsApi|reportExports|reportsApi)[^"']*["']/i), ["src/mobile/data/readApi.js"]);
+    assert.deepEqual(find(/from\s*["'][^"']*(transfersApi|debtsApi|calendarApi|notificationsApi|importsApi|reportExports|reportsApi)[^"']*["']/i), ["src/mobile/data/readApi.js", "src/mobile/data/readAssistApi.js"]);
     const used = [...code(path.join(MOBILE, "data/readApi.js")).matchAll(/\b(debtsApi|transfersApi|notificationsApi|calendarApi|importsApi|reportExportsApi)\.(\w+)\(/g)].map((match) => `${match[1]}.${match[2]}`);
     assert.deepEqual([...new Set(used)].sort(), ["calendarApi.get", "debtsApi.get", "debtsApi.list", "debtsApi.listPayments", "importsApi.get", "importsApi.list", "notificationsApi.list", "reportExportsApi.download", "reportExportsApi.list", "transfersApi.get", "transfersApi.list"]);
     // Budgets, goals, plans and recurring rules are read in the two facade files and nowhere else.
@@ -136,6 +143,8 @@ describe("the facade", () => {
     assert.deepEqual(Object.keys(readApi).sort(), ["ACTIVITY_PER_PAGE", "BUDGETS_PER_PAGE", "DASHBOARD_PERIOD", "DEBTS_PER_PAGE", "EXPORTS_PER_PAGE", "GOALS_PER_PAGE", "IMPORTS_PER_PAGE", "MOVEMENTS_PER_PAGE", "NOTIFICATIONS_PER_PAGE", "PAYMENTS_PER_PAGE", "RULES_PER_PAGE", "TRANSFERS_PER_PAGE", "isAccountId", "planningWorkspaceId", "readAccount", "readAccountMovements", "readAccounts", "readAlerts", "readBudget", "readBudgets", "readCalendarMonth", "readCategories", "readCategory", "readCategoryList", "readDashboard", "readDebt", "readDebtPayments", "readDebts", "readExportFile", "readExports", "readGoal", "readGoals", "readImport", "readImports", "readNotifications", "readReport", "readRule", "readRules", "readTransaction", "readTransactions", "readTransfer", "readTransfers", "sessionWorkspace"]);
     const plan = await import("../src/mobile/data/readPlanApi.js");
     assert.deepEqual(Object.keys(plan), ["readGoalPlan"]);
+    const assist = await import("../src/mobile/data/readAssistApi.js");
+    assert.ok(Object.keys(assist).every((name) => /^read[A-Z]|_PER_PAGE$/.test(name)), "the assistant facade exports reads only");
     const write = await import("../src/mobile/data/writeApi.js");
     assert.deepEqual(Object.keys(write).sort(), ["sendCategoryCreate", "sendCategoryUpdate"]);
   });

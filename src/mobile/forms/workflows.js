@@ -1,4 +1,4 @@
-import { PATH, getAccountDetailsPath, getNewOperationPath, getNewSavingsGoalPath, getNewTransferPath, getBudgetDetailsPath, getDebtDetailsPath, getRecurringDetailsPath, getSavingsGoalDetailsPath, getTransactionDetailsPath, getTransferDetailsPath } from "../../routes/Path.js";
+import { PATH, getAccountDetailsPath, getAiExpenseCapturePath, getSettingsTabPath, getWhatsAppDraftPath, getNewOperationPath, getNewSavingsGoalPath, getNewTransferPath, getBudgetDetailsPath, getDebtDetailsPath, getRecurringDetailsPath, getSavingsGoalDetailsPath, getTransactionDetailsPath, getTransferDetailsPath } from "../../routes/Path.js";
 import { isCurrencyCode, parseDecimal } from "../money/decimal.js";
 import { idText, isRecord, textOrNull } from "../models/values.js";
 import { amountError, compareAmounts, dateError, integerError, normalizeAmount, textError } from "./validation.js";
@@ -28,6 +28,10 @@ import { amountError, compareAmounts, dateError, integerError, normalizeAmount, 
 export const FORM_CURRENCIES = Object.freeze(["ILS", "USD", "EUR", "JOD", "SAR", "AED"]);
 export const ACCOUNT_TYPES = Object.freeze(["cash", "bank", "wallet", "savings", "custom"]);
 export const REASON = Object.freeze({ min: 3, max: 500 });
+export const PASSWORD_MIN = 8;
+// The report names and the formats the export queue builds (docs/report-exports/overview.md). PDF is built in the browser by the full version, not queued.
+export const EXPORT_REPORTS = Object.freeze(["overview", "income-expense", "cash-flow", "accounts", "categories", "transfers", "budgets", "savings-goals", "debts", "recurring"]);
+export const EXPORT_FORMATS = Object.freeze(["csv", "xlsx"]);
 
 const text = (value) => (typeof value === "string" ? value : "");
 const digits = (value) => {
@@ -620,7 +624,123 @@ export const WORKFLOWS = Object.freeze({
     summary: (ctx) => ({ amount: ctx.record.amount, currency: ctx.record.currency, date: ctx.record.paidAt, account: ctx.record.accountName }),
     effectKey: "paymentReverseEffect",
   },
+
+  /* ----- Reviews of what SmartSpend read for you, and your own details ----- */
+
+  "receipt-review": captureReview("receipt"),
+  "voice-review": captureReview("voice"),
+
+  "whatsapp-draft": {
+    id: "whatsapp-draft",
+    group: "assist",
+    operation: "whatsapp.confirm",
+    endpoint: "POST /integrations/whatsapp/expense-drafts/{id}/confirm",
+    record: "whatsappDraft",
+    fullPath: (ctx) => getWhatsAppDraftPath(ctx.record.id),
+    eligible: (record) => (record.status === "expired" ? "draftExpired" : ["confirmed", "discarded"].includes(record.status) ? "draftClosed" : null),
+    needs: { accounts: true, categories: true },
+    fields: [
+      { name: "account_id", kind: "account", required: true, accounts: spendable },
+      { name: "category_id", kind: "category", required: true, categoryType: () => "expense" },
+      { name: "amount", kind: "amount", required: true, currency: (values, ctx) => accountOf(ctx, values.account_id)?.currency ?? ctx.record.currency },
+      { name: "transaction_date", kind: "date", required: true },
+      { name: "description", kind: "text", max: 500 },
+    ],
+    initial: (ctx) => ({ account_id: ctx.record.review.account_id, category_id: ctx.record.review.category_id, amount: ctx.record.review.amount ? digits(ctx.record.review.amount) : "", transaction_date: ctx.record.review.transaction_date, description: ctx.record.review.description }),
+    effectKey: "draftEffect",
+  },
+
+  "profile-edit": {
+    id: "profile-edit",
+    group: "settings",
+    operation: "profile.update",
+    endpoint: "PUT /profile",
+    record: "user",
+    fullPath: () => getSettingsTabPath("profile"),
+    needs: {},
+    editsRecord: true,
+    fields: [
+      { name: "name", kind: "text", required: true, max: 255 },
+      { name: "email", kind: "email", required: true, max: 255, hint: "emailHint" },
+      { name: "phone", kind: "text", max: 30 },
+    ],
+    initial: (ctx) => ({ name: ctx.record.name, email: ctx.record.email, phone: ctx.record.phone }),
+  },
+
+  "password-change": {
+    id: "password-change",
+    group: "settings",
+    operation: "profile.password",
+    endpoint: "PATCH /profile/password",
+    record: "user",
+    fullPath: () => getSettingsTabPath("security"),
+    needs: {},
+    fields: [
+      { name: "current_password", kind: "password", required: true, autoComplete: "current-password" },
+      { name: "password", kind: "password", required: true, autoComplete: "new-password", hint: "passwordHint" },
+      { name: "password_confirmation", kind: "password", required: true, autoComplete: "new-password" },
+    ],
+    initial: () => ({ current_password: "", password: "", password_confirmation: "" }),
+    // The full version's rules (Settings/ChangePassword): 8 characters, a letter and a digit, not the current one.
+    check: (values) => {
+      const next = values.password ?? "";
+      if (!next) return {};
+      if ([...next].length < PASSWORD_MIN) return { password: "passwordShort" };
+      if (!/\p{L}/u.test(next) || !/\p{N}/u.test(next)) return { password: "passwordMix" };
+      if (values.current_password && next === values.current_password) return { password: "passwordSame" };
+      if (values.password_confirmation && values.password_confirmation !== next) return { password_confirmation: "passwordMismatch" };
+      return {};
+    },
+  },
+
+  export: {
+    id: "export",
+    group: "reports",
+    operation: "export.create",
+    endpoint: "POST /report-exports",
+    fullPath: () => PATH.USER.REPORT_EXPORTS,
+    needs: {},
+    fields: [
+      { name: "report", kind: "choice", required: true, options: EXPORT_REPORTS, optionKey: "reportType" },
+      { name: "format", kind: "choice", required: true, options: EXPORT_FORMATS, optionKey: "exportFormat", hint: "formatHint" },
+      { name: "from", kind: "date", required: true },
+      { name: "to", kind: "date", required: true },
+      { name: "currency", kind: "currency" },
+    ],
+    initial: (ctx) => ({ report: "", format: "csv", from: `${ctx.today.slice(0, 8)}01`, to: ctx.today, currency: "" }),
+    check: (values) => (values.from && values.to && values.to < values.from ? { to: "endBeforeStart" } : {}),
+    effectKey: "exportEffect",
+  },
 });
+
+function captureReview(source) {
+  return {
+    id: `${source}-review`,
+    group: "assist",
+    operation: `${source}.confirm`,
+    endpoint: source === "voice" ? "POST /ai/voice-expense-captures/{id}/confirm" : "POST /ai/expense-captures/{id}/confirm",
+    record: `${source}Capture`,
+    fullPath: (ctx) => (source === "voice" ? PATH.USER.FINANCIAL_OPERATIONS : getAiExpenseCapturePath(ctx.record.id)),
+    eligible: (record) => (["uploaded", "queued", "processing"].includes(record.status) ? "captureProcessing" : record.status === "failed" ? "captureFailed" : ["confirmed", "discarded"].includes(record.status) ? "captureClosed" : null),
+    needs: { accounts: true, categories: true },
+    fields: [
+      { name: "account_id", kind: "account", required: true, accounts: spendable },
+      { name: "category_id", kind: "category", required: true, categoryType: () => "expense" },
+      { name: "merchant_name", kind: "text", max: 191 },
+      { name: "amount", kind: "amount", required: true, currency: (values, ctx) => accountOf(ctx, values.account_id)?.currency ?? ctx.record.review.currency_code },
+      { name: "transaction_date", kind: "date", required: true },
+      { name: "description", kind: "text", max: 500 },
+      { name: "reference_number", kind: "text", max: 120 },
+    ],
+    initial: (ctx) => ({ ...Object.fromEntries(["account_id", "category_id", "merchant_name", "transaction_date", "description", "reference_number"].map((name) => [name, ctx.record.review[name] ?? ""])), amount: ctx.record.review.amount ? digits(ctx.record.review.amount) : "" }),
+    // What SmartSpend read is in one currency; an account in another one would change its meaning.
+    check: (values, ctx) => {
+      const chosen = accountOf(ctx, values.account_id);
+      return ctx.record.review.currency_code && chosen && chosen.currency !== ctx.record.review.currency_code ? { account_id: "captureCurrency" } : {};
+    },
+    effectKey: "captureEffect",
+  };
+}
 
 function hasFee(values) {
   const fee = normalizeAmount(values.fee_amount);
@@ -670,6 +790,8 @@ export function validateWorkflow(workflow, values, ctx) {
 
     if (field.kind === "amount") error = amountError(value, { required, zero: field.zero });
     else if (field.kind === "text" || field.kind === "textarea") error = textError(value, { required, min: field.min ?? 0, max: field.max ?? 255 });
+    else if (field.kind === "email") error = textError(value, { required, max: field.max ?? 255 }) ?? (value?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()) ? "email" : null);
+    else if (field.kind === "password") error = value ? null : required ? "required" : null;
     else if (field.kind === "date") error = dateError(value, { required });
     else if (field.kind === "integer") error = integerError(value, { required, min: field.min, max: field.max });
     else if (field.kind === "choice") error = value ? (field.options.includes(value) ? null : "choice") : required ? "required" : null;
@@ -730,6 +852,9 @@ export const effectKeyOf = (workflow, ctx) => (typeof workflow.effectKey === "fu
 
 /** The new-entry forms, in the order the Add sheet lists them. */
 export const NEW_ENTRY_ORDER = Object.freeze(["expense", "income", "transfer", "account", "budget", "goal", "recurring", "debt"]);
+
+/** Every form at /m/add/{id}: the Add sheet's, and the export form (opened from Exports). */
+export const NEW_FORM_IDS = Object.freeze([...NEW_ENTRY_ORDER, "export"]);
 
 /** Every write these forms stand for. None is sent; none is in the write gate (tests/mobileForms.test.mjs). */
 export const DRAFT_ONLY_OPERATIONS = Object.freeze(Object.values(WORKFLOWS).map((workflow) => workflow.operation));

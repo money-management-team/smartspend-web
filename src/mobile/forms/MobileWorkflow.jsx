@@ -16,7 +16,7 @@ import Skeleton from "../ui/Skeleton.jsx";
 import DraftForm from "./DraftForm.jsx";
 import { useFormChoices } from "./useFormChoices.js";
 import { todayIn } from "./validation.js";
-import { NEW_ENTRY_ORDER, RECORD_PICKERS, WORKFLOWS } from "./workflows.js";
+import { NEW_FORM_IDS, RECORD_PICKERS, WORKFLOWS } from "./workflows.js";
 
 const NOT_FOUND = Object.freeze({ code: "NOT_FOUND" });
 const MALFORMED = Object.freeze({ code: "MALFORMED_RESPONSE" });
@@ -86,7 +86,7 @@ function RecordSummary({ summary }) {
   );
 }
 
-function FormWithChoices({ workflow, ctx, backTo }) {
+export function FormWithChoices({ workflow, ctx, backTo }) {
   const choices = useFormChoices(workflow.needs);
   const summary = workflow.summary ? <RecordSummary summary={workflow.summary(ctx)} /> : null;
   return <DraftForm workflow={workflow} ctx={ctx} choices={choices} backTo={backTo} recordSummary={summary} />;
@@ -97,7 +97,7 @@ export function MobileNewEntry() {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const { workflow: id } = useParams();
   const location = useLocation();
-  const workflow = NEW_ENTRY_ORDER.includes(id) ? WORKFLOWS[id] : null;
+  const workflow = NEW_FORM_IDS.includes(id) ? WORKFLOWS[id] : null;
   const ctx = useMemo(() => ({ today: today() }), []);
   const backTo = backPathFrom(location.state, MOBILE_PREFIX);
 

@@ -102,6 +102,9 @@ export default function DraftForm({ workflow, ctx, choices, backTo, recordSummar
     if (field.kind === "choice") return value ? t(`forms.options.${field.optionKey}.${value}`) : null;
     if (field.kind === "currency") return value ? <bdi dir="ltr">{value}</bdi> : null;
     if (field.kind === "check") return t(value ? "forms.yes" : "forms.no");
+    // A password is never shown, not even in the review.
+    if (field.kind === "password") return value ? t("forms.passwordEntered") : null;
+    if (field.kind === "email") return value?.trim() ? <bdi dir="ltr">{value.trim()}</bdi> : null;
     if (field.kind === "locked") {
       const locked = field.value(full);
       if (!locked) return null;
@@ -299,6 +302,10 @@ function Field({ field, id, label, value, values, ctx, error, onChange, display,
     control = <input {...common} className="sm-input" type="text" inputMode="numeric" dir="ltr" autoComplete="off" value={value ?? ""} onChange={(event) => onChange(field.name, event.target.value)} />;
   } else if (field.kind === "textarea") {
     control = <textarea {...common} className="sm-input sm-textarea" dir="auto" rows={3} value={value ?? ""} onChange={(event) => onChange(field.name, event.target.value)} />;
+  } else if (field.kind === "email") {
+    control = <input {...common} className="sm-input" type="email" inputMode="email" dir="ltr" autoComplete="email" value={value ?? ""} onChange={(event) => onChange(field.name, event.target.value)} />;
+  } else if (field.kind === "password") {
+    control = <input {...common} className="sm-input" type="password" dir="ltr" autoComplete={field.autoComplete ?? "off"} value={value ?? ""} onChange={(event) => onChange(field.name, event.target.value)} />;
   } else {
     control = <input {...common} className="sm-input" type="text" dir="auto" autoComplete="off" value={value ?? ""} onChange={(event) => onChange(field.name, event.target.value)} />;
   }

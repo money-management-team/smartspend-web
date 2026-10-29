@@ -22,6 +22,25 @@ import { useCompactNav } from "./useCompactNav.js";
 // Proves in a built bundle that this code shipped; see tests/mobileBundle.test.mjs.
 export const MOBILE_BUILD_MARKER = "SMARTSPEND_MOBILE_S04B4";
 
+// The pages added in the unblocked-feature pass, by address.
+const EXTRA_TITLES = [
+  [/^\/m\/assistant$/, "titles.assistant"],
+  [/^\/m\/assistant\/conversations\/[^/]+$/, "titles.conversation"],
+  [/^\/m\/captures$/, "titles.captures"],
+  [/^\/m\/captures\/receipts\/new$/, "titles.receiptNew"],
+  [/^\/m\/captures\/voice\/new$/, "titles.voiceNew"],
+  [/^\/m\/captures\/(receipts|voice)\/[^/]+$/, "titles.capture"],
+  [/^\/m\/whatsapp$/, "titles.whatsapp"],
+  [/^\/m\/whatsapp\/drafts$/, "titles.whatsappDrafts"],
+  [/^\/m\/whatsapp\/drafts\/[^/]+$/, "titles.whatsappDraft"],
+  [/^\/m\/profile$/, "titles.profile"],
+  [/^\/m\/profile\/edit$/, "forms.flows.profile-edit.title"],
+  [/^\/m\/profile\/password$/, "forms.flows.password-change.title"],
+  [/^\/m\/search$/, "titles.search"],
+  [/^\/m\/review$/, "titles.review"],
+  [/^\/m\/templates$/, "titles.templates"],
+];
+
 function getTitleKey(pathname) {
   const path = normalizePathname(pathname);
   const screen = MOBILE_SCREENS.find((item) => item.mobile === path);
@@ -42,6 +61,9 @@ function getTitleKey(pathname) {
     if (/^[^/]+$/.test(rest)) return "titles.category";
     if (/^[^/]+\/edit$/.test(rest)) return "titles.categoryEdit";
   }
+
+  const extra = EXTRA_TITLES.find(([pattern]) => pattern.test(path));
+  if (extra) return extra[1];
 
   if (path === MOBILE_CALENDAR) return "titles.calendar";
   if (path === MOBILE_NOTIFICATIONS) return "titles.notifications";

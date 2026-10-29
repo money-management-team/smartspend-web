@@ -8,7 +8,13 @@ import MobileCategoryDetail from "./categories/MobileCategoryDetail.jsx";
 import { MobileCategoryCreate, MobileCategoryEdit } from "./categories/MobileCategoryForm.jsx";
 import { RECORD_ACTIONS } from "./forms/actionRoutes.js";
 import { MobileNewEntry, MobileRecordAction } from "./forms/MobileWorkflow.jsx";
+import MobileAssistant, { MobileConversation } from "./assist/MobileAssistant.jsx";
+import MobileCaptures, { MobileCaptureDetail } from "./assist/MobileCaptures.jsx";
+import MobileReceiptNew from "./assist/MobileReceiptNew.jsx";
+import MobileVoiceNew from "./assist/MobileVoiceNew.jsx";
 import MobileHome from "./home/MobileHome.jsx";
+import MobileProfile, { MobileProfileForm } from "./settings/MobileProfile.jsx";
+import MobileWhatsApp, { MobileWhatsAppDraft, MobileWhatsAppDrafts } from "./whatsapp/MobileWhatsApp.jsx";
 import IdentityBoundary from "./identity/IdentityBoundary.jsx";
 import { MOBILE_ENTER, MOBILE_PREFIX } from "./navigation.js";
 import MobileEnter from "./screens/MobileEnter.jsx";
@@ -95,6 +101,19 @@ export const mobileRoutes = [
       { path: "imports/:importId", element: <MobileImportDetail /> },
       { path: "add/:workflow", element: <MobileNewEntry /> },
       ...RECORD_ACTIONS.map((action) => ({ path: action.path, element: <MobileRecordAction workflowId={action.workflow} /> })),
+      { path: "assistant", element: <MobileAssistant /> },
+      { path: "assistant/conversations/:conversationId", element: <MobileConversation /> },
+      { path: "captures", element: <MobileCaptures /> },
+      { path: "captures/receipts/new", element: <MobileReceiptNew /> },
+      { path: "captures/receipts/:captureId", element: <MobileCaptureDetail source="receipt" /> },
+      { path: "captures/voice/new", element: <MobileVoiceNew /> },
+      { path: "captures/voice/:captureId", element: <MobileCaptureDetail source="voice" /> },
+      { path: "whatsapp", element: <MobileWhatsApp /> },
+      { path: "whatsapp/drafts", element: <MobileWhatsAppDrafts /> },
+      { path: "whatsapp/drafts/:draftId", element: <MobileWhatsAppDraft /> },
+      { path: "profile", element: <MobileProfile /> },
+      { path: "profile/edit", element: <MobileProfileForm workflowId="profile-edit" /> },
+      { path: "profile/password", element: <MobileProfileForm workflowId="password-change" /> },
       { path: "more", element: <MobileMore /> },
       { path: "*", element: <MobileNotAvailable /> },
     ],

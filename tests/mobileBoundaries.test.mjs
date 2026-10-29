@@ -36,6 +36,8 @@ const ALLOWED_OUTSIDE = [
   /^src\/routes\/postAuthRedirect\.js$/,
   /^src\/routes\/RouteGuards\.jsx$/,
   /^src\/contexts\/(auth|language|theme)\/use[A-Za-z]+\.js$/,
+  // The email status context, read (never provided) by Profile: the provider stays the single owner of GET /auth/email/status.
+  /^src\/contexts\/emailVerification\/emailVerificationContext\.js$/,
   /^src\/i18n\.js$/,
   /^src\/assets\/smart-spend-logo\.png$/,
   /^src\/features\/Dashboards\/User\/api\/[A-Za-z]+\.js$/,
