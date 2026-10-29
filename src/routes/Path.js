@@ -1,4 +1,5 @@
 export const PATH = {
+  ADMIN: "/admin",
   HOME: "/",
   AUTH: {
     ACCOUNT_TYPE: "/account-type",
