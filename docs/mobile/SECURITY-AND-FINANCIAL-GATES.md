@@ -122,6 +122,8 @@ Setup:
 
 To guard against an empty log hiding problems: the fetch log held 6, 4 and 9 B-token requests in three sample jobs, and none of them happened while A was shown.
 
+**Re-run on the final build of the unblocked-feature pass** (`xtab-fin`, the same 18 jobs, Desktop and Mobile): every result is unchanged. There were 0 requests with B's token while A was on screen (the log held 3–9 B-token requests per switch job). Sign-out goes to `/signin`. A workspace switch and the theme key keep A. 0 errors, 0 writes.
+
 ### Not covered
 
 - **`sessionStorage`-only sessions in other tabs:** browsers send no cross-tab events for them, and they cannot change this tab's token.

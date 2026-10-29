@@ -1,74 +1,94 @@
-﻿# Mobile — implementation report (after the safe completion pass)
+﻿# Mobile — implementation report (after the unblocked-feature pass)
 
 **Verdict: IMPLEMENTATION PARTIAL — UNBLOCKED WORK STILL REMAINS.**
 
-- **Verification:** this pass completed the shared-auth gate, the Desktop and Mobile browser regression, the PWA, and the backend evidence checklist.
-- **Not done:** the gated forms and several read-only feature groups were not built (FEATURE-COVERAGE-MATRIX.md lists them).
-- **Backend:** none was available, so every write stays closed.
+This pass built the large unblocked groups:
+- forms and reviews for every documented change, all ending at a disabled send;
+- the assistant, receipt and voice capture, WhatsApp, and profile and settings;
+- search, the monthly review, quick entries, saved filters, Home periods and layout, hide amounts;
+- the import preview and the export form;
+- the PWA rollback from a flag-off build.
 
-Branch: local `integration/mobile`.
+A short list of unblocked items is still open (FEATURE-COVERAGE-MATRIX.md, "Still open"). No backend was available, so **no write is enabled**, and nothing is backend-verified.
 
-| Sprint | Range | Commits |
+Branch: local `integration/mobile`. Nothing was pushed, merged or deployed.
+
+| Pass | Range | Commits |
 |---|---|---|
-| Earlier sprint | `eff8fff` → `2f00120` | `b21b760`, `9fe88c7`, `abe0ed9`, `2f00120` |
-| This pass | `2f00120` → final | `355ee62`, `a45799b`, and the documentation commit |
-
-No push, merge or deployment was made.
+| Earlier sprints | `eff8fff` → `443d7d9` | `b21b760`, `9fe88c7`, `abe0ed9`, `2f00120`, `355ee62`, `a45799b`, `443d7d9` |
+| This pass | `443d7d9` → final | `a577b8d` forms; `3ac2833` assistant, captures, WhatsApp, profile; `12c0e41` Home, tools, import preview; `7205aad` PWA retire worker, test-loader fix; `b1875a9` layout fixes and docs; the final layout and documentation commit |
 
 ## Completion levels
 
 | Level | State |
 |---|---|
-| Implemented in source | Read-only screens through P27/P33/P36, the write gate, the cross-tab auth fix, the PWA |
-| Tested with fictional mocks | Yes: 1,508 / 1,508 tests; 114 Mobile and 36 × 4 Desktop browser jobs; the PWA lifecycle; the two-tab run |
+| Implemented in source | Read-only screens; 30 write-disabled forms with reviews; local-only voice, receipt and import preview; device preferences; search; monthly review; PWA with rollback |
+| Tested with fictional mocks | Yes: 1,569 / 1,569 tests (from either drive-letter spelling); browser matrix on the final build |
 | Verified against an actual backend | **No** |
-| Financially safe for real users | **No:** no write is enabled |
-| PWA locally tested | Yes, in headless Chrome on a local origin |
+| Financially safe for real users | **No** write is enabled, so nothing financial can happen from Mobile |
+| PWA locally tested | Yes, in headless Chrome, including rollback from a flag-off build |
 | Verified on physical devices | **No** |
 | Release-ready | **No** |
 | Deployed | **No** |
 
 ## Evidence from this pass
 
-**Shared auth (two-tab, real browser).** On Desktop and Mobile:
-- No request carried B's token while A was visible.
-- No A-token request was sent after B's first.
-- An in-flight A response never reappeared.
-- Sign-out goes to `/signin`.
-- The workspace-switch write-back bug was found and fixed (`355ee62`).
+**Write gate.** No file in `src/mobile/forms/` has request code; none of the 30 form operations is in the write gate. Every journey test runs against a fake backend that fails on any non-GET. The bypass attempts tested are listed in SECURITY-AND-FINANCIAL-GATES.md §1.
 
-Details in SECURITY-AND-FINANCIAL-GATES.md §4.
+**Desktop, flag off.** The final flag-off build is **byte-identical** (150 files) to the build verified in the previous pass, whose stylesheet matched the original baseline. In the browser (36 jobs):
+- URL, visible text, API calls and errors are identical to the baseline `33070de`;
+- 0 writes; Mobile code is never requested.
+- Pixel differences are the 24×28 px logo anti-aliasing patch and today's date on Financial operations. Both also appear between two byte-identical builds, so they are rendering noise, not code.
 
-**Desktop parity.** 36 jobs (18 pages × English light and Arabic dark) were run on four builds: the original baseline `33070de`, `eff8fff`, flag-off and flag-on in Desktop mode.
-- URL, visible text, API calls, JavaScript errors (0) and the absence of the Mobile chunk were identical everywhere.
-- Every pixel difference is the 377/388 px logo anti-aliasing patch. `eff8fff` shows the same patch against the baseline, without the auth change.
-- One 129-px header variation appeared in 1 of 3 runs on the same flag-off build, and in 0 of 3 on the baseline. It is run-to-run noise: the same build differs from itself.
-- One DOM difference on Reports (Arabic, dark) did not repeat in 3 further runs per build.
-- **The final flag-off build is byte-identical to the build that was compared.** Its stylesheet is byte-identical to the original baseline.
+**Desktop, flag on with Desktop chosen.** The same 36 jobs on the final flag-on build:
+- URL, visible text, API calls and errors are identical to the baseline `33070de`;
+- 0 writes; Mobile code is never requested;
+- pixel differences in 9 jobs, all the same logo patch and today's date.
 
-**Mobile.** 114 jobs: every new screen plus Home, Accounts, Activity, Planning, Categories and More, in four states each:
-- 390 px in English light and in Arabic dark;
-- 320 px at 2× text;
-- 430 px at 1.5× text in Arabic;
-- plus empty and error states, 1.25× text and landscape.
+**Two-tab identity (final flag-on build, 18 jobs, Desktop and Mobile).**
+- 0 requests with B's token while A was on screen.
+- A sign-out elsewhere goes to `/signin`.
+- A workspace switch and an unrelated key keep A.
+- A slow A request in flight never reappears.
+- 0 errors, 0 writes.
 
-Results:
-- 0 JavaScript errors, 0 page overflow and 0 clipped amounts; every request a GET; one `h1` per page.
-- Defects found and fixed: a card nested inside a card overflowing at 2× text, and the calendar month bar collapsing at 2× text. The second passed the geometric checks and was caught only by eye.
-- Left as is: a 1-px overhang on Notifications at 2× / 320 px, with no scroll; small presentation radios (24 px) inside 44-px labels, as before.
+**Mobile.** 53 screens and states, each in 5 variants (265 jobs, on the final build: 0 JavaScript errors, 0 non-GET requests, 0 page-level horizontal scroll, one `h1` per page):
+- 390 px English light and Arabic dark;
+- 320 px English at 2× text;
+- 430 px Arabic at 1.5× text;
+- 360 px English dark at 1.25× text.
 
-**The intermittent `experienceRendering` failures.** Reproduced: 5 tests fail only when the working directory uses a lowercase drive letter (`f:`). Node then loads a second React instance, and `useContext` reads null. From `F:` the suite passes 1,508 of 1,508. Diagnostics are kept in the scratchpad (`full2-diagnostic.txt`).
+Defects found and fixed in this pass:
+- **The long-standing 1–4 px overhang at 2× text on 320 px:** `.sm-root`'s implicit grid column grew to the compact bar's content.
+- **A long list of choices overflowed:** fieldsets are as wide as their widest content by default.
+- **Values didn't wrap:** an email address, for one.
+- **The forecast card grew with its table.**
+- **Action rows covered content:** sticky action rows covered the error summary at 2× text.
+- **A preview could crash the page:** an object URL the browser couldn't create (now "no preview").
+- **The import preview treated equal amounts as different:** 12.50 and 12.5 (now compared without trailing zeros).
 
-**HTTP 408.** The earlier local evidence stands, unchanged (SECURITY-AND-FINANCIAL-GATES.md §2). It is not a claim about production.
+The forecast's day-by-day table scrolls inside its card by design; its off-screen cells are the only ones the checker reports as clipped.
 
-**Visual review package:** `F:\Projects\smartspend-mobile-review\smartspend-mobile-safe-completion-review.zip` (outside the repository): 240 screenshots and `INDEX.txt`, with no source, credentials, environment files or fonts.
+**Review package:** `F:\Projects\smartspend-mobile-review\smartspend-mobile-unblocked-feature-review.zip` (outside the repository): 355 screenshots and `INDEX.txt`; fictional data only, no source, credentials, environment files or fonts.
+
+**PWA rollback.** Verified in Chrome on the final source:
+- staging PWA build → flag-off build with `SMARTSPEND_MOBILE_PWA_RETIRE=true`: worker and cache gone on the first Mobile visit;
+- control run without it: the worker stays.
+
+**Intermittent test failures.** The cause is reproduced and fixed. From a working directory spelled `f:\`, Node loaded the same React file under two URLs (`file:///f:/…` and `file:///F:/…`). The result was two copies of React and 5 of 6 `experienceRendering` tests failing. `tests/helpers/loader.mjs` now gives every resolved file URL one drive-letter spelling. The full suite passes from `f:\` and from `F:\`.
 
 ## Outstanding
 
-- **Unblocked work not done:** see FEATURE-COVERAGE-MATRIX.md, "Still open, and could be built without the backend".
+- **Unblocked, not done:** FEATURE-COVERAGE-MATRIX.md, "Still open":
+  - Smart Savings plan options and installment reviews;
+  - AI feedback and conversation-delete reviews;
+  - report trend charts;
+  - Mobile PDF;
+  - a disabled mark-as-read control;
+  - a Mobile-specific sign-in presentation.
 - **External blockers:**
-  - backend source or an isolated backend (the 15 checklist items in BACKEND-CONTRACT-GAPS.md);
-  - physical iOS and Android devices with VoiceOver and TalkBack;
-  - a staging origin to verify hosting headers and the PWA;
-  - product and legal decisions for WhatsApp;
+  - backend source or an isolated backend (the checklist in BACKEND-CONTRACT-GAPS.md);
+  - physical iOS and Android devices with VoiceOver and TalkBack, real microphones and cameras;
+  - a staging origin for hosting headers and the PWA;
+  - product-owner wording for WhatsApp consent;
   - a release approval.

@@ -1758,3 +1758,7 @@
 /* The forecast's day-by-day table scrolls inside its card; the card never grows past the screen. */
 .sm-root .sm-page > section, .sm-root .sm-page > div, .sm-root .sm-ai-forecast, .sm-root .sm-ai-timeline { min-inline-size: 0; max-inline-size: 100%; }
 .sm-root .sm-ai-timeline .sm-table-wrap { inline-size: 100%; }
+/* A form's cards and buttons never set its minimum width: long words wrap (2x text, 320 px). */
+.sm-root .sm-form-review > *, .sm-root .sm-draft-form > * { min-inline-size: 0; }
+.sm-root .sm-form-actions .sm-button { min-inline-size: 0; white-space: normal; overflow-wrap: anywhere; }
+.sm-root .sm-closed .sm-text, .sm-root .sm-closed .sm-link-row { overflow-wrap: anywhere; }
