@@ -73,3 +73,14 @@ Chrome's offline emulation does not apply to the worker's own fetches. That is w
   - immutable caching on `/assets/*`;
   - the SPA fallback must never serve `index.html` for `/m/sw.js` in a PWA build or a retire build (it may in a Mobile-on non-PWA build: the registration update then fails and the clean-up path removes the worker);
   - the retire worker must be served as JavaScript with `no-cache`, or browsers keep the old worker.
+
+## Final source closure re-run (`f8003b3`)
+
+The same Chrome lifecycle on the final builds (`g_pwa` → `g_retire` and → `g_stg`):
+- registered with scope `/m/`; every cache entry is under `/assets/`; `/dashboard/accounts` is not controlled;
+- the offline page is shown, and an update waits for the tap;
+- with the retire worker: no registrations and no caches after rollback;
+- without it (control): the worker and cache `sm-pwa-f9f135e83913` stay;
+- 0 JavaScript errors.
+
+Hosting and devices remain unverified.

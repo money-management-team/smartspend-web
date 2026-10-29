@@ -1,94 +1,68 @@
-﻿# Mobile — implementation report (after the unblocked-feature pass)
+﻿# Mobile — implementation report (after the final source closure)
 
-**Verdict: IMPLEMENTATION PARTIAL — UNBLOCKED WORK STILL REMAINS.**
+**Verdict: MAXIMUM SAFE SOURCE IMPLEMENTATION COMPLETE — RELEASE GATES REMAIN OPEN.**
 
-This pass built the large unblocked groups:
-- forms and reviews for every documented change, all ending at a disabled send;
-- the assistant, receipt and voice capture, WhatsApp, and profile and settings;
-- search, the monthly review, quick entries, saved filters, Home periods and layout, hide amounts;
-- the import preview and the export form;
-- the PWA rollback from a flag-off build.
+Every Mobile feature that can be built within the current rules now exists in source. That means without the backend, without a product decision and without crossing the Mobile import boundary.
 
-A short list of unblocked items is still open (FEATURE-COVERAGE-MATRIX.md, "Still open"). No backend was available, so **no write is enabled**, and nothing is backend-verified.
+What is left needs a decision or external evidence:
+- **On-device PDF:** needs an import-boundary exception.
+- **Multi-account funding review:** needs a decision that `POST …/funding-preview` is a read.
+- **Google sign-in inside Mobile:** needs a boundary exception.
+- **Backend:** no write can open until it is verified.
+- **Staging and devices:** hosting and physical-device validation.
 
-Branch: local `integration/mobile`. Nothing was pushed, merged or deployed.
+None of this means production-ready. Nothing was pushed, merged or deployed.
+
+Branch: local `integration/mobile`.
 
 | Pass | Range | Commits |
 |---|---|---|
-| Earlier sprints | `eff8fff` → `443d7d9` | `b21b760`, `9fe88c7`, `abe0ed9`, `2f00120`, `355ee62`, `a45799b`, `443d7d9` |
-| This pass | `443d7d9` → final | `a577b8d` forms; `3ac2833` assistant, captures, WhatsApp, profile; `12c0e41` Home, tools, import preview; `7205aad` PWA retire worker, test-loader fix; `b1875a9` layout fixes and docs; the final layout and documentation commit |
+| Earlier passes | `eff8fff` → `17d78ee` | see git log |
+| Final source closure | `17d78ee` → final | `7fb5c31` (Smart Savings, AI feedback and delete, trends, PDF downloads, mark as read), `9586419` (Mobile sign-in and registration), `f8003b3` (browser-pass fixes and docs), and the final documentation commit |
 
-## Completion levels
+## The six feature groups
 
-| Level | State |
+| Group | State |
 |---|---|
-| Implemented in source | Read-only screens; 30 write-disabled forms with reviews; local-only voice, receipt and import preview; device preferences; search; monthly review; PWA with rollback |
-| Tested with fictional mocks | Yes: 1,569 / 1,569 tests (from either drive-letter spelling); browser matrix on the final build |
-| Verified against an actual backend | **No** |
-| Financially safe for real users | **No** write is enabled, so nothing financial can happen from Mobile |
-| PWA locally tested | Yes, in headless Chrome, including rollback from a flag-off build |
-| Verified on physical devices | **No** |
-| Release-ready | **No** |
-| Deployed | **No** |
+| Smart Savings | **Shown:** plan details, health, open installments, and plan options per rhythm for a goal with no plan. **Reviews:** confirm (preview read first; backend's amount, accounts and blocker), postpone (the backend's stated date rules), skip ("Keep it" by default). **Sends nothing:** every last button is disabled. **Flag:** off means no code, string or request in the build. |
+| AI feedback and delete | Feedback on answers and insights: rating, optional reason, comment of at most 1,000 characters. The delete review says what is known from the source and removes nothing. |
+| Report trends | `trend_by_currency`, one chart per currency, in date order, with gaps and negatives as sent. A table has every figure. Day, week or month in the address. |
+| PDF | Backend-built PDFs download from Exports ("Download PDF", named `smartspend-{report}-{id}.pdf`). PDF is offered in the export form, which ends disabled. On-device PDF is blocked by the import boundary (FEATURE-COVERAGE-MATRIX.md, "Still open"). |
+| Mark as read | Per unread row and for all, both disabled with an explanation. The unread count is the server's and is never changed optimistically. |
+| Mobile sign-in and registration | `/m/signin` and `/m/register` on the app's AuthProvider (`login`, `register`). The fields and the Remember me default are the full version's. Shell screens send signed-out visitors there with a safe return address. Google sign-in and password reset link to the full version's pages. |
 
-## Evidence from this pass
+## Evidence (final source `f8003b3`)
 
-**Write gate.** No file in `src/mobile/forms/` has request code; none of the 30 form operations is in the write gate. Every journey test runs against a fake backend that fails on any non-GET. The bypass attempts tested are listed in SECURITY-AND-FINANCIAL-GATES.md §1.
+- **Tests:** 1,579 of 1,579 pass from `F:\` and from `f:\`; lint is clean. Smart Savings is tested with its flag off and on.
+- **Builds:**
+  - Flag-off is byte-identical to the build verified in earlier passes (150 files).
+  - Smart Savings text exists only in its lazy chunk.
+  - A production build with the retire option emits no worker.
+- **Mobile browser:**
+  - 171 jobs on the six groups: 19 screens and states × 9 sampled variants, covering 320, 360, 390 and 430 px, English and Arabic, light and dark, 1.25×, 1.5× and 2× text, and landscape.
+  - 265 jobs re-run on the earlier screens.
+  - Results: 0 JavaScript errors, 0 non-GET requests, 0 page-level horizontal scroll, one `h1` per page.
+  - The only elements wider than the screen are cells of the forecast and trend tables, which scroll inside their cards by design.
+- **Desktop:**
+  - Flag off and flag on with Desktop chosen, 36 jobs each against the original baseline `33070de`.
+  - URL, text, API calls and errors are identical; no writes; Mobile code is never loaded.
+  - Pixel differences are the logo anti-aliasing patch and today's date only. Both also appear between byte-identical builds, so they are rendering noise.
+- **Two tabs:** 18 jobs, 0 requests with B's token while A was shown, 0 errors and 0 writes. A sign-out elsewhere goes to `/signin` on Desktop and `/m/signin` on Mobile.
+- **PWA:**
+  - Scope `/m/`; the cache holds only `/assets/*`; Desktop pages are not controlled.
+  - The offline page and update-on-tap work.
+  - With the retire worker, the worker and caches are gone after rollback. The control run without it keeps them.
+- **Defects found and fixed in this pass:**
+  - A centred standalone page lost its top when taller than the screen.
+  - The password field was squeezed at 2× text on 320 px.
+  - Choice labels broke mid-word.
+  - An opened trend table widened the page.
+  - Trend series showed raw field names.
+- **Review package:** `F:\Projects\smartspend-mobile-review\smartspend-mobile-final-source-closure-review.zip`: 526 screenshots and `INDEX.txt`, fictional data only.
 
-**Desktop, flag off.** The final flag-off build is **byte-identical** (150 files) to the build verified in the previous pass, whose stylesheet matched the original baseline. In the browser (36 jobs):
-- URL, visible text, API calls and errors are identical to the baseline `33070de`;
-- 0 writes; Mobile code is never requested.
-- Pixel differences are the 24×28 px logo anti-aliasing patch and today's date on Financial operations. Both also appear between two byte-identical builds, so they are rendering noise, not code.
+## Not verified
 
-**Desktop, flag on with Desktop chosen.** The same 36 jobs on the final flag-on build:
-- URL, visible text, API calls and errors are identical to the baseline `33070de`;
-- 0 writes; Mobile code is never requested;
-- pixel differences in 9 jobs, all the same logo patch and today's date.
-
-**Two-tab identity (final flag-on build, 18 jobs, Desktop and Mobile).**
-- 0 requests with B's token while A was on screen.
-- A sign-out elsewhere goes to `/signin`.
-- A workspace switch and an unrelated key keep A.
-- A slow A request in flight never reappears.
-- 0 errors, 0 writes.
-
-**Mobile.** 53 screens and states, each in 5 variants (265 jobs, on the final build: 0 JavaScript errors, 0 non-GET requests, 0 page-level horizontal scroll, one `h1` per page):
-- 390 px English light and Arabic dark;
-- 320 px English at 2× text;
-- 430 px Arabic at 1.5× text;
-- 360 px English dark at 1.25× text.
-
-Defects found and fixed in this pass:
-- **The long-standing 1–4 px overhang at 2× text on 320 px:** `.sm-root`'s implicit grid column grew to the compact bar's content.
-- **A long list of choices overflowed:** fieldsets are as wide as their widest content by default.
-- **Values didn't wrap:** an email address, for one.
-- **The forecast card grew with its table.**
-- **Action rows covered content:** sticky action rows covered the error summary at 2× text.
-- **A preview could crash the page:** an object URL the browser couldn't create (now "no preview").
-- **The import preview treated equal amounts as different:** 12.50 and 12.5 (now compared without trailing zeros).
-
-The forecast's day-by-day table scrolls inside its card by design; its off-screen cells are the only ones the checker reports as clipped.
-
-**Review package:** `F:\Projects\smartspend-mobile-review\smartspend-mobile-unblocked-feature-review.zip` (outside the repository): 355 screenshots and `INDEX.txt`; fictional data only, no source, credentials, environment files or fonts.
-
-**PWA rollback.** Verified in Chrome on the final source:
-- staging PWA build → flag-off build with `SMARTSPEND_MOBILE_PWA_RETIRE=true`: worker and cache gone on the first Mobile visit;
-- control run without it: the worker stays.
-
-**Intermittent test failures.** The cause is reproduced and fixed. From a working directory spelled `f:\`, Node loaded the same React file under two URLs (`file:///f:/…` and `file:///F:/…`). The result was two copies of React and 5 of 6 `experienceRendering` tests failing. `tests/helpers/loader.mjs` now gives every resolved file URL one drive-letter spelling. The full suite passes from `f:\` and from `F:\`.
-
-## Outstanding
-
-- **Unblocked, not done:** FEATURE-COVERAGE-MATRIX.md, "Still open":
-  - Smart Savings plan options and installment reviews;
-  - AI feedback and conversation-delete reviews;
-  - report trend charts;
-  - Mobile PDF;
-  - a disabled mark-as-read control;
-  - a Mobile-specific sign-in presentation.
-- **External blockers:**
-  - backend source or an isolated backend (the checklist in BACKEND-CONTRACT-GAPS.md);
-  - physical iOS and Android devices with VoiceOver and TalkBack, real microphones and cameras;
-  - a staging origin for hosting headers and the PWA;
-  - product-owner wording for WhatsApp consent;
-  - a release approval.
+- **Backend:** no backend; no write is enabled.
+- **Devices:** no physical device, screen reader, real microphone or camera.
+- **Staging:** no staging host.
+- **Coverage:** the browser matrix is sampled, not every combination.
