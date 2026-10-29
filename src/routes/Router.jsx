@@ -6,6 +6,7 @@ import { routes, guestRoutes, emailLinkRoutes, userRoutes } from "./Routes";
 function Router() {
   const router = useRoutes([
     { path: PATH.ADMIN, element: <AdminRoutePage /> },
+    { path: PATH.ADMIN_PERSONAL, element: <AdminRoutePage page="personal" /> },
     ...routes,
     ...guestRoutes,
     ...emailLinkRoutes,

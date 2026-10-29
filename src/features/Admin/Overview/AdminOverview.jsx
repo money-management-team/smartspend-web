@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { PATH } from "../../../routes/Path";
 import { FiRefreshCw, FiDownload, FiCreditCard, FiLifeBuoy, FiShield, FiUsers, FiBriefcase, FiDollarSign, FiAlertCircle, FiArrowUp, FiArrowUpRight } from "react-icons/fi";
 import AdminShell from "../components/AdminShell";
 import AdminDialog from "../components/AdminDialog";
@@ -26,6 +28,7 @@ const services = [
 ];
 
 export default function AdminOverview() {
+  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [detail, setDetail] = useState(null);
   const [message, setMessage] = useState(null);
@@ -63,7 +66,7 @@ export default function AdminOverview() {
       {metrics.map(({ label, value, note, icon: Icon, color }, index) => <article className="admin-panel admin-metric" key={label}><span className={`admin-icon-tile admin-icon-tile--${color}`}><Icon /></span><div><h2>{t(`admin.${label}`)}</h2><strong className="admin-metric__value"><bdi>{value}</bdi></strong><p>{index < 3 && <FiArrowUp />}<bdi>{t(`admin.${note}`)}</bdi></p></div></article>)}
     </section>
     <section className="admin-products" aria-label={t("admin.products")}>
-      {[{ key: "personal", icon: FiUsers, color: "blue", stats: [["12.8K", "active30"], ["98.9%", "recording"], ["94.2%", "reports"]] }, { key: "business", icon: FiBriefcase, color: "purple", stats: [["294", "active"], ["87%", "readiness"], ["23", "control"]] }].map(({ key, icon: Icon, color, stats }) => <button className="admin-panel admin-product" key={key} onClick={() => openDetail(key, "comingSoon")}>
+      {[{ key: "personal", icon: FiUsers, color: "blue", stats: [["12.8K", "active30"], ["98.9%", "recording"], ["94.2%", "reports"]] }, { key: "business", icon: FiBriefcase, color: "purple", stats: [["294", "active"], ["87%", "readiness"], ["23", "control"]] }].map(({ key, icon: Icon, color, stats }) => <button className="admin-panel admin-product" key={key} onClick={() => key === "personal" ? navigate(PATH.ADMIN_PERSONAL) : openDetail(key, "comingSoon")}>
         <span className={`admin-icon-tile admin-icon-tile--${color}`}><Icon /></span>
         <div className="admin-product__body"><div className={`admin-eyebrow admin-text--${color}`}>{t(`admin.${key}`)}</div><h2>{t(`admin.${key}Title`)}</h2><p>{t(`admin.${key}Hint`)}</p><div className="admin-product__stats">{stats.map(([value, label]) => <div key={label}><strong><bdi>{value}</bdi></strong><span>{t(`admin.${label}`)}</span></div>)}</div></div><FiArrowUpRight className="admin-product__arrow" />
       </button>)}

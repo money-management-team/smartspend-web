@@ -14,3 +14,13 @@ test('administrator overview provides complete bilingual text', () => {
 test('administrator Arabic content is translated rather than English fallback', () => {
   assert.match(locales[1].admin?.title || '', /[\u0600-\u06ff]/);
 });
+
+test('personal administration has bilingual screen and privacy labels', () => {
+  for (const locale of locales) {
+    assert.ok(locale.admin.personalPage, 'personal administration translations must exist');
+    for (const key of ['title', 'subtitle', 'healthTitle', 'followTitle', 'recentTitle', 'privacyHint']) {
+      assert.equal(typeof locale.admin.personalPage[key], 'string');
+      assert.ok(locale.admin.personalPage[key].length > 0);
+    }
+  }
+});

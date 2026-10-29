@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useMatch, useNavigate } from "react-router-dom";
+import { PATH } from "../../../routes/Path";
 import { FiGrid, FiUsers, FiBriefcase, FiCreditCard, FiLifeBuoy, FiZap, FiShield, FiSettings, FiHelpCircle, FiSidebar, FiGlobe, FiMoon, FiSun, FiBell, FiSearch, FiMenu, FiX } from "react-icons/fi";
 import { useThemeContext } from "../../../contexts/theme/useThemeContext";
 import { useLanguageContext } from "../../../contexts/language/useLanguageContext";
@@ -14,6 +16,14 @@ const sections = [
 
 export default function AdminShell({ children, openDetail }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const personalMatch = useMatch({ path: PATH.ADMIN_PERSONAL, end: true });
+  const activeSection = personalMatch ? "personal" : "overview";
+  useEffect(() => {
+    const previousTitle = document.title;
+    document.title = `${t(activeSection === "personal" ? "admin.personalPage.title" : "admin.title")} | SmartSpend`;
+    return () => { document.title = previousTitle; };
+  }, [activeSection, t]);
   const { isDark, toggleTheme } = useThemeContext();
   const { language, changeLanguage } = useLanguageContext();
   const [collapsed, setCollapsed] = useState(false);
@@ -68,8 +78,10 @@ export default function AdminShell({ children, openDetail }) {
     setMobileOpen(false);
     setSearch("");
     setSearchFocused(false);
-    if (key === "overview") document.getElementById("admin-main").focus();
-    else openDetail(key, "comingSoon");
+    if (key === "overview" || key === "personal") {
+      if (key === activeSection) document.getElementById("admin-main").focus();
+      else navigate(key === "personal" ? PATH.ADMIN_PERSONAL : PATH.ADMIN);
+    } else openDetail(key, "comingSoon");
   }
 
   return (
@@ -87,8 +99,8 @@ export default function AdminShell({ children, openDetail }) {
           {sections.map(section => <div className="admin-nav__group" key={section.label}>
             <h2 className="admin-sidebar-label">{t(`admin.${section.label}`)}</h2>
             {section.items.map(({ key, icon: Icon, badge }) => <button key={key} title={t(`admin.${key}`)}
-              className={`admin-nav__item${key === "overview" ? " admin-nav__item--active" : ""}`}
-              aria-current={key === "overview" ? "page" : undefined} onClick={() => selectSection(key)}>
+              className={`admin-nav__item${key === activeSection ? " admin-nav__item--active" : ""}`}
+              aria-current={key === activeSection ? "page" : undefined} onClick={() => selectSection(key)}>
               <Icon /><span className="admin-sidebar-label">{t(`admin.${key}`)}</span>
               {badge && <span className="admin-nav__badge admin-sidebar-label">{badge}</span>}
             </button>)}

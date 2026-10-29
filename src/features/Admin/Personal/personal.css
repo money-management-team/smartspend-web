@@ -1,0 +1,106 @@
+.admin-personal-heading { margin-block: 16px 20px; align-items: center; }
+.admin-personal-heading > div { flex: 1; }
+.admin-personal-heading h1 { font-size: 29px; margin-bottom: 14px; line-height: 1.05; }
+.admin-personal-heading .admin-eyebrow { font-size: 11px; letter-spacing: 0; }
+.admin-personal-heading p { line-height: 1.5; }
+.admin-personal-heading > .admin-button { min-height: 40px; padding-inline: 15px; flex-shrink: 0; }
+.admin-personal-tabs { display: flex; gap: 8px; padding: 6px; border-radius: 17px; margin-bottom: 18px; }
+.admin-personal-tabs button { border: 0; border-radius: 12px; background: transparent; color: var(--admin-muted); display: flex; align-items: center; gap: 10px; padding: 12px 16px; min-height: 42px; font-weight: 700; }
+.admin-personal-tabs button svg { width: 19px; height: 19px; }
+.admin-personal-tabs button[aria-selected="true"] { color: var(--admin-accent); background: var(--admin-blue-soft); }
+.admin-personal-tabs button:hover { background: var(--admin-soft); }
+.admin-personal-metrics { margin-block: 0 16px; }
+.admin-personal-metrics .admin-metric { min-height: 116px; padding: 18px 17px; }
+.admin-personal-metrics .admin-metric__value { line-height: 1.1; }
+.admin-personal-metrics .admin-metric p { margin-top: 16px; }
+.admin-personal-panels { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin-bottom: 18px; }
+.admin-personal-page .admin-panel__header { min-height: 69px; padding-block: 8px 12px; }
+.admin-personal-page .admin-panel__header h2 { font-size: 16px; line-height: 1.4; }
+.admin-personal-page .admin-panel__header p { margin-top: 8px; line-height: 1.5; }
+.admin-personal-health__grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
+.admin-personal-health__module { display: grid; grid-template-columns: 38px minmax(0,1fr) 80px; gap: 8px; padding: 18px 14px 14px; min-height: 114px; align-items: center; border-bottom: 1px solid var(--admin-border); }
+.admin-personal-health__module:nth-child(odd) { border-inline-end: 1px solid var(--admin-border); }
+.admin-personal-health__module:nth-last-child(-n+2) { border-bottom: 0; }
+.admin-personal-health__module .admin-icon-tile { width: 38px; height: 38px; border-radius: 12px; }
+.admin-personal-health__module svg { width: 18px; height: 18px; }
+.admin-personal-health__copy { align-self: start; padding-top: 3px; }
+.admin-personal-health__module h3 { font-size: 11px; font-weight: 700; line-height: 1.7; }
+.admin-personal-health__module h3 span { color: var(--admin-muted); font-size: 12px; font-weight: 600; margin-inline-start: 3px; }
+.admin-personal-health__status { display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; align-self: stretch; padding-top: 12px; gap: 16px; }
+.admin-personal-health__status strong { font-size: 12px; }
+.admin-personal-health__status .admin-pill { font-size: 11px; padding: 3px 9px; white-space: normal; max-width: 100%; text-align: center; }
+.admin-personal-follow__items { padding: 6px 9px 14px; }
+.admin-personal-follow__items button { display: flex; gap: 10px; align-items: center; background: transparent; border: 0; border-bottom: 1px solid var(--admin-border); width: 100%; min-height: 64px; padding: 13px 14px; text-align: start; }
+.admin-personal-follow__items button:last-child { border-bottom: 0; }
+.admin-personal-follow__items .admin-icon-tile { width: 36px; height: 36px; border-radius: 11px; }
+.admin-personal-follow__items svg { width: 14px; height: 14px; }
+.admin-personal-follow__items strong { font-size: 11px; display: block; }
+.admin-personal-follow__items small { font-size: 11px; color: var(--admin-muted); font-weight: 600; display: block; margin-top: 1px; }
+.admin-personal-follow .admin-privacy { padding-block: 17px; margin-block: 6px 22px; min-height: 80px; }
+.admin-personal-follow .admin-privacy p { line-height: 1.9; }
+.admin-personal-users .admin-panel__header { min-height: 69px; }
+.admin-personal-users__scroll { overflow-x: auto; }
+.admin-personal-users table { width: 100%; border-collapse: collapse; text-align: start; font-size: 11px; }
+.admin-personal-users :is(th,td) { padding: 11px 13px; text-align: start; border-bottom: 1px solid var(--admin-border); }
+.admin-personal-users thead th { background: var(--admin-soft); color: var(--admin-muted); font-size: 10px; text-transform: uppercase; padding-block: 15px 8px; }
+.admin-personal-users tbody tr:last-child :is(th,td) { border-bottom: 0; }
+.admin-personal-users tbody th { width: 31%; font-weight: 400; }
+.admin-personal-users td { width: 18%; }
+.admin-personal-users td:last-child { width: 16%; }
+.admin-personal-user { display: flex; align-items: center; gap: 9px; }
+.admin-personal-user > div { min-width: 0; }
+.admin-personal-user .admin-avatar { width: 32px; height: 35px; border-radius: 10px; flex-shrink: 0; font-size: 10px; }
+.admin-personal-user strong { display: block; font-size: 11px; }
+.admin-personal-user div > span { display: block; color: var(--admin-muted); font-size: 11px; margin-top: 3px; }
+.admin-personal-plan { background: var(--admin-blue-soft); color: var(--admin-accent); border-color: color-mix(in srgb,var(--admin-accent) 25%,transparent); padding: 5px 10px; }
+.admin-personal-plan--free { background: var(--admin-soft); color: var(--admin-muted); border-color: var(--admin-border); }
+.admin-personal-verification { display: inline-flex; align-items: center; gap: 4px; color: var(--admin-green); font-weight: 600; }
+.admin-personal-verification svg { width: 11px; height: 11px; }
+.admin-personal-verification--pending { color: var(--admin-orange); }
+.admin-personal-suspended { color: var(--admin-red); background: var(--admin-red-soft); border-color: color-mix(in srgb,var(--admin-red) 20%,transparent); }
+.admin-personal-last-signin { color: var(--admin-muted); }
+.admin-personal-users__tools { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 16px; border-bottom: 1px solid var(--admin-border); color: var(--admin-muted); }
+.admin-personal-users__search { display: flex; align-items: center; gap: 8px; width: min(420px,75%); }
+.admin-personal-users__search input { border: 1px solid var(--admin-border); background: var(--admin-soft); border-radius: 9px; padding: 10px; color: var(--admin-text); min-width: 0; width: 100%; font-size: 12px; }
+.admin-personal-users__search input::placeholder { color: var(--admin-muted); opacity: 1; }
+.admin-personal-users__empty { padding: 30px !important; text-align: center !important; color: var(--admin-muted); }
+.admin-personal-reports { display: grid; gap: 18px; }
+.admin-personal-reports > button { justify-self: start; }
+.admin-personal-health__grid--single { grid-template-columns: 1fr; }
+.admin-personal-health__grid--single .admin-personal-health__module { border: 0; grid-template-columns: 38px minmax(0,1fr) 100px; }
+.admin-personal-health__privacy { display: flex; gap: 10px; color: var(--admin-muted); border-top: 1px solid var(--admin-border); padding: 20px; line-height: 1.8; }
+@media(min-width: 1600px) {
+  .admin-personal-health__module { min-height: 144px; }
+}
+@media(max-width: 1250px) {
+  .admin-personal-panels { grid-template-columns: 1fr; }
+  .admin-personal-health__module { min-height: 125px; }
+  .admin-personal-follow .admin-privacy { margin-bottom: 16px; }
+}
+@media(max-width: 760px) {
+  .admin-personal-heading { align-items: flex-start; gap: 15px; }
+  .admin-personal-heading > div { flex-basis: 100%; }
+  .admin-personal-heading h1 { margin-bottom: 12px; font-size: 26px; }
+  .admin-personal-tabs { gap: 2px; padding: 5px; }
+  .admin-personal-tabs button { padding: 10px 8px; gap: 5px; font-size: 10px; flex: 1; justify-content: center; }
+  .admin-personal-tabs button svg { width: 15px; height: 15px; }
+  .admin-personal-metrics .admin-metric { min-height: 150px; padding: 14px; }
+  .admin-personal-metrics .admin-metric p { margin-top: 12px; }
+  .admin-personal-health__module { grid-template-columns: 32px minmax(0,1fr); gap: 10px; padding: 16px 12px; min-height: 155px; }
+  .admin-personal-health__module .admin-icon-tile { width: 32px; height: 32px; }
+  .admin-personal-health__module h3 { font-size: 11px; }
+  .admin-personal-health__module h3 span { font-size: 11px; }
+  .admin-personal-health__status { flex-direction: row; grid-column: 1 / -1; align-items: center; padding-top: 0; gap: 8px; }
+  .admin-personal-health__status .admin-pill { font-size: 10px; padding-inline: 6px; }
+  .admin-personal-follow__items button { padding-inline: 8px; }
+  .admin-personal-users table { min-width: 710px; }
+  .admin-personal-users__tools { flex-wrap: wrap; gap: 10px; }
+  .admin-personal-users__search { width: 100%; }
+  .admin-personal-health__grid--single .admin-personal-health__module { grid-template-columns: 32px minmax(0,1fr); }
+}
+@media(max-width: 380px) {
+  .admin-personal-tabs button { flex-direction: column; font-size: 10px; }
+  .admin-personal-health__grid { grid-template-columns: 1fr; }
+  .admin-personal-health__module { min-height: 110px; border-inline-end: 0 !important; border-bottom: 1px solid var(--admin-border); }
+  .admin-personal-health__module:nth-last-child(2) { border-bottom: 1px solid var(--admin-border); }
+}
