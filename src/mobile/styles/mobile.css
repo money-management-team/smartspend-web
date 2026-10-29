@@ -1749,7 +1749,7 @@
 .sm-root .sm-nav-compact .sm-nav-label, .sm-root .sm-nav-compact .sm-add-label { overflow-wrap: anywhere; }
 /* A fieldset is as wide as its widest choice by default; a long list of options must wrap instead. */
 .sm-root .sm-fieldset { min-inline-size: 0; }
-.sm-root .sm-choice { min-inline-size: 0; overflow-wrap: anywhere; }
+.sm-root .sm-choice { min-inline-size: 0; overflow-wrap: break-word; }
 .sm-root .sm-choice > span { min-inline-size: 0; }
 /* Values in a list (an email address, a long name, a large amount) wrap under their label rather than past the edge. */
 .sm-root .sm-stats-stacked .sm-stat { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0 0.5rem; }
@@ -1795,3 +1795,11 @@
 .sm-root .sm-password .sm-button-small { flex: none; min-inline-size: 44px; min-block-size: 44px; }
 .sm-root .sm-link-button { background: none; border: 0; padding: 0.5rem 0; min-block-size: 44px; color: var(--sm-blue); font: inherit; text-decoration: underline; cursor: pointer; justify-self: start; }
 :root[data-theme="dark"] .sm-root .sm-link-button { color: var(--sm-cyan); }
+
+/* Sign-in at enlarged text: top-aligned (a centred column taller than the screen lost its top), slimmer frame, password row wraps. */
+.sm-root.sm-auth { align-items: flex-start; padding-inline: calc(0.5rem + var(--sm-safe-start)) calc(0.5rem + var(--sm-safe-end)); }
+.sm-root.sm-auth .sm-auth-body { padding: 1rem; }
+.sm-root .sm-password { flex-wrap: wrap; }
+.sm-root .sm-password .sm-input { flex: 1 1 8rem; }
+/* The trend's table scrolls inside its card when opened; the card and page never widen. */
+.sm-root .sm-trend > *, .sm-root .sm-trend-table, .sm-root .sm-trend-table .sm-table-wrap { min-inline-size: 0; max-inline-size: 100%; }

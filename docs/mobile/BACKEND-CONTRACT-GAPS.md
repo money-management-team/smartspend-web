@@ -49,10 +49,14 @@ Added in the unblocked-feature pass, through `data/readAssistApi.js` (GET only; 
 
 Each has tests against a fake backend shaped like the docs and the full version's parsers. None was run against a real server.
 
+Added in the closure pass: `/savings-goals/{id}/plan-options` (with `frequency`, `interval`), `/savings-goals/{id}/planned-contributions/{iid}/confirmation-preview`, `/notifications/unread-count`, and `group_by` on `/reports/{type}`.
+
 Open questions added by these reads:
 11. The exact shapes of `data.forecast.currencies[]`, `data.insights` items and message `sources` (Mobile reads the fields the full version's panels read, and shows nothing it cannot validate).
 12. Whether a receipt capture's detail ever carries a signed source URL (none is documented; Mobile shows no original photo).
 13. The voice capture's `transcript` field name on the detail read (Mobile shows it only when present).
+14. The shape of `trend_by_currency` points (not fixed by the contract; Mobile reads the shapes the full version reads and shows a gap where a figure is missing).
+15. Whether `savings_plan.installments` is always part of `GET …/plan` (Mobile falls back to `next_installment` alone).
 
 ## External evidence checklist (each item needs backend source plus a staging run with fictional data)
 

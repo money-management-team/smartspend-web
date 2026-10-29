@@ -49,7 +49,10 @@ export default function TrendChart({ trend }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const ids = useId();
   const hidden = useMoneyHidden();
-  const label = (name) => t(`reports.field.${name.split(".").pop()}`, { defaultValue: human(name) });
+  const label = (name) => {
+    const key = name.split(".").pop();
+    return t(`reports.trendSeries.${key}`, { defaultValue: t(`reports.field.${key}`, { defaultValue: human(name) }) });
+  };
 
   return (
     <figure className="sm-trend" role="group" aria-labelledby={`${ids}-title`} data-sm-trend={trend.currency} data-sm-points={trend.points.length}>

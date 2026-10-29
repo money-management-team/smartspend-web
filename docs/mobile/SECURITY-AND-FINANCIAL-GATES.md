@@ -24,6 +24,19 @@ Mobile now has a form for every change the full version makes that has a documen
 
 Mobile has no code at all for any write but the two closed category writes. The PWA (PWA-AND-DEVICE-QA.md) queues nothing and caches no API answer.
 
+### Closure pass: more reviews, still nothing sent
+
+Added, all ending at a disabled button with no handler, next to a note that nothing was sent:
+- Smart Savings: confirm, postpone and skip reviews of an open installment (the confirm review shows the backend's preview: amount, accounts that can pay, blocker, versions), and plan options with "Start this plan" disabled. Reviewing changes nothing about the installment.
+- AI: feedback on answers and insights; the delete-conversation review (the conversation is not removed).
+- Notifications: Mark as read and Mark all as read; the unread count is the server's and never changes optimistically.
+
+New GETs: `GET …/plan-options` and `GET …/confirmation-preview` in the flag-only plan facade, and `GET /notifications/unread-count`. The guard tests pin every wrapper method each facade calls.
+
+### Sign-in on Mobile
+
+`/m/signin` and `/m/register` call the app's own AuthProvider (`login`, `register`). Mobile builds no request and stores no token: the provider makes the same calls, stores the session in the same keys and keeps the cross-tab protection of §4. This is the existing shared sign-in, not a financial write, and nothing in the write gate changes. One request per tap; nothing is retried. The return address is checked with the app's `getSafeRedirectPath` and must be a Mobile page other than sign-in or registration (no loop).
+
 ### Device storage
 
 Mobile writes to browser storage in two places (`tests/mobileReadOnly.test.mjs`):
