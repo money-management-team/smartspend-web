@@ -18,10 +18,11 @@ export default function AdminShell({ children, openDetail }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const personalMatch = useMatch({ path: PATH.ADMIN_PERSONAL, end: true });
-  const activeSection = personalMatch ? "personal" : "overview";
+  const businessMatch = useMatch({ path: PATH.ADMIN_BUSINESS, end: true });
+  const activeSection = personalMatch ? "personal" : businessMatch ? "business" : "overview";
   useEffect(() => {
     const previousTitle = document.title;
-    document.title = `${t(activeSection === "personal" ? "admin.personalPage.title" : "admin.title")} | SmartSpend`;
+    document.title = `${t(activeSection === "personal" ? "admin.personalPage.title" : activeSection === "business" ? "admin.businessPage.title" : "admin.title")} | SmartSpend`;
     return () => { document.title = previousTitle; };
   }, [activeSection, t]);
   const { isDark, toggleTheme } = useThemeContext();
@@ -78,9 +79,9 @@ export default function AdminShell({ children, openDetail }) {
     setMobileOpen(false);
     setSearch("");
     setSearchFocused(false);
-    if (key === "overview" || key === "personal") {
+    if (["overview", "personal", "business"].includes(key)) {
       if (key === activeSection) document.getElementById("admin-main").focus();
-      else navigate(key === "personal" ? PATH.ADMIN_PERSONAL : PATH.ADMIN);
+      else navigate(key === "personal" ? PATH.ADMIN_PERSONAL : key === "business" ? PATH.ADMIN_BUSINESS : PATH.ADMIN);
     } else openDetail(key, "comingSoon");
   }
 

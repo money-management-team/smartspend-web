@@ -3664,6 +3664,9 @@
       "inactive": "غير نشط",
       "allStatuses": "كل الحالات",
       "export": "تصدير"
+    },
+    "businessPage": {
+      "title": "إدارة الأعمال"
     }
   }
 }

@@ -1,6 +1,7 @@
 export const PATH = {
   ADMIN: "/admin",
   ADMIN_PERSONAL: "/admin/personal",
+  ADMIN_BUSINESS: "/admin/business",
   HOME: "/",
   AUTH: {
     ACCOUNT_TYPE: "/account-type",

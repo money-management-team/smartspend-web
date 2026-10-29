@@ -7,6 +7,7 @@ function Router() {
   const router = useRoutes([
     { path: PATH.ADMIN, element: <AdminRoutePage /> },
     { path: PATH.ADMIN_PERSONAL, element: <AdminRoutePage page="personal" /> },
+    { path: PATH.ADMIN_BUSINESS, element: <AdminRoutePage page="business" /> },
     ...routes,
     ...guestRoutes,
     ...emailLinkRoutes,

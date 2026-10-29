@@ -3664,6 +3664,9 @@
       "inactive": "Inactive",
       "allStatuses": "All statuses",
       "export": "Export"
+    },
+    "businessPage": {
+      "title": "Business administration"
     }
   }
 }
