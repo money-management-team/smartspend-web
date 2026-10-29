@@ -107,6 +107,8 @@ export const debtsTransfers = {
       open: "Open what this is about",
     },
     calendar: {
+      eventStatus: { scheduled: "Scheduled", due: "Due", posted: "Posted", skipped: "Skipped", failed: "Failed", cancelled: "Cancelled", overdue: "Overdue", active: "Active", partially_paid: "Partially paid", paid: "Paid", paused: "Paused", achieved: "Achieved", completed: "Completed", ended: "Ended", archived: "Archived" },
+      eventStatusOther: "Status: {{status}}",
       loading: "Loading the calendar",
       monthPicker: "Month",
       previous: "Previous month",
@@ -226,6 +228,8 @@ export const debtsTransfers = {
       open: "افتح ما يتعلق به",
     },
     calendar: {
+      eventStatus: { scheduled: "مجدولة", due: "مستحقة", posted: "مرحّلة", skipped: "متخطاة", failed: "فشلت", cancelled: "ملغاة", overdue: "متأخر", active: "نشط", partially_paid: "مدفوع جزئيًا", paid: "مدفوع", paused: "متوقف مؤقتًا", achieved: "محقق", completed: "مكتمل", ended: "منتهية", archived: "مؤرشف" },
+      eventStatusOther: "الحالة: {{status}}",
       loading: "جارٍ تحميل التقويم",
       monthPicker: "الشهر",
       previous: "الشهر السابق",

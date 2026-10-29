@@ -55,7 +55,8 @@ describe("the source", () => {
 
   it("names no write method of any wrapper outside the category write facade, and that one names exactly create and update of categories", () => {
     const WRITE = "src/mobile/data/writeApi.js";
-    const others = sources.filter((file) => rel(file) !== WRITE);
+    // MoneyPrivacy.jsx calls the device preference store's `update` (hide amounts), pinned by the store test below.
+    const others = sources.filter((file) => rel(file) !== WRITE && rel(file) !== "src/mobile/money/MoneyPrivacy.jsx");
     // (`URL.createObjectURL` is the browser's own, for showing a chosen photo or a recording on this device.)
     assert.deepEqual(find(/(?<!\bURL)\.(create\w*|update|archive|correct|reverse|post|patch|put|confirm\w*|submit\w*)\s*\(/, others), []);
     // forms/ names the full version's endpoints as text ("POST /accounts/{id}/archive") and has a Mobile address
@@ -116,17 +117,25 @@ describe("the source", () => {
     assert.deepEqual(find(/indexedDB|workbox|BackgroundSync|periodicSync|\bsync\.register/i), []);
   });
 
-  it("writes to browser storage in exactly one place: the single presentation word", () => {
-    assert.deepEqual(find(/\.setItem\(|\.removeItem\(|document\.cookie|(local|session)Storage\.clear\(/), ["src/mobile/presentation/preference.js"]);
+  it("writes to browser storage in two places: the presentation word, and Mobile's own per-identity preferences", () => {
+    assert.deepEqual(find(/\.setItem\(|\.removeItem\(|document\.cookie|(local|session)Storage\.clear\(/), ["src/mobile/preferences/deviceStore.js", "src/mobile/presentation/preference.js"]);
     const writes = [...code(path.join(MOBILE, "presentation/preference.js")).matchAll(/(setItem|removeItem)\(\s*([A-Za-z_]+)/g)].map((match) => match[2]);
     assert.deepEqual([...new Set(writes)], ["PRESENTATION_KEY"]);
+    // The preference record: one setItem, under a key that names the person and the workspace, of a normalized record only.
+    const prefs = code(path.join(MOBILE, "preferences/deviceStore.js"));
+    assert.deepEqual([...prefs.matchAll(/\.(setItem|removeItem)\(([^,)]*)/g)].map((match) => `${match[1]}(${match[2].trim()}`), ["setItem(key"]);
+    assert.match(prefs, /smartspend:mobile:prefs:v1:u:\$\{userId\}:w:\$\{workspaceId\}/);
+    assert.match(prefs, /storage\.setItem\(key, JSON\.stringify\(next\)\)/);
+    assert.match(prefs, /const next = normalizePreferences\(/);
+    assert.doesNotMatch(prefs, /token|ACCESS_TOKEN|apiRequest|response/i);
   });
 
-  it("reads the full app's preference store but never updates it", () => {
+  it("changes the full app's preference store in one place, and only its hide-amounts choice", () => {
     assert.deepEqual(find(/experienceStore/), ["src/mobile/money/MoneyPrivacy.jsx"]);
     assert.match(code(path.join(MOBILE, "money/MoneyPrivacy.jsx")), /import\s*\{\s*createExperienceStore\s*\}/);
     // The category rename in the write facade is the wrapper's `update`, not the store's.
-    assert.deepEqual(find(/\bstore\.update\b|\.update\s*\(/).filter((file) => file !== "src/mobile/data/writeApi.js"), []);
+    assert.deepEqual(find(/\bstore\.update\b|\.update\s*\(/).filter((file) => file !== "src/mobile/data/writeApi.js"), ["src/mobile/money/MoneyPrivacy.jsx"]);
+    assert.deepEqual([...code(path.join(MOBILE, "money/MoneyPrivacy.jsx")).matchAll(/store\.update\(([^)]*\)?)\)/g)].map((match) => match[1]), ["{ hiddenMoney: hidden === true }"]);
     assert.doesNotMatch(code(path.join(MOBILE, "data/writeApi.js")), /experience|store\./i);
   });
 
@@ -140,7 +149,7 @@ describe("the facade", () => {
   it("exports reads only", async () => {
     const readApi = await import("../src/mobile/data/readApi.js");
 
-    assert.deepEqual(Object.keys(readApi).sort(), ["ACTIVITY_PER_PAGE", "BUDGETS_PER_PAGE", "DASHBOARD_PERIOD", "DEBTS_PER_PAGE", "EXPORTS_PER_PAGE", "GOALS_PER_PAGE", "IMPORTS_PER_PAGE", "MOVEMENTS_PER_PAGE", "NOTIFICATIONS_PER_PAGE", "PAYMENTS_PER_PAGE", "RULES_PER_PAGE", "TRANSFERS_PER_PAGE", "isAccountId", "planningWorkspaceId", "readAccount", "readAccountMovements", "readAccounts", "readAlerts", "readBudget", "readBudgets", "readCalendarMonth", "readCategories", "readCategory", "readCategoryList", "readDashboard", "readDebt", "readDebtPayments", "readDebts", "readExportFile", "readExports", "readGoal", "readGoals", "readImport", "readImports", "readNotifications", "readReport", "readRule", "readRules", "readTransaction", "readTransactions", "readTransfer", "readTransfers", "sessionWorkspace"]);
+    assert.deepEqual(Object.keys(readApi).sort(), ["ACTIVITY_PER_PAGE", "BUDGETS_PER_PAGE", "DASHBOARD_PERIOD", "DASHBOARD_PERIODS", "DEBTS_PER_PAGE", "EXPORTS_PER_PAGE", "GOALS_PER_PAGE", "IMPORTS_PER_PAGE", "MOVEMENTS_PER_PAGE", "NOTIFICATIONS_PER_PAGE", "PAYMENTS_PER_PAGE", "RULES_PER_PAGE", "TRANSFERS_PER_PAGE", "isAccountId", "planningWorkspaceId", "readAccount", "readAccountMovements", "readAccounts", "readAlerts", "readBudget", "readBudgets", "readCalendarMonth", "readCategories", "readCategory", "readCategoryList", "readDashboard", "readDebt", "readDebtPayments", "readDebts", "readExportFile", "readExports", "readGoal", "readGoals", "readImport", "readImports", "readNotifications", "readReport", "readRule", "readRules", "readTransaction", "readTransactions", "readTransfer", "readTransfers", "sessionWorkspace"]);
     const plan = await import("../src/mobile/data/readPlanApi.js");
     assert.deepEqual(Object.keys(plan), ["readGoalPlan"]);
     const assist = await import("../src/mobile/data/readAssistApi.js");

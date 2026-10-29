@@ -15,16 +15,21 @@ import ErrorPanel from "../ui/ErrorPanel.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
 import StaleNotice from "../ui/StaleNotice.jsx";
 
+// The statuses the full version has labels for (dashboard.calendar.statuses).
+const EVENT_STATUSES = ["scheduled", "due", "posted", "skipped", "failed", "cancelled", "overdue", "active", "partially_paid", "paid", "paused", "achieved", "completed", "ended", "archived"];
+
 const MALFORMED = Object.freeze({ code: "MALFORMED_RESPONSE" });
 
 function EventRow({ event }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const subject = mobileSubjectPath(event.subjectType, event.subjectId);
   const type = event.type ? t(`calendar.type.${event.type}`) : t("planning.state.unknown", { status: event.rawType ?? "?" });
+  // The full version's labels (dashboard.calendar.statuses); a status SmartSpend adds later is shown as sent, labelled, not guessed at.
+  const statusLabel = (status) => (EVENT_STATUSES.includes(status) ? t(`calendar.eventStatus.${status}`) : t("calendar.eventStatusOther", { status: status.replace(/_/g, " ") }));
   const content = (
     <span className="sm-row-main">
       <span className="sm-row-title sm-user-text">{event.title ?? type}</span>
-      <span className="sm-row-meta">{type}{event.status && <> · {event.status.replace(/_/g, " ")}</>}</span>
+      <span className="sm-row-meta">{type}{event.status && <> · <span data-sm-event-status={event.status}>{statusLabel(event.status)}</span></>}</span>
       {event.amount && (
         <span className="sm-row-meta">
           {/* An amount without a currency is shown as sent, never as a guessed currency. */}

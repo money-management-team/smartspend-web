@@ -14,6 +14,8 @@ import Skeleton from "../ui/Skeleton.jsx";
 import StaleNotice from "../ui/StaleNotice.jsx";
 import ActivityFilters from "./ActivityFilters.jsx";
 import { recallScroll, rememberScroll } from "./scrollMemory.js";
+import { MOBILE_ACTIVITY } from "../navigation.js";
+import SavedViews from "../tools/SavedViews.jsx";
 import TransactionRow from "./TransactionRow.jsx";
 import { useActivityList } from "./useActivityList.js";
 
@@ -88,7 +90,10 @@ export default function MobileActivity() {
   );
 
   const toolbar = (
+    <>
     <ActivityFilters open={sheetOpen} onOpen={() => setSheetOpen(true)} onClose={() => setSheetOpen(false)} openerRef={openerRef} filters={filters} onApply={apply} onRemove={remove} onResetAll={() => setFilters({ ...filters, type: "", status: "", account_id: "", category_id: "", date_from: "", date_to: "" })} />
+    <SavedViews scope="activity" params={Object.fromEntries(filtersToSearchParams(filters))} path={MOBILE_ACTIVITY} />
+    </>
   );
 
   if (list.loading) {

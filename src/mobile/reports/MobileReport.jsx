@@ -9,10 +9,11 @@ import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { formatDay } from "../money/format.js";
 import Money from "../money/Money.jsx";
 import { REPORT_ITEMS, REPORT_TYPES, barLengths, buildReport, readReportRange, reportQuery, validReportRange } from "../models/reports.js";
-import { MOBILE_REPORTS } from "../navigation.js";
+import { MOBILE_REPORTS, reportPath } from "../navigation.js";
 import Chevron from "../ui/Chevron.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
+import SavedViews from "../tools/SavedViews.jsx";
 import StaleNotice from "../ui/StaleNotice.jsx";
 
 const MALFORMED = Object.freeze({ code: "MALFORMED_RESPONSE" });
@@ -26,7 +27,7 @@ function Figure({ figure, currency }) {
 }
 
 /* One summary group of one currency: the table (the numbers), and bars drawn from it (decoration). */
-function SummaryGroup({ group, currency }) {
+export function SummaryGroup({ group, currency }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const money = group.filter((item) => item.figure?.kind === "money");
   const lengths = barLengths(money.map((item) => item.figure.value));
@@ -221,6 +222,7 @@ export default function MobileReport() {
       {back}
       <h2 className="sm-subhead">{t(`reports.type.${type}.title`)}</h2>
       <RangeForm key={`${from}:${to}`} range={range} onApply={apply} />
+      <SavedViews scope="report" type={type} params={range.custom ? { from, to } : {}} path={reportPath(type)} />
       {body}
       <p className="sm-text sm-muted sm-fine">{t("reports.readOnly")}</p>
       <Link className="sm-link-row" to={PATH.USER.REPORTS}>

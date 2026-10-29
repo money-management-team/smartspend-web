@@ -7,6 +7,8 @@ import { readAccount, readAccountMovements, readAccounts, readAlerts, readBudget
  */
 
 export const loadDashboard = async (signal) => (await readDashboard(signal)).data;
+// Another period than the default month; the default keeps the plain "dashboard" entry the other screens share.
+export const dashboardLoader = (period, from, to) => async (signal) => (await readDashboard(signal, { period, from, to })).data;
 export const loadAlerts = async (signal) => (await readAlerts(signal)).data;
 export const loadAccounts = async (signal) => (await readAccounts(signal)).data;
 
@@ -73,6 +75,7 @@ export const keys = {
   transaction: (id) => `transaction:${id}`,
   activity: (signature, page) => `activity:${signature}:${page}`,
   dashboard: "dashboard",
+  dashboardFor: (period, from, to) => (period === "month" ? "dashboard" : `dashboard:${period}:${from ?? ""}:${to ?? ""}`),
   alerts: "alerts",
   accounts: "accounts",
   account: (id) => `account:${id}`,

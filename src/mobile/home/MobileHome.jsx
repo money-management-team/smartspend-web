@@ -1,12 +1,17 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import { useAuthContext } from "../../contexts/auth/useAuthContext";
 import { PATH } from "../../routes/Path.js";
 import AccountRow from "../accounts/AccountRow.jsx";
 import { typeKey } from "../accounts/typeKey.js";
-import { keys, loadAlerts, loadDashboard } from "../data/loaders.js";
+import { dashboardLoader, keys, loadAlerts, loadDashboard } from "../data/loaders.js";
+import { DASHBOARD_PERIODS } from "../data/readApi.js";
+import { isCalendarDay } from "../forms/validation.js";
+import { useMoneyHidden, useMoneyHiddenToggle } from "../money/privacyContext.js";
+import { useDevicePreferences } from "../preferences/deviceStore.js";
+import { ArrangeSheet, PeriodPicker } from "./HomeControls.jsx";
 import { useResource } from "../data/useResource.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { currencyName } from "../money/decimal.js";
@@ -227,15 +232,34 @@ function AttentionCard({ alerts }) {
 }
 
 /*
- * Mobile Home: read-only, from GET /dashboard (this month) and GET
+ * Mobile Home: read-only, from GET /dashboard (this month, or the period chosen) and GET
  * /financial-alerts. Every figure is the backend's, in the currency it
  * reported it in, and nothing is added up across currencies.
  */
+function readPeriod(params) {
+  const period = DASHBOARD_PERIODS.includes(params.get("period")) ? params.get("period") : "month";
+  if (period !== "custom") return { period };
+  const from = params.get("from") ?? "";
+  const to = params.get("to") ?? "";
+  return isCalendarDay(from) && isCalendarDay(to) && from <= to ? { period, from, to } : { period: "month" };
+}
+
 export default function MobileHome() {
   const { t, i18n } = useTranslation(MOBILE_NAMESPACE);
   const { user, workspace } = useAuthContext();
-  const dashboard = useResource(keys.dashboard, loadDashboard);
+  const [params, setParams] = useSearchParams();
+  // The period in the address: a documented one, or a valid custom range; anything else is this month.
+  const chosen = readPeriod(params);
+  const loader = useMemo(() => (chosen.period === "month" ? loadDashboard : dashboardLoader(chosen.period, chosen.from, chosen.to)), [chosen.period, chosen.from, chosen.to]);
+  const dashboard = useResource(keys.dashboardFor(chosen.period, chosen.from, chosen.to), loader);
   const alerts = useResource(keys.alerts, loadAlerts);
+  const prefs = useDevicePreferences();
+  const hidden = useMoneyHidden();
+  const setHidden = useMoneyHiddenToggle();
+  const [arranging, setArranging] = useState(false);
+  const arrangeRef = useRef(null);
+  const choosePeriod = (next) => setParams(next.period === "month" ? {} : next.period === "custom" ? { period: "custom", from: next.from, to: next.to } : { period: next.period });
+  const picker = <PeriodPicker key={`${chosen.period}:${chosen.from ?? ""}:${chosen.to ?? ""}`} value={chosen} onChange={choosePeriod} />;
   const locale = i18n.resolvedLanguage?.startsWith("ar") ? "ar" : "en";
   const timeZone = user?.timezone ?? workspace?.timezone;
   const model = useMemo(() => (dashboard.data === undefined ? null : buildHomeModel(dashboard.data)), [dashboard.data]);
@@ -244,6 +268,7 @@ export default function MobileHome() {
   if (dashboard.loading) {
     return (
       <section className="sm-page" data-sm-screen="home" data-sm-state="loading" aria-busy="true">
+        {picker}
         <Skeleton lines={5} label={t("home.loading")} />
       </section>
     );
@@ -252,27 +277,44 @@ export default function MobileHome() {
   if (dashboard.status === "error" || !model) {
     return (
       <section className="sm-page" data-sm-screen="home" data-sm-state="error">
+        {picker}
         <ErrorPanel error={dashboard.error ?? MALFORMED} onRetry={dashboard.reload} retrying={dashboard.refreshing} />
       </section>
     );
   }
 
+  const blocks = {
+    balances: <BalanceCard key="balances" section={model.balances} locale={locale} />,
+    summary: <SummaryCard key="summary" balances={model.balances} period={model.period} locale={locale} timeZone={timeZone} />,
+    accounts: <AccountsCard key="accounts" section={model.accounts} />,
+    recent: <RecentCard key="recent" section={model.recent} locale={locale} timeZone={timeZone} />,
+    attention: <AttentionCard key="attention" alerts={alerts} />,
+  };
+  const shown = prefs.homeOrder.filter((id) => !prefs.homeHidden.includes(id));
+
   return (
-    <section className="sm-page" data-sm-screen="home" data-sm-state={dashboard.stale ? "stale" : "ready"} data-sm-stale={dashboard.stale ? "true" : undefined}>
+    <section className="sm-page" data-sm-screen="home" data-sm-state={dashboard.stale ? "stale" : "ready"} data-sm-stale={dashboard.stale ? "true" : undefined} data-sm-period={chosen.period}>
       <div className="sm-greeting">
         <p className="sm-text">{name ? t("home.hello", { name }) : t("home.helloNoName")}</p>
         <button type="button" className="sm-button sm-button-quiet sm-button-small" onClick={dashboard.reload} disabled={dashboard.refreshing} aria-busy={dashboard.refreshing}>
           {t(dashboard.refreshing ? "home.refreshing" : "home.refresh")}
         </button>
       </div>
+      <div className="sm-home-tools">
+        {setHidden && (
+          <button type="button" className="sm-button sm-button-quiet sm-button-small" aria-pressed={hidden} onClick={() => setHidden(!hidden)} data-sm-action="toggle-amounts">
+            {t(hidden ? "home.showAmounts" : "home.hideAmounts")}
+          </button>
+        )}
+        <button type="button" ref={arrangeRef} className="sm-button sm-button-quiet sm-button-small" onClick={() => setArranging(true)} data-sm-action="arrange">{t("home.arrange")}</button>
+      </div>
 
+      {picker}
       {dashboard.stale && <StaleNotice error={dashboard.error} updatedAt={dashboard.updatedAt} onRetry={dashboard.reload} retrying={dashboard.refreshing} />}
 
-      <BalanceCard section={model.balances} locale={locale} />
-      <SummaryCard balances={model.balances} period={model.period} locale={locale} timeZone={timeZone} />
-      <AccountsCard section={model.accounts} />
-      <RecentCard section={model.recent} locale={locale} timeZone={timeZone} />
-      <AttentionCard alerts={alerts} />
+      {shown.map((id) => blocks[id])}
+      {shown.length === 0 && <p className="sm-text sm-muted" data-sm-note="all-hidden">{t("home.allHidden")}</p>}
+      <ArrangeSheet open={arranging} onClose={() => setArranging(false)} returnFocusRef={arrangeRef} />
     </section>
   );
 }

@@ -49,8 +49,11 @@ export const isAccountId = (value) => /^[1-9]\d{0,14}$/.test(String(value ?? "")
 
 const workspaceId = () => getStoredWorkspace()?.id;
 
-export const readDashboard = (signal) =>
-  dashboardApi.get({ period: DASHBOARD_PERIOD, workspace_id: workspaceId() }, { signal });
+// The periods GET /dashboard documents (docs/dashboard/api.md); `custom` needs both dates.
+export const DASHBOARD_PERIODS = Object.freeze(["today", "week", "month", "quarter", "year", "all", "custom"]);
+
+export const readDashboard = (signal, { period = DASHBOARD_PERIOD, from, to } = {}) =>
+  dashboardApi.get({ period, ...(period === "custom" ? { date_from: from, date_to: to } : {}), workspace_id: workspaceId() }, { signal });
 
 // Note the filter's name: financial alerts take `id_workspace`, not `workspace_id`.
 export const readAlerts = (signal) => financialAlertsApi.list({ id_workspace: workspaceId() }, { signal });

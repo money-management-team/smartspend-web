@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react";
 
 import { useAuthContext } from "../../contexts/auth/useAuthContext";
 import { createExperienceStore } from "../../features/Dashboards/User/Experience/experienceStore.js";
-import { MoneyPrivacyContext } from "./privacyContext.js";
+import { MoneyPrivacyContext, MoneyPrivacyToggleContext } from "./privacyContext.js";
 
 function deviceStorage() {
   try {
@@ -17,9 +17,10 @@ function deviceStorage() {
  * keeps (Display preferences), so a person who chose to hide their balances
  * does not see them again just because they opened the Mobile version.
  *
- * It reads that one setting through the full app's own preference store and
- * never writes it: Mobile has no control for it, and the store's `update` is
- * not called anywhere in src/mobile (tests/mobileReadOnly.test.mjs).
+ * It reads and changes that one setting through the full app's own
+ * preference store, so the choice is the same in both versions on this device.
+ * `update` is called here only, and only with `hiddenMoney`
+ * (tests/mobileReadOnly.test.mjs); the store keys it by person and workspace.
  */
 export function MoneyPrivacyProvider({ children }) {
   const { user, workspace } = useAuthContext();
@@ -30,6 +31,11 @@ export function MoneyPrivacyProvider({ children }) {
   const preferences = useSyncExternalStore(store.subscribe, store.getSnapshot, store.getSnapshot);
 
   useEffect(() => store.connect(), [store]);
+  const setHidden = useCallback((hidden) => store.update({ hiddenMoney: hidden === true }), [store]);
 
-  return <MoneyPrivacyContext.Provider value={preferences.hiddenMoney === true}>{children}</MoneyPrivacyContext.Provider>;
+  return (
+    <MoneyPrivacyToggleContext.Provider value={setHidden}>
+      <MoneyPrivacyContext.Provider value={preferences.hiddenMoney === true}>{children}</MoneyPrivacyContext.Provider>
+    </MoneyPrivacyToggleContext.Provider>
+  );
 }

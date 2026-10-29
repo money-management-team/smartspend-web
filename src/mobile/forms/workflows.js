@@ -213,7 +213,8 @@ const entry = (type) => ({
     descriptionField,
     referenceField,
   ],
-  initial: (ctx) => ({ account_id: "", category_id: "", amount: "", occurred_at: ctx.today, description: "", reference_number: "" }),
+  // A quick-entry template (preferences/deviceStore.js) fills what it saved; the form still checks every value against today's accounts and categories.
+  initial: (ctx) => ({ account_id: ctx.template?.account_id ?? "", category_id: ctx.template?.category_id ?? "", amount: ctx.template?.amount ?? "", occurred_at: ctx.today, description: ctx.template?.description ?? "", reference_number: "" }),
 });
 
 export const WORKFLOWS = Object.freeze({

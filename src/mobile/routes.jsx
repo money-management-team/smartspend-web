@@ -14,6 +14,9 @@ import MobileReceiptNew from "./assist/MobileReceiptNew.jsx";
 import MobileVoiceNew from "./assist/MobileVoiceNew.jsx";
 import MobileHome from "./home/MobileHome.jsx";
 import MobileProfile, { MobileProfileForm } from "./settings/MobileProfile.jsx";
+import MobileReview from "./tools/MobileReview.jsx";
+import MobileSearch from "./tools/MobileSearch.jsx";
+import MobileTemplates from "./tools/MobileTemplates.jsx";
 import MobileWhatsApp, { MobileWhatsAppDraft, MobileWhatsAppDrafts } from "./whatsapp/MobileWhatsApp.jsx";
 import IdentityBoundary from "./identity/IdentityBoundary.jsx";
 import { MOBILE_ENTER, MOBILE_PREFIX } from "./navigation.js";
@@ -31,6 +34,7 @@ import MobileAppShell from "./shell/MobileAppShell.jsx";
 import MobileCalendar from "./calendar/MobileCalendar.jsx";
 import MobileDebtDetail from "./debts/MobileDebtDetail.jsx";
 import MobileDebts from "./debts/MobileDebts.jsx";
+import MobileImportNew from "./imports/MobileImportNew.jsx";
 import MobileImports, { MobileImportDetail } from "./imports/MobileImports.jsx";
 import MobileNotifications from "./notifications/MobileNotifications.jsx";
 import MobileExports from "./reports/MobileExports.jsx";
@@ -98,6 +102,7 @@ export const mobileRoutes = [
       { path: "reports/:reportType", element: <MobileReport /> },
       { path: "exports", element: <MobileExports /> },
       { path: "imports", element: <MobileImports /> },
+      { path: "imports/new", element: <MobileImportNew /> },
       { path: "imports/:importId", element: <MobileImportDetail /> },
       { path: "add/:workflow", element: <MobileNewEntry /> },
       ...RECORD_ACTIONS.map((action) => ({ path: action.path, element: <MobileRecordAction workflowId={action.workflow} /> })),
@@ -114,6 +119,9 @@ export const mobileRoutes = [
       { path: "profile", element: <MobileProfile /> },
       { path: "profile/edit", element: <MobileProfileForm workflowId="profile-edit" /> },
       { path: "profile/password", element: <MobileProfileForm workflowId="password-change" /> },
+      { path: "search", element: <MobileSearch /> },
+      { path: "review", element: <MobileReview /> },
+      { path: "templates", element: <MobileTemplates /> },
       { path: "more", element: <MobileMore /> },
       { path: "*", element: <MobileNotAvailable /> },
     ],

@@ -39,6 +39,7 @@ const EXTRA_TITLES = [
   [/^\/m\/search$/, "titles.search"],
   [/^\/m\/review$/, "titles.review"],
   [/^\/m\/templates$/, "titles.templates"],
+  [/^\/m\/imports\/new$/, "importNew.title"],
 ];
 
 function getTitleKey(pathname) {

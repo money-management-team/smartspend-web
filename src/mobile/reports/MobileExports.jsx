@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 
 import { PATH } from "../../routes/Path.js";
 import { readExportFile } from "../data/readApi.js";
@@ -97,6 +98,7 @@ export default function MobileExports() {
 
   const toolbar = (
     <div className="sm-card sm-plan-filters">
+      <Link className="sm-button sm-button-small sm-new-link" to={"/m/add/export"} data-sm-action="new-export">{t("newLinks.exportFile")}</Link>
       <FilterTabs
         label={t("exports.filterStatus")}
         value={filters.status}

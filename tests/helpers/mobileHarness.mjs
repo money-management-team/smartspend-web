@@ -29,6 +29,7 @@ const { default: ThemeProvider } = await import("../../src/contexts/theme/themeP
 const { default: LanguageProvider } = await import("../../src/contexts/language/languageProvider.jsx");
 export const { default: MobileEntry } = await import("../../src/mobile/entry/MobileEntry.jsx");
 export const { PRESENTATION_KEY } = await import("../../src/mobile/presentation/preference.js");
+const { resetPreferenceStoresForTests } = await import("../../src/mobile/preferences/deviceStore.js");
 
 export const USER_A = { id: 1, name: "Alex Example", timezone: "UTC" };
 export const USER_B = { id: 2, name: "Blake Example", timezone: "UTC" };
@@ -125,6 +126,8 @@ export const location = () => q("#probe")?.textContent;
 export async function resetEnvironment(language = "en") {
   window.localStorage.clear();
   window.sessionStorage.clear();
+  // Mobile's device preferences are shared per identity in memory; a test starts from empty storage, so from nothing.
+  resetPreferenceStoresForTests();
   window.innerWidth = 390;
   document.documentElement.style.fontSize = "";
   document.documentElement.removeAttribute("data-theme");

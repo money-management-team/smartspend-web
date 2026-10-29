@@ -11,6 +11,7 @@ import Money from "../money/Money.jsx";
 import { MOBILE_PREFIX, accountDetailPath, activityDetailPath, backPathFrom, budgetDetailPath, debtDetailPath, goalDetailPath, recurringDetailPath, transferDetailPath } from "../navigation.js";
 import MobileNotAvailable from "../screens/MobileNotAvailable.jsx";
 import Chevron from "../ui/Chevron.jsx";
+import { useDevicePreferences } from "../preferences/deviceStore.js";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
 import DraftForm from "./DraftForm.jsx";
@@ -98,16 +99,21 @@ export function MobileNewEntry() {
   const { workflow: id } = useParams();
   const location = useLocation();
   const workflow = NEW_FORM_IDS.includes(id) ? WORKFLOWS[id] : null;
-  const ctx = useMemo(() => ({ today: today() }), []);
+  const { templates } = useDevicePreferences();
+  // The router state names a template by its id only; the template itself is read from this identity's own preferences.
+  const templateId = typeof location.state?.template === "string" ? location.state.template : null;
+  const template = templates.find((item) => item.id === templateId && item.type === id) ?? null;
+  const ctx = useMemo(() => ({ today: today(), template }), [template]);
   const backTo = backPathFrom(location.state, MOBILE_PREFIX);
 
   if (!workflow) return <MobileNotAvailable />;
 
   return (
-    <section className="sm-page" data-sm-screen="workflow" data-sm-workflow={workflow.id}>
+    <section className="sm-page" data-sm-screen="workflow" data-sm-workflow={workflow.id} data-sm-template={template?.id}>
       <BackLink to={backTo} label={t("forms.back")} />
       <FlowHeader workflow={workflow} />
-      <FormWithChoices key={workflow.id} workflow={workflow} ctx={ctx} backTo={backTo} />
+      {template && <p className="sm-text sm-muted sm-fine" data-sm-note="from-template">{t("templates.applied", { name: template.name })}</p>}
+      <FormWithChoices key={`${workflow.id}:${template?.id ?? ""}`} workflow={workflow} ctx={ctx} backTo={backTo} />
     </section>
   );
 }

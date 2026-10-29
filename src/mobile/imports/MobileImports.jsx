@@ -48,6 +48,7 @@ export default function MobileImports() {
 
   const toolbar = (
     <div className="sm-card sm-plan-filters">
+      <Link className="sm-button sm-button-small sm-new-link" to={"/m/imports/new"} data-sm-action="new-statement">{t("newLinks.statement")}</Link>
       <FilterTabs
         label={t("imports.filterStatus")}
         value={filters.status}
