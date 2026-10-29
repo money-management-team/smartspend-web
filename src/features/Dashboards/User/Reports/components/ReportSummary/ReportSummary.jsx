@@ -41,20 +41,20 @@ function SummaryFields({ row, fields, currency, t, i18n, hero = false }) {
  * any other field the backend sends follows, and nested objects (e.g. cash
  * flow buckets) become their own group.
  */
-export default function ReportSummary({ rows, groups }) {
+export default function ReportSummary({ rows, groups, title = null }) {
   const { t, i18n } = useTranslation();
   const listed = new Set(["currency_code", ...groups.flatMap((group) => group.fields)]);
 
   return (
     <ReportSection
       wide
-      title={t("dashboard.reports.sections.summary")}
+      title={title ?? t("dashboard.reports.sections.summary")}
       hint={rows.length > 1 ? t("dashboard.reports.sections.summaryMultiCurrency") : null}
     >
       {rows.length === 0 ? (
         <p className="report-summary__empty">{t("dashboard.reports.states.emptySummary")}</p>
       ) : (
-        <div className="report-summary__grid">
+        <div className={`report-summary__grid ${rows.length === 1 ? "report-summary__grid--single" : ""}`}>
           {rows.map((row, index) => {
             const currency = isCurrencyCode(row.currency_code) ? row.currency_code : null;
             const visibleGroups = groups

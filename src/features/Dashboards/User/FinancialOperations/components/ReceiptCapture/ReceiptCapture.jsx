@@ -1,203 +1,75 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LuCamera, LuSparkles } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-
 import { getAiExpenseCapturePath } from "../../../../../../routes/Path";
-import { ApiError, getApiErrorMessage } from "../../../api/apiClient";
+import { ApiError, createIdempotencyKey, getApiErrorMessage } from "../../../api/apiClient";
 import { aiExpenseCapturesApi } from "../../../api/aiExpenseCapturesApi";
-import {
-  CAPTURE_UPLOAD_MAX_BYTES,
-  UPLOAD_ATTEMPT_PREFIX,
-} from "../../../AiExpenseCaptures/captureConstants";
-import {
-  getCaptureUploadError,
-  getUploadFingerprint,
-  isMissingUploadRoute,
-  parseCaptureResponse,
-} from "../../../AiExpenseCaptures/captureHelpers";
-import { createIdempotentAttempt } from "../../transactionHelpers";
-
+import { getAiInputLimitError } from "../../../api/aiInputQuotasApi.js";
+import { CAPTURE_UPLOAD_MAX_BYTES } from "../../../AiExpenseCaptures/captureConstants";
+import { getCaptureUploadError, isMissingUploadRoute, parseCaptureResponse } from "../../../AiExpenseCaptures/captureHelpers";
+import { isVoiceOutcomeUncertain } from "../../voiceCaptureFlow.js";
 import "./ReceiptCapture.css";
 
 const MAX_MB = Math.round(CAPTURE_UPLOAD_MAX_BYTES / (1024 * 1024));
-
-/*
- * Receipt capture: the entry point to the AI expense captures feature.
- *
- * Picking an image and pressing Analyze uploads it, which creates a capture
- * the backend's AI then reads. **Nothing is recorded by this**: the receipt
- * becomes a draft, and the expense exists only once the user reviews it and
- * confirms it on the capture's own page — which is where this navigates to.
- *
- * ⚠ The create endpoint is not part of the documented Sprint 7 contract; its
- * path, field name and response shape are assumptions held in
- * `captureConstants`. If the route isn't there the upload answers 404/405 and
- * this says the service isn't available, rather than blaming the file.
- */
-export default function ReceiptCapture({ onSwitchToManual }) {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const inputRef = useRef(null);
-
-  const [file, setFile] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState(null);
-  // A local validation key, kept apart from a backend failure.
-  const [fileError, setFileError] = useState("");
-  /*
-   * Synchronous guard: a double click fires twice before React re-renders,
-   * and two uploads would be two captures of the same receipt.
-   */
-  const pendingRef = useRef(false);
-  /*
-   * One key per chosen file, so retrying after a timeout replays that upload
-   * instead of creating a second capture. A different file is a new upload.
-   */
-  const [attempt] = useState(() => createIdempotentAttempt(UPLOAD_ATTEMPT_PREFIX));
-
-  const pick = () => {
-    if (isUploading) return;
-    inputRef.current?.click();
-  };
-
+const P = "dashboard.financialOperations.scan";
+/** Receipt admission shares the daily allowance store, while review/confirmation stay unchanged. */
+export default function ReceiptCapture({ account, onRequireAccount, quota, onSwitchToManual }) {
+  const { t } = useTranslation(); const navigate = useNavigate();
+  const inputRef = useRef(null), pendingRef = useRef(null), intentRef = useRef(null);
+  const [file, setFile] = useState(null), [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState(null), [fileError, setFileError] = useState("");
+  const [uncertain, setUncertain] = useState(false);
+  useEffect(() => () => pendingRef.current?.abort(), []);
+  const pick = () => { if (!isUploading && !uncertain && quota.store.canUse("receipt")) inputRef.current?.click(); };
   const handleChange = (event) => {
-    const [selected] = event.target.files ?? [];
-    if (!selected) return;
-
-    setFile(selected);
-    setError(null);
-    setFileError(getCaptureUploadError(selected) ?? "");
+    const [selected] = event.target.files ?? []; if (!selected || pendingRef.current || uncertain) return;
+    setFile(selected); setError(null); setFileError(getCaptureUploadError(selected) ?? ""); intentRef.current = null;
   };
-
   const analyze = async () => {
-    if (pendingRef.current) return;
-
-    if (!file) {
-      inputRef.current?.click();
-      return;
-    }
-
-    const invalid = getCaptureUploadError(file);
-    if (invalid) {
-      setFileError(invalid);
-      return;
-    }
-
-    pendingRef.current = true;
-    setIsUploading(true);
-    setError(null);
-
+    if (pendingRef.current || (!uncertain && !quota.store.canUse("receipt"))) return;
+    if (!(onRequireAccount ? onRequireAccount() : Boolean(account))) return;
+    if (!file) { pick(); return; }
+    const invalid = getCaptureUploadError(file); if (invalid) { setFileError(invalid); return; }
+    if (!Number.isSafeInteger(Number(account?.workspace_id)) || Number(account.workspace_id) < 1) { setError(new ApiError("", { code: "WORKSPACE_UNAVAILABLE" })); return; }
+    if (!intentRef.current) intentRef.current = { file, workspaceId: Number(account.workspace_id), idempotencyKey: createIdempotencyKey("receipt-upload") };
+    const intent = intentRef.current, controller = new AbortController(); pendingRef.current = controller;
+    setIsUploading(true); setError(null);
     try {
-      const response = await aiExpenseCapturesApi.create(file, {
-        idempotencyKey: attempt.keyFor(getUploadFingerprint(file)),
-      });
+      const response = await aiExpenseCapturesApi.create(intent.file, { workspaceId: intent.workspaceId, idempotencyKey: intent.idempotencyKey, signal: controller.signal });
+      if (controller.signal.aborted) return;
       const capture = parseCaptureResponse(response);
-
-      if (!capture) throw new ApiError("", { code: "MALFORMED_RESPONSE" });
-
-      attempt.settle();
-      /*
-       * Straight to the capture's own page: the status the backend gave is
-       * shown there, and its poller follows the receipt through processing to
-       * `ready_for_review` on its own. No status is assumed here.
-       */
+      if (!capture || String(capture.workspace_id) !== String(intent.workspaceId)) throw new ApiError("", { code: "MALFORMED_RESPONSE" });
+      quota.store.applyResponse(response); void quota.store.refresh(); intentRef.current = null; setUncertain(false);
       navigate(getAiExpenseCapturePath(capture.id));
     } catch (requestError) {
-      attempt.settle(requestError);
-      // 401 is the global session-expired flow; nothing to show here.
+      if (controller.signal.aborted) return;
+      quota.store.handleError(requestError); void quota.store.refresh();
+      const unknown = isVoiceOutcomeUncertain(requestError); setUncertain(unknown);
+      if (!unknown) intentRef.current = null;
       if (requestError?.code !== "UNAUTHENTICATED") setError(requestError);
     } finally {
-      pendingRef.current = false;
-      setIsUploading(false);
+      if (pendingRef.current === controller) { pendingRef.current = null; if (!controller.signal.aborted) setIsUploading(false); }
     }
   };
-
-  const isUnavailable = isMissingUploadRoute(error);
-
+  const limit = getAiInputLimitError(error);
   return (
     <div className="capture-panel receipt-capture">
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/*"
-        hidden
-        onChange={handleChange}
-        aria-hidden="true"
-        tabIndex={-1}
-      />
-
-      <div
-        className={
-          file ? "receipt-capture__surface receipt-capture__surface--filled" : "receipt-capture__surface"
-        }
-      >
-        <span className="receipt-capture__visual" aria-hidden="true">
-          <LuCamera />
-        </span>
-
-        <div className="receipt-capture__copy">
-          <span className="capture-panel__kicker">
-            {t("dashboard.financialOperations.scan.kicker")}
-          </span>
-
-          <h3 dir="auto">
-            {file ? file.name : t("dashboard.financialOperations.scan.title")}
-          </h3>
-
-          <p>{t("dashboard.financialOperations.scan.description")}</p>
-        </div>
-
-        <button
-          type="button"
-          className="capture-action capture-action--soft"
-          onClick={pick}
-          disabled={isUploading}
-        >
-          {t("dashboard.financialOperations.scan.choose")}
-        </button>
+      <input ref={inputRef} type="file" accept="image/*" hidden onChange={handleChange} aria-hidden="true" tabIndex={-1} />
+      <div className={`receipt-capture__surface${file ? " receipt-capture__surface--filled" : ""}`}>
+        <span className="receipt-capture__visual" aria-hidden="true"><LuCamera /></span>
+        <div className="receipt-capture__copy"><span className="capture-panel__kicker">{t(`${P}.kicker`)}</span><h3 dir="auto">{file ? file.name : t(`${P}.title`)}</h3><p>{t(`${P}.description`)}</p></div>
+        <button type="button" className="capture-action capture-action--soft" onClick={pick} disabled={isUploading || uncertain || !quota.store.canUse("receipt")}>{t(`${P}.choose`)}</button>
       </div>
-
-      {fileError && (
-        <p className="receipt-capture__error" role="alert">
-          {t(`dashboard.financialOperations.scan.validation.${fileError}`, { max: MAX_MB })}
-        </p>
-      )}
-
-      {error && (
-        <div className="capture-notice" role="alert">
-          <p dir="auto">
-            {isUnavailable
-              ? t("dashboard.financialOperations.scan.unavailable")
-              : `${t("dashboard.financialOperations.scan.failed")} ${getApiErrorMessage(error, t)}`}
-          </p>
-
-          {/* Manual entry is always one click away, whatever went wrong. */}
-          <button type="button" onClick={onSwitchToManual}>
-            {t("dashboard.financialOperations.voice.fallback")}
-          </button>
-        </div>
-      )}
-
-      <button
-        type="button"
-        className="capture-action receipt-capture__analyze"
-        onClick={analyze}
-        disabled={isUploading || Boolean(fileError)}
-        aria-busy={isUploading}
-      >
-        {t(
-          isUploading
-            ? "dashboard.financialOperations.scan.uploading"
-            : "dashboard.financialOperations.scan.analyze",
-        )}
-        <LuSparkles aria-hidden="true" />
+      {fileError && <p className="receipt-capture__error" role="alert">{t(`${P}.validation.${fileError}`, { max: MAX_MB })}</p>}
+      {error && <div className="capture-notice" role="alert"><p dir="auto">{limit ? t(`dashboard.financialOperations.aiInput.${limit.kind === "daily" ? "exhausted" : "minute"}`) : isMissingUploadRoute(error) ? t(`${P}.unavailable`) : `${t(`${P}.failed`)} ${getApiErrorMessage(error, t)}`}</p>
+        {uncertain && <p>{t("dashboard.financialOperations.voiceFlow.receiptUncertain")}</p>}
+        <button type="button" onClick={onSwitchToManual}>{t("dashboard.financialOperations.voice.fallback")}</button>
+      </div>}
+      <button type="button" className="capture-action receipt-capture__analyze" onClick={() => void analyze()} disabled={isUploading || Boolean(fileError) || !uncertain && !quota.store.canUse("receipt")} aria-busy={isUploading}>
+        {t(isUploading ? `${P}.uploading` : uncertain ? "dashboard.financialOperations.voiceFlow.replayUpload" : `${P}.analyze`)}<LuSparkles aria-hidden="true" />
       </button>
-
-      {/* Announced rather than conveyed by a disabled button alone. */}
-      <p className="receipt-capture__status" role="status">
-        {isUploading ? t("dashboard.financialOperations.scan.uploading") : ""}
-      </p>
+      <p className="receipt-capture__status" role="status">{isUploading ? t(`${P}.uploading`) : ""}</p>
     </div>
   );
 }

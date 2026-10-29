@@ -1,13 +1,25 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuInfo, LuLock } from "react-icons/lu";
 
 import Loading from "../../../../../../components/Loading/Loading";
-import { ApiError, getApiErrorMessage, getStoredWorkspace, toMoneyString } from "../../../api/apiClient";
+import {
+  ApiError,
+  getApiErrorMessage,
+  getStoredWorkspace,
+  toMoneyString,
+} from "../../../api/apiClient";
 import { categoriesApi } from "../../../api/categoriesApi";
-import { getDisplayLocale, isNegativeMoney } from "../../../Accounts/accountHelpers";
+import {
+  getDisplayLocale,
+  isNegativeMoney,
+} from "../../../Accounts/accountHelpers";
 import { isActiveCategory } from "../../../Categories/categoryHelpers";
-import { getAmountError, toAmountInput } from "../../../FinancialOperations/transactionHelpers";
+import {
+  getAmountError,
+  toAmountInput,
+} from "../../../FinancialOperations/transactionHelpers";
 import { formatMoney, subtractMoney } from "../../../utils/formatters";
 import {
   BUDGET_SCOPES,
@@ -25,6 +37,8 @@ import {
 // styles come from the reverse dialog's stylesheet.
 import "../../../Accounts/components/AccountForm/AccountForm.css";
 import "../../../FinancialOperations/components/ReverseTransactionDialog/ReverseTransactionDialog.css";
+import useDiscardChanges from "../../../../../../components/UnsavedChanges/useDiscardChanges";
+import { isFormDirty } from "../../../../../../components/UnsavedChanges/unsavedChanges";
 import "./BudgetForm.css";
 
 // Backend fields shown in the error block rather than under an input.
@@ -35,7 +49,8 @@ function toFormValues(budget) {
     return {
       name: budget.name ?? "",
       scope: getBudgetScope(budget),
-      category_id: budget.category?.id != null ? String(budget.category.id) : "",
+      category_id:
+        budget.category?.id != null ? String(budget.category.id) : "",
       amount_limit: toAmountInput(budget.amount_limit),
       currency_code: budget.currency_code ?? "",
       period_start: toPeriodDate(budget.period_start),
@@ -69,7 +84,9 @@ function buildPayload(form, budget) {
   if (!budget) {
     return {
       name: form.name.trim(),
-      ...(form.scope === "category" ? { category_id: Number(form.category_id) } : {}),
+      ...(form.scope === "category"
+        ? { category_id: Number(form.category_id) }
+        : {}),
       amount_limit: form.amount_limit.trim(),
       currency_code: form.currency_code,
       period_start: form.period_start,
@@ -81,12 +98,18 @@ function buildPayload(form, budget) {
   const original = toFormValues(budget);
   const payload = {};
 
-  if (form.name.trim() !== original.name.trim()) payload.name = form.name.trim();
-  if (toMoneyString(form.amount_limit.trim()) !== toMoneyString(budget.amount_limit)) {
+  if (form.name.trim() !== original.name.trim())
+    payload.name = form.name.trim();
+  if (
+    toMoneyString(form.amount_limit.trim()) !==
+    toMoneyString(budget.amount_limit)
+  ) {
     payload.amount_limit = form.amount_limit.trim();
   }
-  if (form.period_start !== original.period_start) payload.period_start = form.period_start;
-  if (form.period_end !== original.period_end) payload.period_end = form.period_end;
+  if (form.period_start !== original.period_start)
+    payload.period_start = form.period_start;
+  if (form.period_end !== original.period_end)
+    payload.period_end = form.period_end;
   if (notes !== original.notes.trim()) payload.notes = notes || null;
 
   return payload;
@@ -106,7 +129,9 @@ export default function BudgetForm({ budget, onSave, onClose }) {
   const [message, setMessage] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const pendingRef = useRef(false);
-  const [currencyOptions] = useState(() => getCurrencyOptions(form.currency_code));
+  const [currencyOptions] = useState(() =>
+    getCurrencyOptions(form.currency_code),
+  );
 
   /* ---------- Expense categories (category budgets only) ---------- */
 
@@ -160,7 +185,8 @@ export default function BudgetForm({ budget, onSave, onClose }) {
     return () => controller.abort();
   }, [needsCategories, categoriesReloadKey]);
 
-  const isLoadingCategories = needsCategories && categoryOptions.key !== categoriesReloadKey;
+  const isLoadingCategories =
+    needsCategories && categoryOptions.key !== categoriesReloadKey;
 
   /* ---------- Handlers ---------- */
 
@@ -168,13 +194,21 @@ export default function BudgetForm({ budget, onSave, onClose }) {
     if (!pendingRef.current) onClose();
   };
 
+  // Values the form opened with: closing with other values asks first.
+  const [initialForm] = useState(form);
+  const { requestClose, discardDialog } = useDiscardChanges({
+    isDirty: isFormDirty(form, initialForm) && !isSaving,
+    onClose: close,
+  });
+
   const updateField = (name, value) => {
     setForm((current) => ({ ...current, [name]: value }));
     setErrors((current) => ({ ...current, [name]: undefined }));
     setMessage("");
   };
 
-  const handleChange = (event) => updateField(event.target.name, event.target.value);
+  const handleChange = (event) =>
+    updateField(event.target.name, event.target.value);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -232,9 +266,10 @@ export default function BudgetForm({ budget, onSave, onClose }) {
     <div
       className="account-form-modal"
       role="presentation"
-      onMouseDown={close}
-      onKeyDown={(event) => event.key === "Escape" && close()}
+      onMouseDown={requestClose}
+      onKeyDown={(event) => event.key === "Escape" && requestClose()}
     >
+      {discardDialog}
       <section
         className="account-form-modal__dialog budget-form"
         role="dialog"
@@ -244,9 +279,18 @@ export default function BudgetForm({ budget, onSave, onClose }) {
       >
         <header>
           <h2 id="budget-form-title">
-            {t(isEditing ? "dashboard.budgets.form.editTitle" : "dashboard.budgets.form.createTitle")}
+            {t(
+              isEditing
+                ? "dashboard.budgets.form.editTitle"
+                : "dashboard.budgets.form.createTitle",
+            )}
           </h2>
-          <button type="button" onClick={close} disabled={isSaving} aria-label={t("common.close")}>
+          <button
+            type="button"
+            onClick={requestClose}
+            disabled={isSaving}
+            aria-label={t("common.close")}
+          >
             ×
           </button>
         </header>
@@ -315,8 +359,12 @@ export default function BudgetForm({ budget, onSave, onClose }) {
                         onChange={() => updateField("scope", scope)}
                       />
                       <span>
-                        <strong>{t(`dashboard.budgets.scopes.${scope}`)}</strong>
-                        <small>{t(`dashboard.budgets.scopeHints.${scope}`)}</small>
+                        <strong>
+                          {t(`dashboard.budgets.scopes.${scope}`)}
+                        </strong>
+                        <small>
+                          {t(`dashboard.budgets.scopeHints.${scope}`)}
+                        </small>
                       </span>
                     </label>
                   ))}
@@ -325,16 +373,28 @@ export default function BudgetForm({ budget, onSave, onClose }) {
 
               {form.scope === "category" && (
                 <div className="budget-form__field">
-                  <label htmlFor="budget-form-category">{t("dashboard.budgets.fields.category")}</label>
+                  <label htmlFor="budget-form-category">
+                    {t("dashboard.budgets.fields.category")}
+                  </label>
 
                   {isLoadingCategories && (
-                    <Loading size="small" variant="inline" message={t("dashboard.budgets.form.loadingCategories")} />
+                    <Loading
+                      size="small"
+                      variant="inline"
+                      message={t("dashboard.budgets.form.loadingCategories")}
+                    />
                   )}
 
                   {!isLoadingCategories && categoryOptions.error && (
-                    <div className="account-form-modal__error budget-form__options-error" role="alert">
+                    <div
+                      className="account-form-modal__error budget-form__options-error"
+                      role="alert"
+                    >
                       <p>{getApiErrorMessage(categoryOptions.error, t)}</p>
-                      <button type="button" onClick={() => setCategoriesReloadKey((key) => key + 1)}>
+                      <button
+                        type="button"
+                        onClick={() => setCategoriesReloadKey((key) => key + 1)}
+                      >
                         {t("common.retry")}
                       </button>
                     </div>
@@ -346,7 +406,9 @@ export default function BudgetForm({ budget, onSave, onClose }) {
                       name="category_id"
                       value={form.category_id}
                       onChange={handleChange}
-                      disabled={isSaving || categoryOptions.categories.length === 0}
+                      disabled={
+                        isSaving || categoryOptions.categories.length === 0
+                      }
                       aria-invalid={errors.category_id ? true : undefined}
                       required
                     >
@@ -368,7 +430,9 @@ export default function BudgetForm({ budget, onSave, onClose }) {
             </>
           )}
 
-          <div className={`budget-form__row${isEditing ? " budget-form__row--single" : ""}`}>
+          <div
+            className={`budget-form__row${isEditing ? " budget-form__row--single" : ""}`}
+          >
             <label>
               <span>{t("dashboard.budgets.fields.amountLimit")}</span>
               <input
@@ -411,7 +475,10 @@ export default function BudgetForm({ budget, onSave, onClose }) {
           </div>
 
           {!isEditing && (
-            <em className="account-form-modal__hint budget-form__hint" id="budget-form-currency-hint">
+            <em
+              className="account-form-modal__hint budget-form__hint"
+              id="budget-form-currency-hint"
+            >
               {t("dashboard.budgets.form.currencyHint")}
             </em>
           )}
@@ -420,9 +487,11 @@ export default function BudgetForm({ budget, onSave, onClose }) {
             <p className="budget-form__note" role="status">
               <LuInfo aria-hidden="true" />
               <span>
-                {t("dashboard.budgets.form.limitBelowSpent", {
-                  spent: formatMoney(spent, budget.currency_code, locale),
-                })}
+                <PrivateMoney>
+                  {t("dashboard.budgets.form.limitBelowSpent", {
+                    spent: formatMoney(spent, budget.currency_code, locale),
+                  })}
+                </PrivateMoney>
               </span>
             </p>
           )}
@@ -484,13 +553,21 @@ export default function BudgetForm({ budget, onSave, onClose }) {
           )}
 
           <footer>
-            <button type="button" onClick={close} disabled={isSaving}>
+            <button type="button" onClick={requestClose} disabled={isSaving}>
               {t("common.cancel")}
             </button>
-            <button type="submit" disabled={isSaving} aria-busy={isSaving || undefined}>
+            <button
+              type="submit"
+              disabled={isSaving}
+              aria-busy={isSaving || undefined}
+            >
               {isSaving
                 ? t("common.saving")
-                : t(isEditing ? "common.save" : "dashboard.budgets.form.submitCreate")}
+                : t(
+                    isEditing
+                      ? "common.save"
+                      : "dashboard.budgets.form.submitCreate",
+                  )}
             </button>
           </footer>
         </form>

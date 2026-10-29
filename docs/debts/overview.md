@@ -30,7 +30,7 @@ Both routes are in the `userRoutes` group, behind `RequireAuth` + `DashboardLayo
 | `PATH.USER.DEBTS` | `/dashboard/debts` | `src/features/Dashboards/User/Debts/Debts.jsx` (summary, filters, list, create) |
 | `PATH.USER.DEBT_DETAILS` | `/dashboard/debts/:debtId` | `src/features/Dashboards/User/DebtDetails/DebtDetails.jsx` |
 
-- Build links with `getDebtDetailsPath(id)`. The details route is nested under the list path, so the sidebar's "Debts" item (group "Manage", icon `LuHandCoins`) stays highlighted.
+- Build links with `getDebtDetailsPath(id)`. The details route is nested under the list path, so the sidebar's "Debts" link (in the "Planning" group) stays highlighted.
 - Create, edit, record payment, reverse payment and archive are modals (the dashboard's convention), not routes.
 - The list keeps its filters and page in the URL (`?direction=&status=&currency_code=&counterparty=&due_from=&due_to=&page=`).
 

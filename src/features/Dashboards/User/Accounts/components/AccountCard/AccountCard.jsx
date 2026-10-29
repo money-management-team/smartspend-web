@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { LuArchive, LuPencil } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -19,6 +20,7 @@ export default function AccountCard({
   onEdit,
   onArchive,
   isArchiving = false,
+  isArchived = false,
 }) {
   const { t, i18n } = useTranslation();
   const { user, workspace } = useAuthContext();
@@ -31,7 +33,7 @@ export default function AccountCard({
 
   return (
     <article
-      className={`account-card${color ? " account-card--colored" : ""}`}
+      className={`account-card${color ? " account-card--colored" : ""}${isArchived ? " account-card--archived" : ""}`}
       style={color ? { "--account-color": color } : undefined}
       aria-busy={isArchiving || undefined}
     >
@@ -50,15 +52,11 @@ export default function AccountCard({
             className="account-card__link"
             to={getAccountDetailsPath(account.id)}
           >
-            <strong>
-              {account.name}
-            </strong>
+            <strong>{account.name}</strong>
           </Link>
 
           {account.last_four_digits && (
-            <small dir="ltr">
-              •••• {account.last_four_digits}
-            </small>
+            <small dir="ltr">•••• {account.last_four_digits}</small>
           )}
         </div>
 
@@ -82,7 +80,9 @@ export default function AccountCard({
           }
           dir="ltr"
         >
-          {formatMoney(balance, account.currency_code, locale)}
+          <PrivateMoney>
+            {formatMoney(balance, account.currency_code, locale)}
+          </PrivateMoney>
         </strong>
 
         <span className="account-card__updated">
@@ -103,33 +103,38 @@ export default function AccountCard({
       ========================= */}
 
       <footer className="account-card__actions">
-        <button
-          type="button"
-          className="account-card__edit"
-          onClick={onEdit}
-          disabled={isArchiving}
-        >
-          <LuPencil />
-
-          <span>
-            {t(
-              "dashboard.accounts.edit",
-            )}
+        {isArchived ? (
+          <span className="account-card__archived-label">
+            <LuArchive aria-hidden="true" />
+            {t("dashboard.accounts.status.archived")}
           </span>
-        </button>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="account-card__edit"
+              onClick={onEdit}
+              disabled={isArchiving}
+            >
+              <LuPencil />
 
-        <button
-          type="button"
-          className="account-card__delete"
-          onClick={onArchive}
-          disabled={isArchiving}
-          aria-label={t("dashboard.accounts.archiveNamed", {
-            name: account.name,
-          })}
-          title={t("dashboard.accounts.archive")}
-        >
-          <LuArchive />
-        </button>
+              <span>{t("dashboard.accounts.edit")}</span>
+            </button>
+
+            <button
+              type="button"
+              className="account-card__delete"
+              onClick={onArchive}
+              disabled={isArchiving}
+              aria-label={t("dashboard.accounts.archiveNamed", {
+                name: account.name,
+              })}
+              title={t("dashboard.accounts.archive")}
+            >
+              <LuArchive />
+            </button>
+          </>
+        )}
       </footer>
     </article>
   );

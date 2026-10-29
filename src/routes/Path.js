@@ -1,13 +1,13 @@
 export const PATH = {
-  ADMIN: "/admin",
-  ADMIN_PERSONAL: "/admin/personal",
-  ADMIN_BUSINESS: "/admin/business",
-  ADMIN_BILLING: "/admin/billing",
-  ADMIN_SUPPORT: "/admin/support",
-  ADMIN_AI: "/admin/ai",
-  ADMIN_SECURITY: "/admin/security",
-  ADMIN_SETTINGS: "/admin/settings",
   HOME: "/",
+  PUBLIC: {
+    FEATURES: "/features",
+    PRICING: "/pricing",
+    SECURITY: "/security",
+    ABOUT: "/about",
+    CONTACT: "/contact",
+    SUPPORT: "/support",
+  },
   AUTH: {
     ACCOUNT_TYPE: "/account-type",
     SIGNIN: "/signin",
@@ -23,6 +23,10 @@ export const PATH = {
   },
   USER: {
     DASHBOARD: "/dashboard",
+    ATTENTION: "/dashboard/attention",
+    MONTHLY_REVIEW: "/dashboard/reports/monthly-review",
+    QUICK_TEMPLATES: "/dashboard/financial-operations/templates",
+    GETTING_STARTED: "/dashboard/getting-started",
     ACCOUNTS: "/dashboard/accounts",
     ACCOUNT_DETAILS: "/dashboard/accounts/:accountId",
     CATEGORIES: "/dashboard/categories",
@@ -34,19 +38,28 @@ export const PATH = {
     RECURRING: "/dashboard/recurring",
     RECURRING_DETAILS: "/dashboard/recurring/:recurringTransactionId",
     CALENDAR: "/dashboard/calendar",
-    IMPORT: "/dashboard/import",
-    IMPORT_HISTORY: "/dashboard/import/history",
     AI_EXPENSE_CAPTURES: "/dashboard/ai-expense-captures",
     AI_EXPENSE_CAPTURE_DETAILS: "/dashboard/ai-expense-captures/:captureId",
     BUDGETS: "/dashboard/budgets",
     BUDGET_DETAILS: "/dashboard/budgets/:budgetId",
     SAVINGS_GOALS: "/dashboard/savings-goals",
     SAVINGS_GOAL_DETAILS: "/dashboard/savings-goals/:savingsGoalId",
+    // Smart savings (VITE_SMART_SAVINGS_ENABLED only): plan creation and revision.
+    SAVINGS_SMART_PLAN_NEW: "/dashboard/savings-goals/smart-plan",
+    SAVINGS_GOAL_SMART_PLAN: "/dashboard/savings-goals/:savingsGoalId/smart-plan",
+    SAVINGS_GOAL_PLAN_REVISE: "/dashboard/savings-goals/:savingsGoalId/smart-plan/revise/:change",
     DEBTS: "/dashboard/debts",
     DEBT_DETAILS: "/dashboard/debts/:debtId",
     REPORTS: "/dashboard/reports",
     REPORT_EXPORTS: "/dashboard/reports/exports",
     AI_ASSISTANT: "/dashboard/ai-assistant",
+    IMPORTS: "/dashboard/imports",
+    IMPORT_DETAILS: "/dashboard/imports/:importId",
+    // Private, authenticated inbox of WhatsApp expense drafts (read-only for now).
+    WHATSAPP_DRAFTS: "/dashboard/whatsapp/drafts",
+    WHATSAPP_DRAFT_DETAILS: "/dashboard/whatsapp/drafts/:draftId",
+    // The link the backend sends in WhatsApp replies (config whatsapp.review_path).
+    WHATSAPP_REVIEW_LINK: "/whatsapp/drafts/:draftId",
     NOTIFICATIONS: "/dashboard/notifications",
     SETTING: "/dashboard/settings",
   },
@@ -61,12 +74,13 @@ export const AUTH_INTENT = {
 export const getAccountTypePath = (intent = AUTH_INTENT.REGISTER) =>
   `${PATH.AUTH.ACCOUNT_TYPE}?intent=${intent}`;
 
-/*
- * The import wizard resumes an existing import from `?import=`, so a link
- * from the history opens the same page at whatever step its status implies.
- */
-export const getImportPath = (importId) =>
-  `${PATH.USER.IMPORT}?import=${encodeURIComponent(importId)}`;
+/* The read-only page of one WhatsApp draft. */
+export const getWhatsAppDraftPath = (draftId) =>
+  PATH.USER.WHATSAPP_DRAFT_DETAILS.replace(":draftId", encodeURIComponent(draftId));
+
+/* A Settings tab by its key (profile | security | preferences | integrations). */
+export const getSettingsTabPath = (tab) =>
+  `${PATH.USER.SETTING}?tab=${encodeURIComponent(tab)}`;
 
 export const getAccountDetailsPath = (accountId) =>
   PATH.USER.ACCOUNT_DETAILS.replace(
@@ -119,6 +133,18 @@ export const getSavingsGoalDetailsPath = (savingsGoalId) =>
 /* Opens the savings goals page with the new-goal form open. */
 export const getNewSavingsGoalPath = () => `${PATH.USER.SAVINGS_GOALS}?new=1`;
 
+/* Smart savings plan creation: a new goal, or an existing flexible goal. */
+export const getNewSmartPlanPath = () => PATH.USER.SAVINGS_SMART_PLAN_NEW;
+export const getGoalSmartPlanPath = (savingsGoalId) =>
+  PATH.USER.SAVINGS_GOAL_SMART_PLAN.replace(":savingsGoalId", encodeURIComponent(savingsGoalId));
+
+/* Revising a goal's active smart plan: change is "schedule" or "funding". */
+export const getGoalPlanRevisionPath = (savingsGoalId, change) =>
+  PATH.USER.SAVINGS_GOAL_PLAN_REVISE.replace(":savingsGoalId", encodeURIComponent(savingsGoalId)).replace(
+    ":change",
+    encodeURIComponent(change),
+  );
+
 export const getDebtDetailsPath = (debtId) =>
   PATH.USER.DEBT_DETAILS.replace(":debtId", encodeURIComponent(debtId));
 
@@ -130,7 +156,8 @@ export const getRecurringDetailsPath = (recurringTransactionId) =>
 
 /* The Notifications page on its Financial alerts tab (calculated alerts, not
    the persistent notification inbox). */
-export const getFinancialAlertsPath = () => `${PATH.USER.NOTIFICATIONS}?tab=alerts`;
+export const getFinancialAlertsPath = () =>
+  `${PATH.USER.NOTIFICATIONS}?tab=alerts`;
 
 /*
  * Page of the record a calendar event or a notification refers to. The

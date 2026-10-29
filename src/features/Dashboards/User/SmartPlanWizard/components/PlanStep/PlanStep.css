@@ -1,0 +1,294 @@
+.plan-step {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.plan-step__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Banners ---------- */
+
+.plan-step__banner {
+  --plan-step-tone: var(--color-primary);
+
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  border: 1px solid color-mix(in srgb, var(--plan-step-tone) 28%, var(--color-border));
+  border-radius: var(--radius-md);
+
+  background: color-mix(in srgb, var(--plan-step-tone) 7%, var(--color-surface));
+
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.plan-step__banner--warning {
+  --plan-step-tone: var(--color-warning);
+}
+
+.plan-step__banner--danger {
+  --plan-step-tone: var(--color-danger);
+}
+
+.plan-step__banner > svg {
+  width: 17px;
+  height: 17px;
+  margin-top: 2px;
+  flex: none;
+  color: var(--plan-step-tone);
+}
+
+.plan-step__banner strong {
+  color: var(--color-text-strong);
+}
+
+.plan-step__banner p {
+  margin: 2px 0 0;
+  color: var(--color-text-secondary);
+}
+
+.plan-step__banner-actions {
+  margin-top: 8px;
+}
+
+.plan-step__banner-actions button,
+.plan-step__empty button {
+  padding: 0;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+/* ---------- Capacity ---------- */
+
+.plan-step__capacity {
+  padding: 16px 18px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background:
+    radial-gradient(130% 160% at 0% 0%, color-mix(in srgb, var(--smart-wizard-cyan, #0891b2) 8%, transparent), transparent 60%),
+    var(--color-surface);
+}
+
+[dir="rtl"] .plan-step__capacity {
+  background:
+    radial-gradient(130% 160% at 100% 0%, color-mix(in srgb, var(--smart-wizard-cyan, #0891b2) 8%, transparent), transparent 60%),
+    var(--color-surface);
+}
+
+.plan-step__capacity-icon {
+  width: 38px;
+  height: 38px;
+  flex: none;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 12px;
+
+  color: var(--smart-wizard-cyan, #0891b2);
+  background: color-mix(in srgb, var(--smart-wizard-cyan, #0891b2) 12%, transparent);
+}
+
+.plan-step__capacity-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.plan-step__capacity h2 {
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.plan-step__capacity-value {
+  margin: 4px 0 0;
+
+  color: var(--color-text-strong);
+
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.plan-step__capacity--none .plan-step__capacity-value,
+.plan-step__capacity--unknown .plan-step__capacity-value {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.plan-step__capacity-value span {
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.plan-step__capacity-hint {
+  margin: 4px 0 0;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.plan-step__capacity-notes {
+  margin: 8px 0 0;
+  padding-inline-start: 16px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.plan-step__recommendation {
+  margin: 0;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  color: var(--color-text-primary);
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.plan-step__recommendation svg {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex: none;
+  color: var(--color-primary);
+}
+
+/* ---------- Options ---------- */
+
+.plan-step__options {
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  border: 0;
+}
+
+/* Cards share the row's height; each card lines up its affordability and schedule at the bottom. */
+.plan-step__cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 14px;
+}
+
+.plan-step__skeleton {
+  min-height: 220px;
+  padding: 18px;
+
+  display: grid;
+  align-content: start;
+  gap: 12px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface);
+}
+
+.plan-step__skeleton span {
+  height: 14px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, var(--surface-soft), var(--surface-hover), var(--surface-soft));
+  background-size: 200% 100%;
+  animation: plan-step-shimmer 1.4s ease-in-out infinite;
+}
+
+.plan-step__skeleton span:nth-child(1) {
+  width: 45%;
+}
+
+.plan-step__skeleton span:nth-child(2) {
+  width: 70%;
+  height: 28px;
+}
+
+@keyframes plan-step-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.plan-step__footnote {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.plan-step__empty {
+  padding: 28px 18px;
+
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+
+  text-align: center;
+}
+
+.plan-step__empty h2 {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-size: 16px;
+}
+
+.plan-step__empty p {
+  max-width: 440px;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+@media (max-width: 960px) {
+  .plan-step__cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plan-step__skeleton span {
+    animation: none;
+  }
+}

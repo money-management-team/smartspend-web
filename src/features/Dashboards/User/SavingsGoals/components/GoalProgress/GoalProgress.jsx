@@ -1,4 +1,5 @@
 import {
+  PolarAngleAxis,
   RadialBar,
   RadialBarChart,
 } from "recharts";
@@ -43,6 +44,8 @@ export default function GoalProgress({
         startAngle={90}
         endAngle={90 - 360}
       >
+        {/* A fixed 0–100 scale: without it the single bar is scaled to its own value and always draws a full ring. */}
+        <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
         <RadialBar
           dataKey="value"
           cornerRadius={20}

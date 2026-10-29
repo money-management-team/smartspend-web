@@ -1,0 +1,332 @@
+/* =========================================
+   REVISION REVIEW (smart plan revision, gated)
+
+   Now → after, side by side on wide screens; on phones each row becomes a
+   small card with labelled values. Changed rows carry the cyan accent, the
+   unchanged ones are quiet.
+========================================= */
+
+.revision-review {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.revision-review__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Comparison ---------- */
+
+.revision-review__compare {
+  min-width: 0;
+  padding: 16px 18px;
+
+  display: grid;
+  gap: 10px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background:
+    radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--smart-wizard-cyan, #0891b2) 7%, transparent), transparent 55%),
+    var(--color-surface);
+}
+
+[dir="rtl"] .revision-review__compare {
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--smart-wizard-cyan, #0891b2) 7%, transparent), transparent 55%),
+    var(--color-surface);
+}
+
+.revision-review__compare header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.revision-review h2 {
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.revision-review__table {
+  width: 100%;
+  border-collapse: collapse;
+
+  font-size: 13px;
+}
+
+.revision-review__table thead th {
+  padding: 0 8px 8px;
+
+  color: var(--color-text-muted);
+
+  font-size: 11px;
+  font-weight: 700;
+  text-align: start;
+  text-transform: uppercase;
+}
+
+[dir="rtl"] .revision-review__table thead th {
+  text-transform: none;
+}
+
+.revision-review__table tbody tr {
+  border-top: 1px solid var(--border-soft, var(--color-border));
+}
+
+.revision-review__table tbody th,
+.revision-review__table td {
+  padding: 10px 8px;
+
+  vertical-align: top;
+  text-align: start;
+}
+
+.revision-review__table tbody th {
+  width: 26%;
+
+  color: var(--color-text-secondary);
+
+  font-weight: 500;
+}
+
+.revision-review__table td {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.revision-review__row--changed td:last-child {
+  color: var(--color-text-strong);
+}
+
+.revision-review__row--changed td:last-child::before {
+  content: "";
+
+  width: 6px;
+  height: 6px;
+  margin-inline-end: 7px;
+
+  display: inline-block;
+  vertical-align: middle;
+
+  border-radius: 50%;
+
+  background: var(--smart-wizard-cyan, #0891b2);
+}
+
+.revision-review__row--changed:has(.revision-review__sources) td:last-child::before {
+  display: none;
+}
+
+.revision-review__row--same td {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.revision-review__arrow-col {
+  width: 28px;
+  color: var(--color-text-muted);
+}
+
+.revision-review__arrow-col svg {
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+}
+
+[dir="rtl"] .revision-review__arrow-col svg {
+  transform: scaleX(-1);
+}
+
+.revision-review__same {
+  margin-inline-start: 8px;
+
+  color: var(--color-text-muted);
+
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.revision-review__muted {
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+
+.revision-review__sources {
+  margin: 0;
+  padding: 0;
+
+  display: grid;
+  gap: 4px;
+
+  list-style: none;
+}
+
+.revision-review__sources li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.revision-review__sources li > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.revision-review__sources bdi {
+  flex: none;
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Effects + notes ---------- */
+
+.revision-review__effects {
+  padding: 14px 16px;
+
+  display: grid;
+  gap: 8px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface);
+}
+
+.revision-review__effects ul {
+  margin: 0;
+  padding-inline-start: 18px;
+
+  display: grid;
+  gap: 6px;
+
+  color: var(--color-text-primary);
+
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.revision-review__note {
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  border: 1px solid color-mix(in srgb, var(--color-warning) 30%, var(--color-border));
+  border-radius: var(--radius-md);
+
+  background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface));
+}
+
+.revision-review__note svg {
+  width: 17px;
+  height: 17px;
+  margin-top: 2px;
+  flex: none;
+  color: var(--color-warning);
+}
+
+.revision-review__note p {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* ---------- Phones: one card per row ---------- */
+
+@media (max-width: 640px) {
+  .revision-review__compare {
+    padding: 14px;
+  }
+
+  .revision-review__table thead {
+    display: none;
+  }
+
+  .revision-review__table,
+  .revision-review__table tbody {
+    display: grid;
+    gap: 8px;
+  }
+
+  .revision-review__table tbody tr {
+    padding: 10px 12px;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 4px 12px;
+
+    border: 1px solid var(--border-soft, var(--color-border));
+    border-radius: var(--radius-md);
+
+    background: var(--color-surface);
+  }
+
+  .revision-review__table tbody th {
+    width: auto;
+    padding: 0;
+    grid-column: 1 / -1;
+
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .revision-review__table td {
+    padding: 0;
+  }
+
+  .revision-review__table td::before {
+    content: attr(data-label);
+
+    display: block;
+
+    color: var(--color-text-muted);
+
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  /* The desktop dot becomes the "After" label, in the accent colour. */
+  .revision-review__row--changed td:last-child::before {
+    content: attr(data-label);
+
+    width: auto;
+    height: auto;
+    margin: 0;
+
+    display: block;
+
+    border-radius: 0;
+
+    color: var(--smart-wizard-cyan, #0891b2);
+    background: none;
+  }
+
+  .revision-review__row--changed:has(.revision-review__sources) td:last-child::before {
+    display: block;
+  }
+
+  .revision-review__table .revision-review__arrow-col {
+    display: none;
+  }
+
+  .revision-review__same {
+    margin-inline-start: 0;
+    display: block;
+  }
+}

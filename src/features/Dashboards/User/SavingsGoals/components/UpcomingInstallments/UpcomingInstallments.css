@@ -1,0 +1,204 @@
+.upcoming-installments {
+  margin-top: 20px;
+  padding: 18px 20px 10px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background:
+    radial-gradient(
+      120% 140% at 0% 0%,
+      color-mix(in srgb, var(--savings-cyan, #0891b2) 7%, transparent),
+      transparent 55%
+    ),
+    var(--color-surface);
+
+  box-shadow: var(--shadow-card);
+}
+
+[dir="rtl"] .upcoming-installments {
+  background:
+    radial-gradient(
+      120% 140% at 100% 0%,
+      color-mix(in srgb, var(--savings-cyan, #0891b2) 7%, transparent),
+      transparent 55%
+    ),
+    var(--color-surface);
+}
+
+.upcoming-installments__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.upcoming-installments__icon {
+  width: 34px;
+  height: 34px;
+  flex: none;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: var(--radius-md);
+
+  color: var(--savings-cyan, #0891b2);
+  background: color-mix(in srgb, var(--savings-cyan, #0891b2) 12%, transparent);
+}
+
+.upcoming-installments__icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.upcoming-installments__header h2 {
+  margin: 0;
+
+  color: var(--color-text-primary);
+
+  font-family: var(--font-heading);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.upcoming-installments__header p {
+  margin: 3px 0 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.upcoming-installments__list {
+  margin: 12px 0 0;
+  padding: 0;
+
+  list-style: none;
+}
+
+.upcoming-installments__item + .upcoming-installments__item {
+  border-top: 1px solid var(--border-soft);
+}
+
+.upcoming-installments__item a {
+  min-height: var(--dashboard-touch-target, 44px);
+  padding: 10px 6px;
+
+  display: grid;
+  grid-template-columns: minmax(96px, auto) minmax(0, 1fr) auto 16px;
+  align-items: center;
+  gap: 14px;
+
+  border-radius: var(--radius-sm);
+
+  color: inherit;
+  text-decoration: none;
+
+  transition: background-color 160ms ease;
+}
+
+.upcoming-installments__item a:hover {
+  background: var(--surface-hover);
+}
+
+.upcoming-installments__item a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.upcoming-installments__date {
+  display: grid;
+  gap: 4px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.upcoming-installments__overdue {
+  width: max-content;
+  padding: 3px 8px;
+
+  border-radius: 999px;
+
+  color: color-mix(in srgb, var(--color-danger) 85%, var(--color-text-primary));
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+
+  font-size: 10px;
+  line-height: 1;
+}
+
+.upcoming-installments__goal {
+  overflow: hidden;
+
+  color: var(--color-text-primary);
+
+  font-size: 13px;
+  font-weight: 600;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.upcoming-installments__amount {
+  color: var(--color-text-primary);
+
+  font-family: var(--font-heading);
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.upcoming-installments__chevron {
+  width: 16px;
+  height: 16px;
+
+  color: var(--color-text-muted);
+}
+
+[dir="rtl"] .upcoming-installments__chevron {
+  transform: scaleX(-1);
+}
+
+@media (max-width: 640px) {
+  .upcoming-installments {
+    padding: 16px 14px 8px;
+  }
+
+  .upcoming-installments__item a {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "goal amount"
+      "date amount";
+    gap: 4px 12px;
+  }
+
+  .upcoming-installments__goal {
+    grid-area: goal;
+  }
+
+  .upcoming-installments__date {
+    grid-area: date;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+  }
+
+  .upcoming-installments__amount {
+    grid-area: amount;
+  }
+
+  .upcoming-installments__chevron {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .upcoming-installments__item a {
+    transition: none;
+  }
+}

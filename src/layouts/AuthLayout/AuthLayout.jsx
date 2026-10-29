@@ -1,9 +1,13 @@
 import { useLanguageContext } from "../../contexts/language/useLanguageContext";
-import logo from "../../assets/smart-spend-logo.png";
+import logo from "../../assets/smartspend-logo-256.png";
+// The landing's font faces (IBM Plex Sans Arabic, Plus Jakarta Sans) for the auth refresh.
+import "../../features/PublicPage/Home/styles/fonts.css";
 import "./AuthLayout.css";
+import "./AuthRefresh.css";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { useThemeContext } from "../../contexts/theme/useThemeContext";
 import { PATH } from "../../routes/Path";
+import RouteSuspense from "../../routes/RouteSuspense";
 import AuthAnimatedBackground from "./AuthAnimatedBackground";
 
 const AUTH_VARIANTS = {
@@ -13,7 +17,6 @@ const AUTH_VARIANTS = {
   [PATH.AUTH.COMPANY_SIGNIN]: "company-login",
   [PATH.AUTH.COMPANY_REGISTER]: "company-register",
   [PATH.AUTH.FORGOT_PASSWORD]: "forgot",
-  [PATH.AUTH.VERIFY_CODE]: "verify",
   [PATH.AUTH.RESET_PASSWORD]: "reset",
   [PATH.AUTH.PASSWORD_CHANGED]: "password-changed",
 };
@@ -110,7 +113,9 @@ export default function AuthLayout({ variant }) {
         className={`auth-card auth-card--${activeVariant}`}
         data-auth-page={activeVariant}
       >
-        <Outlet />
+        <RouteSuspense>
+          <Outlet />
+        </RouteSuspense>
       </main>
     </div>
   );

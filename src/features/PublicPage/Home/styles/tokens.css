@@ -1,0 +1,104 @@
+/*
+ * Landing page: tokens.css from the approved SmartSpend landing design (Edition 03.2),
+ * scoped under .smartspend-landing so it cannot reach other screens. Keyframes carry a
+ * landing- prefix because the production build ships one global stylesheet.
+ */
+/*
+ * SmartSpend marketing tokens.
+ * Brand: primary blue, cyan, dark navy, cool neutrals. Green is intentionally absent.
+ * Dark is the default theme; light redefines every surface rather than inverting it.
+ */
+.smartspend-landing {
+  --brand-blue: #2563eb;
+  --brand-blue-bright: #3b82f6;
+  --brand-cyan: #22c3ee;
+  --brand-navy: #07142b;
+
+  --ease-out: cubic-bezier(.22, 1, .36, 1);
+  --ease-spring: cubic-bezier(.32, .72, 0, 1);
+  --ease-soft: cubic-bezier(.45, .05, .35, 1);
+
+  --radius-xl: 2rem;
+  --radius-lg: 1.375rem;
+  --radius-md: 1rem;
+  --bezel-pad: 6px;
+
+  --gutter: clamp(16px, 4.5vw, 64px);
+  --container: 1200px;
+  --header-h: 78px;
+  --dir: 1;
+
+  --font-en: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-en-serif: 'Instrument Serif', Georgia, serif;
+  --font-num: 'Plus Jakarta Sans', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --font-ar: 'IBM Plex Sans Arabic', 'Plus Jakarta Sans', system-ui, sans-serif;
+
+  /* Dark theme (default). */
+  --bg: #050b17;
+  --bg-raise: #071020;
+  --surface: #0a1526;
+  --surface-2: #0e1b30;
+  --surface-3: #15253f;
+  --shell: rgba(140, 170, 225, .045);
+  --shell-line: rgba(150, 180, 235, .12);
+  --line: rgba(150, 180, 235, .10);
+  --line-strong: rgba(150, 180, 235, .19);
+  --text: #eef3fc;
+  --text-2: #aab9d0;
+  --text-3: #8496b0;
+  --accent: #6cd3f6;
+  --accent-soft: rgba(59, 130, 246, .11);
+  --accent-line: rgba(96, 165, 250, .30);
+  --core-highlight: inset 0 1px 0 rgba(255, 255, 255, .055);
+  --shadow-float: 0 60px 120px -60px rgba(0, 0, 0, .9), 0 24px 48px -32px rgba(0, 0, 0, .7);
+  --shadow-soft: 0 24px 60px -36px rgba(0, 0, 0, .8);
+  --glass: rgba(7, 15, 29, .66);
+  --glass-line: rgba(150, 180, 235, .14);
+  --warn: #f2b45a;
+  --danger-text: #f59aa6;
+  --danger-soft: rgba(244, 63, 94, .1);
+  --halo: rgba(37, 99, 235, .30);
+  --halo-cyan: rgba(34, 195, 238, .13);
+  --wordmark-accent: linear-gradient(100deg, #5b97ff 0%, #3cc9f3 100%);
+  --hero-accent: linear-gradient(100deg, #86b4ff 0%, #62d2fb 58%, #b3ecff 100%);
+  --chart-bar: linear-gradient(180deg, rgba(96, 165, 250, .5), rgba(37, 99, 235, .1));
+  --backdrop: rgba(2, 6, 14, .66);
+  --receipt-paper: #f3f0e8;
+  --receipt-ink: #1b2232;
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] .smartspend-landing {
+  --bg: #f4f6fb;
+  --bg-raise: #eef2f8;
+  --surface: #ffffff;
+  --surface-2: #f5f7fb;
+  --surface-3: #e9eef7;
+  --shell: rgba(18, 48, 105, .035);
+  --shell-line: rgba(18, 48, 105, .08);
+  --line: rgba(18, 48, 105, .085);
+  --line-strong: rgba(18, 48, 105, .16);
+  --text: #0a1830;
+  --text-2: #43536e;
+  --text-3: #5a6982;
+  --accent: #1656cf;
+  --accent-soft: rgba(37, 99, 235, .07);
+  --accent-line: rgba(37, 99, 235, .24);
+  --core-highlight: inset 0 1px 0 rgba(255, 255, 255, 1);
+  --shadow-float: 0 50px 100px -55px rgba(20, 50, 110, .32), 0 16px 32px -22px rgba(20, 50, 110, .16);
+  --shadow-soft: 0 18px 40px -28px rgba(20, 50, 110, .24);
+  --glass: rgba(250, 251, 254, .74);
+  --glass-line: rgba(18, 48, 105, .10);
+  --warn: #a95c06;
+  --danger-text: #b4233c;
+  --danger-soft: rgba(225, 29, 72, .07);
+  --halo: rgba(37, 99, 235, .15);
+  --halo-cyan: rgba(14, 165, 233, .10);
+  --wordmark-accent: linear-gradient(100deg, #1d4fd8 0%, #0b86bd 100%);
+  --hero-accent: linear-gradient(100deg, #1d4fd8 0%, #1569d4 55%, #0a82b8 100%);
+  --chart-bar: linear-gradient(180deg, rgba(37, 99, 235, .32), rgba(37, 99, 235, .06));
+  --backdrop: rgba(10, 24, 48, .32);
+  color-scheme: light;
+}
+
+html[dir='rtl'] .smartspend-landing { --dir: -1; }

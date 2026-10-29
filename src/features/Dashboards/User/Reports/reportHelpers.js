@@ -30,7 +30,7 @@ const INTEGER = /^[+-]?\d+$/;
 export const isObject = (value) =>
   value != null && typeof value === "object" && !Array.isArray(value);
 
-const hasValue = (value) => value != null && value !== "";
+export const hasValue = (value) => value != null && value !== "";
 
 export const isCurrencyCode = (value) => CURRENCY.test(String(value ?? ""));
 
@@ -390,6 +390,17 @@ export function getAmountTone(value) {
   if (typeof value === "number") return value < 0 ? "negative" : value > 0 ? "positive" : "zero";
   if (isNegativeMoney(value)) return "negative";
   return /[1-9]/.test(String(value)) ? "positive" : "zero";
+}
+
+// Direction of a comparison change: the backend's `direction` / `trend`
+// when sent, otherwise the sign of its change figure. Never calculated from
+// two totals. Returns "positive", "negative" or "zero".
+export function getChangeDirection(metric) {
+  const trend = String(metric?.trend ?? "").toLowerCase();
+  if (["up", "increase", "increased", "higher"].includes(trend)) return "positive";
+  if (["down", "decrease", "decreased", "lower"].includes(trend)) return "negative";
+  if (["flat", "same", "unchanged", "equal"].includes(trend)) return "zero";
+  return getAmountTone(metric?.change ?? metric?.percent);
 }
 
 // Width (0–100) of a progress bar for a backend percentage. Only the bar is
@@ -772,4 +783,56 @@ export function parseDistribution(value) {
 
   const flat = entriesFromMap(value);
   return flat ? [{ currency: value.currency_code ?? "", entries: flat }] : [];
+}
+
+/* ---------- Items table columns ---------- */
+
+const MAX_AUTO_COLUMNS = 10;
+
+// First present scalar among `keys`: an object (e.g. a nested next
+// occurrence without a date) is never printed.
+export function pickScalar(row, keys = []) {
+  for (const key of keys) {
+    const value = pickValue(row, [key]);
+    if (value != null && typeof value !== "object") return value;
+  }
+
+  return null;
+}
+
+function hasColumnValue(column, row) {
+  // The name column also carries the link to the row's details page.
+  if (column.primary && column.link?.(row)) return true;
+  if (column.type === "occurrences") return isObject(pickValue(row, column.keys));
+  if (column.type === "progress") return pickScalar(row, [...column.keys, ...(column.statusKeys ?? [])]) != null;
+  if (column.type === "range") return pickScalar(row, [...column.keys, ...(column.endKeys ?? [])]) != null;
+  return pickScalar(row, column.keys) != null;
+}
+
+export const getRowCurrency = (row, fallback) => {
+  const currency = pickValue(row, ["currency_code", "account.currency_code"]);
+  return isCurrencyCode(currency) ? currency : fallback;
+};
+
+/*
+ * The report's columns that at least one row has a value for. If none of the
+ * documented columns match, the rows' own scalar fields become the columns
+ * (up to MAX_AUTO_COLUMNS) instead of showing nothing.
+ */
+export function getVisibleColumns(columns, rows) {
+  const visible = columns.filter((column) => rows.some((row) => hasColumnValue(column, row)));
+  if (visible.length > 0) return visible;
+
+  const keys = [];
+  rows.forEach((row) => {
+    getExtraScalarKeys(row, new Set()).forEach((key) => {
+      if (!keys.includes(key) && keys.length < MAX_AUTO_COLUMNS) keys.push(key);
+    });
+  });
+
+  return keys.map((key) => ({
+    id: key,
+    keys: [key],
+    type: key === "currency_code" ? "currency" : getValueType(key, rows.find((row) => row[key] != null)?.[key]),
+  }));
 }

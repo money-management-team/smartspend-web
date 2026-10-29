@@ -1,0 +1,261 @@
+/* =========================================
+   COMPANY UNAVAILABLE
+   "Under development" state for the company
+   register / sign-in routes.
+========================================= */
+
+.company-unavailable {
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+}
+
+.company-unavailable .auth-heading {
+  text-align: center;
+}
+
+
+/* Illustration */
+
+.company-unavailable__visual {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 96px;
+  margin-inline: auto;
+}
+
+.company-unavailable__pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  animation: company-unavailable-pulse 2.6s ease-out infinite;
+}
+
+.company-unavailable__icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  border-radius: 20px;
+  color: #ffffff;
+  background: var(--gradient-primary);
+  box-shadow: var(--shadow-md, 0 10px 24px rgba(0, 0, 0, 0.16));
+}
+
+.company-unavailable__icon svg {
+  width: 32px;
+  height: 32px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.company-unavailable__spark {
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-end: 2px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--auth-warning);
+  background: var(--auth-control-bg);
+  border: 1px solid var(--auth-card-border);
+}
+
+.company-unavailable__spark svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+/* Status badge */
+
+.company-unavailable__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--auth-warning);
+  background: color-mix(in srgb, var(--auth-warning) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--auth-warning) 35%, transparent);
+}
+
+.company-unavailable__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: company-unavailable-blink 1.4s ease-in-out infinite;
+}
+
+.company-unavailable__detail {
+  margin: 0;
+  max-width: 44ch;
+  color: var(--auth-muted);
+  line-height: 1.7;
+}
+
+
+/* Roadmap */
+
+.company-unavailable__roadmap {
+  width: 100%;
+  padding: 16px 18px;
+  border-radius: 16px;
+  text-align: start;
+  background: var(--auth-control-bg);
+  border: 1px solid var(--auth-control-border);
+}
+
+.company-unavailable__roadmap-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+  color: var(--auth-label);
+}
+
+.company-unavailable__roadmap-title svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--auth-link);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.company-unavailable__list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.company-unavailable__list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--auth-muted);
+}
+
+.company-unavailable__check {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: var(--auth-link);
+  background: var(--primary-soft);
+}
+
+.company-unavailable__check svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+/* Actions */
+
+.company-unavailable__actions {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
+.company-unavailable__actions .auth-button svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.company-unavailable__back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--auth-link);
+  text-decoration: none;
+}
+
+.company-unavailable__back:hover {
+  color: var(--auth-link-hover);
+  text-decoration: underline;
+}
+
+.company-unavailable__back svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+[dir="rtl"] .company-unavailable__back svg {
+  transform: scaleX(-1);
+}
+
+
+/* Motion */
+
+@keyframes company-unavailable-pulse {
+  0% {
+    transform: scale(0.72);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+}
+
+@keyframes company-unavailable-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .company-unavailable__pulse,
+  .company-unavailable__dot {
+    animation: none;
+  }
+}

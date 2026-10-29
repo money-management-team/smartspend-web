@@ -1,9 +1,18 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { createElement, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { LuCircleAlert, LuInfo, LuRefreshCw, LuTriangleAlert } from "react-icons/lu";
+import {
+  LuCircleAlert,
+  LuInfo,
+  LuRefreshCw,
+  LuTriangleAlert,
+} from "react-icons/lu";
 
-import { getBudgetDetailsPath, getFinancialAlertsPath } from "../../../../../../routes/Path";
+import {
+  getBudgetDetailsPath,
+  getFinancialAlertsPath,
+} from "../../../../../../routes/Path";
 import { getDisplayLocale } from "../../../Accounts/accountHelpers";
 import { ApiError, getApiErrorMessage } from "../../../api/apiClient";
 import { financialAlertsApi } from "../../../api/financialAlertsApi";
@@ -27,7 +36,9 @@ const getSeverity = (alert) =>
 
 const toCount = (value) => {
   const number = Number(value);
-  return value != null && value !== "" && Number.isFinite(number) ? number : null;
+  return value != null && value !== "" && Number.isFinite(number)
+    ? number
+    : null;
 };
 
 /*
@@ -52,7 +63,10 @@ export default function FinancialAlerts({ workspaceId, variant = "compact" }) {
     const controller = new AbortController();
 
     financialAlertsApi
-      .list({ id_workspace: workspaceId ?? undefined }, { signal: controller.signal })
+      .list(
+        { id_workspace: workspaceId ?? undefined },
+        { signal: controller.signal },
+      )
       .then((response) => {
         const data = response?.data;
         setResult(
@@ -82,7 +96,10 @@ export default function FinancialAlerts({ workspaceId, variant = "compact" }) {
 
   const summaryCounts = [
     ["active_budgets", toCount(summary?.active_budgets)],
-    ...SUMMARY_STATUSES.map((status) => [status, toCount(summary?.by_status?.[status])]),
+    ...SUMMARY_STATUSES.map((status) => [
+      status,
+      toCount(summary?.by_status?.[status]),
+    ]),
     ["ended", toCount(summary?.ended)],
     ["without_expenses", toCount(summary?.without_expenses)],
   ].filter(([, count]) => count != null);
@@ -94,7 +111,10 @@ export default function FinancialAlerts({ workspaceId, variant = "compact" }) {
       subtitle={t("dashboard.financialAlerts.subtitle")}
       action={
         isCompact ? (
-          <Link to={getFinancialAlertsPath()} className="dashboard-section-link">
+          <Link
+            to={getFinancialAlertsPath()}
+            className="dashboard-section-link"
+          >
             {t("dashboard.user.common.viewAll")}
           </Link>
         ) : (
@@ -118,7 +138,10 @@ export default function FinancialAlerts({ workspaceId, variant = "compact" }) {
         )}
 
         {!isLoading && error && (
-          <div className="financial-alerts__state financial-alerts__state--error" role="alert">
+          <div
+            className="financial-alerts__state financial-alerts__state--error"
+            role="alert"
+          >
             <p>{getApiErrorMessage(error, t)}</p>
             <button type="button" onClick={reload}>
               {t("common.retry")}
@@ -129,9 +152,15 @@ export default function FinancialAlerts({ workspaceId, variant = "compact" }) {
         {!isLoading && !error && (
           <>
             {summaryCounts.length > 0 && (
-              <ul className="financial-alerts__summary" aria-label={t("dashboard.financialAlerts.summary.label")}>
+              <ul
+                className="financial-alerts__summary"
+                aria-label={t("dashboard.financialAlerts.summary.label")}
+              >
                 {summaryCounts.map(([key, count]) => (
-                  <li key={key} className={`financial-alerts__count financial-alerts__count--${key}`}>
+                  <li
+                    key={key}
+                    className={`financial-alerts__count financial-alerts__count--${key}`}
+                  >
                     <strong>
                       <bdi>{count.toLocaleString(locale)}</bdi>
                     </strong>
@@ -142,7 +171,9 @@ export default function FinancialAlerts({ workspaceId, variant = "compact" }) {
             )}
 
             {alerts.length === 0 ? (
-              <p className="financial-alerts__state">{t("dashboard.financialAlerts.states.empty")}</p>
+              <p className="financial-alerts__state">
+                {t("dashboard.financialAlerts.states.empty")}
+              </p>
             ) : (
               <ul className="financial-alerts__list">
                 {visibleAlerts.map((alert, index) => {
@@ -153,25 +184,48 @@ export default function FinancialAlerts({ workspaceId, variant = "compact" }) {
                       key={`${alert.type ?? "alert"}-${alert.budget_id ?? ""}-${index}`}
                       className={`financial-alert financial-alert--${severity}`}
                     >
-                      <span className="financial-alert__icon" aria-hidden="true">
+                      <span
+                        className="financial-alert__icon"
+                        aria-hidden="true"
+                      >
                         {createElement(SEVERITY_ICONS[severity])}
                       </span>
 
                       <div className="financial-alert__copy">
                         <div className="financial-alert__heading">
-                          <span className={`financial-alert__badge financial-alert__badge--${severity}`}>
-                            {translateEnum(t, i18n, "dashboard.financialAlerts.severities", alert.severity) ||
-                              t("dashboard.financialAlerts.severities.info")}
+                          <span
+                            className={`financial-alert__badge financial-alert__badge--${severity}`}
+                          >
+                            {translateEnum(
+                              t,
+                              i18n,
+                              "dashboard.financialAlerts.severities",
+                              alert.severity,
+                            ) || t("dashboard.financialAlerts.severities.info")}
                           </span>
                           {alert.type && (
-                            <strong>{translateEnum(t, i18n, "dashboard.financialAlerts.types", alert.type)}</strong>
+                            <strong>
+                              {translateEnum(
+                                t,
+                                i18n,
+                                "dashboard.financialAlerts.types",
+                                alert.type,
+                              )}
+                            </strong>
                           )}
                         </div>
 
-                        {alert.message && <p dir="auto">{alert.message}</p>}
+                        {alert.message && (
+                          <p dir="auto">
+                            <PrivateMoney>{alert.message}</PrivateMoney>
+                          </p>
+                        )}
 
                         {alert.budget_id != null && (
-                          <Link to={getBudgetDetailsPath(alert.budget_id)} className="financial-alert__link">
+                          <Link
+                            to={getBudgetDetailsPath(alert.budget_id)}
+                            className="financial-alert__link"
+                          >
                             {t("dashboard.financialAlerts.viewBudget")}
                           </Link>
                         )}
@@ -185,7 +239,9 @@ export default function FinancialAlerts({ workspaceId, variant = "compact" }) {
             {isCompact && alerts.length > visibleAlerts.length && (
               <p className="financial-alerts__more">
                 <Link to={getFinancialAlertsPath()}>
-                  {t("dashboard.financialAlerts.more", { count: alerts.length - visibleAlerts.length })}
+                  {t("dashboard.financialAlerts.more", {
+                    count: alerts.length - visibleAlerts.length,
+                  })}
                 </Link>
               </p>
             )}

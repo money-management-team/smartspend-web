@@ -95,6 +95,6 @@
   }
 
   .cash-flow-card__figures {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }

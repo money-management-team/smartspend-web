@@ -24,6 +24,34 @@
   border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
 }
 
+/* Smart savings page only (VITE_SMART_SAVINGS_ENABLED). */
+.savings-goals-page--smart .saving-goal-card {
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.savings-goals-page--smart .saving-goal-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+/* Smart plan: a hairline in the brand blue → cyan along the top edge. */
+.saving-goal-card--smart::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -1px;
+  inset-inline: 18px;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(90deg, var(--color-primary), var(--savings-cyan, #0891b2));
+}
+
+[dir="rtl"] .saving-goal-card--smart::before {
+  background: linear-gradient(270deg, var(--color-primary), var(--savings-cyan, #0891b2));
+}
+
 .saving-goal-card:has(.saving-goal-card__link:focus-visible) {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
@@ -156,6 +184,81 @@
 
 
 /* =========================================
+   SMART PLAN — NEXT INSTALLMENT
+========================================= */
+
+.saving-goal-card__plan {
+  padding: 9px 12px;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+
+  border: 1px solid color-mix(in srgb, var(--savings-cyan, #0891b2) 18%, var(--color-border));
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-secondary);
+  background: color-mix(in srgb, var(--savings-cyan, #0891b2) 5%, var(--color-surface));
+
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.saving-goal-card__plan--overdue {
+  border-color: color-mix(in srgb, var(--color-danger) 28%, var(--color-border));
+  background: color-mix(in srgb, var(--color-danger) 5%, var(--color-surface));
+}
+
+.saving-goal-card__plan-label {
+  font-size: 11px;
+}
+
+.saving-goal-card__plan-value {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.saving-goal-card__plan-note,
+.saving-goal-card__plan-review {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.saving-goal-card__plan-note svg,
+.saving-goal-card__plan-review svg {
+  width: 13px;
+  height: 13px;
+  flex: none;
+}
+
+.saving-goal-card__plan-overdue,
+.saving-goal-card__plan-review {
+  padding: 4px 8px;
+
+  border-radius: 999px;
+
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.saving-goal-card__plan-overdue {
+  color: color-mix(in srgb, var(--color-danger) 85%, var(--color-text-primary));
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+}
+
+.saving-goal-card__plan-review {
+  margin-inline-start: auto;
+
+  color: color-mix(in srgb, var(--color-warning) 85%, var(--color-text-primary));
+  background: color-mix(in srgb, var(--color-warning) 12%, transparent);
+}
+
+
+/* =========================================
    ACTIONS (above the stretched link)
 ========================================= */
 
@@ -281,6 +384,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .savings-goals-page--smart .saving-goal-card:hover {
+    transform: none;
+  }
+
+  .savings-goals-page--smart .saving-goal-card,
   .saving-goal-card,
   .saving-goal-card__add,
   .saving-goal-card__edit,

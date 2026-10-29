@@ -1,0 +1,205 @@
+.confirm-installment__accounts {
+  margin: 0;
+  padding: 0;
+
+  display: grid;
+  gap: 8px;
+
+  border: 0;
+  min-width: 0;
+}
+
+.confirm-installment__accounts legend {
+  margin-bottom: 8px;
+  padding: 0;
+
+  color: var(--color-text-primary);
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Overrides the modal shell's stacked label / full-width input. */
+.account-form-modal__dialog .confirm-installment__account {
+  padding: 11px 12px;
+
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 10px;
+  row-gap: 2px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: var(--color-surface);
+
+  font-size: 13px;
+
+  cursor: pointer;
+
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.account-form-modal__dialog .confirm-installment__account input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--color-primary);
+}
+
+.account-form-modal__dialog .confirm-installment__account:hover:not(.confirm-installment__account--short) {
+  border-color: color-mix(in srgb, var(--color-primary) 40%, var(--color-border));
+}
+
+.account-form-modal__dialog .confirm-installment__account:has(input:focus-visible) {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.account-form-modal__dialog .confirm-installment__account--checked {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-surface));
+}
+
+.account-form-modal__dialog .confirm-installment__account--short {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.confirm-installment__account-name {
+  min-width: 0;
+  overflow: hidden;
+
+  color: var(--color-text-primary);
+  font-weight: 600;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.confirm-installment__account-balance {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.confirm-installment__account-balance bdi {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.account-form-modal__dialog .confirm-installment__account-note {
+  grid-column: 2 / -1;
+
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+.account-form-modal__dialog .confirm-installment__account--short .confirm-installment__account-note {
+  color: color-mix(in srgb, var(--color-danger) 85%, var(--color-text-primary));
+}
+
+.confirm-installment__statement {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  color: var(--color-text-primary);
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.confirm-installment__statement > svg {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  flex: none;
+  color: var(--savings-cyan, #0891b2);
+}
+
+.confirm-installment__statement > span {
+  min-width: 0;
+
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.confirm-installment__arrow {
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-muted);
+}
+
+[dir="rtl"] .confirm-installment__arrow {
+  transform: scaleX(-1);
+}
+
+.confirm-installment__statement-hint {
+  flex-basis: 100%;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  font-weight: 400;
+}
+
+@media (max-width: 420px) {
+  .account-form-modal__dialog .confirm-installment__account {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .confirm-installment__account-balance {
+    grid-column: 2;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-form-modal__dialog .confirm-installment__account {
+    transition: none;
+  }
+}
+
+/* Switch to paying from several accounts (priority / at-confirmation). */
+.confirm-installment__split {
+  justify-self: start;
+
+  min-height: 34px;
+  padding: 0 12px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  border: 1px dashed var(--color-border);
+  border-radius: 999px;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.confirm-installment__split:hover:not(:disabled) {
+  border-color: var(--color-primary);
+}
+
+.confirm-installment__split:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.confirm-installment__split svg {
+  width: 14px;
+  height: 14px;
+}

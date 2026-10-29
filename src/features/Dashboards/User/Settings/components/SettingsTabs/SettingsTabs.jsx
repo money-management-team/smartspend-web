@@ -1,12 +1,12 @@
 import { useTranslation } from "react-i18next";
+import { LuLockKeyhole, LuPlug, LuSlidersHorizontal, LuUserRound } from "react-icons/lu";
+
+import { SETTINGS_TABS } from "./tabKeys.js";
 
 import "./SettingsTabs.css";
 
-const tabs = [
-  "profile",
-  "security",
-  "preferences",
-];
+const tabs = SETTINGS_TABS;
+const icons = { profile: LuUserRound, security: LuLockKeyhole, preferences: LuSlidersHorizontal, integrations: LuPlug };
 
 export default function SettingsTabs({
   activeTab,
@@ -21,7 +21,9 @@ export default function SettingsTabs({
         "dashboard.settings.tabs.label",
       )}
     >
-      {tabs.map((tab) => (
+      {tabs.map((tab) => {
+        const Icon = icons[tab];
+        return (
         <button
           key={tab}
           type="button"
@@ -30,17 +32,18 @@ export default function SettingsTabs({
               ? "settings-tab--active"
               : ""
           }`}
+          aria-current={activeTab === tab ? "page" : undefined}
           onClick={() =>
             onChange(tab)
           }
         >
-          <bdi>
+          <Icon aria-hidden="true" /><bdi>
             {t(
               `dashboard.settings.tabs.${tab}`,
             )}
           </bdi>
         </button>
-      ))}
+      );})}
     </nav>
   );
 }

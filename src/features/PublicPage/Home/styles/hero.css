@@ -1,0 +1,113 @@
+/*
+ * Landing page: hero.css from the approved SmartSpend landing design (Edition 03.2),
+ * scoped under .smartspend-landing so it cannot reach other screens. Keyframes carry a
+ * landing- prefix because the production build ships one global stylesheet.
+ */
+/* Hero: the original Gravity Stars field, lit from above, with the name and headline as focal points. */
+.smartspend-landing .hero { position: relative; isolation: isolate; overflow: hidden; background: var(--bg); }
+.smartspend-landing .hero-sentinel { position: absolute; top: 0; inset-inline: 0; height: 40px; pointer-events: none; }
+.smartspend-landing .hero-stars { position: relative; z-index: 2; min-height: 100svh; }
+.smartspend-landing .hero-stars > .gravity-stars-content { display: flex; flex-direction: column; min-height: 100svh; }
+
+/* Light: a soft spotlight cone and a cyan halo behind the logo. */
+.smartspend-landing .hero-light { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.smartspend-landing .hero-beam { position: absolute; top: -12%; left: 50%; width: min(1200px, 150vw); height: 92%; transform: translateX(-50%); background: radial-gradient(ellipse 50% 62% at 50% 0%, var(--halo), transparent 72%); }
+.smartspend-landing .hero-halo { position: absolute; top: 26%; left: 50%; width: 560px; height: 560px; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle, var(--halo-cyan), transparent 66%); animation: landing-breathe 14s var(--ease-soft) infinite; }
+
+/* Geometry: three concentric hairline orbits that fade towards the bottom. */
+.smartspend-landing .hero-geometry { position: absolute; inset: 0; z-index: 1; pointer-events: none; -webkit-mask-image: linear-gradient(180deg, #000 10%, transparent 72%); mask-image: linear-gradient(180deg, #000 10%, transparent 72%); }
+.smartspend-landing .hero-geometry > i { position: absolute; top: 25%; left: 50%; aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%); box-shadow: inset 0 0 0 1px var(--line); }
+.smartspend-landing .hero-geometry > i:nth-child(1) { width: 380px; }
+.smartspend-landing .hero-geometry > i:nth-child(2) { width: 760px; opacity: .8; }
+.smartspend-landing .hero-geometry > i:nth-child(3) { width: 1180px; opacity: .55; }
+
+.smartspend-landing .hero-inner { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding-top: calc(var(--header-h) + clamp(20px, 4vh, 56px)); padding-bottom: 24px; }
+
+.smartspend-landing .hero-lockup { display: flex; flex-direction: column; align-items: center; }
+.smartspend-landing .hero-logo, .smartspend-landing .cta-logo { position: relative; display: grid; place-items: center; width: 116px; height: 116px; }
+.smartspend-landing .hero-logo .logo { position: relative; width: 80px; height: 80px; object-fit: contain; filter: drop-shadow(0 12px 32px rgba(37, 99, 235, .45)); }
+.smartspend-landing .hero-logo-ring { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle, rgba(37, 99, 235, .2), transparent 68%); box-shadow: inset 0 0 0 1px var(--line); }
+.smartspend-landing .hero-logo-ring::before { content: ''; position: absolute; inset: 0; border-radius: 50%; padding: 1px; background: conic-gradient(from 0deg, transparent 0 62%, rgba(108, 211, 246, .85) 82%, transparent 100%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: landing-spin 10s linear infinite; }
+:root[data-theme='light'] .smartspend-landing .hero-logo-ring { background: radial-gradient(circle, rgba(37, 99, 235, .1), transparent 68%); }
+:root[data-theme='light'] .smartspend-landing .hero-logo .logo { filter: drop-shadow(0 12px 28px rgba(37, 99, 235, .28)); }
+
+.smartspend-landing .hero-wordmark { margin-top: 8px; font-size: clamp(32px, 2.8vw, 42px); color: var(--text); }
+.smartspend-landing .hero-kicker { display: inline-flex; align-items: center; gap: 14px; margin-top: 14px; font-size: 14.5px; font-weight: 500; color: var(--text-3); line-height: 1.6; }
+.smartspend-landing .hero-kicker::before, .smartspend-landing .hero-kicker::after { content: ''; width: 28px; height: 1px; background: linear-gradient(90deg, transparent, var(--line-strong)); }
+.smartspend-landing .hero-kicker::after { transform: scaleX(-1); }
+html[lang='en'] .smartspend-landing .hero-kicker { font-size: 11.5px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; }
+
+.smartspend-landing .hero-title { margin-top: clamp(20px, 3.6vh, 40px); max-width: 100%; }
+html[lang='ar'] .smartspend-landing .hero-title { font-family: var(--font-ar); font-weight: 600; font-size: clamp(33px, min(10.4vw, 9.8vh), 90px); line-height: 1.34; letter-spacing: 0; }
+html[lang='en'] .smartspend-landing .hero-title { font-family: var(--font-en); font-weight: 600; font-size: clamp(34px, min(9.4vw, 8.9vh), 80px); line-height: 1.04; letter-spacing: -.045em; }
+.smartspend-landing .hero-line { display: block; }
+.smartspend-landing .hero-line-accent > span { display: inline-block; padding: .02em .1em .18em; margin: -.02em -.1em -.18em; background: var(--hero-accent); -webkit-background-clip: text; background-clip: text; color: transparent; }
+html[lang='ar'] .smartspend-landing .hero-line-accent { font-weight: 300; }
+html[lang='en'] .smartspend-landing .hero-line-accent { font-family: var(--font-en-serif); font-style: italic; font-weight: 400; font-size: 1.1em; letter-spacing: -.02em; line-height: 1.02; }
+
+.smartspend-landing .hero-lede { max-width: 620px; margin-top: clamp(16px, 2.6vh, 28px); font-size: clamp(16px, .9rem + .4vw, 18.5px); line-height: 1.95; color: var(--text-2); }
+html[lang='en'] .smartspend-landing .hero-lede { max-width: 580px; line-height: 1.65; }
+html[lang='ar'] .smartspend-landing .hero-lede { font-size: clamp(16.5px, .95rem + .45vw, 19.5px); max-width: 640px; }
+html[lang='ar'] .smartspend-landing .hero-kicker { font-size: 15px; font-weight: 400; }
+.smartspend-landing .hero-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: clamp(24px, 3.6vh, 38px); }
+
+.smartspend-landing .hero-foot { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-block: 16px 26px; }
+.smartspend-landing .scroll-cue, .smartspend-landing .motion-toggle { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; font-size: 13px; color: var(--text-3); transition: color .3s var(--ease-out); }
+.smartspend-landing .scroll-cue:hover, .smartspend-landing .motion-toggle:not(:disabled):hover { color: var(--text); }
+.smartspend-landing .scroll-cue-line { position: relative; width: 1px; height: 28px; overflow: hidden; background: var(--line-strong); }
+.smartspend-landing .scroll-cue-line::after { content: ''; position: absolute; inset-inline: 0; top: 0; height: 40%; background: var(--accent); animation: landing-scan 2.6s var(--ease-soft) infinite; }
+.smartspend-landing .motion-toggle { padding-inline: 14px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--line); }
+.smartspend-landing .motion-toggle:disabled { cursor: default; opacity: .8; }
+html[lang='en'] .smartspend-landing :is(.scroll-cue, .motion-toggle) { font-size: 12.5px; }
+
+.smartspend-landing .hero-horizon { position: absolute; inset: auto 0 0; z-index: 4; height: 1px; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(59, 130, 246, .35) 30%, rgba(108, 211, 246, .85) 50%, rgba(59, 130, 246, .35) 70%, transparent); }
+.smartspend-landing .hero-horizon::after { content: ''; position: absolute; left: 25%; right: 25%; bottom: -50px; height: 100px; background: radial-gradient(ellipse, var(--halo), transparent 70%); }
+
+/* Entrance: staggered once on load. */
+.smartspend-landing .enter { animation: landing-enter 1.1s var(--ease-out) both; animation-delay: var(--d, 0ms); }
+
+@media (max-width: 900px) {
+  .smartspend-landing .hero-geometry > i:nth-child(1) { width: 300px; }
+  .smartspend-landing .hero-geometry > i:nth-child(2) { width: 600px; }
+  .smartspend-landing .hero-geometry > i:nth-child(3) { width: 920px; }
+}
+@media (max-width: 640px) {
+  .smartspend-landing { --header-h: 68px; }
+  .smartspend-landing .hero-inner { padding-top: calc(var(--header-h) + 36px); }
+  .smartspend-landing .hero-logo { width: 108px; height: 108px; }
+  .smartspend-landing .hero-logo .logo { width: 76px; height: 76px; }
+  .smartspend-landing .hero-wordmark { font-size: 30px; }
+  .smartspend-landing .hero-kicker { font-size: 13.5px; gap: 10px; }
+  .smartspend-landing .hero-kicker::before, .smartspend-landing .hero-kicker::after { width: 18px; }
+  html[lang='en'] .smartspend-landing .hero-kicker { font-size: 10.5px; letter-spacing: .14em; }
+  html[lang='ar'] .smartspend-landing .hero-title { line-height: 1.42; }
+  .smartspend-landing .hero-lede { font-size: 16px; }
+  .smartspend-landing .hero-actions { flex-direction: column; align-items: stretch; width: 100%; max-width: 380px; }
+  .smartspend-landing .hero-actions .btn { width: 100%; justify-content: space-between; }
+  .smartspend-landing .hero-foot { padding-bottom: 18px; }
+  .smartspend-landing .hero-halo { width: 380px; height: 380px; }
+  .smartspend-landing .hero-geometry > i:nth-child(1) { width: 240px; }
+  .smartspend-landing .hero-geometry > i:nth-child(2) { width: 460px; }
+  .smartspend-landing .hero-geometry > i:nth-child(3) { width: 700px; }
+}
+@media (max-width: 400px) {
+  .smartspend-landing .scroll-cue > span:last-child { display: none; }
+  .smartspend-landing .scroll-cue { min-width: 44px; justify-content: center; }
+}
+
+/* Light mode: a cool morning sky. Stars are deep blue points, so the light only needs to frame them. */
+:root[data-theme='light'] .smartspend-landing .hero { background: linear-gradient(180deg, #e6edf9 0%, #eef2fa 46%, var(--bg) 100%); }
+:root[data-theme='light'] .smartspend-landing .hero-beam { background: radial-gradient(ellipse 48% 60% at 50% 0%, rgba(37, 99, 235, .2), rgba(37, 99, 235, .06) 45%, transparent 74%); }
+:root[data-theme='light'] .smartspend-landing .hero-halo { background: radial-gradient(circle, rgba(14, 165, 233, .16), rgba(255, 255, 255, .5) 38%, transparent 68%); }
+:root[data-theme='light'] .smartspend-landing .hero-geometry > i { box-shadow: inset 0 0 0 1px rgba(29, 78, 216, .13); }
+:root[data-theme='light'] .smartspend-landing .hero-light::after { content: ''; position: absolute; inset: auto 0 0; height: 38%; background: radial-gradient(ellipse 60% 80% at 50% 100%, rgba(37, 99, 235, .1), transparent 70%); }
+:root[data-theme='light'] .smartspend-landing .hero-horizon { background: linear-gradient(90deg, transparent, rgba(37, 99, 235, .3) 30%, rgba(14, 165, 233, .7) 50%, rgba(37, 99, 235, .3) 70%, transparent); }
+
+/* A soft clearing behind the text column: stars stay visible at the edges, copy keeps a calm backdrop. */
+.smartspend-landing .hero-inner { position: relative; }
+.smartspend-landing .hero-inner::before { content: ''; position: absolute; inset: 22% 0 6%; z-index: -1; pointer-events: none; background: radial-gradient(ellipse 48% 54% at 50% 58%, rgba(5, 11, 23, .6) 30%, transparent 76%); }
+:root[data-theme='light'] .smartspend-landing .hero-inner::before { background: radial-gradient(ellipse 48% 54% at 50% 58%, rgba(241, 245, 251, .86) 32%, transparent 76%); }
+@media (max-width: 640px) {
+  .smartspend-landing .hero-inner::before { inset: 26% -10% 4%; background: radial-gradient(ellipse 92% 56% at 50% 56%, rgba(5, 11, 23, .66) 34%, transparent 82%); }
+  :root[data-theme='light'] .smartspend-landing .hero-inner::before { background: radial-gradient(ellipse 92% 56% at 50% 56%, rgba(241, 245, 251, .92) 36%, transparent 82%); }
+}

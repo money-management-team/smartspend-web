@@ -1,34 +1,23 @@
+import { useId } from "react";
 import { useTranslation } from "react-i18next";
-
-import { REPORT_DEFINITIONS } from "../../reportDefinitions";
-import { REPORT_NAMES } from "../../reportHelpers";
-
+import { LuChevronDown } from "react-icons/lu";
+import { REPORT_GROUPS } from "../../reportDefinitions";
 import "./ReportTabs.css";
 
-// One button per report; switching keeps the shared filters (see Reports.jsx).
+// One accessible grouped select on every screen size; every report remains available.
 export default function ReportTabs({ activeReport, onChange }) {
   const { t } = useTranslation();
-
+  const id = useId();
   return (
     <nav className="report-tabs" aria-label={t("dashboard.reports.tabs.label")}>
-      <div className="report-tabs__list">
-        {REPORT_NAMES.map((report) => {
-          const Icon = REPORT_DEFINITIONS[report].icon;
-          const isActive = report === activeReport;
-
-          return (
-            <button
-              key={report}
-              type="button"
-              className={`report-tab ${isActive ? "report-tab--active" : ""}`}
-              aria-pressed={isActive}
-              onClick={() => onChange(report)}
-            >
-              <Icon aria-hidden="true" />
-              <span>{t(`dashboard.reports.names.${report}`)}</span>
-            </button>
-          );
-        })}
+      <label className="report-tabs__picker-label" htmlFor={id}>{t("dashboard.reports.tabs.label")}</label>
+      <div className="report-tabs__select">
+        <select id={id} value={activeReport} onChange={(event) => onChange(event.target.value)}>
+          {REPORT_GROUPS.map((group) => <optgroup key={group.id} label={t(`dashboard.reports.tabs.groups.${group.id}`)}>
+            {group.reports.map((report) => <option key={report} value={report}>{t(`dashboard.reports.names.${report}`)}</option>)}
+          </optgroup>)}
+        </select>
+        <LuChevronDown aria-hidden="true" />
       </div>
     </nav>
   );

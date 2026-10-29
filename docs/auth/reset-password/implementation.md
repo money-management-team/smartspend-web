@@ -14,7 +14,7 @@ AuthPromo (resetPassword.promo.title / subtitle)
   .auth-promo__chips → 2 icon chips (ShieldIcon dataProtection, LockIcon encryption)
 
 section.auth-panel
-  AuthSteps current=3
+  AuthSteps current=2
   AuthHeading  icon = LockIcon (resetPassword.title / subtitle)
   form.auth-form
     PasswordField  #reset-password           describedBy = reset-password-strength; errors = backend `password`
@@ -94,5 +94,5 @@ Editing a field clears that field's backend error and the alert.
 
 ## Notes
 
-- `AuthSteps` shows step 3 of 4. The link-based flow skips Verify Code (step 2).
+- `AuthSteps` shows step 2 of 3.
 - "Back to sign in" used to be `href="#login"`, which only changed the URL hash. It is now a router link.

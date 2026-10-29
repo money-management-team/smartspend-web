@@ -1,11 +1,6 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useTranslation } from "react-i18next";
-import {
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
 
 import SectionCard from "../shared/SectionCard";
 
@@ -42,16 +37,24 @@ export default function ExpenseCategories({ categories, currency }) {
     .filter((item) => !currency || item.currency === currency)
     .map((item) => ({ ...item, value: Math.abs(Number(item.total) || 0) }))
     .filter((item) => item.value > 0);
-  const hasOtherCurrencies = rows.some((item) => currency && item.currency !== currency);
+  const hasOtherCurrencies = rows.some(
+    (item) => currency && item.currency !== currency,
+  );
 
   return (
     <SectionCard
       className="expense-categories-card"
       title={t("dashboard.user.expenseCategories.title")}
-      subtitle={currency ? t("dashboard.user.expenseCategories.subtitle", { currency }) : undefined}
+      subtitle={
+        currency
+          ? t("dashboard.user.expenseCategories.subtitle", { currency })
+          : undefined
+      }
     >
       {rows.length === 0 ? (
-        <p className="expense-categories-card__empty">{t("dashboard.user.expenseCategories.empty")}</p>
+        <p className="expense-categories-card__empty">
+          {t("dashboard.user.expenseCategories.empty")}
+        </p>
       ) : (
         <>
           {chartRows.length > 0 && (
@@ -88,15 +91,27 @@ export default function ExpenseCategories({ categories, currency }) {
           <ul className="expense-categories-card__legend">
             {rows.map((item, index) => (
               <li key={`${item.category_id ?? index}-${item.currency ?? ""}`}>
-                <span className="expense-categories-card__dot" style={{ backgroundColor: item.color }} />
-                <span dir="auto">{item.name ?? t("dashboard.user.expenseCategories.uncategorized")}</span>
-                <strong>{formatOptionalMoney(item.total, item.currency, locale)}</strong>
+                <span
+                  className="expense-categories-card__dot"
+                  style={{ backgroundColor: item.color }}
+                />
+                <span dir="auto">
+                  {item.name ??
+                    t("dashboard.user.expenseCategories.uncategorized")}
+                </span>
+                <strong>
+                  <PrivateMoney>
+                    {formatOptionalMoney(item.total, item.currency, locale)}
+                  </PrivateMoney>
+                </strong>
               </li>
             ))}
           </ul>
 
           {hasOtherCurrencies && (
-            <p className="expense-categories-card__note">{t("dashboard.user.expenseCategories.otherCurrencies")}</p>
+            <p className="expense-categories-card__note">
+              {t("dashboard.user.expenseCategories.otherCurrencies")}
+            </p>
           )}
         </>
       )}

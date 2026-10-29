@@ -1,0 +1,19 @@
+.planned-contributions { border: 1px solid var(--color-border); border-radius: 17px; background: var(--color-surface); box-shadow: var(--shadow-card); overflow: hidden; }
+.planned-contributions__head { padding: 18px 22px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 1px solid var(--color-border); }
+.planned-contributions__head h2 { margin: 0; display: flex; align-items: center; gap: 8px; font-size: 16px; color: var(--color-text-strong); }
+.planned-contributions__head p, .planned-contributions__body > p { margin: 7px 0 0; color: var(--color-text-secondary); font-size: 13px; }
+.planned-contributions button { cursor: pointer; }
+.planned-contributions button:disabled { opacity: .55; cursor: not-allowed; }
+.planned-contributions__head > button, .planned-contributions__actions button, .planned-contributions__pages button { padding: 7px 11px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-primary); font: inherit; font-size: 12px; }
+.planned-contributions__body { padding: 14px 22px 20px; }
+.planned-contributions__filter { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--color-text-secondary); }
+.planned-contributions__filter select { padding: 7px 9px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface); color: var(--color-text-primary); }
+.planned-contributions__list { margin: 14px 0 0; padding: 0; list-style: none; }
+.planned-contributions__list li { padding: 12px 0; border-top: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.planned-contributions__info { display: grid; gap: 3px; font-size: 12px; color: var(--color-text-secondary); }
+.planned-contributions__info strong { font-size: 15px; color: var(--color-text-strong); }
+.planned-contributions__info small { white-space: pre-wrap; }
+.planned-contributions__actions, .planned-contributions__pages { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; }
+.planned-contributions__pages { justify-content: center; padding-top: 15px; }
+.planned-contributions__dialog { width: min(100%, 500px); max-height: calc(100vh - 40px); overflow-y: auto; }
+.planned-contributions__hint { padding: 0 20px; color: var(--color-text-secondary); font-size: 13px; }

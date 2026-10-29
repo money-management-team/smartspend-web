@@ -20,6 +20,8 @@ import {
 // styles come from the reverse dialog's stylesheet.
 import "../../../Accounts/components/AccountForm/AccountForm.css";
 import "../../../FinancialOperations/components/ReverseTransactionDialog/ReverseTransactionDialog.css";
+import useDiscardChanges from "../../../../../../components/UnsavedChanges/useDiscardChanges";
+import { isFormDirty } from "../../../../../../components/UnsavedChanges/unsavedChanges";
 import "./SavingsGoalForm.css";
 
 // Backend fields shown in the error block rather than under an input.
@@ -99,6 +101,13 @@ export default function SavingsGoalForm({ goal, onSave, onClose }) {
     if (!pendingRef.current) onClose();
   };
 
+  // Values the form opened with: closing with other values asks first.
+  const [initialForm] = useState(form);
+  const { requestClose, discardDialog } = useDiscardChanges({
+    isDirty: isFormDirty(form, initialForm) && !isSaving,
+    onClose: close,
+  });
+
   const handleChange = (event) => {
     const { name, value } = event.target;
     setForm((current) => ({ ...current, [name]: value }));
@@ -152,9 +161,10 @@ export default function SavingsGoalForm({ goal, onSave, onClose }) {
     <div
       className="account-form-modal"
       role="presentation"
-      onMouseDown={close}
-      onKeyDown={(event) => event.key === "Escape" && close()}
+      onMouseDown={requestClose}
+      onKeyDown={(event) => event.key === "Escape" && requestClose()}
     >
+      {discardDialog}
       <section
         className="account-form-modal__dialog savings-goal-form"
         role="dialog"
@@ -170,7 +180,7 @@ export default function SavingsGoalForm({ goal, onSave, onClose }) {
                 : "dashboard.savingsGoals.form.createTitle",
             )}
           </h2>
-          <button type="button" onClick={close} disabled={isSaving} aria-label={t("common.close")}>
+          <button type="button" onClick={requestClose} disabled={isSaving} aria-label={t("common.close")}>
             ×
           </button>
         </header>
@@ -308,7 +318,7 @@ export default function SavingsGoalForm({ goal, onSave, onClose }) {
           )}
 
           <footer>
-            <button type="button" onClick={close} disabled={isSaving}>
+            <button type="button" onClick={requestClose} disabled={isSaving}>
               {t("common.cancel")}
             </button>
             <button type="submit" disabled={isSaving} aria-busy={isSaving || undefined}>

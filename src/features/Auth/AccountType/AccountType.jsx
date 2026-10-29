@@ -91,7 +91,7 @@ export default function AccountType() {
                   to={DESTINATIONS[intent][type]}
                   aria-describedby={descriptionId}
                 >
-                  <span>{t(`auth.accountType.${type}.cta`)}</span>
+                  <span>{type === "company" ? t("auth.companyUnavailable.short") : t(`auth.accountType.${type}.cta`)}</span>
                   <ArrowIcon />
                 </Link>
               </li>

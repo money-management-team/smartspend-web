@@ -1,0 +1,174 @@
+.wizard-stepper {
+  display: grid;
+  gap: 10px;
+}
+
+.wizard-stepper__count {
+  display: none;
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.wizard-stepper__list {
+  margin: 0;
+  padding: 0;
+
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+
+  list-style: none;
+}
+
+.wizard-stepper__item {
+  position: relative;
+}
+
+/* The connector to the next stage. */
+.wizard-stepper__item:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 15px;
+  /* Starts under the label (dot 32px + gap 10px), which masks it. */
+  inset-inline-start: 48px;
+  inset-inline-end: 4px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-border);
+}
+
+.wizard-stepper__item--done:not(:last-child)::after {
+  background: linear-gradient(90deg, var(--color-primary), var(--smart-wizard-cyan, #0891b2));
+}
+
+[dir="rtl"] .wizard-stepper__item--done:not(:last-child)::after {
+  background: linear-gradient(270deg, var(--color-primary), var(--smart-wizard-cyan, #0891b2));
+}
+
+.wizard-stepper__item button {
+  position: relative;
+  z-index: 1;
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border: 0;
+
+  color: var(--color-text-secondary);
+  background: transparent;
+
+  font: inherit;
+  text-align: start;
+}
+
+.wizard-stepper__item button:not(:disabled) {
+  cursor: pointer;
+}
+
+.wizard-stepper__item button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+  border-radius: 999px;
+}
+
+.wizard-stepper__dot {
+  width: 32px;
+  height: 32px;
+  flex: none;
+
+  display: grid;
+  place-items: center;
+
+  border: 2px solid var(--color-border);
+  border-radius: 50%;
+
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+
+  font-family: var(--font-heading);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.wizard-stepper__dot svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 3;
+}
+
+.wizard-stepper__label {
+  padding-inline-end: 8px;
+
+  background: var(--color-background);
+
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.wizard-stepper__item--current .wizard-stepper__dot {
+  border-color: var(--color-primary);
+  color: var(--navigation-active-text);
+  background: var(--color-primary);
+  box-shadow: 0 0 0 4px var(--primary-soft);
+}
+
+.wizard-stepper__item--current .wizard-stepper__label {
+  color: var(--color-text-strong);
+}
+
+.wizard-stepper__item--done .wizard-stepper__dot {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+.wizard-stepper__item--done .wizard-stepper__label {
+  color: var(--color-text-primary);
+}
+
+.wizard-stepper__item--done button:hover .wizard-stepper__label {
+  color: var(--color-primary);
+}
+
+@media (max-width: 760px) {
+  .wizard-stepper__count {
+    display: block;
+  }
+
+  .wizard-stepper__list {
+    gap: 6px;
+  }
+
+  .wizard-stepper__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .wizard-stepper__item--current .wizard-stepper__label {
+    position: static;
+    width: auto;
+    height: auto;
+    clip-path: none;
+  }
+
+  .wizard-stepper__item:not(:last-child)::after {
+    inset-inline-start: 42px;
+  }
+
+  .wizard-stepper__dot {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+}

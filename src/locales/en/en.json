@@ -6,7 +6,22 @@
     "save": "Save",
     "saving": "Saving...",
     "loading": "Loading...",
-    "notAvailable": "Not available"
+    "notAvailable": "Not available",
+    "errorBoundary": {
+      "title": "Something went wrong",
+      "message": "An unexpected error occurred. Your data is safe. Reload the page to continue, or go back to the dashboard.",
+      "reload": "Reload page",
+      "dashboard": "Go to dashboard"
+    },
+    "unsavedChanges": {
+      "title": "Discard unsaved changes?",
+      "message": "You have changes that haven't been saved. If you leave this page, they will be lost.",
+      "discardMessage": "You have changes that haven't been saved. If you close this form, they will be lost.",
+      "stay": "Stay on page",
+      "leave": "Leave page",
+      "keepEditing": "Keep editing",
+      "discard": "Discard changes"
+    }
   },
   "api": {
     "errors": {
@@ -15,6 +30,7 @@
       "unexpected": "The server returned an unexpected response. Please try again.",
       "server": "The server could not complete the request. Please try again shortly.",
       "requestFailed": "Unable to complete the request. Please try again.",
+      "httpStatus": "The request could not be completed (HTTP {{status}}). Please try again.",
       "rateLimited": "Too many attempts. Try again after {{seconds}} seconds.",
       "aFew": "a few",
       "workspaceUnavailable": "Unable to determine the current workspace."
@@ -132,23 +148,6 @@
       "promo": {
         "title": "Regain access safely",
         "subtitle": "We'll email you a secure link to reset your password quickly."
-      }
-    },
-    "verifyCode": {
-      "title": "Verify the code",
-      "subtitle": "A 4-digit code was sent to your registered phone. Enter it to continue.",
-      "codeSent": "Code sent to",
-      "digitLabel": "Digit {{index}} of {{total}}",
-      "resend": {
-        "prefix": "Didn't get the code?",
-        "link": "Resend"
-      },
-      "submit": "Confirm",
-      "editPhone": "Edit phone number",
-      "promo": {
-        "title": "Unmatched financial safety",
-        "subtitle": "We use the latest encryption to fully protect your data and transactions.",
-        "users": "Join 500K+ active users"
       }
     },
     "resetPassword": {
@@ -341,12 +340,42 @@
           "Clear reports"
         ]
       }
+    },
+    "companyUnavailable": {
+      "title": "Business accounts are not available yet",
+      "description": "The business workspace needs its own backend registration and permissions.",
+      "detail": "This version supports personal finance accounts. We will open business registration when its secure workflow is ready.",
+      "personal": "Create a personal account",
+      "back": "Back to account type",
+      "short": "Coming soon",
+      "badge": "Under development",
+      "promo": {
+        "title": "Business accounts are on the way",
+        "subtitle": "We are building a secure workspace for teams, with the right roles and permissions.",
+        "chips": [
+          "Team workspace",
+          "Company budgets",
+          "Clear reports"
+        ]
+      },
+      "roadmap": {
+        "title": "What we are building",
+        "items": [
+          "Secure company registration",
+          "Team roles and permissions",
+          "Shared budgets and reports"
+        ]
+      }
     }
   },
   "dashboard": {
     "header": {
-      "searchPlaceholder": "Search transactions, accounts...",
-      "userProfile": "User profile"
+      "searchPlaceholder": "Search pages and tools...",
+      "userProfile": "User profile",
+      "openMenu": "Open navigation menu",
+      "lightMode": "Switch to light mode",
+      "darkMode": "Switch to dark mode",
+      "switchLanguage": "Switch language"
     },
     "sidebar": {
       "tagline": "AI money management",
@@ -361,7 +390,6 @@
       "transfers": "Transfers",
       "recurring": "Recurring",
       "calendar": "Calendar",
-      "import": "Import",
       "categories": "Categories",
       "budgets": "Budgets",
       "savingsGoals": "Savings Goals",
@@ -371,8 +399,15 @@
       "notifications": "Notifications",
       "settings": "Settings",
       "logout": "Log out",
-      "importHistory": "Import history",
-      "aiCaptures": "AI Receipts"
+      "aiCaptures": "AI Receipts",
+      "groups": {
+        "transactions": "Transactions",
+        "planning": "Planning"
+      },
+      "financialReports": "Financial reports",
+      "reportExports": "Export history",
+      "close": "Close navigation menu",
+      "whatsappDrafts": "WhatsApp drafts"
     },
     "user": {
       "common": {
@@ -511,6 +546,12 @@
     "accounts": {
       "title": "Accounts",
       "subtitle": "Cash, bank accounts, wallets and cards in one place.",
+      "overviewLabel": "Account overview",
+      "viewsLabel": "Account status",
+      "activeView": "Active accounts",
+      "archivedView": "Archived accounts",
+      "activeDescription": "Accounts ready for daily activity and transfers.",
+      "archivedDescription": "Balances and records remain available to view. New activity is blocked.",
       "add": "Add account",
       "filters": {
         "all": "All",
@@ -539,6 +580,7 @@
         "description": "Archiving is not deletion. The account moves out of your active accounts.",
         "keepsHistory": "All of its transactions and balance history are kept.",
         "noNewActivity": "It can't receive new income, expenses or transfers.",
+        "findArchived": "You can find it later under Archived accounts on this page.",
         "notDeleted": "Nothing is permanently deleted.",
         "confirm": "Archive account",
         "archiving": "Archiving..."
@@ -588,6 +630,7 @@
       "states": {
         "loading": "Loading accounts...",
         "empty": "No accounts found for this filter.",
+        "emptyArchived": "No archived accounts yet.",
         "emptyAll": "You don't have any active accounts yet."
       }
     },
@@ -712,6 +755,23 @@
       }
     },
     "financialOperations": {
+      "ui": {
+        "applyTemplateShort": "Apply",
+        "saveTemplateShort": "Save template",
+        "heroKicker": "Your everyday money, made simple",
+        "heroDescription": "Quickly record income and expenses, and find your latest activity in one place.",
+        "newOperation": "New transaction",
+        "entryHint": "Choose the details, then review before confirming.",
+        "chooseAccount": "Choose an account",
+        "expensesOnly": "Voice and receipts capture expenses.",
+        "optionalDetails": "More details (optional)",
+        "transferLink": "Transfer between my accounts",
+        "allowanceDetails": "How are allowances counted?",
+        "recentTitle": "Recent transactions",
+        "recentHint": "Your latest 5 transactions. Open any transaction to see its details.",
+        "showMore": "Show more",
+        "showLess": "Show less"
+      },
       "title": "Financial operations",
       "subtitle": "Record income and expenses, and review your ledger.",
       "intro": {
@@ -744,7 +804,7 @@
       },
       "captureStep": {
         "title": "How would you like to record it?",
-        "description": "Four input methods, all ending with the same review step before anything is saved.",
+        "description": "Three input methods, all ending with the same review step before anything is saved.",
         "secure": "Nothing is recorded until you review the details and confirm.",
         "accountRequired": "Choose the account to use first.",
         "useAccount": "Use account",
@@ -762,21 +822,49 @@
         "manual": {
           "label": "Manual entry",
           "hint": "Fast for everyday operations"
-        },
-        "upload": {
-          "label": "Upload statement",
-          "hint": "PDF, CSV or Excel transactions"
         }
       },
       "voice": {
         "kicker": "Smart voice entry",
-        "title": "Say it naturally.",
-        "description": "For example: I paid 35 shekels for lunch from my current account.",
+        "title": "Say your expense naturally.",
+        "description": "Describe one expense in your preferred language. Include the amount, currency and what you paid for, then listen to your recording.",
         "start": "Start recording",
         "stop": "Stop recording",
         "listening": "Listening now...",
         "unavailable": "Voice entry isn't connected to the server yet, so nothing was recorded. Use manual entry in the meantime.",
-        "fallback": "Enter it manually"
+        "fallback": "Enter it manually",
+        "exampleLabel": "Try saying",
+        "example": "I paid 25 shekels for lunch today.",
+        "hint": "Record up to one minute. An expense is saved only after you review and confirm it.",
+        "requesting": "Allow microphone access in the browser prompt.",
+        "processing": "Preparing your recording…",
+        "ready": "Your recording is ready",
+        "durationLabel": "Recording duration",
+        "levelLabel": "Microphone sound level",
+        "recordAgain": "Record again",
+        "cancel": "Cancel",
+        "removeRecording": "Delete recording",
+        "playLabel": "Listen to your recording",
+        "previewHint": "Check what you said before sending it for analysis.",
+        "useRecording": "Use this recording",
+        "stoppedAtLimit": "Recording stopped automatically at the one-minute limit.",
+        "stoppedOnBackground": "Recording stopped when you left the page. Listen to it or record again.",
+        "errors": {
+          "VOICE_INSECURE": "Recording requires HTTPS or localhost. You can use manual entry.",
+          "VOICE_UNSUPPORTED": "This browser does not support the required recording features. Try a modern browser or use manual entry.",
+          "VOICE_PERMISSION_DENIED": "Microphone access was denied. Enable it for this site in your browser settings and try again.",
+          "VOICE_PERMISSION_TIMEOUT": "Microphone permission did not arrive. Try again and accept the browser prompt.",
+          "VOICE_MIC_NOT_FOUND": "No available microphone was found. Connect one and try again.",
+          "VOICE_MIC_BUSY": "The microphone could not open. Close other apps using it and try again.",
+          "VOICE_MIC_INTERRUPTED": "The microphone disconnected or the page changed while recording started. Check it and record again.",
+          "VOICE_TOO_SHORT": "The recording is too short. Speak for at least half a second before stopping.",
+          "VOICE_TOO_LONG": "The maximum is one minute. Record one expense within that time.",
+          "VOICE_TOO_LARGE": "The recording is too large. Try a shorter recording.",
+          "VOICE_CONVERSION_FAILED": "The audio could not be prepared. Record again or use manual entry.",
+          "VOICE_RECORDING_FAILED": "Recording could not complete. Check the microphone and try again.",
+          "VOICE_RECORDING_BUSY": "Your recording is being prepared. Wait a moment or cancel.",
+          "VOICE_CANCELLED": "Recording was cancelled."
+        }
       },
       "scan": {
         "kicker": "Smart receipt",
@@ -797,13 +885,6 @@
         "kicker": "Quick entry",
         "title": "Only the details that matter.",
         "description": "The account selected above is used for this operation."
-      },
-      "statement": {
-        "kicker": "Bank statement or transaction file",
-        "title": "Import a file into your ledger",
-        "description": "PDF, CSV or XLSX. The import wizard maps the columns and lets you review every row before it is recorded.",
-        "action": "Open the import wizard",
-        "history": "Import history"
       },
       "review": {
         "open": {
@@ -851,6 +932,161 @@
         "incomeCreated": "Income recorded. The account balance was updated by the ledger.",
         "expenseCreated": "Expense recorded. The account balance was updated by the ledger.",
         "viewTransaction": "View transaction"
+      },
+      "voiceFlow": {
+        "uploading": "Uploading your recording securely…",
+        "recording": "Voice recording #{{id}}",
+        "reviewTitle": "Review the expense details",
+        "reviewHint": "Check the transcript and fields carefully. Complete unspoken information, then save the draft before confirming. Fields marked * are required to post the expense.",
+        "transcript": "What the platform understood",
+        "processing": "Transcribing and analyzing your expense",
+        "processingHint": "Follow the status here or reopen the recording from history later. No expense has been posted yet.",
+        "pollStopped": "Automatic checks stopped after a long wait or connection failure. Refresh the status; this does not rerun analysis or consume an allowance.",
+        "analysisFailed": "Analysis could not complete. Retry if the audio is available and your allowance permits, or use manual entry.",
+        "sourceUnavailable": "The audio is no longer available for analysis. Record again or use manual entry.",
+        "retry": "Analyze again — uses one voice allowance",
+        "check": "Refresh status",
+        "choose": "Choose…",
+        "save": "Save draft",
+        "saving": "Saving…",
+        "saveFirst": "You have unsaved changes. Save them first; saving a draft does not post an expense.",
+        "confirmReview": "Review confirmation",
+        "finalConfirmation": "Confirm expense posting",
+        "finalHint": "These saved values will be posted and the amount deducted from the account. Check them, then confirm.",
+        "confirm": "I confirm — post expense",
+        "cancel": "Cancel",
+        "confirmed": "Expense posted successfully",
+        "confirmedHint": "The transaction was created and the platform refreshed account and transaction data.",
+        "transaction": "View transaction",
+        "suggestions": "View AI extraction",
+        "otherSuggestion": "Additional suggestion",
+        "confidence": "Confidence {{value}}%",
+        "newRecording": "New recording",
+        "discard": "Discard draft",
+        "discardHint": "Discard this draft? No expense will be posted from it, and the used analysis allowance is not refunded.",
+        "discardConfirm": "Yes, discard draft",
+        "history": "My voice recordings",
+        "historyHint": "Your recordings in the selected account workspace. Reopen drafts after refreshing or leaving this page.",
+        "historyEmpty": "No voice recordings in this workspace yet.",
+        "historyFailed": "History could not load. Refresh it again.",
+        "refreshHistory": "Refresh history",
+        "previous": "Previous",
+        "next": "Next",
+        "validation": "Check the draft fields and current status before continuing.",
+        "fieldInvalid": "Check this field; the value may be invalid or no longer available.",
+        "currencyMismatch": "The expense currency does not match the account currency. Correct the account or currency based on the actual expense.",
+        "optionsFailed": "Accounts or categories could not load. Reload them before saving or confirming.",
+        "needsReload": "The draft changed or the save result is uncertain. Refresh its status before editing again.",
+        "reloadWarning": "Reloading the server draft will discard your unsaved edits. Continue?",
+        "replayUpload": "Resend the same upload attempt",
+        "replayConfirm": "Complete the same confirmation attempt",
+        "replayRetry": "Complete the same analysis retry",
+        "receiptUncertain": "The upload result is uncertain. Resending uses the same file and attempt key to avoid duplicate receipts.",
+        "insufficientBalance": "The account balance is insufficient. Check the balance or select the correct account and try again.",
+        "uncertain": {
+          "upload": "The connection failed or the upload result is uncertain. Do not start another attempt for this file; resend the same attempt or check history.",
+          "confirm": "Expense posting is uncertain. Do not enter the expense manually a second time. Check the status or complete the same confirmation attempt; edits are temporarily locked.",
+          "retry": "Analysis retry is uncertain. Check the status or complete the same attempt to avoid another allowance charge."
+        },
+        "statuses": {
+          "uploaded": "Audio received",
+          "queued": "Waiting for analysis",
+          "processing": "Analyzing",
+          "ready_for_review": "Ready for review",
+          "confirmed": "Confirmed",
+          "failed": "Analysis failed",
+          "discarded": "Discarded"
+        },
+        "fields": {
+          "account_id": "Account",
+          "category_id": "Category",
+          "amount": "Amount",
+          "currency_code": "Currency",
+          "transaction_date": "Expense date",
+          "transaction_time": "Expense time",
+          "merchant_name": "Merchant or payee",
+          "reference_number": "Reference",
+          "description": "Description",
+          "total_amount": "Extracted amount",
+          "tax_amount": "Spoken tax",
+          "fee_amount": "Spoken fee",
+          "category_hint": "Suggested category",
+          "payment_method": "Payment method",
+          "card_last_four": "Last card digits"
+        },
+        "warnings": {
+          "amount_missing": "No clear amount was spoken. Enter it after checking.",
+          "currency_missing": "The currency was not clear. Select it yourself.",
+          "date_missing": "No date was spoken. Enter the correct expense date.",
+          "date_ambiguous": "The date is ambiguous. Check it before confirming.",
+          "unclear_speech": "Some speech was unclear. Check the transcript and details.",
+          "multiple_operations": "More than one operation was spoken. Record each expense separately.",
+          "unsupported_operation": "This flow handles expenses. Use the appropriate entry for income or transfers.",
+          "ambiguous_amount": "The amount has several possible meanings. Check it.",
+          "amount_unverified": "The amount could not be verified from speech; enter it manually.",
+          "currency_unverified": "The currency could not be verified; select it yourself.",
+          "date_unverified": "The date could not be verified; enter it yourself.",
+          "account_selection_required": "Select and check the correct account before confirming.",
+          "critical_fields_missing": "Required information is missing. Complete it before confirming.",
+          "unknown": "Check the expense details; analysis returned another review note."
+        },
+        "timeHint": "Expense time is optional. Leaving it blank posts the expense at 00:00 in the recording workspace timezone.",
+        "progress": {
+          "label": "Voice analysis status",
+          "eyebrow": "Preparing your expense",
+          "stepsLabel": "Recording preparation steps",
+          "steps": {
+            "upload": "Upload recording",
+            "queue": "Wait for processing",
+            "transcription": "Convert speech to text",
+            "extraction": "Extract expense details"
+          },
+          "stepStates": {
+            "done": "Complete",
+            "current": "In progress",
+            "waiting": "Next step"
+          },
+          "phases": {
+            "uploading": {
+              "title": "Uploading your recording",
+              "hint": "We are securely sending your recording for analysis. You do not need to submit it again."
+            },
+            "retrying": {
+              "title": "Starting another analysis",
+              "hint": "We are sending your request and waiting for processing to begin. The result will appear here automatically."
+            },
+            "queued": {
+              "title": "Recording received — waiting for analysis",
+              "hint": "Your recording is in the processing queue. We will follow its status automatically."
+            },
+            "transcribing": {
+              "title": "Understanding what you said",
+              "hint": "We are converting your speech to text in its original language. This may take a little time."
+            },
+            "extracting": {
+              "title": "Preparing your expense details",
+              "hint": "Your speech has been transcribed. We are now analysing the amount, currency, date and other details you mentioned."
+            }
+          },
+          "noFinancialEffect": "No expense is posted and no money is deducted until you review and confirm.",
+          "autoReview": "The review screen will appear automatically when analysis finishes. There is no need to resend the recording.",
+          "longWait": "Analysis is taking longer. Select “Refresh status” to resume checking, or open this recording from history later."
+        }
+      },
+      "aiInput": {
+        "title": "Today’s AI input allowances",
+        "voice": "Voice recording",
+        "receipt": "Receipt capture",
+        "remaining": "remaining",
+        "refresh": "Refresh allowances",
+        "loading": "Checking…",
+        "unknown": "Allowance currently unavailable",
+        "exhausted": "You have used this method’s daily allowance.",
+        "reset": "Resets at {{time}} in your device timezone.",
+        "minute": "The temporary request limit was reached. Wait briefly, then refresh allowances.",
+        "loadFailed": "Allowances could not be checked. Refresh or use manual entry.",
+        "policy": "Each method has a separate user allowance shared across workspaces. Local recording, status checks and draft review do not use an allowance. Resets at 00:00 UTC.",
+        "manual": "Continue with manual entry"
       }
     },
     "transactions": {
@@ -874,7 +1110,15 @@
         "import": "Import",
         "recurring": "Recurring",
         "ai": "Smart capture",
-        "api": "API"
+        "api": "API",
+        "voice": "Voice recording",
+        "natural_language": "Natural language",
+        "receipt_ocr": "Receipt scan",
+        "statement_import": "Statement import",
+        "recurring_rule": "Recurring operation",
+        "business_request": "Business request",
+        "whatsapp": "WhatsApp",
+        "system": "System"
       },
       "entryRoles": {
         "income": "Income",
@@ -1399,308 +1643,6 @@
         "manualNote": "Manual: nothing is posted until you confirm an occurrence."
       }
     },
-    "importPage": {
-      "title": "Import bank statement",
-      "subtitle": "PDF, Excel or CSV — extracted, reviewed and matched before import.",
-      "steps": {
-        "label": "Import steps",
-        "upload": "Upload",
-        "map": "Map columns",
-        "validate": "Validate",
-        "review": "Review",
-        "confirm": "Confirm"
-      },
-      "upload": {
-        "title": "Upload file",
-        "supported": "Supported: PDF, XLSX, CSV",
-        "dropTitle": "Drag & drop your file here",
-        "browse": "Browse files",
-        "remove": "Remove file",
-        "change": "Change file",
-        "submit": "Upload statement",
-        "uploading": "Uploading…",
-        "hasHeader": "The first row contains column titles",
-        "hasHeaderHint": "Turn this off if the file starts straight with transactions.",
-        "autoDetect": "Date and number formats are detected automatically. Nothing is imported yet.",
-        "errors": {
-          "required": "Choose a file to upload.",
-          "type": "Only CSV and XLSX files can be imported.",
-          "empty": "That file is empty."
-        },
-        "parsing": {
-          "date_order": "Date order",
-          "decimal_separator": "Decimal separator"
-        },
-        "parsingValues": {
-          "date_order": {
-            "auto": "Detect automatically"
-          },
-          "decimal_separator": {
-            "auto": "Detect automatically"
-          }
-        }
-      },
-      "account": {
-        "label": "Detected account",
-        "checking": "Main Checking",
-        "savings": "Business Savings",
-        "wallet": "Apple Wallet",
-        "cash": "Cash on hand"
-      },
-      "actions": {
-        "startOver": "Start over",
-        "changeMapping": "Change mapping",
-        "newImport": "New import"
-      },
-      "notices": {
-        "uploaded": "File uploaded. Match its columns to the transaction fields below.",
-        "mappingSaved": "Mapping saved. Validate the rows to continue.",
-        "validated": "Rows validated. Review them before confirming.",
-        "confirmed": "Import confirmed. The transactions are being created.",
-        "cancelled": "Import cancelled. No transactions were created."
-      },
-      "resume": {
-        "loading": "Loading this import…"
-      },
-      "noMoneyMoved": "Nothing is imported and no balance changes until you confirm.",
-      "errors": {
-        "tooLarge": "That file is too large to upload.",
-        "unsupported": "Only CSV and XLSX files can be imported.",
-        "forbidden": "You do not have access to this import.",
-        "notFound": "The requested resource was not found.",
-        "conflict": "This import has already moved on. Reload it to see its current state.",
-        "alreadyConfirmed": "This import has already been confirmed.",
-        "alreadyReversed": "This import has already been reversed.",
-        "invalid": {
-          "file": "That file could not be imported. Check the format and try again.",
-          "data": "Some of the values could not be accepted. Check the highlighted fields."
-        }
-      },
-      "fields": {
-        "account": "Account",
-        "status": "Status",
-        "created_at": "Uploaded",
-        "completed_at": "Completed",
-        "mappedAt": "Mapped",
-        "validatedAt": "Validated",
-        "directionStrategy": "Amount direction",
-        "defaultExpenseCategory": "Default expense category",
-        "defaultIncomeCategory": "Default income category"
-      },
-      "summary": {
-        "untitled": "Untitled file",
-        "locked": "This import can no longer be edited.",
-        "fileUnavailable": "The uploaded file is no longer stored."
-      },
-      "mapping": {
-        "title": "Match the columns",
-        "hint": "Tell us which column of your file holds each transaction field.",
-        "columnsTitle": "Columns",
-        "destinationTitle": "Where the transactions go",
-        "column": "Column {{number}} — {{name}}",
-        "unnamed": "Unnamed column",
-        "noHeaders": "This file has no column titles to match.",
-        "notMapped": "Not mapped",
-        "suggested": "Suggested",
-        "amountHint": "Use one signed amount column, or a separate debit and credit column.",
-        "chooseAccount": "Choose an account",
-        "noAccounts": "No account is available for this workspace.",
-        "noDefault": "No default",
-        "loadingOptions": "Loading accounts and categories…",
-        "save": "Save mapping",
-        "saving": "Saving…",
-        "errors": {
-          "dateRequired": "A date column is required.",
-          "amountRequired": "An amount column, or a debit and credit column, is required.",
-          "accountRequired": "Choose the account these transactions belong to."
-        }
-      },
-      "mappingFields": {
-        "date": "Date",
-        "description": "Description",
-        "amount": "Amount",
-        "type": "Type",
-        "debit": "Debit",
-        "credit": "Credit"
-      },
-      "validate": {
-        "title": "Validate the rows",
-        "hint": "We check every row against your mapping. Nothing is imported yet.",
-        "submit": "Validate rows",
-        "validating": "Validating…"
-      },
-      "review": {
-        "title": "Review the rows",
-        "hint": "Fix what is wrong and leave out what you do not want. Nothing is imported yet.",
-        "loading": "Loading rows…",
-        "empty": "This import has no rows to review.",
-        "emptyPage": "There is nothing on this page.",
-        "readyHint": "When these rows look right, continue to confirm the import.",
-        "continue": "Continue to confirm",
-        "nothingToImport": "No row can be imported yet. Fix the invalid rows first."
-      },
-      "rows": {
-        "rowNumber": "Row {{number}}",
-        "line": "line {{line}}",
-        "edit": "Edit",
-        "fix": "Fix",
-        "ignore": "Ignore",
-        "ignoring": "Ignoring…",
-        "ignoreHint": "Keep this row in the import but do not create a transaction for it.",
-        "ignoredNote": "This row will be left out of the import. It stays here for the record.",
-        "parsedValue": "Parsed values",
-        "originalValue": "Original file values",
-        "validationErrors": "Problems with this row",
-        "duplicateOf": "Looks like a duplicate of",
-        "transactionNumber": "transaction #{{id}}"
-      },
-      "rowFields": {
-        "transaction_date": "Date",
-        "transaction_type": "Type",
-        "amount": "Amount",
-        "description": "Description",
-        "category_id": "Category",
-        "reference_number": "Reference"
-      },
-      "rowEditor": {
-        "title": "Correct this row",
-        "chooseType": "Choose a type",
-        "noCategory": "No category",
-        "save": "Save row",
-        "unchanged": "Nothing changed yet.",
-        "errors": {
-          "dateInvalid": "Enter a valid date."
-        }
-      },
-      "transactionTypes": {
-        "expense": "Expense",
-        "income": "Income"
-      },
-      "directionStrategies": {
-        "signed_amount": "Signed amount column",
-        "debit_credit": "Separate debit and credit columns",
-        "type_column": "Type column"
-      },
-      "counts": {
-        "total": "Total rows",
-        "valid": "Valid",
-        "invalid": "Invalid",
-        "duplicate": "Duplicates",
-        "ignored": "Ignored",
-        "imported": "Imported",
-        "failed": "Failed"
-      },
-      "statuses": {
-        "uploaded": "Uploaded",
-        "mapping_required": "Mapping required",
-        "validating": "Validating",
-        "ready_for_review": "Ready for review",
-        "partially_valid": "Partially valid",
-        "confirmed": "Confirmed",
-        "processing": "Processing",
-        "completed": "Completed",
-        "failed": "Failed",
-        "cancelled": "Cancelled",
-        "reversed": "Reversed",
-        "valid": "Valid",
-        "invalid": "Invalid",
-        "duplicate": "Duplicate",
-        "ignored": "Ignored",
-        "imported": "Imported",
-        "mapped": "Mapped",
-        "pending": "Pending"
-      },
-      "confirm": {
-        "title": "Confirm the import",
-        "hint": "This is the step that turns the reviewed rows into real transactions.",
-        "moneyTitle": "This creates real transactions",
-        "moneyBody": "The valid rows are posted to the chosen account exactly like transactions you add by hand, and your balances change. If you need to undo it afterwards, use Reverse import — it posts the opposing entries and keeps the originals.",
-        "willImport": "Rows to import",
-        "willSkip": {
-          "invalid": "Invalid, skipped",
-          "duplicate": "Duplicates, skipped",
-          "ignored": "Ignored, skipped"
-        },
-        "skipNote": "Only valid rows are posted. The others stay in the import for the record.",
-        "acknowledge_one": "I understand this will create {{count}} transaction.",
-        "acknowledge_other": "I understand this will create {{count}} transactions.",
-        "submit": "Confirm import",
-        "submitting": "Confirming…",
-        "backToReview": "Back to review",
-        "conflictHint": "We reloaded this import so you can see what it actually did."
-      },
-      "outcome": {
-        "processing": {
-          "title": "Creating the transactions",
-          "hint": "The backend is importing the rows.",
-          "note": "This can take a moment. The status updates by itself."
-        },
-        "completed": {
-          "title": "Import completed",
-          "hint": "The transactions have been created."
-        },
-        "failed": {
-          "title": "Import failed",
-          "hint": "The backend could not finish this import."
-        },
-        "cancelled": {
-          "title": "Import cancelled",
-          "hint": "No transactions were created."
-        },
-        "reversed": {
-          "title": "Import reversed",
-          "hint": "Opposing transactions have undone this import."
-        },
-        "stillWorking": "This import is still being processed.",
-        "checkAgain": "Check again"
-      },
-      "cancel": {
-        "action": "Cancel import",
-        "confirm": "Cancel this import? The uploaded file is dropped. No transactions were created, so there is nothing to undo.",
-        "confirmAction": "Yes, cancel it",
-        "cancelling": "Cancelling…",
-        "keep": "Keep it"
-      },
-      "reverse": {
-        "action": "Reverse import",
-        "title": "Reverse this import",
-        "explain": "Reversing undoes the financial effect of this import without erasing what happened.",
-        "keepsOriginals": "The imported transactions stay in your ledger and remain auditable.",
-        "postsOpposing": "An opposing transaction is created for each of them, cancelling out their effect.",
-        "reasonLabel": "Why are you reversing this import?",
-        "reasonPlaceholder": "e.g. imported the wrong statement",
-        "reasonGiven": "Reason: {{reason}}",
-        "reasonErrors": {
-          "required": "Give a reason for the reversal.",
-          "tooLong": "Keep the reason under {{max}} characters."
-        },
-        "submit": "Reverse import",
-        "submitting": "Reversing…",
-        "keep": "Keep the import"
-      },
-      "history": {
-        "title": "Import history",
-        "subtitle": "Every statement you have imported into this workspace.",
-        "back": "Back to import",
-        "refresh": "Refresh",
-        "all": "All",
-        "clearFilters": "Clear filters",
-        "loading": "Loading imports…",
-        "empty": "You have not imported a statement yet.",
-        "emptyFiltered": "No import matches these filters.",
-        "emptyPage": "There is nothing on this page.",
-        "startImport": "Import a statement",
-        "untitled": "Untitled file",
-        "actions": {
-          "continue": "Continue",
-          "validate": "Validate",
-          "review": "Review",
-          "viewStatus": "View status",
-          "reverse": "View details",
-          "view": "View details"
-        }
-      }
-    },
     "budgets": {
       "title": "Budgets",
       "subtitle": "Set spending limits for a period and follow how much of each one you've used.",
@@ -1928,7 +1870,10 @@
         "pauseSuccess": "“{{name}}” is paused. Its money stays in place, and withdrawals are still allowed.",
         "resumeSuccess": "“{{name}}” was resumed. Its status is now: {{status}}.",
         "archiveSuccess": "“{{name}}” was archived. Its account and history are kept.",
-        "viewGoal": "View goal"
+        "viewGoal": "View goal",
+        "installmentSuccess": "Installment confirmed for “{{name}}”. The money moved into the goal's savings account.",
+        "installmentReversalSuccess": "Payments reversed for “{{name}}”. The money went back to the source accounts.",
+        "planDiscontinuedSuccess": "The smart plan for “{{name}}” was discontinued. No money moved; the goal is flexible saving again."
       },
       "form": {
         "createTitle": "New savings goal",
@@ -2062,6 +2007,851 @@
         "pausedHint": "Paused goals don't accept contributions. Resume the goal first. Nothing was moved.",
         "archivedHint": "Archived goals don't accept new money movements. Nothing was moved.",
         "notMovedHint": "Nothing was moved and no balance changed."
+      },
+      "plans": {
+        "title": "Planned savings contributions",
+        "subtitle": "Future plans only; money moves when you fulfil a contribution.",
+        "add": "Add a plan",
+        "edit": "Edit plan",
+        "noMoneyMoved": "Creating or editing a plan does not move money. Use Fulfil contribution to post the transfer.",
+        "source": "Source account",
+        "sourceRequired": "Choose a source account.",
+        "sourceUnavailable": "This source account is unavailable. Edit the plan or check the account before fulfilling it.",
+        "selectAccount": "Choose an account",
+        "noAccounts": "No eligible accounts in this currency.",
+        "amount": "Planned amount",
+        "date": "Planned date",
+        "dateRequired": "Choose today or a future date.",
+        "notes": "Notes (optional)",
+        "notesLength": "Notes must be at most 1000 characters.",
+        "filter": "Status",
+        "statuses": {
+          "all": "All",
+          "planned": "Planned",
+          "fulfilled": "Fulfilled",
+          "cancelled": "Cancelled"
+        },
+        "empty": "No plans match this status.",
+        "fulfill": "Fulfil contribution",
+        "cancel": "Cancel plan",
+        "confirmCancel": "Cancel this plan? Its history will be kept and no money will move.",
+        "cancelledNotice": "Plan cancelled.",
+        "savedNotice": "Plan saved.",
+        "previous": "Previous",
+        "next": "Next"
+      },
+      "overview": {
+        "totalGoals": "Total goals",
+        "matchingGoals": "Matching goals",
+        "emptyTitle": "Start your first savings goal",
+        "mode": {
+          "loading": "Checking plan…",
+          "smart": "Smart plan",
+          "flexible": "Flexible saving",
+          "unavailable": "Plan status unavailable"
+        },
+        "intensity": {
+          "easy": "Easy",
+          "balanced": "Balanced",
+          "intensive": "Intensive"
+        },
+        "nextInstallment": "Next installment",
+        "overdue": "Overdue",
+        "noOpenInstallments": "No open installments",
+        "onHold": "Plan on hold while the goal is paused",
+        "reviewSuggested": "Review suggested",
+        "upcoming": {
+          "title": "Upcoming installments",
+          "hint": "The next installment of each smart plan on this page. No money moves until you confirm it."
+        },
+        "smartPlanAction": "Smart plan"
+      },
+      "smartPlan": {
+        "eyebrow": "Smart plan",
+        "title": "{{intensity}} plan",
+        "loading": "Loading the savings plan…",
+        "errorTitle": "Savings plan unavailable",
+        "refreshing": "Updating…",
+        "reviewUpdated": "The details here are now current. Review them and try again.",
+        "frequency": {
+          "weekly": "Weekly installments",
+          "monthly": "Monthly installments",
+          "weeklyEvery": "An installment every {{count}} weeks",
+          "monthlyEvery": "An installment every {{count}} months"
+        },
+        "figures": {
+          "saved": "Saved",
+          "remaining": "Remaining",
+          "scheduled": "Still scheduled",
+          "perInstallment": "Per installment",
+          "openCount": "Open installments: {{count}}",
+          "finalInstallment": "Last installment"
+        },
+        "timeline": {
+          "title": "Installments",
+          "onHold": "The goal is paused, so its installments are on hold until you resume it.",
+          "empty": "This plan has no installments.",
+          "installmentNumber": "Installment {{number}}",
+          "next": "Next",
+          "states": {
+            "overdue": "Overdue",
+            "planned": "Upcoming",
+            "fulfilled": "Confirmed",
+            "partially_reversed": "Partly reversed",
+            "skipped": "Skipped",
+            "missed": "Missed",
+            "cancelled": "Cancelled"
+          },
+          "postponedCount": "Postponed: {{count}}",
+          "originally": "originally",
+          "paid": "Paid",
+          "reversed": "Reversed",
+          "shortfall": "Short by",
+          "skippedNote": "Not saved. Your target is unchanged.",
+          "scheduled": "Scheduled",
+          "actions": {
+            "confirm": "Confirm",
+            "postpone": "Postpone",
+            "skip": "Skip",
+            "confirmNamed": "Confirm installment {{number}}",
+            "postponeNamed": "Postpone installment {{number}}",
+            "skipNamed": "Skip installment {{number}}",
+            "reverse": "Reverse payments",
+            "reverseNamed": "Reverse payments of installment {{number}}"
+          },
+          "showAll": "Show all {{count}} installments",
+          "showLess": "Show fewer",
+          "multiAccount": "Paid from several accounts",
+          "cancelledReasons": {
+            "plan_superseded": "Cancelled when the plan was revised",
+            "plan_discontinued": "Cancelled when the plan was discontinued",
+            "goal_archived": "Cancelled when the goal was archived",
+            "goal_achieved": "Cancelled when the goal reached its target"
+          }
+        },
+        "health": {
+          "title": "Plan health",
+          "onTrack": "On track",
+          "onTrackHint": "The open installments cover what's left of your target.",
+          "onHold": {
+            "title": "On hold",
+            "detail": "The goal is paused. Installments wait until you resume it."
+          },
+          "overdue": {
+            "title": "Overdue installments: {{count}}",
+            "detail": "Due and not yet confirmed:"
+          },
+          "uncovered": {
+            "title": "Target at risk",
+            "detail": "The open schedule doesn't cover the remaining amount. Not covered:"
+          },
+          "endsAfterTarget": {
+            "title": "Target at risk",
+            "detail": "The schedule now ends after the goal's target date."
+          },
+          "delayed": {
+            "title": "Finishing later",
+            "detail": "Postponed installments moved the end of the schedule."
+          },
+          "skipped": {
+            "title": "Skipped installments: {{count}}",
+            "detail": "Not saved, and not added to other installments:"
+          },
+          "partiallyReversed": {
+            "title": "Partly reversed installments: {{count}}",
+            "detail": "Returned to the source accounts:"
+          },
+          "ahead": {
+            "title": "Ahead of schedule",
+            "detail": "You've saved more than the plan has asked for so far."
+          },
+          "dateLabel": {
+            "overdue": "oldest from",
+            "endsAfterTarget": "ends",
+            "delayed": "now ends"
+          }
+        },
+        "funding": {
+          "title": "Funding",
+          "modes": {
+            "single": "One account",
+            "priority": "Accounts in priority order",
+            "allocated": "Split across accounts",
+            "at_confirmation": "Chosen at each confirmation"
+          },
+          "hints": {
+            "single": "Each installment comes from this account.",
+            "priority": "You confirm each installment from one of these accounts.",
+            "allocated": "Each installment is split across these accounts.",
+            "at_confirmation": "You choose an eligible account each time you confirm."
+          },
+          "priority": "Priority {{number}}",
+          "allocatedLater": "Confirming an installment split across several accounts isn't available here yet.",
+          "confirm": {
+            "title": "Pay from several accounts",
+            "approveTitle": "Approve this breakdown",
+            "loading": "Working out the breakdown…",
+            "reviewAgain": "Nothing moved. The breakdown below has been checked again; review it before approving.",
+            "breakdownTitle": "Where the money comes from",
+            "modeHints": {
+              "allocated": "Your plan splits every installment by fixed shares, so this breakdown can't be changed here.",
+              "priority": "Proposed in your plan's order. You can change the split across the plan's accounts.",
+              "at_confirmation": "Choose the accounts and how much each one pays. Together they must equal the amount to move.",
+              "single": "This installment comes from your plan's account."
+            },
+            "account": "Account",
+            "chooseAccount": "Choose an account…",
+            "available": "Available",
+            "noBalance": "no available balance",
+            "exceedsAvailable": "More than this account has available.",
+            "amount": "Amount",
+            "removeLeg": "Remove part {{number}}",
+            "addLeg": "Add an account",
+            "remaining": "Left to allocate:",
+            "allocated": "Fully allocated",
+            "remainingUnknown": "Enter valid amounts to see what's left",
+            "checkFirst": "Check this split with SmartSpend before approving it.",
+            "validation": {
+              "legsRequired": "Add at least one account.",
+              "tooManyLegs": "Use at most {{max}} accounts.",
+              "accountRequired": "Choose an account for every part.",
+              "duplicateAccount": "Each account can be used once.",
+              "amountInvalid": "Every part needs a positive amount with up to four decimals.",
+              "totalMismatch": "The parts must add up to exactly the amount to move."
+            },
+            "problems": {
+              "insufficient_balance": "One of these accounts doesn't have enough balance for its part.",
+              "exceeds_remaining": "This is more than what's left to reach the goal.",
+              "breakdown_invalid": "This split doesn't follow your plan's funding rules.",
+              "account_not_eligible": "One of these accounts can't fund this goal (archived, another currency, or not yours to use)."
+            },
+            "shortBy": "Short by",
+            "changeSplit": "Change the split",
+            "check": "Check this split",
+            "review": "Review and approve",
+            "back": "Back",
+            "approveLead": "{{count}} separate transfers will move these exact amounts into the goal:",
+            "total": "Total into the goal",
+            "facts": {
+              "separate": "Each account is debited with exactly its part, as a separate transfer ({{count}} in all).",
+              "together": "All parts succeed together or none of them happens.",
+              "recheck": "Balances are checked again at the moment you approve."
+            },
+            "approve": "I approve moving these exact amounts from these accounts.",
+            "submit": "Confirm and move money",
+            "running": "Moving money…",
+            "retry": "Try again"
+          }
+        },
+        "schedule": {
+          "title": "Schedule",
+          "start": "First installment",
+          "expectedCompletion": "Planned completion",
+          "scheduledCompletion": "Now finishes",
+          "targetDate": "Target date",
+          "installments": "Installments"
+        },
+        "notices": {
+          "postponed": "Installment {{number}} moved to",
+          "skipped": "Installment {{number}} skipped. Your target is unchanged.",
+          "noMoney": "No money moved.",
+          "closed": "Installment {{number}} changed while this was open, so the dialog was closed. Its current state is shown below, and nothing more happens unless you act again.",
+          "created": "Your smart plan is ready. Nothing has moved yet: confirm each installment when it's due."
+        },
+        "confirm": {
+          "eyebrow": "Installment {{number}}",
+          "title": "Confirm this installment",
+          "loading": "Checking the current details…",
+          "reviewAgain": "Nothing was confirmed against old details. Review what's shown now before confirming.",
+          "goal": "Goal",
+          "dueDate": "Due date",
+          "scheduledAmount": "Scheduled amount",
+          "amountToMove": "Amount to move",
+          "warnings": {
+            "installment_overdue": "This installment is overdue.",
+            "amount_limited_to_remaining": "Only part of the scheduled amount is left to reach your target, so the amount to move is lower.",
+            "no_eligible_account": "No eligible account can fund this installment. Accounts must be active and in the goal's currency.",
+            "insufficient_balance": "None of the eligible accounts has enough balance for this amount."
+          },
+          "fromAccount": "From account",
+          "available": "Available",
+          "notEnough": "Not enough balance for this amount",
+          "overdraft": "This account allows a negative balance.",
+          "statement": "A real transfer into the goal's savings account. Nothing is deducted until you confirm.",
+          "running": "Confirming…",
+          "retry": "Try again",
+          "submit": "Confirm and move money",
+          "split": "Pay from several accounts instead"
+        },
+        "postpone": {
+          "eyebrow": "Installment {{number}}",
+          "title": "Postpone this installment",
+          "running": "Postponing…",
+          "submit": "Postpone",
+          "currentDate": "Current date",
+          "originalDate": "Originally scheduled",
+          "amount": "Amount",
+          "newDate": "New date",
+          "errors": {
+            "required": "Choose a new date.",
+            "invalid": "Enter a valid date.",
+            "tooEarly": "Choose this date or later:",
+            "tooLate": "Choose this date or earlier:"
+          },
+          "noRoom": "There's no later date this installment can move to before the next one or the target date. Revise the plan to change its schedule.",
+          "rulesTitle": "What postponing allows",
+          "rules": {
+            "after": "A date after the current one, and not in the past. Current date:",
+            "beforeNext": "Before the next installment, due",
+            "byTarget": "No later than the goal's target date,",
+            "limited": "An installment can be postponed only a limited number of times.",
+            "noMoney": "The amount and the other installments stay the same. No money moves."
+          },
+          "postponedSoFar": "Postponed so far: {{count}}"
+        },
+        "skip": {
+          "eyebrow": "Installment {{number}}",
+          "title": "Skip this installment?",
+          "keep": "Keep it",
+          "running": "Skipping…",
+          "submit": "Skip installment",
+          "date": "Due date",
+          "amount": "Amount",
+          "target": "Savings target",
+          "points": {
+            "noMoney": "No money moves.",
+            "targetUnchanged": "Your savings target and target date don't change.",
+            "notReplaced": "The amount isn't added to other installments, so the plan may no longer cover your target.",
+            "final": "A skipped installment can't be reopened."
+          }
+        },
+        "errors": {
+          "ownerOnly": "Only the person who set up this plan can do this.",
+          "planGone": "This savings plan is no longer available.",
+          "installmentGone": "This installment is no longer available.",
+          "unknownOutcome": "We couldn't confirm whether this was saved. Trying again is safe: it won't be applied twice.",
+          "unknownOutcomeMoney": "We couldn't confirm whether the money moved. The details have been checked again; if the installment is still open, trying again is safe and won't move the money twice.",
+          "codes": {
+            "smart_savings_disabled": "Smart savings plans aren't available yet, so no plan was created. Your goals, balances and transactions are unchanged.",
+            "savings_plan_version_conflict": "The plan changed since you opened this.",
+            "savings_installment_version_conflict": "This installment changed since you opened this.",
+            "savings_installment_not_open": "This installment is no longer open.",
+            "savings_installment_not_in_active_plan": "This installment belongs to a plan that's no longer active.",
+            "savings_plan_not_active": "This plan is no longer active.",
+            "savings_goal_not_accepting_contributions": "This goal isn't accepting contributions right now (it may be paused, archived or already funded).",
+            "savings_goal_not_active": "This goal isn't active, so its installments can't change. Resume it first.",
+            "savings_installment_exceeds_remaining": "The amount is more than what's left to reach the target.",
+            "savings_installment_funding_unsupported": "This plan splits each installment across several accounts, which can't be confirmed here yet.",
+            "savings_installment_postpone_limit_reached": "This installment has been postponed the most times allowed ({{max}}). Revise the plan to change its schedule.",
+            "savings_installment_schedule_conflict": "That date reaches the next installment. The latest date allowed is {{date}}.",
+            "savings_installment_beyond_target_date": "That date is after the goal's target date ({{date}}).",
+            "savings_installment_intent_invalid": "This breakdown isn't the one that was checked. Check it again before confirming.",
+            "savings_installment_breakdown_invalid": "This split doesn't follow your plan's funding rules.",
+            "savings_installment_leg_already_reversed": "One of these payments was already reversed.",
+            "savings_installment_not_multi_leg": "This installment was paid from a single account; reverse it from the goal's activity.",
+            "savings_installment_nothing_to_reverse": "There's nothing left to reverse for this installment.",
+            "savings_installment_legs_changed": "The installment's payments changed.",
+            "savings_installment_leg_requires_domain_reversal": "This payment is part of an installment; reverse it from the installment.",
+            "savings_plan_accounts_changed": "The plan's funding accounts changed."
+          }
+        },
+        "invite": {
+          "title": "Turn this goal into a smart plan",
+          "body": "Compare Easy, Balanced and Intensive schedules built from what's left and your recent cash flow. Nothing moves until you confirm each installment.",
+          "action": "Create a smart plan"
+        },
+        "legs": {
+          "reversed": "Reversed"
+        },
+        "reverse": {
+          "eyebrow": "Installment {{number}}",
+          "title": "Reverse payments",
+          "keep": "Keep them",
+          "submit": "Reverse",
+          "running": "Reversing…",
+          "retry": "Try again",
+          "unknownOutcome": "We couldn't confirm whether the reversal happened. The installment has been checked again; trying again is safe and won't reverse anything twice.",
+          "reviewAgain": "The payments changed, so nothing was reversed. Review the current state and choose again.",
+          "facts": {
+            "scheduled": "Scheduled",
+            "confirmed": "Originally paid",
+            "effective": "Still in the goal",
+            "reversed": "Already reversed"
+          },
+          "paymentsTitle": "Payments",
+          "scopeLabel": "What to reverse",
+          "scope": {
+            "all": "All remaining payments",
+            "some": "Choose payments"
+          },
+          "summaryAll": "Reversing every remaining payment",
+          "summarySome": "Reversing the chosen payments: {{count}}",
+          "validation": {
+            "chooseLeg": "Choose at least one payment.",
+            "reasonShort": "Give a reason of at least {{min}} characters.",
+            "reasonLong": "Use at most {{max}} characters."
+          },
+          "reason": "Reason",
+          "reasonHint": "Required, at least {{min}} characters. Saved with the reversal.",
+          "points": {
+            "returns": "The money goes back to each payment's own account.",
+            "history": "The original payments stay in the history, marked as reversed.",
+            "noReplan": "No other installment changes; the plan's health shows any gap."
+          },
+          "acknowledge": "I understand this moves money out of the goal.",
+          "loading": "Reading this installment's payments…",
+          "currentTitle": "Current payment",
+          "confirmedOn": "Confirmed",
+          "reversedOn": "Reversed",
+          "singleAccount": "This installment was paid from a single account. Reverse it from the goal's activity.",
+          "nothingLeft": "Nothing is left to reverse for this installment.",
+          "historyTitle": "Earlier confirmations",
+          "historyHint": "Kept for your records. These payments can't be chosen."
+        }
+      },
+      "smartPlanWizard": {
+        "eyebrow": "Smart savings",
+        "title": "Create a smart savings plan",
+        "titleExisting": "A smart plan for “{{name}}”",
+        "subtitle": "Set your goal, compare three plans built from your own numbers, choose where the money comes from, then review. Nothing moves until you confirm each installment.",
+        "backToGoals": "All savings goals",
+        "backToGoal": "Back to the goal",
+        "loadingGoal": "Loading the goal…",
+        "goalErrorTitle": "We couldn't start the plan",
+        "back": "Back",
+        "continue": "Continue",
+        "create": "Create goal and plan",
+        "createExisting": "Add this plan",
+        "creating": "Creating…",
+        "retryCreate": "Try again",
+        "unavailable": {
+          "title": "This goal can't take a smart plan now",
+          "hasPlan": "It already has an active smart plan. You can follow and manage it from the goal's page.",
+          "paused": "The goal is paused. Resume it first, then add a plan.",
+          "achieved": "The goal is already fully funded, so it needs no plan.",
+          "archived": "Archived goals can't be planned.",
+          "other": "Its current status doesn't allow a new plan."
+        },
+        "steps": {
+          "label": "Plan creation steps",
+          "count": "Step {{current}} of {{total}}",
+          "goal": "Goal",
+          "plan": "Plan",
+          "funding": "Funding",
+          "review": "Review",
+          "schedule": "Schedule"
+        },
+        "validation": {
+          "nameRequired": "Give the goal a name.",
+          "nameTooLong": "Use at most {{max}} characters.",
+          "currencyRequired": "Choose a currency.",
+          "dateInvalid": "Enter a valid date.",
+          "dateInPast": "Choose today or a later date.",
+          "targetBeforeStart": "The target date can't be before the first installment.",
+          "notesTooLong": "Use at most {{max}} characters.",
+          "rhythmRequired": "Choose how often you'll save.",
+          "choosePlan": "Choose one of the plans to continue.",
+          "modeRequired": "Choose how the plan is funded.",
+          "duplicateAccount": "Each account can be listed once.",
+          "chooseOneAccount": "Choose the account installments come from.",
+          "chooseTwoAccounts": "Add at least two accounts.",
+          "tooManyAccounts": "Use at most {{max}} accounts.",
+          "allocationInvalid": "Each share must be a percentage between 0.01 and 100, with up to two decimals.",
+          "allocationTotal": "The shares must add up to exactly 100%."
+        },
+        "goal": {
+          "kindTitle": "What kind of savings?",
+          "free": {
+            "title": "Free savings",
+            "description": "Add money whenever you like. No schedule."
+          },
+          "smart": {
+            "title": "Smart savings",
+            "description": "A schedule built from what's left and your recent cash flow.",
+            "selected": "Selected"
+          },
+          "existing": {
+            "target": "Target",
+            "saved": "Saved",
+            "remaining": "Remaining",
+            "targetDate": "Target date",
+            "noDate": "No target date",
+            "hint": "The plan covers what's still remaining. To change the target amount or date, edit the goal first."
+          },
+          "detailsTitle": "Your goal",
+          "optional": "(optional)",
+          "targetDateHint": "With a date, plans aim to finish by it. Without one, they're shaped by what you can afford.",
+          "rhythmTitle": "How often will you save?",
+          "rhythmHint": "Every installment is confirmed by you. None is taken automatically.",
+          "rhythms": {
+            "weekly": "Weekly",
+            "biweekly": "Every 2 weeks",
+            "monthly": "Monthly",
+            "quarterly": "Every 3 months"
+          },
+          "startDate": "First installment",
+          "startDateHint": "Leave empty to start from today."
+        },
+        "plan": {
+          "loading": "Building your plans…",
+          "errorTitle": "We couldn't build the plans",
+          "editGoal": "Edit the goal",
+          "stale": {
+            "title": "Your plan changed",
+            "schedule_changed": "The schedule changed since you reviewed it (for example, money moved in or out of the goal). The options below are current. Choose again.",
+            "assessment_changed": "What you can afford changed since you reviewed it. The options below are current. Choose again.",
+            "unavailable": "That option is no longer available. The options below are current. Choose again."
+          },
+          "capacity": {
+            "title": "Estimated room to save",
+            "perMonth": "a month",
+            "none": "No regular surplus found in your recent months.",
+            "unknown": "Not enough history yet to estimate what you can afford.",
+            "disclaimer": "An estimate from your own accounts over recent months. It's a guide, not a guarantee or financial advice.",
+            "warnings": {
+              "irregular_income": "Your income varies, so the estimate uses your weakest recent month.",
+              "negative_cash_flow_month": "You spent more than you earned in at least one recent month.",
+              "forecast_shortfall": "Your forecast shows a shortfall ahead.",
+              "debt_due_in_forecast_window": "A debt payment is due soon.",
+              "existing_planned_contributions_for_goal": "This goal already has planned contributions outside the plan.",
+              "no_spendable_account_in_currency": "You have no spendable account in this currency.",
+              "target_date_passed": "The target date has passed.",
+              "goal_paused": "The goal is paused."
+            }
+          },
+          "reasons": {
+            "fastest_comfortable_option": "Recommended: the fastest plan that fits comfortably in your estimated room.",
+            "gentlest_stretch_option": "Recommended: the gentlest plan. Every option is a stretch for your estimated room.",
+            "no_affordable_option": "None of the plans fits your estimated room. You can still choose one, or change the goal.",
+            "no_feasible_option": "None of the plans can reach the goal with these settings.",
+            "affordability_unknown": "We can't judge affordability yet, so no plan is recommended. Choose what feels right.",
+            "already_funded": "This goal is already fully funded.",
+            "none": "Compare the plans and choose one."
+          },
+          "empty": {
+            "title": "No plans to show",
+            "body": "Change the goal or the schedule and try again."
+          },
+          "chooseLabel": "Choose a plan",
+          "footnote": "Amounts and dates come from SmartSpend's planner and are rechecked when you create the plan.",
+          "recommended": "Recommended",
+          "per": {
+            "weekly": "every week",
+            "weeklyEvery": "every {{count}} weeks",
+            "monthly": "every month",
+            "monthlyEvery": "every {{count}} months"
+          },
+          "status": {
+            "deadline_before_first_installment": "The target date comes before the first installment.",
+            "too_many_installments": "This would take more installments than a plan allows.",
+            "above_contribution_limit": "Each installment would be above the allowed limit.",
+            "already_funded": "The goal is already fully funded.",
+            "unavailable": "This plan isn't available with these settings."
+          },
+          "installments": "Installments",
+          "dates": "Dates",
+          "finalInstallment": "Last installment",
+          "shortfall": "Falls short by",
+          "duplicate": "Same schedule as {{intensity}}.",
+          "bands": {
+            "comfortable": "Comfortable",
+            "stretch": "A stretch",
+            "strained": "Strained",
+            "unaffordable": "Beyond your estimated room",
+            "unknown": "Affordability unknown"
+          },
+          "estimate": "Estimate",
+          "monthlyEquivalent": "About",
+          "shareOfRoom": "{{share}} of your estimated monthly room",
+          "warnings": {
+            "insufficient_spendable_balance": "Your spendable balance may not cover the first installments.",
+            "exceeds_estimated_capacity": "Above your estimated monthly room.",
+            "target_date_passed": "The target date has passed."
+          },
+          "showSchedule": "Review all {{count}} installments",
+          "hideSchedule": "Hide the schedule"
+        },
+        "funding": {
+          "modeTitle": "Where will installments come from?",
+          "modes": {
+            "single": "Every installment from one account.",
+            "priority": "Up to five accounts in order. You confirm each installment from one of them.",
+            "allocated": "Each installment split across accounts by fixed shares.",
+            "at_confirmation": "No account now. You choose one each time you confirm."
+          },
+          "atConfirmation": "You'll pick an eligible {{currency}} account each time you confirm an installment, after seeing its balance.",
+          "loadingAccounts": "Loading your accounts…",
+          "accountsError": "We couldn't load your accounts.",
+          "noAccounts": "You have no active {{currency}} account that can fund a plan. Add one, or choose “Chosen at each confirmation”.",
+          "chooseOne": "Choose the account",
+          "priorityTitle": "Accounts in priority order",
+          "priorityHint": "Two to {{max}} accounts. The first is suggested first when you confirm.",
+          "allocatedTitle": "Accounts and their shares",
+          "allocatedHint": "Two to {{max}} accounts. The shares must add up to 100%.",
+          "shareOf": "Share for {{name}}, in percent",
+          "moveUp": "Move {{name}} up",
+          "moveDown": "Move {{name}} down",
+          "remove": "Remove {{name}}",
+          "addAccount": "Add an account",
+          "addPlaceholder": "Choose an account…",
+          "total": "Total",
+          "allocatedNotice": "Each installment is split by these shares. When you confirm one, you see exactly how much comes from each account before any money moves.",
+          "available": "Available",
+          "noMoney": "Choosing accounts moves no money. Balances are a guide: they're checked again when you create the plan and at every confirmation."
+        },
+        "review": {
+          "edit": {
+            "goal": "Edit the goal",
+            "plan": "Change the plan",
+            "funding": "Change the funding"
+          },
+          "editLabel": "Edit",
+          "unknownOutcome": "We couldn't confirm whether the plan was created. Trying again is safe: it won't create a second one.",
+          "fix": {
+            "goal": "Fix the goal details",
+            "plan": "Choose the plan again",
+            "funding": "Fix the funding"
+          },
+          "goalTitle": "Goal",
+          "noTargetDate": "No target date",
+          "planTitle": "{{intensity}} plan",
+          "firstInstallment": "First installment",
+          "lastInstallment": "Last installment date",
+          "affordability": "Affordability",
+          "affordabilityUnknown": "Not known yet",
+          "fundingTitle": "Funding",
+          "atConfirmation": "You'll choose the account each time you confirm.",
+          "noMoneyTitle": "Accepting a plan moves no money",
+          "noMoneyBody": "Each installment waits for you. Nothing is deducted until you confirm it, and you can postpone or skip installments from the goal's page.",
+          "accept": "I've reviewed this plan and want to create it."
+        }
+      },
+      "planManagement": {
+        "loading": "Loading your plan…",
+        "errorTitle": "We couldn't load this plan",
+        "eyebrow": "{{intensity}} smart plan",
+        "title": {
+          "schedule": "Revise the schedule for {{name}}",
+          "funding": "Change how {{name}} is funded"
+        },
+        "subtitle": {
+          "schedule": "Pick a new rhythm or intensity. Your plan is rebuilt from what's left to save today, and you review it before anything changes.",
+          "funding": "Choose which accounts pay the installments. The schedule and amounts stay exactly as they are."
+        },
+        "noPlan": {
+          "title": "This goal has no active plan",
+          "body": "The plan may have been completed, discontinued or replaced. Its record is in the goal's plan history."
+        },
+        "paused": {
+          "title": "Resume the goal to change its schedule",
+          "body": "A paused goal keeps its schedule as it is. You can still change which accounts fund it.",
+          "funding": "Change funding instead"
+        },
+        "validation": {
+          "fundingUnchanged": "This is how the plan is funded now. Change the mode or the accounts to continue."
+        },
+        "submit": {
+          "schedule": "Approve the new schedule",
+          "funding": "Approve the new funding"
+        },
+        "submitting": "Saving…",
+        "retrySubmit": "Try again",
+        "actions": {
+          "label": "Manage plan",
+          "schedule": "Revise schedule",
+          "funding": "Change funding",
+          "discontinue": "Discontinue",
+          "notices": {
+            "schedule": "Your new schedule is in place. The previous plan is kept in plan history. Nothing has moved.",
+            "funding": "Your plan's funding was updated. Nothing has moved."
+          },
+          "readOnly": "You can view this plan. Only its owner can confirm installments, change the plan or reverse payments."
+        },
+        "review": {
+          "title": {
+            "schedule": "Your plan now and after the revision",
+            "funding": "Funding now and after the change"
+          },
+          "edit": {
+            "schedule": "Choose a different option",
+            "funding": "Edit the funding"
+          },
+          "caption": "Comparison of the current plan with the proposed one",
+          "columns": {
+            "item": "Item",
+            "now": "Now",
+            "after": "After"
+          },
+          "rows": {
+            "intensity": "Intensity",
+            "rhythm": "Rhythm",
+            "perInstallment": "Per installment",
+            "installments": "Installments",
+            "nextDue": "Next installment",
+            "completion": "Last installment",
+            "fundingMode": "Funding",
+            "accounts": "Accounts"
+          },
+          "openCount": "Open: {{count}}",
+          "unchanged": "Unchanged",
+          "chosenAtConfirmation": "Chosen at each confirmation",
+          "effectsTitle": "What this does",
+          "effects": {
+            "schedule": {
+              "replaced": "Your current plan is closed as replaced, and the new one takes its place.",
+              "cancelled": "Its open installments are cancelled ({{count}}).",
+              "kept": "Installments you already confirmed stay as they are; their money stays in the goal.",
+              "covers": "The new plan covers exactly what's left to save:",
+              "history": "The previous plan is kept in plan history."
+            },
+            "funding": {
+              "same": "The schedule, dates and amounts don't change.",
+              "open": "Open installments will be paid from the new setup.",
+              "kept": "Confirmed installments keep the accounts they were paid from.",
+              "history": "The previous setup is recorded in plan history."
+            }
+          },
+          "splitReversal": "Installments paid from several accounts in this plan: {{count}}. They stay in the goal after the revision, and their payments can still be reversed from plan history.",
+          "noMoneyTitle": "No money moves",
+          "noMoneyBody": {
+            "schedule": "Revising the schedule only changes the plan. Money moves only when you confirm an installment.",
+            "funding": "Changing funding only changes where future installments come from. Money moves only when you confirm an installment."
+          },
+          "accept": {
+            "schedule": "I've reviewed the new schedule and want it to replace my current plan.",
+            "funding": "I've reviewed the new funding and want to use it for my open installments."
+          },
+          "conflict": "Your plan changed since you opened this page (for example, an installment was confirmed elsewhere). The current plan is shown; review it and approve again.",
+          "unknownOutcome": "We couldn't confirm whether the change was saved. Trying again is safe: it won't be applied twice.",
+          "fix": {
+            "schedule": "Edit the schedule",
+            "plan": "Choose an option again",
+            "funding": "Edit the funding"
+          },
+          "notReady": "Something in this revision needs your attention before it can be reviewed."
+        },
+        "discontinue": {
+          "eyebrow": "Smart plan",
+          "title": "Discontinue this plan?",
+          "keep": "Keep the plan",
+          "submit": "Discontinue plan",
+          "running": "Discontinuing…",
+          "retry": "Try again",
+          "facts": {
+            "open": "Open installments",
+            "scheduled": "Still scheduled",
+            "saved": "Saved in the goal (stays)"
+          },
+          "points": {
+            "noMoney": "No money moves.",
+            "cancelled": "Open installments are cancelled ({{count}}).",
+            "kept": "Installments you confirmed, and everything saved in the goal, stay exactly as they are.",
+            "flexible": "The goal goes back to flexible saving.",
+            "final": "A discontinued plan can't be reopened, but you can create a new one at any time."
+          },
+          "acknowledge": "I understand the open installments will be cancelled."
+        },
+        "ownerOnly": {
+          "title": "Only the plan's owner can change it",
+          "body": "You can see this plan and its history, but only the person who set it up can revise it, discontinue it or move money for it."
+        },
+        "reminder": {
+          "title": "Reminder: installment {{number}}",
+          "body": "Reviewing it opens a fresh preview of the amount and accounts. Nothing moves until you confirm.",
+          "cannotAct": "It can't be confirmed from here right now (the goal may be paused, or you may not manage this plan).",
+          "review": "Review installment",
+          "closed": "The installment from this reminder is no longer open: it may have been confirmed, skipped or replaced by a revised plan.",
+          "resolved": "Installment {{number}} is {{state}}. There's nothing to confirm.",
+          "earlierPlan": "This reminder is about an installment of an earlier plan. It's opened in plan history below.",
+          "showHistory": "Go to plan history"
+        }
+      },
+      "planHistory": {
+        "eyebrow": "Smart plans",
+        "title": "Plan history",
+        "loading": "Loading plan history…",
+        "lead": "Every plan this goal has had, newest first. Plans: {{count}}",
+        "more": "Show older plans",
+        "loadingMore": "Loading…",
+        "until": "until",
+        "activeSince": "Active since",
+        "cardTitle": "{{intensity}} plan",
+        "status": {
+          "active": "Active",
+          "completed": "Completed",
+          "discontinued": "Discontinued",
+          "superseded": "Replaced"
+        },
+        "completion": {
+          "label": "Completion summary",
+          "title": "Target reached on",
+          "early": "Finished ahead of the plan (days: {{count}})",
+          "late": "Finished after the planned date (days: {{count}})",
+          "onTime": "Finished on the planned date",
+          "ledgerNote": "This is when the plan was completed. The goal's current balance is in its progress above and can change later through withdrawals or reversals.",
+          "saved": "Effective plan contributions:"
+        },
+        "facts": {
+          "perInstallment": "Per installment",
+          "setOut": "Set out to cover",
+          "schedule": "Schedule",
+          "funding": "Funding"
+        },
+        "installments": {
+          "confirmed": "Confirmed installments: {{count}}",
+          "of": "of",
+          "open": "Open: {{count}}",
+          "cancelled": "Cancelled: {{count}}",
+          "barLabel": "Share of installments confirmed"
+        },
+        "endings": {
+          "plan_superseded": "Replaced by a revised schedule. Its open installments were cancelled; confirmed ones were kept.",
+          "plan_discontinued": "Discontinued by you. Its open installments were cancelled; confirmed ones were kept.",
+          "goal_archived": "Ended when the goal was archived.",
+          "goal_achieved": "Completed when the goal reached its target.",
+          "completed": "Completed.",
+          "discontinued": "Discontinued.",
+          "superseded": "Replaced."
+        },
+        "revisions": {
+          "summary": "Funding changes: {{count}}",
+          "was": "— previously {{mode}}"
+        },
+        "access": {
+          "active": "Installments, payments and reversals for this plan are in the plan above.",
+          "activeLink": "Go to the plan",
+          "show": "Show installments ({{count}})",
+          "hide": "Hide installments"
+        },
+        "viewOnly": "View only",
+        "money": {
+          "label": "Contributions attributed to this plan",
+          "title": "Plan contributions",
+          "effective": "Effective plan contributions",
+          "confirmed": "Confirmed plan contributions",
+          "reversed": "Reversed plan contributions",
+          "reversedLegs": "Reversed payments: {{count}}",
+          "incomplete": "These totals can't be worked out reliably for this plan right now, so they aren't shown. Its installments below are still accurate.",
+          "note": "Attributed to this plan's own installments only. This isn't the goal's balance, which also includes direct contributions, withdrawals and other plans; the goal's balance is shown in its progress."
+        },
+        "timeline": {
+          "loading": "Loading this plan's installments…",
+          "readOnly": "View only: only the plan's owner can reverse its payments.",
+          "shown": "Showing {{shown}} of {{total}}",
+          "more": "Show more installments",
+          "loadingMore": "Loading…",
+          "reversedNotice": "Payments reversed. The money went back to the source accounts, and this plan stays {{status}}.",
+          "singleAccountHint": "Payments split across several accounts are reversed here. A payment from a single account is reversed from the goal's activity.",
+          "focus": {
+            "seeking": "Finding the installment from your reminder…",
+            "found": "From your reminder: installment {{number}} is {{state}}. This plan is {{status}}, so there's nothing to confirm.",
+            "missing": "The installment from your reminder isn't in this plan."
+          }
+        },
+        "focus": {
+          "seeking": "Finding the plan from your reminder…",
+          "missing": "The plan from your reminder isn't in this goal's history."
+        }
       }
     },
     "debts": {
@@ -2350,10 +3140,30 @@
       }
     },
     "reports": {
+      "ui": {
+        "heroDescription": "Choose a report and period to understand your money at a glance.",
+        "setupTitle": "What would you like to know?",
+        "setupHint": "Choose a report and period to see the results below.",
+        "periodLabel": "Period",
+        "customRange": "Custom period",
+        "advanced": "More options",
+        "savedViews": "Saved filters and review tools",
+        "resultTitle": "Report results",
+        "summaryTitle": "Key figures",
+        "summaryHint": "A summary of this period, with each currency shown separately.",
+        "detailsTitle": "All financial details",
+        "detailsHint": "Expand to see the remaining figures, grouped by currency.",
+        "periodDetails": "About this report"
+      },
       "title": "Reports",
       "subtitle": "Backend-calculated financial reports for any period, with every currency kept separate.",
       "tabs": {
-        "label": "Report type"
+        "label": "Report type",
+        "groups": {
+          "performance": "Performance",
+          "balances": "Balances & movements",
+          "planning": "Planning"
+        }
       },
       "names": {
         "overview": "Overview",
@@ -2428,7 +3238,8 @@
           "toRequired": "Choose an end date.",
           "invalidDate": "Enter valid dates.",
           "fromAfterTo": "The start date must be on or before the end date."
-        }
+        },
+        "more": "Custom range and options"
       },
       "period": {
         "current": "Current period",
@@ -2458,7 +3269,8 @@
         "savingsProgressSummary": "Savings progress",
         "debtSummary": "Debt summary",
         "recurringForecast": "Recurring forecast",
-        "forecast": "Forecast"
+        "forecast": "Forecast",
+        "details": "All figures"
       },
       "summaryGroups": {
         "incomeExpense": "Income & expense",
@@ -2693,11 +3505,25 @@
         "posted_occurrences": "Posted occurrences",
         "yes": "Yes",
         "no": "No"
+      },
+      "pdf": {
+        "brand": "Smart Spend",
+        "tagline": "Financial report",
+        "generated": "Generated",
+        "footer": "Smart Spend · Report generated on {{date}}",
+        "page": "Page {{page}} of {{total}}",
+        "trendHint": "Grouped by {{unit}}; each currency is shown separately.",
+        "truncated": "Showing the first {{shown}} of {{total}} rows. Export CSV or Excel for the complete list.",
+        "emptyTitle": "No data available for the selected filters."
+      },
+      "highlights": {
+        "label": "Key figures",
+        "vsPrevious": "vs previous period"
       }
     },
     "aiAssistant": {
       "title": "AI Financial Assistant",
-      "subtitle": "Ask anything about your money.",
+      "subtitle": "Clearer answers grounded in your own financial data.",
       "initialMessage": "Your July net cash flow was +$4,450. Dining is your fastest-growing category at +24%. Want a plan to bring it back in line?",
       "conversations": {
         "title": "Conversations",
@@ -2709,6 +3535,7 @@
       "suggestions": {
         "safeSavings": "How much can I safely save this month?",
         "julySpending": "Where did my money go in July?",
+        "monthlySpending": "Where did my money go this month?",
         "diningBudget": "Suggest a budget for dining",
         "emergencyFund": "Am I on track for my emergency fund?"
       },
@@ -2716,6 +3543,149 @@
         "placeholder": "Ask Smart Spend...",
         "send": "Send",
         "sending": "Sending..."
+      },
+      "extra": {
+        "tabsLabel": "AI tools",
+        "ready": "Ready to chat",
+        "needsActivation": "Activate your assistant to begin",
+        "privateLabel": "Privacy & control",
+        "activationTitle": "Start with your consent",
+        "activationDescription": "SmartSpend uses your account data to help you understand spending and savings. Review how it works before enabling the assistant.",
+        "activationPointOne": "You can turn it off or delete its data at any time in settings.",
+        "activationPointTwo": "Deleting assistant data leaves your financial records intact.",
+        "consentDisclosure": "By choosing “Enable assistant”, you consent to processing your financial data for chat, insights and forecasts.",
+        "activate": "Enable assistant",
+        "activating": "Enabling…",
+        "enabledNotice": "Assistant enabled. You can start a conversation now.",
+        "reviewSettings": "Review settings",
+        "settingsUnavailable": "Could not load assistant settings. Please try again.",
+        "retry": "Try again",
+        "featureDisabled": "This feature is turned off",
+        "featureDisabledHint": "Enable it in assistant settings.",
+        "chatTitle": "Your financial chat",
+        "chatSubtitle": "Explore your finances with a question",
+        "welcomeTitle": "How can I help today?",
+        "welcomeDescription": "Ask about spending, budgets or goals. Choose a prompt below or write your own question.",
+        "noConversations": "No conversations yet. Start a new one.",
+        "feedbackLabel": "Rate this answer",
+        "feedbackTitle": "Share your feedback",
+        "feedbackReason": "Reason (optional)",
+        "feedbackComment": "Additional comment (optional)",
+        "optional": "Optional",
+        "cancelFeedback": "Cancel",
+        "reasons": {
+          "normal_activity": "Normal activity",
+          "not_useful": "Not useful",
+          "inaccurate": "Inaccurate",
+          "unclear": "Unclear",
+          "other": "Other"
+        },
+        "feedbackSaved": "Thanks, your feedback was saved.",
+        "thinking": "Preparing your answer",
+        "assistantCaution": "Check important figures before making financial decisions.",
+        "insightsTitle": "Insights for better decisions",
+        "insightsDescription": "Financial observations based on your account activity.",
+        "forecastTitle": "Cash flow forecast",
+        "forecastDescription": "An estimate of how your balances may change in the coming period.",
+        "settingsTitle": "Make it yours",
+        "settingsDescription": "Manage your consent, features and assistant data retention.",
+        "ai_enabledDescription": "Let the assistant process your financial data to answer questions.",
+        "insights_enabledDescription": "Analyze spending patterns and show financial observations.",
+        "forecast_enabledDescription": "See estimated future cash flow and balances.",
+        "chat": "Chat",
+        "insights": "Insights",
+        "forecast": "Forecast",
+        "settings": "AI settings",
+        "loading": "Loading…",
+        "invalidResponse": "The AI service returned an incomplete response.",
+        "confirmDeleteChat": "Delete this conversation?",
+        "confirmDeleteData": "Delete all AI Copilot data and withdraw consent? Financial records will remain.",
+        "moreMessages": "More messages",
+        "moreChats": "More conversations",
+        "refresh": "Refresh insights",
+        "queued": "Insight refresh queued. Check back soon.",
+        "insightsUpdated": "New insight data is available.",
+        "refreshStillQueued": "The update may continue in the background. Check again later.",
+        "waitingForInsights": "Waiting for insights…",
+        "emptyFilteredInsights": "No insights match these filters.",
+        "insightType": "Insight type",
+        "allTypes": "All types",
+        "insightStatus": "Insight status",
+        "currencyFilter": "Currency",
+        "applyFilters": "Apply",
+        "insightStatuses": {
+          "active": "Active",
+          "dismissed": "Dismissed",
+          "expired": "Expired",
+          "superseded": "Superseded"
+        },
+        "insightTypes": {
+          "spending_summary": "Spending summary",
+          "spending_change": "Spending change",
+          "top_category": "Top category",
+          "budget_risk": "Budget risk",
+          "unusual_spending": "Unusual spending",
+          "recurring_commitment": "Recurring commitment",
+          "debt_due": "Debt due",
+          "savings_goal_progress": "Savings progress",
+          "savings_suggestion": "Savings suggestion",
+          "cashflow_forecast": "Cashflow forecast"
+        },
+        "responseStatuses": {
+          "insufficient_data": "There is not enough data for a reliable answer.",
+          "unsupported": "This question is outside the financial assistant's scope."
+        },
+        "groundedFacts": "Facts behind this answer",
+        "futureContributionDate": "This suggestion is for {{date}}. The contribution form records transactions through today only; review the date and amount before confirming.",
+        "openContribution": "Review suggested savings contribution",
+        "emptyInsights": "No active insights yet.",
+        "helpful": "Helpful",
+        "not_helpful": "Not helpful",
+        "inaccurate": "Inaccurate",
+        "dismiss": "Dismiss",
+        "more": "Load more",
+        "noForecast": "There is not enough data for a forecast yet.",
+        "ai_enabled": "Enable AI and consent to processing",
+        "insights_enabled": "Enable insights",
+        "forecast_enabled": "Enable forecasts",
+        "language": "AI language",
+        "automatic": "Automatic",
+        "retention": "Retention (days)",
+        "save": "Save",
+        "consented": "AI consent is active.",
+        "consentNeeded": "AI consent is inactive. Enable AI to use the assistant.",
+        "deleteData": "Delete my AI data",
+        "deleted": "AI data deleted. Consent withdrawn.",
+        "deleteChat": "Delete conversation",
+        "emptyChat": "Start a conversation about your finances.",
+        "current_balance": "Current balance",
+        "expected_inflow": "Expected inflow",
+        "expected_outflow": "Expected outflow",
+        "projected_balance": "Projected balance",
+        "minimum_projected_balance": "Lowest projected balance",
+        "pressureDays": "Pressure days",
+        "assumptions": "Forecast assumptions",
+        "dailyTimeline": "Daily projection",
+        "date": "Date",
+        "closing_balance": "Closing balance",
+        "details": "Details",
+        "sourcesLabel": "Sources",
+        "historyToggle": "Conversation history",
+        "closeHistory": "Close conversation history",
+        "hideDetails": "Hide details",
+        "dismissAlert": "Dismiss message",
+        "chatFeature": "Ask questions about spending, budgets and goals in plain language.",
+        "insightsFeature": "Get observations about budget risks, unusual spending and savings chances.",
+        "forecastFeature": "See how your balances may move over the next 30 days.",
+        "featuresTitle": "Features",
+        "preferencesTitle": "Preferences",
+        "privacyTitle": "Privacy & data",
+        "dangerZone": "Delete assistant data",
+        "deleteDataHint": "Removes conversations, insights and feedback and withdraws consent. Your financial records are not touched.",
+        "retentionHint": "Between 7 and 365 days.",
+        "aiSummary": "AI summary",
+        "chartTitle": "Projected closing balance",
+        "pressureDaysHint": "Days when your balance is expected to be tight."
       }
     },
     "notifications": {
@@ -2757,7 +3727,9 @@
         "critical": "Critical"
       },
       "types": {
-        "recurring_posted": "Recurring transaction posted"
+        "recurring_posted": "Recurring transaction posted",
+        "savings_installment_due": "Savings installment due",
+        "savings_installment_overdue": "Savings installment overdue"
       },
       "item": {
         "new": "New",
@@ -2933,7 +3905,8 @@
         "label": "Settings sections",
         "profile": "Profile",
         "security": "Security",
-        "preferences": "Preferences"
+        "preferences": "Preferences",
+        "integrations": "Integrations"
       },
       "profile": {
         "title": "Profile",
@@ -2989,19 +3962,259 @@
         }
       },
       "preferences": {
-        "title": "Preferences"
+        "title": "Preferences",
+        "language": "Language",
+        "timezone": "Time zone",
+        "theme": "Appearance",
+        "light": "Light",
+        "dark": "Dark",
+        "save": "Save preferences",
+        "saving": "Saving…",
+        "saved": "Preferences saved.",
+        "aiSettings": "Manage AI privacy and preferences"
+      },
+      "whatsapp": {
+        "loading": "Checking WhatsApp…",
+        "privacy": "SmartSpend never posts an expense from a WhatsApp message on its own. Only the last digits of your number are ever shown.",
+        "status": {
+          "disabled": "Unavailable",
+          "notLinked": "Not connected",
+          "linked": "Connected"
+        },
+        "disabled": {
+          "title": "WhatsApp is unavailable right now",
+          "body": "WhatsApp expense capture is switched off at the moment, so you can't connect a number or change its settings until it's back.",
+          "previous": "Previously linked number",
+          "previousNote": "Shown for reference only. It isn't active while the service is unavailable.",
+          "drafts": "Drafts you already received from WhatsApp stay yours to review."
+        },
+        "intro": {
+          "title": "Record expenses on WhatsApp, review them in SmartSpend",
+          "body": "A faster way to log everyday spending. Send the details on WhatsApp and we'll prepare a draft for you to review before it counts.",
+          "connect": "Connect WhatsApp"
+        },
+        "flow": {
+          "label": "Connection steps",
+          "stepDone": "completed",
+          "steps": {
+            "start": "Start",
+            "send": "Send message",
+            "verify": "Verify",
+            "confirm": "Confirm"
+          },
+          "creating": "Preparing your link…",
+          "sendTitle": "Send this message on WhatsApp",
+          "sendBody": "From the phone you want to connect, send the message below to SmartSpend on WhatsApp.",
+          "serviceNumber": "SmartSpend number",
+          "message": "Your message",
+          "copy": "Copy message",
+          "copied": "Copied",
+          "copiedAnnounce": "Message copied to the clipboard.",
+          "copyFailed": "Couldn't copy automatically. The message is selected: copy it manually.",
+          "open": "Open WhatsApp",
+          "waiting": "Waiting for your message…",
+          "waitingHint": "This updates by itself. Keep this page open.",
+          "expires": "Valid until {{time}}",
+          "copyNote": "The message works once and isn't saved on this device.",
+          "verifiedTitle": "Number verified",
+          "verifiedBody": "We received your message from the number ending in {{digits}}. It isn't connected until you confirm.",
+          "verifiedBodyNoDigits": "We received your message. It isn't connected until you confirm.",
+          "confirm": "Connect this number",
+          "confirming": "Connecting…",
+          "cancel": "Cancel",
+          "close": "Close",
+          "expiredTitle": "This link has expired",
+          "expiredBody": "For your security a link only lasts a few minutes. Start again to get a new message.",
+          "cancelledTitle": "This link is no longer valid",
+          "cancelledBody": "A newer link was started or this one was cancelled. Start again to get a new message.",
+          "restart": "Start again",
+          "failedTitle": "We couldn't continue",
+          "retry": "Try again",
+          "success": "WhatsApp is now connected."
+        },
+        "connected": {
+          "title": "WhatsApp is connected",
+          "body": "Record expenses in the chat. They arrive here as drafts waiting for your review.",
+          "number": "Connected number",
+          "noAccount": "None",
+          "linkedOn": "Connected on",
+          "openHint": "Open the SmartSpend chat on WhatsApp and send “Hi” to start.",
+          "openChat": "Open SmartSpend on WhatsApp",
+          "chatGreeting": "Hi",
+          "newTab": "(opens WhatsApp in a new tab)"
+        },
+        "prefs": {
+          "title": "Preferences",
+          "language": "Language for WhatsApp replies",
+          "languages": {
+            "ar": "العربية",
+            "en": "English"
+          },
+          "account": "Default account",
+          "accountHint": "Used when a message doesn't say which account the money came from.",
+          "accountsFailed": "Couldn't load your accounts. You can still change the language.",
+          "noDefault": "No default account",
+          "loadingAccounts": "Loading accounts…",
+          "unavailableAccount": "Account no longer available",
+          "save": "Save changes",
+          "saving": "Saving…",
+          "saved": "Preferences saved."
+        },
+        "unlink": {
+          "title": "Disconnect WhatsApp",
+          "body": "Stop receiving new WhatsApp drafts. Drafts you already received and your transactions are kept.",
+          "action": "Disconnect",
+          "working": "Disconnecting…",
+          "confirmTitle": "Disconnect WhatsApp?",
+          "confirmBody": "Messages from this number won't create new drafts anymore. Your existing drafts, expenses and history stay exactly as they are, and you can connect again at any time.",
+          "confirm": "Disconnect",
+          "cancel": "Keep connected",
+          "done": "WhatsApp was disconnected."
+        },
+        "errors": {
+          "disabled": "WhatsApp is unavailable right now. Please try again later.",
+          "forbidden": "You don't have permission to manage WhatsApp for this workspace.",
+          "challengeNotFound": "This link could not be found. Start again to get a new message.",
+          "createConflict": "Couldn't start a new link right now. Refresh the page and try again.",
+          "confirmConflict": "This number can't be connected. It may belong to another account, or the link expired or was already used. Start again to get a new message.",
+          "notLinked": "WhatsApp isn't connected anymore. Refresh the page to see its current state.",
+          "alreadyUnlinked": "WhatsApp was already disconnected. We've refreshed this page.",
+          "conflict": "This changed in the meantime. Refresh the page and try again.",
+          "invalidAccount": "That account can't be used for WhatsApp anymore. Choose another account.",
+          "invalidLanguage": "Choose Arabic or English.",
+          "validation": "Please check your selection and try again.",
+          "unsupported": "WhatsApp integration isn't available on this server yet."
+        },
+        "inbox": {
+          "title": "WhatsApp expense drafts",
+          "body": "Review and confirm your drafts. Nothing is charged before you confirm.",
+          "pending": "waiting for review",
+          "action": "View drafts"
+        },
+        "hero": {
+          "eyebrow": "WhatsApp × SmartSpend"
+        },
+        "onboarding": {
+          "title": "Link in three steps",
+          "steps": {
+            "a": {
+              "title": "Tap “Connect WhatsApp”",
+              "body": "We prepare a verification message just for you."
+            },
+            "b": {
+              "title": "Send it from your phone",
+              "body": "From the WhatsApp number you want to link."
+            },
+            "c": {
+              "title": "Confirm here",
+              "body": "We recognise your number, and you confirm the link."
+            }
+          }
+        },
+        "preview": {
+          "label": "Example",
+          "title": "SmartSpend",
+          "subtitle": "WhatsApp chat",
+          "description": "An example WhatsApp chat: you tap “Record expense”, then 50 ₪ and Transport, and the draft is saved without charging anything.",
+          "hi": "Hi",
+          "menu": "Welcome. What would you like to do?",
+          "expense": "Record expense",
+          "drafts": "My drafts",
+          "help": "Help",
+          "category": "Transport",
+          "summaryTitle": "Review expense",
+          "summaryLine": "50.00 ₪ · Transport",
+          "save": "Save as draft",
+          "saved": "Expense saved as a draft",
+          "savedNote": "No money has moved yet."
+        },
+        "faq": {
+          "title": "Common questions",
+          "items": {
+            "debit": {
+              "q": "Is the amount charged as soon as I record it on WhatsApp?",
+              "a": "No. WhatsApp only creates a draft. The transaction is recorded and the balance changes only when you review and confirm the draft in SmartSpend while signed in."
+            },
+            "where": {
+              "q": "Where do I find the expenses I recorded?",
+              "a": "In “WhatsApp drafts” in the sidebar, or from the drafts card on this page. WhatsApp also replies with a direct link to every draft you save."
+            },
+            "review": {
+              "q": "Can I review an expense before it counts?",
+              "a": "Yes. You can change the amount, account, category, date and note, then confirm or delete the draft."
+            },
+            "account": {
+              "q": "Which account is the expense recorded in?",
+              "a": "Your WhatsApp default account set on this page, otherwise your default account in SmartSpend. You can change it before confirming."
+            },
+            "disconnect": {
+              "q": "How do I unlink my WhatsApp number?",
+              "a": "Use “Disconnect” under Manage link on this page. Your drafts and transactions stay as they are, and you can link again at any time."
+            },
+            "expired": {
+              "q": "What if the linking message has expired?",
+              "a": "A linking message only lasts a few minutes, for your security. Tap “Start again” to get a new message, then send it from your phone."
+            }
+          }
+        },
+        "page": {
+          "title": "SmartSpend on WhatsApp",
+          "subtitle": "Record expenses easily, review them safely."
+        },
+        "usage": {
+          "title": "How it works",
+          "steps": {
+            "open": {
+              "title": "Open WhatsApp",
+              "body": "Send “Hi” to get the menu."
+            },
+            "record": {
+              "title": "Record the expense",
+              "body": "Pick the amount and category in a few taps."
+            },
+            "review": {
+              "title": "Review the draft",
+              "body": "Confirm it here to record it in your account."
+            }
+          }
+        },
+        "safety": {
+          "text": "WhatsApp expenses are saved as drafts. Nothing is charged until you confirm in SmartSpend."
+        },
+        "settings": {
+          "title": "WhatsApp settings"
+        },
+        "help": {
+          "title": "Help and FAQ"
+        }
+      },
+      "savingsReminders": {
+        "title": "Savings reminders",
+        "description": "In-app reminders when an installment of one of your smart savings plans is due or overdue. They never move money.",
+        "loading": "Loading your reminder preference…",
+        "label": "Remind me about savings installments",
+        "hint": "Covers every smart savings plan you own. In-app only.",
+        "unavailable": "Savings reminders are turned off for SmartSpend right now, so none are being sent. Your choice is saved and applies as soon as they're turned on.",
+        "saving": "Saving…",
+        "savedOn": "Saved: reminders are on.",
+        "savedOff": "Saved: reminders are off.",
+        "saveFailed": "Your choice wasn't saved; the previous setting is still in place."
       }
     },
     "reportExports": {
       "actions": {
-        "exportCsv": "Export CSV",
         "queueing": "Queueing…",
         "download": "Download",
         "downloading": "Downloading…",
         "cancel": "Cancel export",
         "revoke": "Revoke export",
         "working": "Working…",
-        "checkAgain": "Check again"
+        "checkAgain": "Check again",
+        "exportReport": "Export report",
+        "exportFormat": "Export {{format}}",
+        "preparing": "Preparing your {{format}} report…",
+        "downloadFormat": "Download {{format}}",
+        "retry": "Try again"
       },
       "confirm": {
         "cancel": "Cancel this export? The file will not be created.",
@@ -3019,10 +4232,10 @@
         "cancelled": "Cancelled"
       },
       "hints": {
-        "queued": "Waiting to be built.",
-        "processing": "Being built now.",
-        "completed": "Ready to download.",
-        "failed": "This export could not be built.",
+        "queued": "Your report is waiting to be processed.",
+        "processing": "Generating your {{format}} report…",
+        "completed": "Your {{format}} report is ready.",
+        "failed": "Report generation failed. Please try again.",
         "expired": "The file is no longer available.",
         "cancelled": "This export was cancelled.",
         "unknown": "Status unknown."
@@ -3036,7 +4249,8 @@
         "expires_at": "Expires",
         "file_size": "Size",
         "download": "File",
-        "actions": "Actions"
+        "actions": "Actions",
+        "period": "Period"
       },
       "errors": {
         "notFound": "That export no longer exists.",
@@ -3045,12 +4259,20 @@
         "notReady": "This export is not ready to download yet.",
         "expired": "This export has expired and its file was removed.",
         "cannotStop": "This export can no longer be cancelled.",
-        "invalid": "That report cannot be exported with these filters."
+        "invalid": "That report cannot be exported with these filters.",
+        "downloadFailed": "The report was generated, but the download could not be completed. Please try again.",
+        "pdfFailed": "The PDF could not be created. Please try again."
       },
       "tracker": {
-        "title": "Your export",
-        "pollError": "We could not check this export's status.",
-        "stillWorking": "This export is still being built."
+        "title": "Exporting {{report}}",
+        "pollError": "We are having trouble checking this export. Still trying…",
+        "stillWorking": "The report is taking longer than expected. You can check again, or follow it later in the export history.",
+        "progress": "Export progress",
+        "steps": {
+          "queued": "Waiting to start",
+          "processing": "Generating",
+          "completed": "Ready"
+        }
       },
       "history": {
         "title": "Export history",
@@ -3066,6 +4288,28 @@
         "open": "Open report",
         "downloadAvailable": "Ready",
         "downloadUnavailable": "Not ready"
+      },
+      "formats": {
+        "csv": {
+          "label": "CSV",
+          "description": "Best for raw data and importing into other tools."
+        },
+        "xlsx": {
+          "label": "Excel (.xlsx)",
+          "description": "Best for spreadsheet analysis and formatting."
+        },
+        "pdf": {
+          "label": "PDF",
+          "description": "Best for sharing, printing and archiving."
+        }
+      },
+      "dialog": {
+        "title": "Export report",
+        "chooseFormat": "Choose a format",
+        "note": "The file is prepared in the background. You can keep working and download it when it is ready.",
+        "preparing": "Preparing your {{format}} report and adding it to the queue…",
+        "notePdf": "The PDF is built on this device from the report data and downloads as soon as it is ready.",
+        "building": "Building your PDF…"
       }
     },
     "aiCaptures": {
@@ -3132,6 +4376,7 @@
         "notFoundMessage": "This receipt isn't available. It may not exist, or it isn't one of yours.",
         "forbiddenTitle": "Access denied",
         "forbiddenMessage": "You don't have access to this receipt.",
+        "analyzing": "Analyzing your receipt with AI. This won't take long.",
         "notes": {
           "processing": "AI processing is in progress. Nothing has been recorded.",
           "failed": "The AI couldn't read this receipt. Nothing has been recorded.",
@@ -3279,6 +4524,347 @@
         "expired": "The secure link to this receipt has expired. Refresh it to look again.",
         "refreshLink": "Refresh link"
       }
+    },
+    "imports": {
+      "title": "Statement imports",
+      "subtitle": "Upload a CSV or XLSX statement, review its rows, then confirm the transactions.",
+      "upload": "Upload statement",
+      "account": "Account",
+      "file": "Statement file",
+      "select": "Select…",
+      "filterStatus": "Filter by status",
+      "filterAccount": "Filter by account",
+      "filterRows": "Filter rows",
+      "allStatuses": "All statuses",
+      "allAccounts": "All accounts",
+      "noMatchingRows": "No rows match these filters.",
+      "history": "Import history",
+      "empty": "No imports yet.",
+      "more": "Load more",
+      "back": "← All imports",
+      "notFound": "Import not found.",
+      "loading": "Loading…",
+      "status": "Status",
+      "counts": "Rows: {{total}} total · {{valid}} valid · {{invalid}} invalid · {{duplicate}} duplicates · {{ignored}} ignored · {{imported}} imported",
+      "processing": "Posting transactions. This page refreshes automatically.",
+      "mapping": "Map statement columns",
+      "mappingHelp": "Choose a file column for each field. Date and either amount or debit/credit are required. Saving and validating do not move money.",
+      "unmapped": "Not mapped",
+      "expenseCategory": "Default expense category",
+      "incomeCategory": "Default income category",
+      "saveMapping": "Save column mapping",
+      "validate": "Validate rows",
+      "mapped": "Mapping saved. Validate the rows next.",
+      "validated": "Rows validated. Review them before confirmation.",
+      "cancel": "Cancel import",
+      "cancelConfirm": "Cancel this import without posting any transactions?",
+      "cancelled": "Import cancelled.",
+      "reviewWarning": "Only valid rows will be posted. Review duplicates and invalid rows before confirmation.",
+      "confirm": "Confirm import",
+      "confirmPrompt": "Post all valid rows as financial transactions?",
+      "confirmed": "Import accepted. Wait for processing to finish.",
+      "reverseReason": "Reason for reversal",
+      "reverse": "Reverse imported transactions",
+      "reversePrompt": "Reverse every transaction created by this import? This will create opposing ledger entries.",
+      "reversed": "Import reversed.",
+      "preview": "Statement preview",
+      "duplicate": "Possible duplicate of transaction",
+      "edit": "Edit row",
+      "ignore": "Ignore row",
+      "saved": "Row saved.",
+      "income": "Income",
+      "expense": "Expense",
+      "save": "Save row",
+      "previous": "Previous",
+      "next": "Next",
+      "fields": {
+        "date": "Date",
+        "description": "Description",
+        "amount": "Amount",
+        "debit": "Debit",
+        "credit": "Credit",
+        "type": "Type",
+        "currency": "Currency",
+        "category": "Category",
+        "reference": "Reference"
+      },
+      "rowFields": {
+        "transaction_date": "Date",
+        "amount": "Amount",
+        "currency": "Currency",
+        "description": "Description",
+        "transaction_type": "Type",
+        "category_id": "Category"
+      },
+      "statuses": {
+        "uploaded": "Uploaded",
+        "mapping_required": "Mapping needed",
+        "validating": "Validating",
+        "ready_for_review": "Ready for review",
+        "partially_valid": "Partially valid",
+        "confirmed": "Confirmed",
+        "processing": "Processing",
+        "completed": "Completed",
+        "failed": "Failed",
+        "cancelled": "Cancelled",
+        "reversed": "Reversed"
+      },
+      "rowStatuses": {
+        "pending": "Pending",
+        "valid": "Valid",
+        "invalid": "Invalid",
+        "duplicate": "Possible duplicate",
+        "ignored": "Ignored",
+        "imported": "Imported",
+        "failed": "Failed",
+        "reversed": "Reversed"
+      }
+    },
+    "search": {
+      "label": "Search dashboard pages",
+      "open": "Open search",
+      "clear": "Clear search",
+      "results": "Matching pages",
+      "empty": "No page matches “{{query}}”. Try another word, such as accounts, budgets or reports.",
+      "keywords": {
+        "dashboard": "home overview summary balance main",
+        "accounts": "bank cash wallet card balances account",
+        "attention": "alerts warnings reminders issues needs review",
+        "financialOperations": "transactions income expense spending add transaction ledger payments",
+        "templates": "quick templates shortcuts repeat transaction",
+        "transfers": "transfer move money between accounts",
+        "recurring": "repeating subscriptions bills scheduled automatic",
+        "aiCaptures": "receipts invoices scan voice ai expense capture",
+        "imports": "import statement csv bank file upload",
+        "calendar": "dates schedule due upcoming agenda",
+        "categories": "category labels tags spending groups",
+        "budgets": "budget limit spending plan",
+        "savingsGoals": "savings saving goals target piggy bank",
+        "debts": "debt loans owe lent borrowed payments",
+        "reports": "reports analytics statistics charts pdf",
+        "exports": "export history download csv excel pdf",
+        "monthly": "monthly review summary month report",
+        "guide": "getting started guide help tutorial onboarding",
+        "aiAssistant": "ai assistant chat copilot insights forecast advice",
+        "notifications": "notifications alerts inbox messages bell",
+        "settings": "settings profile account password security language theme preferences whatsapp integrations connect link messages",
+        "whatsappDrafts": "whatsapp drafts inbox expenses messages review pending"
+      }
+    },
+    "whatsappDrafts": {
+      "title": "WhatsApp drafts",
+      "subtitle": "Expenses collected from your WhatsApp messages. A draft is not a transaction until it is confirmed.",
+      "pendingLabel": "waiting for review",
+      "summaryUnavailable": "Count unavailable",
+      "refresh": "Refresh",
+      "manage": "WhatsApp settings",
+      "loading": "Loading your drafts…",
+      "listLabel": "WhatsApp drafts",
+      "disabledNote": "WhatsApp is switched off right now, so no new messages are received. The drafts you already have are still here.",
+      "statuses": {
+        "collecting": "Being collected",
+        "ready_for_review": "Awaiting review",
+        "confirmed": "Confirmed",
+        "discarded": "Discarded",
+        "expired": "Expired"
+      },
+      "filters": {
+        "label": "Filter drafts",
+        "status": "Status",
+        "date": "Expense date",
+        "account": "Account",
+        "allAccounts": "All accounts",
+        "otherAccount": "Account #{{id}}",
+        "perPage": "Per page",
+        "reset": "Reset filters",
+        "accountsFailed": "Couldn't load your accounts, so the account filter is limited."
+      },
+      "row": {
+        "untitled": "WhatsApp draft #{{id}}",
+        "noDate": "No date",
+        "noAccount": "No account",
+        "noCategory": "No category",
+        "noAmount": "Amount not set"
+      },
+      "readiness": {
+        "complete": "Details complete",
+        "incomplete": "Needs attention ({{count}})"
+      },
+      "issues": {
+        "account_required": "Choose an account.",
+        "category_required": "Choose a category.",
+        "amount_required": "Add the amount.",
+        "amount_invalid": "The amount isn't valid.",
+        "account_unavailable": "The selected account isn't available in this workspace.",
+        "account_not_usable": "The selected account can't be used for an expense.",
+        "category_unavailable": "The selected category isn't available in this workspace.",
+        "category_not_usable": "The selected category must be an active expense category.",
+        "currency_mismatch": "The currency doesn't match the account's currency.",
+        "date_required": "Add the expense date.",
+        "time_unresolvable": "The time given doesn't exist on that date in the workspace time zone.",
+        "unknown": "This draft needs a closer look."
+      },
+      "empty": {
+        "pendingTitle": "No drafts waiting for review",
+        "pendingBody": "When you send an expense to SmartSpend on WhatsApp, it will show up here for you to review.",
+        "noneTitle": "No drafts with this status",
+        "noneBody": "Nothing matches this status right now.",
+        "filtered": "No drafts match these filters.",
+        "page": "This page has no drafts any more. The list changed.",
+        "howTo": "How to record from WhatsApp"
+      },
+      "errors": {
+        "forbidden": "You don't have access to these WhatsApp drafts.",
+        "notFound": "This draft wasn't found, or it isn't available to you.",
+        "validation": "Those filters can't be used. Reset them and try again.",
+        "unauthenticated": "Your session has ended. Please sign in again."
+      },
+      "details": {
+        "navLabel": "Draft navigation",
+        "back": "Back to drafts",
+        "title": "WhatsApp draft",
+        "subtitle": "Read-only view of what was collected from WhatsApp.",
+        "financial": "Expense details",
+        "currency": "Currency",
+        "account": "Account",
+        "category": "Category",
+        "date": "Expense date",
+        "time": "Time",
+        "timezone": "Workspace time zone",
+        "description": "Description",
+        "notSet": "Not set",
+        "draftNote": "This is a draft. It becomes a transaction only after it is confirmed.",
+        "viewTransaction": "View the transaction",
+        "readiness": "Before it can be confirmed",
+        "incompleteIntro": "These items need attention first:",
+        "completeIntro": "The details look complete.",
+        "noIssues": "Nothing is missing in the details.",
+        "recheck": "The account balance and your permissions are checked again when a draft is confirmed.",
+        "about": "About this draft",
+        "reference": "Reference",
+        "source": "Source",
+        "events": {
+          "created_at": "Created",
+          "ready_for_review_at": "Ready for review",
+          "expires_at": "Review until",
+          "confirmed_at": "Confirmed",
+          "discarded_at": "Discarded",
+          "expired_at": "Expired"
+        }
+      },
+      "review": {
+        "subtitle": "Check the details, fix anything that's wrong, then confirm to record the expense.",
+        "formTitle": "Review and edit",
+        "unsaved": "Unsaved changes",
+        "amount": "Amount",
+        "currencyHint": "The currency comes from the selected account.",
+        "account": "Account",
+        "category": "Category",
+        "date": "Expense date",
+        "time": "Time",
+        "optional": "(optional)",
+        "clearTime": "Clear time",
+        "timeHint": "Local time in {{zone}}. Leave empty to use the start of the day.",
+        "timeHintNoZone": "Leave empty to use the start of the day.",
+        "description": "Description",
+        "choose": "Choose…",
+        "loading": "Loading…",
+        "unavailable": "Not available",
+        "saveNote": "Saving only updates the draft. No expense is recorded until you confirm.",
+        "save": "Save changes",
+        "saving": "Saving…",
+        "cancelEdit": "Cancel changes",
+        "fieldErrors": {
+          "amount_invalid": "Enter a positive amount with up to 4 decimals, like 25.50.",
+          "date_required": "The date can't be empty.",
+          "date_invalid": "Enter a real calendar date.",
+          "time_invalid": "Enter a valid time, like 14:30.",
+          "description_long": "The description is too long (500 characters at most).",
+          "server": "This value wasn't accepted. Check it and try again."
+        },
+        "fields": {
+          "account_id": "Account",
+          "category_id": "Category",
+          "amount": "Amount",
+          "description": "Description",
+          "transaction_date": "Expense date",
+          "transaction_time": "Time"
+        },
+        "conflictTitle": "This draft changed",
+        "conflictBody": "It was updated somewhere else while you were editing, so the latest version is shown. Nothing of yours was saved over it.",
+        "conflictMine": "Your unsaved edits to:",
+        "reapply": "Reapply my edits",
+        "discardMine": "Drop my edits",
+        "understood": "Got it",
+        "confirmTitle": "Confirm expense",
+        "confirmIntro": "Confirming records a real expense in your account and updates its balance.",
+        "confirm": "Confirm expense",
+        "confirming": "Confirming…",
+        "blocked": {
+          "conflict": "Review the latest version above before confirming.",
+          "dirty": "Save or cancel your changes before confirming.",
+          "forbidden": "You can't confirm this draft.",
+          "notReady": "Complete the items listed above first."
+        },
+        "uncertainTitle": "We couldn't confirm what happened",
+        "uncertainBody": "The connection was interrupted, so we don't know yet whether the expense was recorded. Please don't start over.",
+        "notRecordedYet": "As of the last check, the draft is still waiting and no expense was recorded.",
+        "unreadable": "We couldn't check the draft right now.",
+        "checking": "Checking…",
+        "checkStatus": "Check status",
+        "retrySame": "Try again",
+        "retryNote": "Trying again repeats the very same request, so it can't record the expense twice.",
+        "confirmedTitle": "Expense recorded",
+        "confirmedBody": "This draft was confirmed and is now a recorded expense.",
+        "transactionRef": "Transaction",
+        "reconciledNote": "We checked with the server and the expense is recorded.",
+        "viewTransaction": "View transaction",
+        "backToInbox": "Back to drafts",
+        "discardedTitle": "Draft discarded",
+        "discardedBody": "This draft was discarded. No expense was recorded and it can't be changed.",
+        "expiredTitle": "Draft expired",
+        "expiredBody": "The review period for this draft ended, so it can no longer be edited or confirmed.",
+        "collectingTitle": "Still being collected",
+        "collectingBody": "This draft is still being put together from your WhatsApp conversation. It can be reviewed once it's ready.",
+        "discardTitle": "Discard this draft",
+        "discardIntro": "Discarding removes the draft from your review list. It doesn't change any expense already recorded.",
+        "discard": "Discard draft",
+        "discarding": "Discarding…",
+        "notDiscarded": "The draft wasn't discarded. You can try again.",
+        "discardUncertain": "We couldn't confirm whether the draft was discarded.",
+        "dialog": {
+          "confirmTitle": "Record this expense?",
+          "confirmBody": "This creates a real expense and changes your account balance. Check the details first.",
+          "confirmAction": "Record expense",
+          "cancel": "Not yet",
+          "discardTitle": "Discard this draft?",
+          "discardBody": "The draft will be closed and can't be confirmed later. Expenses already recorded aren't affected.",
+          "discardAction": "Discard draft",
+          "keep": "Keep draft"
+        },
+        "errors": {
+          "forbidden": "You don't have permission to do that with this draft.",
+          "notFound": "This draft isn't available anymore.",
+          "unauthenticated": "Your session has ended. Please sign in again.",
+          "conflict": {
+            "save": "The draft changed before your edits were saved.",
+            "confirm": "The draft changed, so it wasn't confirmed. Review the latest version.",
+            "discard": "The draft changed, so it wasn't discarded.",
+            "generic": "The draft changed. Refresh and try again."
+          },
+          "insufficient": "The account doesn't have enough balance for this expense.",
+          "notReviewable": "This draft can't be changed anymore.",
+          "dateMissing": "The draft needs an expense date before it can be confirmed.",
+          "timeInvalid": "That time doesn't exist on that date in the workspace time zone, or is ambiguous. Choose another time.",
+          "account": "That account can't be used for this expense. Choose another one.",
+          "category": "That category can't be used. Choose an active expense category.",
+          "amount": "The amount isn't valid. Enter a positive amount.",
+          "validation": "Some details weren't accepted. Check them and try again.",
+          "uncertainConfirm": "The connection was interrupted, so we can't tell whether the expense was recorded.",
+          "inFlight": "A confirmation of this draft is already in progress. Please wait for it to finish."
+        }
+      },
+      "sidebarBadge": "WhatsApp drafts waiting for review: {{count}}"
     }
   },
   "home": {
@@ -3302,27 +4888,30 @@
       "badge": "AI-powered personal finance",
       "titleStart": "Manage your money smarter,",
       "titleHighlight": "all in one place",
-      "description": "Smart Spend connects your accounts, organizes every transaction, tracks your budgets and savings goals, and explains your spending in plain language.",
+      "description": "Organize accounts, transactions, budgets and savings goals, review reports, and use AI tools to understand your recorded data.",
       "primaryButton": "Start managing my money",
       "watchDemo": "Watch the demo",
-      "users": "50,000+ users trust Smart Spend"
+      "users": "An Arabic and English experience for personal money management",
+      "visual": {
+        "viewAll": "View all"
+      }
     },
     "stats": {
       "users": {
-        "title": "50k+ Users",
-        "text": "Growing community"
+        "title": "One financial space",
+        "text": "For accounts, transactions and goals"
       },
       "security": {
-        "title": "Secure Financial Data",
-        "text": "Encrypted end to end"
+        "title": "Access permissions",
+        "text": "Linked to your account and workspace"
       },
       "ai": {
         "title": "AI-Powered Insights",
         "text": "Clear, useful advice"
       },
       "monitoring": {
-        "title": "24/7 Monitoring",
-        "text": "Always watching your accounts"
+        "title": "Reviewable history",
+        "text": "Follow your financial movements"
       }
     },
     "features": {
@@ -3330,8 +4919,8 @@
       "subtitle": "Everything you need to understand, plan and grow your money.",
       "items": {
         "sync": {
-          "title": "Automatic Sync",
-          "description": "Connect your accounts and automatically organize transactions."
+          "title": "Organized accounts",
+          "description": "Add accounts and review balances and movement history inside the platform."
         },
         "analytics": {
           "title": "Smart Analytics",
@@ -3350,10 +4939,11 @@
           "description": "Get alerts about budgets and upcoming bills."
         },
         "budgets": {
-          "title": "Shared Budgets",
-          "description": "Manage shared spending with family or partners."
+          "title": "Clear budgets",
+          "description": "Set spending limits and review progress using your recorded data."
         }
-      }
+      },
+      "eyebrow": "Tools for everyday money"
     },
     "ai": {
       "badge": "AI Assistant",
@@ -3363,7 +4953,14 @@
       "secondary": "See recommendations",
       "cardTitle": "Your dining expenses increased 18% this month.",
       "recommendation": "Recommendation",
-      "recommendationText": "Reducing dining expenses by 10% could help you save approximately $45 this month."
+      "recommendationText": "Illustrative example: reducing dining expenses may leave more room for saving. Suggestions inside your account depend on your recorded data and review.",
+      "proofReceipts": "Receipt analysis",
+      "proofPatterns": "Spending patterns",
+      "proofGuidance": "Reviewable suggestions",
+      "live": "Illustrative example",
+      "userPrompt": "How can I review this month's spending?",
+      "savingPotential": "Potential saving (example)",
+      "askAnything": "Ask about your financial data"
     },
     "steps": {
       "title": "Start your journey in 3 simple steps",
@@ -3371,44 +4968,52 @@
       "items": {
         "account": {
           "title": "Create your account",
-          "description": "Sign up in under a minute, no card required."
+          "description": "Create your account and review the terms and privacy policy."
         },
         "connect": {
-          "title": "Link your accounts",
-          "description": "Securely connect banks and cards in a few taps."
+          "title": "Add your accounts",
+          "description": "Choose a currency and opening balance, then start recording transactions."
         },
         "control": {
           "title": "Control your money",
           "description": "Track budgets, bills and savings in one place."
         }
-      }
+      },
+      "eyebrow": "Simple steps"
     },
     "security": {
       "badge": "Security",
-      "title": "Your financial data stays protected",
-      "subtitle": "Security is a default, not a feature you have to turn on.",
+      "title": "Controls for your financial history",
+      "subtitle": "Permissions, review and private analysis files within the platform.",
       "items": {
         "connections": {
-          "title": "Secure account connections",
-          "description": "Read-only connections through trusted providers."
+          "title": "Clear permissions",
+          "description": "Data access depends on the user and workspace permissions."
         },
         "storage": {
-          "title": "Strong data protection",
-          "description": "Data is encrypted in transit and at rest."
+          "title": "Private analysis files",
+          "description": "Audio and receipts use private storage and are validated before processing."
         },
         "privacy": {
           "title": "Privacy-focused design",
-          "description": "We never sell your personal financial data."
+          "description": "Choose what you share with analysis tools and review your options in the privacy policy."
         },
         "monitoring": {
-          "title": "Real-time monitoring",
-          "description": "Unusual activity is flagged when it happens."
+          "title": "Reviewable financial history",
+          "description": "Review original operations and their effects; archiving does not delete account history."
         }
-      }
+      },
+      "statusTitle": "Review before confirmation",
+      "statusText": "Voice and receipt drafts need your confirmation"
     },
     "dashboardPreview": {
       "title": "Everything you need, in one dashboard",
-      "subtitle": "Balance, income, expenses, savings, budgets, transactions and AI insights — one clear view."
+      "subtitle": "A dashboard preview using example data, not a real account. Your actual information appears after sign-in.",
+      "eyebrow": "Illustrative preview",
+      "welcome": "Welcome",
+      "overview": "Financial overview",
+      "vsLastMonth": "vs. last month",
+      "cashFlow": "Cash flow"
     },
     "preview": {
       "totalBalance": "Total balance",
@@ -3424,19 +5029,19 @@
       "items": {
         "security": {
           "question": "Is my financial data safe?",
-          "answer": "Your data is encrypted in transit and at rest, and account connections are read-only by default."
+          "answer": "Access depends on your account and workspace permissions. Analysis files use private storage, and voice and receipt expenses require your review and confirmation."
         },
         "categories": {
           "question": "How are expenses categorized?",
-          "answer": "Smart Spend automatically categorizes transactions and lets you edit categories at any time."
+          "answer": "Choose a category when recording a transaction. Voice and receipt analysis may help prepare the draft; review and adjust the category before confirmation."
         },
         "multipleAccounts": {
-          "question": "Can I connect multiple accounts?",
-          "answer": "Yes. You can manage multiple bank accounts, wallets and cards."
+          "question": "Can I manage multiple accounts?",
+          "answer": "Yes, add multiple financial accounts and review their balances and movements inside the platform. This does not mean automatic bank synchronization."
         },
         "freePlan": {
-          "question": "Is there a free plan?",
-          "answer": "Smart Spend can support different subscription plans depending on your account."
+          "question": "What are the voice and receipt analysis limits?",
+          "answer": "The current configuration is 10 voice and 10 receipt attempts per day independently. Your displayed remaining allowance is authoritative, and manual entry stays available."
         },
         "aiAnalysis": {
           "question": "How does AI analyze my spending?",
@@ -3446,13 +5051,16 @@
           "question": "Can I use Smart Spend in Arabic?",
           "answer": "Yes. Smart Spend supports both Arabic and English."
         }
-      }
+      },
+      "eyebrow": "Clear answers",
+      "note": "Find more detailed guidance in the help center linked from the footer."
     },
     "cta": {
       "title": "Ready to take control of your future?",
-      "subtitle": "Join thousands of smart users and start your financial journey today.",
-      "signup": "Sign up free",
-      "sales": "Talk to sales"
+      "subtitle": "Start with clear records and follow budgets and goals in one connected experience.",
+      "signup": "Create your account",
+      "sales": "Contact us",
+      "eyebrow": "Your next step"
     },
     "footer": {
       "description": "Smart Spend helps you understand your money, plan ahead and reach your goals with AI-powered clarity.",
@@ -3471,6 +5079,32 @@
         "privacy": "Privacy Policy"
       },
       "rights": "All rights reserved."
+    },
+    "sample": {
+      "badge": "Sample data",
+      "aiSend": "Send",
+      "aiName": "Smart Spend AI",
+      "dining": "Dining",
+      "transport": "Transport",
+      "sixMonths": "6 months",
+      "net": "{{amount}} net",
+      "used": "{{percent}}% used",
+      "left": "left",
+      "spent": "{{amount}} spent",
+      "ofTotal": "of {{amount}}",
+      "salary": "Salary",
+      "wholeFoods": "Whole Foods",
+      "netflix": "Netflix",
+      "metroCard": "Metro Card",
+      "groceries": "Groceries",
+      "subscription": "Subscription",
+      "incomeCategory": "Income",
+      "bank": "Bank",
+      "wallet": "Wallet",
+      "budgetAlert": "Budget alert",
+      "diningAt": "Dining is at {{percent}}%",
+      "homeBudget": "Home",
+      "travelBudget": "Travel"
     }
   },
   "admin": {

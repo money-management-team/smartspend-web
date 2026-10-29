@@ -1,19 +1,22 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { useAuthContext } from "../../../contexts/auth/useAuthContext";
 import { PATH } from "../../../routes/Path";
+import { getPostAuthPath } from "../../../routes/postAuthRedirect";
 import { getApiErrorMessage } from "../../Dashboards/User/api/apiClient";
 
 import AuthAlert from "../components/AuthAlert/AuthAlert";
 import AuthButton from "../components/AuthButton/AuthButton";
 import AuthCheckbox from "../components/AuthCheckbox/AuthCheckbox";
+import { PolicyDialog } from "../components/PolicyConsent/PolicyConsent";
 import AuthField from "../components/AuthField/AuthField";
 import AuthHeading from "../components/AuthHeading/AuthHeading";
 import { MailIcon } from "../components/AuthIcons";
 import AuthPromo from "../components/AuthPromo/AuthPromo";
 import AuthSocial from "../components/AuthSocial/AuthSocial";
+import useGoogleSignIn from "../components/AuthSocial/useGoogleSignIn";
 import AuthSwitchPrompt from "../components/AuthSwitchPrompt/AuthSwitchPrompt";
 import PasswordField from "../components/PasswordField/PasswordField";
 
@@ -28,11 +31,17 @@ const PROMO_CHIPS = [0, 1, 2];
 export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { login, loginWithGoogle } = useAuthContext();
+  const location = useLocation();
+  const { login } = useAuthContext();
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const google = useGoogleSignIn({
+    remember: form.remember,
+    onError: setGeneralError,
+  });
+  const locked = isSubmitting || google.busy || google.needsConsent;
 
   const handleChange = (event) => {
     const { name, value, type, checked } = event.target;
@@ -54,7 +63,7 @@ export default function Login() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (isSubmitting) return;
+    if (locked) return;
 
     setErrors({});
     setGeneralError("");
@@ -69,7 +78,7 @@ export default function Login() {
         { remember: form.remember },
       );
 
-      navigate(PATH.USER.DASHBOARD, { replace: true });
+      navigate(getPostAuthPath(location.state), { replace: true });
     } catch (error) {
       if (error?.code === "VALIDATION_ERROR") setErrors(error.errors);
       setGeneralError(getApiErrorMessage(error, t));
@@ -78,29 +87,14 @@ export default function Login() {
     }
   };
 
-  const handleGoogleCredential = async (idToken) => {
-    if (isSubmitting) return;
-
-    setErrors({});
-    setGeneralError("");
-    setIsSubmitting(true);
-
-    try {
-      await loginWithGoogle(idToken, { remember: form.remember });
-
-      navigate(PATH.USER.DASHBOARD, { replace: true });
-    } catch (error) {
-      // No field to show `id_token` errors under, so its message is the alert.
-      setGeneralError(
-        error?.errors?.id_token?.[0] ?? getApiErrorMessage(error, t),
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
     <>
+      {google.needsConsent && (
+        <PolicyDialog
+          onAccept={google.acceptConsent}
+          onClose={google.cancelConsent}
+        />
+      )}
       <AuthPromo
         title={t("auth.login.promo.title")}
         subtitle={t("auth.login.promo.subtitle")}
@@ -132,7 +126,7 @@ export default function Login() {
             onChange={handleChange}
             placeholder={t("auth.login.fields.contact.placeholder")}
             autoComplete="username"
-            disabled={isSubmitting}
+            disabled={locked}
             required
           />
 
@@ -150,7 +144,7 @@ export default function Login() {
             onChange={handleChange}
             placeholder={t("auth.login.fields.password.placeholder")}
             autoComplete="current-password"
-            disabled={isSubmitting}
+            disabled={locked}
             required
           />
 
@@ -159,14 +153,17 @@ export default function Login() {
             name="remember"
             checked={form.remember}
             onChange={handleChange}
-            disabled={isSubmitting}
+            disabled={locked}
           >
             {t("auth.login.remember")}
           </AuthCheckbox>
 
           {generalError && <AuthAlert>{generalError}</AuthAlert>}
 
-          <AuthButton loading={isSubmitting} loadingLabel={t("auth.login.loading")}>
+          <AuthButton
+            loading={isSubmitting || google.busy}
+            loadingLabel={t("auth.login.loading")}
+          >
             {t("auth.login.submit")}
           </AuthButton>
         </form>
@@ -174,12 +171,14 @@ export default function Login() {
         <AuthSocial
           dividerLabel={t("auth.login.social.divider")}
           googleLabel={t("auth.login.social.google")}
-          appleLabel={t("auth.login.social.apple")}
-          onGoogleCredential={handleGoogleCredential}
+          onGoogleCredential={(idToken) => {
+            setErrors({});
+            return google.handleCredential(idToken);
+          }}
           onGoogleUnavailable={() =>
             setGeneralError(t("auth.common.googleUnavailable"))
           }
-          disabled={isSubmitting}
+          disabled={locked}
         />
 
         <AuthSwitchPrompt

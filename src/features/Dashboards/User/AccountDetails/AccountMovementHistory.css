@@ -1,0 +1,722 @@
+.account-movements {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 22px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  animation: account-history-enter 260ms ease-out both;
+}
+
+.account-movements__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 26px 26px 22px;
+  background: linear-gradient(
+    115deg,
+    color-mix(in srgb, var(--color-primary) 7%, var(--color-surface)),
+    var(--color-surface) 75%
+  );
+}
+
+.account-movements__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.account-movements__kicker svg {
+  width: 16px;
+  height: 16px;
+}
+.account-movements__header h2 {
+  margin: 8px 0;
+  font-family: var(--font-heading);
+  font-size: clamp(20px, 2.2vw, 26px);
+  line-height: 1.5;
+  color: var(--color-text-strong);
+}
+.account-movements__header p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.8;
+}
+.account-movements__refresh {
+  flex: none;
+  display: grid;
+  gap: 9px;
+  justify-items: end;
+}
+.account-movements__refresh small {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+.account-movements__button {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  cursor: pointer;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+.account-movements__button svg {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.account-movements__button:hover:not(:disabled) {
+  background: var(--surface-soft);
+  border-color: var(--color-primary);
+}
+.account-movements__button--primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+.account-movements__button--primary:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+.account-movements button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.account-movements :is(button, a, select, input, summary):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 55%, transparent);
+  outline-offset: 3px;
+}
+
+.account-movements__summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0 26px;
+}
+.account-movements__stat {
+  min-width: 0;
+  min-height: 112px;
+  padding: 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 15px;
+  background: var(--color-surface);
+}
+.account-movements__stat dt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.account-movements__stat dt svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  color: var(--color-primary);
+}
+.account-movements__stat dd {
+  margin: 12px 0 0;
+  font-family: var(--font-heading);
+  font-size: clamp(17px, 1.5vw, 22px);
+  font-weight: 700;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.account-movements__stat small {
+  color: var(--color-text-muted);
+  font-size: 10px;
+}
+.account-movements__stat--total {
+  background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface));
+}
+.account-movements__stat--in :is(dd, svg) {
+  color: var(--color-success);
+}
+.account-movements__stat--out :is(dd, svg) {
+  color: var(--color-danger);
+}
+.account-movements__page-note {
+  padding: 0 26px;
+  margin: 13px 0 20px;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  line-height: 1.9;
+}
+
+.account-movements__filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin: 0 26px 22px;
+  padding: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface-soft) 45%, var(--color-surface));
+}
+.account-movements__filters label {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  align-content: start;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+.account-movements__filters :is(input, select) {
+  min-width: 0;
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 11px;
+  box-sizing: border-box;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font: inherit;
+  font-size: 12px;
+}
+.account-movements__filters input[type="date"] {
+  direction: ltr;
+}
+:root[data-theme="dark"] .account-movements__filters input[type="date"] {
+  color-scheme: dark;
+}
+.account-movements__filter-actions {
+  grid-column: span 2;
+  align-self: end;
+  display: flex;
+  justify-content: end;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+.account-movements__date-help {
+  grid-column: 1 / -1;
+  color: var(--color-text-muted);
+  font-size: 10px;
+  line-height: 1.8;
+}
+.account-movements__filter-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--color-danger);
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.account-movements__list {
+  border-top: 1px solid var(--color-border);
+}
+.account-movement {
+  min-width: 0;
+  padding: 20px 26px 0;
+  transition: background 160ms ease;
+}
+.account-movement + .account-movement {
+  border-top: 1px solid var(--color-border);
+}
+.account-movement:hover {
+  background: color-mix(in srgb, var(--color-primary) 2%, var(--color-surface));
+}
+.account-movement__main {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) minmax(140px, auto);
+  align-items: center;
+  gap: 14px;
+}
+.account-movement__icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+}
+.account-movement__icon svg {
+  width: 21px;
+  height: 21px;
+}
+.account-movement--in .account-movement__icon {
+  color: var(--color-success);
+  background: var(--success-soft);
+}
+.account-movement--out .account-movement__icon {
+  color: var(--color-danger);
+  background: var(--danger-soft);
+}
+.account-movement .account-movement__icon--reversal {
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+.account-movement__identity {
+  min-width: 0;
+}
+.account-movement__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 7px;
+}
+.account-movement__type {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+.account-movement__status {
+  padding: 3px 8px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 16%, transparent);
+  border-radius: 999px;
+  color: var(--color-primary);
+  background: var(--primary-soft);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.account-movement__status--reversed {
+  border-color: var(--color-border);
+  color: var(--color-text-secondary);
+  background: var(--surface-soft);
+}
+.account-movement__title {
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  color: var(--color-text-strong);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1.65;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.account-movement__title:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.account-movement__byline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 13px;
+  margin-top: 6px;
+  color: var(--color-text-muted);
+  font-size: 10px;
+  line-height: 1.8;
+}
+.account-movement__effect {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+  text-align: end;
+}
+.account-movement__effect > span {
+  color: var(--color-text-muted);
+  font-size: 10px;
+}
+.account-movement__effect strong {
+  font-family: var(--font-heading);
+  font-size: 19px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.account-movement--in .account-movement__effect strong {
+  color: var(--color-success);
+}
+.account-movement--out .account-movement__effect strong {
+  color: var(--color-danger);
+}
+.account-movement__effect small {
+  color: var(--color-text-secondary);
+  font-size: 10px;
+}
+
+.account-movement__details > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 43px;
+  padding: 7px 0;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+  list-style: none;
+}
+.account-movement__details > summary::-webkit-details-marker {
+  display: none;
+}
+.account-movement__details > summary:hover {
+  color: var(--color-primary);
+}
+.account-movement__details-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-text-muted);
+  font-size: 10px;
+}
+.account-movement__details-meta svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 160ms ease;
+}
+.account-movement__details[open] .account-movement__details-meta svg {
+  transform: rotate(180deg);
+}
+.account-movement__expanded {
+  padding: 16px 18px;
+  margin-bottom: 18px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+  animation: account-history-enter 180ms ease-out both;
+}
+.account-movement__fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px 22px;
+  margin: 0;
+}
+.account-movement__fields > div {
+  min-width: 0;
+}
+.account-movement__fields dt {
+  color: var(--color-text-muted);
+  font-size: 10px;
+  margin-bottom: 5px;
+}
+.account-movement__fields dd {
+  color: var(--color-text-primary);
+  font-size: 12px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+  margin: 0;
+}
+.account-movement__ledger {
+  padding: 15px;
+  margin-top: 17px;
+  background: var(--surface-soft);
+  border-radius: 11px;
+}
+.account-movement__ledger h3 {
+  margin: 0 0 10px;
+  font-size: 12px;
+}
+.account-movement__ledger ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+.account-movement__ledger li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 15px;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.account-movement__ledger bdi {
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+.account-movement__related {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 16px;
+  font-size: 11px;
+}
+.account-movement__related > span {
+  color: var(--color-text-muted);
+}
+.account-movement__related a {
+  padding: 4px 9px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+.account-movement__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 18px;
+  margin-top: 17px;
+  font-size: 12px;
+}
+.account-movement__expanded a {
+  color: var(--color-primary);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.account-movement__expanded a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.account-movement__reversed-note {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--primary-soft);
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  line-height: 1.8;
+}
+
+.account-movements__loading {
+  padding: 20px 26px;
+}
+.account-movements__loading p {
+  margin: 0 0 18px;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+.account-movements__skeleton {
+  display: grid;
+  grid-template-columns: 44px 1fr 110px;
+  gap: 15px;
+  align-items: center;
+  min-height: 80px;
+}
+.account-movements__skeleton > span,
+.account-movements__skeleton i {
+  display: block;
+  height: 18px;
+  border-radius: 8px;
+  background: linear-gradient(
+    110deg,
+    var(--surface-soft) 25%,
+    var(--color-surface-hover) 45%,
+    var(--surface-soft) 65%
+  );
+  background-size: 220% 100%;
+  animation: account-history-shimmer 1.5s ease infinite;
+}
+.account-movements__skeleton > span:first-child {
+  height: 44px;
+  border-radius: 14px;
+}
+.account-movements__skeleton i:first-child {
+  width: 58%;
+  margin-bottom: 9px;
+}
+.account-movements__skeleton i:last-child {
+  width: 36%;
+  height: 10px;
+}
+.account-movements__state {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: 38px 22px;
+  text-align: center;
+}
+.account-movements__state > svg {
+  width: 32px;
+  height: 32px;
+  color: var(--color-primary);
+}
+.account-movements__state h3 {
+  margin: 0;
+  font-size: 16px;
+}
+.account-movements__state p {
+  max-width: 550px;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.9;
+}
+.account-movements__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 17px 26px;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  background: color-mix(in srgb, var(--surface-soft) 35%, var(--color-surface));
+}
+.account-movements__pagination {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.account-movements__pagination button {
+  display: grid;
+  place-items: center;
+  min-width: 38px;
+  min-height: 38px;
+  padding: 7px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+.account-movements__pagination button:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+.account-movements__pagination svg {
+  width: 17px;
+  height: 17px;
+}
+
+@keyframes account-history-enter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes account-history-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (max-width: 960px) {
+  .account-movements__summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .account-movements__filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .account-movements__header {
+    align-items: start;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .account-movements__refresh {
+    justify-items: start;
+  }
+}
+@media (max-width: 600px) {
+  .account-movements {
+    border-radius: 17px;
+  }
+  .account-movements__header {
+    padding: 20px 16px;
+  }
+  .account-movements__summary {
+    padding: 0 16px;
+    gap: 9px;
+  }
+  .account-movements__stat {
+    padding: 12px;
+    min-height: 100px;
+  }
+  .account-movements__stat dt {
+    font-size: 11px;
+  }
+  .account-movements__stat dt svg {
+    width: 15px;
+    height: 15px;
+  }
+  .account-movements__stat dd {
+    font-size: 16px;
+  }
+  .account-movements__page-note {
+    padding: 0 16px;
+  }
+  .account-movements__filters {
+    margin: 0 16px 18px;
+    padding: 12px;
+    gap: 12px;
+  }
+  .account-movements__filter-actions {
+    grid-column: 1 / -1;
+    justify-content: stretch;
+  }
+  .account-movements__filter-actions button {
+    flex: 1;
+  }
+  .account-movement {
+    padding: 17px 16px 0;
+  }
+  .account-movement__main {
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 11px;
+  }
+  .account-movement__icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+  }
+  .account-movement__effect {
+    grid-column: 2;
+    text-align: start;
+    margin-top: 4px;
+  }
+  .account-movement__effect strong {
+    font-size: 18px;
+  }
+  .account-movement__effect > span {
+    display: none;
+  }
+  .account-movement__expanded {
+    padding: 13px;
+  }
+  .account-movement__fields {
+    grid-template-columns: 1fr;
+  }
+  .account-movement__details-meta {
+    gap: 5px;
+  }
+  .account-movements__footer {
+    padding: 16px;
+    justify-content: center;
+    text-align: center;
+  }
+  .account-movements__pagination {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .account-movements__loading {
+    padding: 18px 16px;
+  }
+  .account-movements__skeleton {
+    grid-template-columns: 38px 1fr 65px;
+    gap: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .account-movements,
+  .account-movements *,
+  .account-movements *::before,
+  .account-movements *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

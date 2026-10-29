@@ -1,0 +1,1584 @@
+/* =========================================
+   WHATSAPP INTEGRATION (Settings → Integrations)
+   Prefix: wa-
+
+   Architecture: a small introduction, then ONE card that does the job of
+   the state (onboarding, or connection + actions), then quiet supporting
+   rows, then everything rarely needed behind two folds (settings, help).
+   SmartSpend blue/cyan/navy carry the page; WhatsApp green only marks the
+   integration. Sizes follow the sibling Settings cards (21px radius,
+   --fin-line, --fin-shadow). Layout follows the width of the Settings
+   content area (container queries), not the viewport.
+========================================= */
+
+.wa-integration {
+  --wa-accent: #1fa855;
+  --wa-accent-soft: color-mix(in srgb, #1fa855 12%, transparent);
+  --wa-cyan: #06b6d4;
+  --wa-navy: #0b1a3a;
+  --wa-navy-2: #12285a;
+  --wa-line: var(--fin-line, var(--color-border));
+  --wa-shadow: var(--fin-shadow, var(--shadow-card));
+  --wa-radius: 21px;
+  --wa-chat-bg: #eef3fb;
+  --wa-bubble-out: #dbe8ff;
+  --wa-bubble-in: #ffffff;
+
+  container-type: inline-size;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  margin: 0;
+}
+
+:root[data-theme="dark"] .wa-integration {
+  --wa-accent: #3ccf78;
+  --wa-accent-soft: color-mix(in srgb, #3ccf78 16%, transparent);
+  --wa-cyan: #22d3ee;
+  --wa-chat-bg: #0e1a33;
+  --wa-bubble-out: #1d3a73;
+  --wa-bubble-in: #172645;
+}
+
+.wa-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- A. Introduction ---------- */
+
+.wa-intro {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 2px 2px 4px;
+}
+
+.wa-intro__mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  color: var(--wa-accent);
+  background: var(--wa-accent-soft);
+  font-size: 21px;
+}
+
+.wa-intro__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.wa-intro h2 {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-family: var(--font-heading);
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.wa-intro p {
+  margin: 2px 0 0;
+  color: var(--color-text-muted);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.wa-badge {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-soft);
+}
+
+/* The dot keeps the state readable without relying on colour alone. */
+.wa-badge::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.wa-badge--on {
+  color: var(--color-success);
+  background: var(--success-soft);
+}
+
+.wa-badge--idle {
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+.wa-badge--off::before {
+  border-radius: 2px;
+}
+
+/* ---------- Cards ---------- */
+
+.wa-card {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid var(--wa-line);
+  border-radius: var(--wa-radius);
+  background: var(--color-surface);
+  box-shadow: var(--wa-shadow);
+}
+
+.wa-card h3 {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-family: var(--font-heading);
+  font-size: 17px;
+  line-height: 1.4;
+}
+
+.wa-card p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* ---------- B. Connection card (connected) ---------- */
+
+.wa-connection {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  background:
+    radial-gradient(90% 140% at 100% 0%, color-mix(in srgb, var(--wa-cyan) 9%, transparent), transparent 60%),
+    var(--color-surface);
+}
+
+.wa-connection__info {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.wa-connection__icon {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  color: var(--wa-accent);
+  background: var(--wa-accent-soft);
+  font-size: 24px;
+}
+
+.wa-connection__dot {
+  position: absolute;
+  inset-block-start: -3px;
+  inset-inline-end: -3px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--color-surface);
+  border-radius: 50%;
+  background: var(--color-success);
+}
+
+.wa-connection__text {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.wa-connection__text p {
+  font-size: 13.5px;
+}
+
+.wa-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 6px 0 0;
+}
+
+.wa-meta > div {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+}
+
+.wa-meta dt {
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+}
+
+.wa-meta dd {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.wa-connection__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.wa-connection__hint {
+  margin-top: -6px;
+}
+
+/* Wide: information on one side, the two actions on the other, centred. */
+@container (min-width: 700px) {
+  .wa-connection {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 28px;
+    padding: 24px 26px;
+  }
+
+  .wa-connection__actions {
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 230px;
+  }
+
+  .wa-connection__hint {
+    grid-column: 1 / -1;
+    margin-top: -4px;
+  }
+}
+
+/* ---------- Draft inbox link ---------- */
+
+.wa-inbox {
+  text-decoration: none;
+}
+
+.wa-inbox__icon {
+  flex: none;
+  font-size: 17px;
+}
+
+.wa-inbox__label {
+  min-width: 0;
+}
+
+.wa-inbox__count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  box-sizing: border-box;
+  border-radius: var(--radius-pill);
+  color: #fff;
+  background: var(--color-primary);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.wa-button--primary .wa-inbox__count {
+  color: var(--color-primary);
+  background: #fff;
+}
+
+/* Quiet row form (not linked, disabled). */
+.wa-inbox--row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 10px 16px;
+  border: 1px solid var(--wa-line);
+  border-radius: 14px;
+  color: var(--color-text-strong);
+  background: var(--color-surface);
+  font-size: 14px;
+  font-weight: 700;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.wa-inbox--row .wa-inbox__icon {
+  color: var(--color-primary);
+}
+
+.wa-inbox--row .wa-inbox__label {
+  flex: 1;
+}
+
+.wa-inbox--row:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 40%, var(--wa-line));
+  background: var(--color-surface-hover);
+}
+
+.wa-inbox--row:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ---------- C. Usage steps (connected) ---------- */
+
+.wa-subhead {
+  margin: 0 0 10px;
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+[dir="rtl"] .wa-subhead {
+  letter-spacing: 0;
+}
+
+.wa-usage {
+  padding: 2px 2px 0;
+}
+
+.wa-usage__steps {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wa-usage__step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--wa-line);
+  border-radius: 14px;
+  background: var(--color-surface);
+}
+
+.wa-usage__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  color: var(--color-primary);
+  background: var(--primary-soft);
+  font-size: 17px;
+}
+
+.wa-usage__step:first-child .wa-usage__icon {
+  color: var(--wa-accent);
+  background: var(--wa-accent-soft);
+}
+
+.wa-usage__text {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.wa-usage__text strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text-strong);
+  font-size: 13.5px;
+}
+
+.wa-usage__number {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--wa-navy);
+  font-size: 10.5px;
+  font-weight: 800;
+}
+
+:root[data-theme="dark"] .wa-usage__number {
+  color: var(--wa-navy);
+  background: var(--wa-cyan);
+}
+
+.wa-usage__text small {
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+@container (min-width: 620px) {
+  .wa-usage__steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  /* A short connector between steps, in the reading direction. */
+  .wa-usage__step + .wa-usage__step::before {
+    content: "";
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: -11px;
+    width: 12px;
+    height: 2px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--color-primary), var(--wa-cyan));
+  }
+}
+
+/* ---------- D. Safety row ---------- */
+
+.wa-safety {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 11px 14px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 22%, var(--wa-line));
+  border-radius: 14px;
+  color: var(--color-text-main);
+  background: color-mix(in srgb, var(--primary-soft) 55%, var(--color-surface));
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+.wa-safety svg {
+  flex: none;
+  color: var(--color-primary);
+  font-size: 18px;
+}
+
+/* ---------- E/F. Folds (settings, help) ---------- */
+
+.wa-fold {
+  border: 1px solid var(--wa-line);
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+
+.wa-fold > summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 54px;
+  padding: 10px 18px;
+  border-radius: 16px;
+  color: var(--color-text-strong);
+  list-style: none;
+  cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.wa-fold > summary::-webkit-details-marker,
+.wa-faq__item > summary::-webkit-details-marker {
+  display: none;
+}
+
+.wa-fold > summary:hover {
+  background: var(--color-surface-hover);
+}
+
+.wa-fold > summary:focus-visible,
+.wa-faq__item > summary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.wa-fold__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14.5px;
+  font-weight: 700;
+}
+
+.wa-fold__title svg {
+  color: var(--color-primary);
+  font-size: 18px;
+}
+
+.wa-fold__meta {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+  text-align: end;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wa-fold__chevron {
+  flex: none;
+  margin-inline-start: auto;
+  color: var(--color-text-muted);
+  transition: transform 200ms ease;
+}
+
+.wa-fold__meta + .wa-fold__chevron {
+  margin-inline-start: 0;
+}
+
+.wa-fold[open] > summary {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.wa-fold[open] > summary .wa-fold__chevron,
+.wa-faq__item[open] > summary .wa-fold__chevron {
+  transform: rotate(180deg);
+  color: var(--color-primary);
+}
+
+.wa-fold__body {
+  display: grid;
+  gap: 18px;
+  padding: 18px;
+  border-top: 1px solid var(--wa-line);
+}
+
+/* Settings: the form sits flat inside the fold. */
+.wa-settings .wa-prefs {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  animation: none;
+}
+
+.wa-settings .wa-prefs > h3 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Language and account side by side, Save under them at the start. */
+@container (min-width: 640px) {
+  .wa-settings .wa-prefs {
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 24px;
+    align-items: start;
+  }
+
+  .wa-settings .wa-prefs > .wa-actions,
+  .wa-settings .wa-prefs > .wa-feedback,
+  .wa-settings .wa-prefs > .wa-error {
+    grid-column: 1 / -1;
+  }
+}
+
+.wa-settings .wa-prefs > .wa-actions {
+  margin: 0;
+}
+
+/* An empty live region stays in the accessibility tree but takes no space. */
+.wa-prefs .wa-feedback:empty {
+  position: absolute;
+}
+
+.wa-unlink {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--wa-line);
+}
+
+.wa-unlink p {
+  display: grid;
+  gap: 2px;
+  flex: 1 1 260px;
+  min-width: 0;
+  margin: 0;
+}
+
+.wa-unlink strong {
+  color: var(--color-text-strong);
+  font-size: 13.5px;
+}
+
+.wa-unlink span {
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+/* Help: questions as light rows inside the fold. */
+.wa-faq {
+  gap: 0;
+  padding-top: 6px;
+}
+
+.wa-faq__item + .wa-faq__item {
+  border-top: 1px solid var(--wa-line);
+}
+
+.wa-faq__item > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 46px;
+  padding: 8px 2px;
+  color: var(--color-text-strong);
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.5;
+  list-style: none;
+  cursor: pointer;
+}
+
+.wa-faq__item > p {
+  margin: 0 0 12px;
+  color: var(--color-text-secondary);
+  font-size: 13.5px;
+  line-height: 1.8;
+}
+
+/* ---------- Onboarding card (not linked) ---------- */
+
+.wa-onboard {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
+  padding: 24px;
+  overflow: hidden;
+  background:
+    radial-gradient(110% 120% at 100% 0%, color-mix(in srgb, var(--wa-cyan) 10%, transparent), transparent 55%),
+    radial-gradient(80% 100% at 0% 100%, color-mix(in srgb, var(--color-primary) 8%, transparent), transparent 60%),
+    var(--color-surface);
+}
+
+:root[data-theme="dark"] .wa-onboard {
+  background:
+    radial-gradient(110% 120% at 100% 0%, color-mix(in srgb, var(--wa-cyan) 14%, transparent), transparent 55%),
+    linear-gradient(160deg, var(--wa-navy-2), var(--wa-navy));
+}
+
+.wa-onboard__main {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.wa-onboard__eyebrow {
+  justify-self: start;
+  padding: 4px 11px;
+  border-radius: var(--radius-pill);
+  color: var(--color-primary);
+  background: var(--primary-soft);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.wa-onboard h3 {
+  max-width: 28ch;
+  font-size: clamp(19px, 3.4cqi, 24px);
+  font-weight: 800;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.wa-onboard__lead {
+  max-width: 54ch;
+}
+
+.wa-onboard__cta {
+  margin: 4px 0 2px;
+}
+
+.wa-onboard__art {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+}
+
+@container (min-width: 720px) {
+  .wa-onboard {
+    grid-template-columns: minmax(0, 1fr) minmax(250px, 300px);
+    align-items: center;
+    gap: 28px;
+    padding: 28px;
+  }
+}
+
+.wa-steps-mini {
+  display: grid;
+  gap: 8px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wa-steps-mini li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.wa-steps-mini__number {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-top: 1px;
+  border-radius: 50%;
+  color: var(--color-primary);
+  background: var(--primary-soft);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.wa-steps-mini strong {
+  display: block;
+  color: var(--color-text-strong);
+  font-size: 13.5px;
+}
+
+.wa-steps-mini small {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+/* The linking flow takes the onboarding's place inside the same card. */
+.wa-flow {
+  min-width: 0;
+  border-radius: 14px;
+}
+
+.wa-flow:focus {
+  outline: none;
+}
+
+.wa-flow:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+}
+
+.wa-onboard .wa-panel {
+  display: grid;
+  gap: 14px;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.wa-panel h3 {
+  font-size: 16px;
+}
+
+.wa-panel p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* ---------- Disabled ---------- */
+
+.wa-disabled {
+  display: grid;
+  gap: 8px;
+  background: var(--color-surface-soft);
+  box-shadow: none;
+}
+
+.wa-previous {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.wa-previous span {
+  color: var(--color-text-strong);
+}
+
+.wa-previous small {
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+}
+
+/* ---------- Linking flow (unchanged behaviour) ---------- */
+
+.wa-steps {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wa-steps__item {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  min-width: 0;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.wa-steps__item + .wa-steps__item::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 14px;
+  inset-inline-end: calc(50% + 18px);
+  width: calc(100% - 28px);
+  height: 2px;
+  border-radius: 2px;
+  background: var(--wa-line);
+}
+
+.wa-steps__item--done + .wa-steps__item::before {
+  background: linear-gradient(90deg, var(--color-primary), var(--wa-cyan));
+}
+
+[dir="rtl"] .wa-steps__item--done + .wa-steps__item::before {
+  background: linear-gradient(270deg, var(--color-primary), var(--wa-cyan));
+}
+
+.wa-steps__dot {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1.5px solid var(--wa-line);
+  border-radius: 50%;
+  background: var(--color-surface);
+  font-size: 12px;
+  font-weight: 700;
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+
+.wa-steps__item--current {
+  color: var(--color-text-strong);
+  font-weight: 600;
+}
+
+.wa-steps__item--current .wa-steps__dot {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: 0 0 0 5px var(--primary-soft);
+}
+
+.wa-steps__item--done .wa-steps__dot {
+  border-color: transparent;
+  color: #fff;
+  background: var(--gradient-primary);
+}
+
+.wa-steps__label {
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+
+.wa-number {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+
+.wa-number bdi {
+  color: var(--color-text-strong);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+[dir="rtl"] .wa-number bdi {
+  letter-spacing: 0;
+}
+
+.wa-message {
+  display: grid;
+  gap: 8px;
+}
+
+.wa-message__label {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.wa-message__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.wa-message__text {
+  flex: 1 1 220px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px dashed color-mix(in srgb, var(--color-primary) 35%, var(--wa-line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--primary-soft) 55%, var(--color-surface));
+  color: var(--color-text-strong);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13.5px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.wa-message__feedback,
+.wa-feedback {
+  min-height: 1.2em;
+  margin: 0;
+  color: var(--color-success);
+  font-size: 12.5px;
+}
+
+.wa-message__feedback {
+  color: var(--color-text-secondary);
+}
+
+.wa-feedback--page:empty {
+  display: none;
+}
+
+.wa-feedback--page:not(:empty) {
+  padding: 11px 16px;
+  border: 1px solid color-mix(in srgb, var(--color-success) 30%, var(--wa-line));
+  border-radius: 14px;
+  background: var(--success-soft);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.wa-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+.wa-hint svg {
+  flex: none;
+  color: var(--color-primary);
+  font-size: 15px;
+}
+
+.wa-hint--lock {
+  align-items: flex-start;
+}
+
+.wa-hint--lock svg {
+  margin-top: 3px;
+  color: var(--color-text-muted);
+}
+
+.wa-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--color-surface-soft);
+}
+
+.wa-progress small {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.wa-spinner {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--primary-soft);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: wa-spin 900ms linear infinite;
+}
+
+.wa-verified {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--success-soft);
+}
+
+.wa-verified > svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--color-success);
+  font-size: 22px;
+}
+
+.wa-verified h3 {
+  font-size: 15px;
+}
+
+.wa-verified p {
+  margin-top: 4px;
+}
+
+/* ---------- Form controls ---------- */
+
+.wa-field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.wa-field > label,
+.wa-field > legend {
+  padding: 0;
+  color: var(--color-text-strong);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.wa-field > legend {
+  margin-bottom: 8px;
+}
+
+.wa-field select {
+  width: 100%;
+  max-width: 380px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--wa-line);
+  border-radius: 12px;
+  color: var(--color-text-strong);
+  background: var(--surface-control, var(--color-surface));
+  font: inherit;
+  font-size: 14px;
+}
+
+.wa-field select:focus-visible {
+  border-color: var(--color-primary);
+  outline: none;
+  box-shadow: 0 0 0 4px var(--primary-soft);
+}
+
+.wa-segmented {
+  display: inline-flex;
+  width: max-content;
+  max-width: 100%;
+  padding: 4px;
+  gap: 2px;
+  border-radius: 12px;
+  background: var(--color-surface-soft);
+}
+
+.wa-segmented__option {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 96px;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 9px;
+  color: var(--color-text-secondary);
+  font-size: 13.5px;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+
+.wa-segmented__option input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.wa-segmented__option--on {
+  color: var(--color-primary);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  font-weight: 700;
+}
+
+.wa-segmented__option:focus-within {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ---------- Buttons ---------- */
+
+.wa-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.wa-button {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--wa-line);
+  border-radius: 12px;
+  color: var(--color-text-strong);
+  background: var(--color-surface);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+}
+
+.wa-button:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+}
+
+.wa-button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.wa-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.wa-button--primary {
+  border-color: transparent;
+  color: #fff;
+  background: var(--gradient-primary);
+  box-shadow: 0 10px 22px -14px var(--color-primary);
+}
+
+.wa-button--primary:hover:not(:disabled) {
+  background: var(--gradient-primary);
+  filter: brightness(1.07);
+}
+
+.wa-button--secondary {
+  border-color: color-mix(in srgb, var(--color-primary) 28%, var(--wa-line));
+  color: var(--color-primary);
+  background: var(--color-surface);
+}
+
+.wa-button--secondary:hover:not(:disabled) {
+  background: var(--primary-soft);
+}
+
+.wa-button--lg {
+  min-height: 48px;
+  padding: 0 22px;
+  font-size: 15px;
+}
+
+/* Open the SmartSpend chat: blue first; the WhatsApp mark in a small disc. */
+.wa-button--chat {
+  padding-inline-start: 8px;
+}
+
+.wa-button--chat > svg {
+  box-sizing: content-box;
+  padding: 5px;
+  border-radius: 50%;
+  color: var(--wa-accent);
+  background: #fff;
+  font-size: 17px;
+}
+
+/* The link that opens WhatsApp during linking: the one green button. */
+.wa-button--whatsapp {
+  border-color: transparent;
+  color: #fff;
+  background: #138a43;
+}
+
+.wa-button--whatsapp:hover:not(:disabled) {
+  background: #0f7a3a;
+}
+
+.wa-panel > .wa-button {
+  justify-self: start;
+}
+
+.wa-button--soft {
+  border-color: transparent;
+  color: var(--color-primary);
+  background: var(--primary-soft);
+}
+
+.wa-button--danger {
+  min-height: 40px;
+  color: var(--color-danger);
+  border-color: color-mix(in srgb, var(--color-danger) 30%, var(--wa-line));
+  background: transparent;
+  font-size: 13.5px;
+}
+
+.wa-button--danger:hover:not(:disabled) {
+  background: var(--danger-soft);
+}
+
+.wa-error {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  color: var(--color-danger);
+  background: var(--danger-soft);
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+/* ---------- Chat illustration ---------- */
+
+.wa-chat {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  margin: 0;
+}
+
+.wa-chat__label {
+  position: absolute;
+  z-index: 2;
+  inset-block-start: -10px;
+  inset-inline-end: 14px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  color: #fff;
+  background: var(--wa-navy);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.wa-chat__phone {
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--wa-navy) 16%, var(--wa-line));
+  border-radius: 20px;
+  background: var(--wa-chat-bg);
+  box-shadow: var(--shadow-lg);
+}
+
+.wa-chat__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--wa-navy-2), var(--wa-navy));
+}
+
+.wa-chat__avatar {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary), var(--wa-cyan));
+  font-size: 15px;
+}
+
+.wa-chat__who {
+  display: grid;
+  line-height: 1.3;
+}
+
+.wa-chat__who strong {
+  font-size: 13px;
+}
+
+.wa-chat__who small {
+  color: color-mix(in srgb, #fff 70%, transparent);
+  font-size: 11px;
+}
+
+.wa-chat__thread {
+  display: grid;
+  gap: 7px;
+  padding: 12px 10px 14px;
+}
+
+.wa-bubble {
+  display: grid;
+  gap: 3px;
+  max-width: 88%;
+  margin: 0;
+  padding: 7px 10px;
+  border-radius: 11px;
+  color: var(--color-text-strong);
+  font-size: 12px;
+  line-height: 1.5;
+  box-shadow: 0 1px 1px color-mix(in srgb, #000 8%, transparent);
+}
+
+.wa-bubble strong {
+  font-size: 12px;
+}
+
+.wa-bubble--in {
+  justify-self: start;
+  border-start-start-radius: 4px;
+  background: var(--wa-bubble-in);
+}
+
+.wa-bubble--out {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: end;
+  border-start-end-radius: 4px;
+  background: var(--wa-bubble-out);
+}
+
+.wa-bubble__ticks {
+  flex: none;
+  color: var(--wa-cyan);
+  font-size: 13px;
+}
+
+.wa-bubble__glyph {
+  flex: none;
+  color: var(--color-primary);
+}
+
+.wa-bubble__replies {
+  display: grid;
+  gap: 3px;
+  margin-top: 3px;
+}
+
+.wa-bubble__reply {
+  display: block;
+  padding: 5px 8px;
+  border-top: 1px solid var(--wa-line);
+  color: var(--color-primary);
+  font-weight: 700;
+  text-align: center;
+}
+
+.wa-bubble__reply--picked {
+  border-radius: 8px;
+  border-top-color: transparent;
+  background: var(--primary-soft);
+}
+
+.wa-bubble--done {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.wa-bubble--done > span {
+  display: grid;
+}
+
+.wa-bubble__check {
+  flex: none;
+  margin-top: 2px;
+  color: var(--color-success);
+  font-size: 15px;
+}
+
+/* ---------- Loading skeleton ---------- */
+
+.wa-skeleton {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid var(--wa-line);
+  border-radius: var(--wa-radius);
+  background: var(--color-surface);
+}
+
+.wa-skeleton--intro {
+  padding: 6px 2px;
+  border: 0;
+  background: none;
+}
+
+.wa-skeleton--card {
+  justify-content: space-between;
+  padding: 24px;
+}
+
+.wa-skeleton__block,
+.wa-skeleton__button,
+.wa-skeleton__lines > span {
+  display: block;
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-surface) 70%, transparent), transparent),
+    var(--color-surface-soft);
+  background-size: 200% 100%;
+  animation: wa-shimmer 1.4s ease-in-out infinite;
+}
+
+.wa-skeleton__block {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+}
+
+.wa-skeleton__lines {
+  display: grid;
+  flex: 1;
+  gap: 8px;
+}
+
+.wa-skeleton__lines > span {
+  height: 11px;
+}
+
+.wa-skeleton__lines > span:first-child {
+  width: 40%;
+  height: 15px;
+}
+
+.wa-skeleton__lines > span:nth-child(2) {
+  width: 70%;
+}
+
+.wa-skeleton__lines > span:nth-child(3) {
+  width: 55%;
+}
+
+.wa-skeleton__button {
+  flex: none;
+  width: 200px;
+  height: 44px;
+  border-radius: 12px;
+}
+
+/* ---------- Motion ---------- */
+
+@keyframes wa-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes wa-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wa-button,
+  .wa-inbox--row,
+  .wa-fold > summary,
+  .wa-fold__chevron,
+  .wa-steps__dot,
+  .wa-segmented__option,
+  .wa-skeleton__block,
+  .wa-skeleton__button,
+  .wa-skeleton__lines > span {
+    animation: none;
+    transition: none;
+  }
+
+  .wa-spinner {
+    animation-duration: 3s;
+  }
+}
+
+/* ---------- Narrow ---------- */
+
+@container (max-width: 560px) {
+  .wa-card,
+  .wa-onboard {
+    padding: 18px;
+  }
+
+  .wa-intro {
+    flex-wrap: wrap;
+  }
+
+  .wa-connection__actions .wa-button,
+  .wa-onboard__cta .wa-button,
+  .wa-actions .wa-button,
+  .wa-message__row .wa-button,
+  .wa-panel > .wa-button {
+    flex: 1 1 100%;
+    width: 100%;
+    justify-self: stretch;
+  }
+
+  .wa-fold__meta {
+    display: none;
+  }
+
+  .wa-steps {
+    gap: 4px;
+  }
+
+  .wa-steps__item {
+    font-size: 11px;
+  }
+
+  .wa-segmented {
+    width: 100%;
+  }
+
+  .wa-segmented__option {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .wa-skeleton__button {
+    display: none;
+  }
+}
+
+/* With the summary hidden on narrow widths, the chevron returns to the end. */
+@container (max-width: 560px) {
+  .wa-fold__meta + .wa-fold__chevron {
+    margin-inline-start: auto;
+  }
+}

@@ -1,0 +1,856 @@
+/* =========================================
+   SMART PLAN PANEL (goal details, gated)
+
+   Same card as the page's other panels (border, 17px radius, card shadow),
+   marked as a smart plan by a blue → cyan hairline and the navy headline.
+   No transform on the section: the installment dialogs are position: fixed
+   inside it.
+========================================= */
+
+.smart-plan {
+  --savings-cyan: #0891b2;
+  --savings-navy: #0b1f44;
+
+  position: relative;
+
+  padding: 22px 24px;
+
+  display: grid;
+  gap: 18px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 17px;
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+
+  animation: smart-plan-in 220ms ease-out;
+}
+
+:root[data-theme="dark"] .smart-plan {
+  --savings-cyan: #22c3ee;
+  --savings-navy: var(--color-text-strong);
+}
+
+.smart-plan::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -1px;
+  inset-inline: 24px;
+  height: 2px;
+  border-radius: 0 0 2px 2px;
+  background: linear-gradient(90deg, var(--color-primary), var(--savings-cyan));
+}
+
+[dir="rtl"] .smart-plan::before {
+  background: linear-gradient(270deg, var(--color-primary), var(--savings-cyan));
+}
+
+@keyframes smart-plan-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.smart-plan h2,
+.smart-plan h3 {
+  margin: 0;
+}
+
+.smart-plan__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Head ---------- */
+
+.smart-plan__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.smart-plan__identity {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.smart-plan__eyebrow {
+  margin: 0;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  color: var(--savings-cyan);
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.smart-plan__eyebrow svg {
+  width: 14px;
+  height: 14px;
+}
+
+.smart-plan__head h2 {
+  color: var(--savings-navy);
+
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.smart-plan__rhythm {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.smart-plan__refreshing {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+}
+
+.smart-plan__refreshing svg {
+  width: 14px;
+  height: 14px;
+  animation: smart-plan-spin 900ms linear infinite;
+}
+
+@keyframes smart-plan-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Manage (revise / funding / discontinue) ---------- */
+
+.smart-plan__manage {
+  margin-top: -6px;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.smart-plan__manage-action {
+  min-height: 36px;
+  padding: 0 14px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.smart-plan__manage-action svg {
+  width: 15px;
+  height: 15px;
+  color: var(--savings-cyan);
+}
+
+.smart-plan__manage-action:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 40%, var(--color-border));
+  background: var(--primary-soft);
+}
+
+.smart-plan__manage-action:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.smart-plan__manage-action--caution {
+  margin-inline-start: auto;
+  color: var(--color-text-secondary);
+}
+
+.smart-plan__manage-action--caution svg {
+  color: var(--color-warning);
+}
+
+.smart-plan__manage-action--caution:hover {
+  border-color: color-mix(in srgb, var(--color-warning) 45%, var(--color-border));
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-warning) 8%, var(--color-surface));
+}
+
+@media (max-width: 640px) {
+  .smart-plan__manage {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .smart-plan__manage-action {
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .smart-plan__manage-action--caution {
+    margin-inline-start: 0;
+    grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smart-plan__manage-action {
+    transition: none;
+  }
+}
+
+/* ---------- Read only + reminder ---------- */
+
+.smart-plan__readonly {
+  margin: -6px 0 0;
+  padding: 9px 12px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: var(--primary-soft);
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.smart-plan__readonly svg {
+  width: 15px;
+  height: 15px;
+  margin-top: 2px;
+  flex: none;
+  color: var(--color-primary);
+}
+
+/* The installment a savings reminder points to. */
+.smart-plan__reminder {
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  border: 1px solid color-mix(in srgb, var(--savings-cyan) 40%, var(--color-border));
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--savings-cyan) 8%, var(--color-surface));
+
+  font-size: 13px;
+  line-height: 1.55;
+
+  animation: smart-plan-in 220ms ease-out;
+}
+
+.smart-plan__reminder--closed {
+  border-color: var(--color-border);
+  background: var(--surface-soft);
+}
+
+.smart-plan__reminder > svg {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  flex: none;
+  color: var(--savings-cyan);
+}
+
+.smart-plan__reminder > div {
+  min-width: 0;
+  flex: 1;
+  display: grid;
+  gap: 4px;
+}
+
+.smart-plan__reminder p {
+  margin: 0;
+}
+
+/* Title, then date and amount, each kept apart in either direction. */
+.smart-plan__reminder p:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+
+.smart-plan__reminder-facts {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.smart-plan__reminder-action {
+  justify-self: start;
+
+  min-height: 36px;
+  margin-top: 4px;
+  padding: 0 16px;
+
+  border: 1px solid var(--color-primary);
+  border-radius: 999px;
+
+  color: var(--navigation-active-text, #fff);
+  background: var(--color-primary);
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.smart-plan__reminder-action:hover {
+  background: var(--color-primary-hover, var(--color-primary));
+}
+
+.smart-plan__reminder-action:focus-visible,
+.smart-plan__reminder-close:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.smart-plan__reminder-link {
+  justify-self: start;
+  padding: 0;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.smart-plan__reminder-link:hover {
+  text-decoration: underline;
+}
+
+.smart-plan__reminder-link:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.smart-plan__reminder-close {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  flex: none;
+
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: 50%;
+
+  color: inherit;
+  background: transparent;
+
+  cursor: pointer;
+}
+
+.smart-plan__reminder-close:hover {
+  background: color-mix(in srgb, var(--savings-cyan) 14%, transparent);
+}
+
+@media (max-width: 640px) {
+  .smart-plan__reminder-action {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smart-plan__reminder {
+    animation: none;
+  }
+}
+
+/* ---------- Notices ---------- */
+
+.smart-plan__notice {
+  --smart-plan-notice: var(--color-success);
+
+  padding: 10px 12px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border: 1px solid color-mix(in srgb, var(--smart-plan-notice) 28%, transparent);
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--smart-plan-notice) 9%, var(--color-surface));
+
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.smart-plan__notice--info {
+  --smart-plan-notice: var(--color-primary);
+}
+
+.smart-plan__notice p {
+  margin: 0;
+  flex: 1;
+  color: inherit;
+}
+
+.smart-plan__notice button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  flex: none;
+
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: 50%;
+
+  color: inherit;
+  background: transparent;
+
+  cursor: pointer;
+}
+
+.smart-plan__notice button:hover {
+  background: color-mix(in srgb, var(--smart-plan-notice) 14%, transparent);
+}
+
+/* ---------- Key figures ---------- */
+
+.smart-plan__figures {
+  margin: 0;
+
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  overflow: hidden;
+}
+
+.smart-plan__figure {
+  min-width: 0;
+  padding: 14px 16px;
+
+  display: grid;
+  align-content: start;
+  gap: 4px;
+}
+
+.smart-plan__figure + .smart-plan__figure {
+  border-inline-start: 1px solid var(--color-border);
+}
+
+.smart-plan__figure dt {
+  color: var(--color-text-secondary);
+  font-size: 12px;
+}
+
+.smart-plan__figure dd {
+  margin: 0;
+
+  color: var(--color-text-strong);
+
+  font-family: var(--font-heading);
+  font-size: 19px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+
+  overflow-wrap: anywhere;
+}
+
+.smart-plan__figure small {
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+
+/* ---------- Layout ---------- */
+
+.smart-plan__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(250px, 1fr);
+  align-items: start;
+  gap: 24px;
+}
+
+.smart-plan__timeline,
+.smart-plan__aside {
+  min-width: 0;
+  display: grid;
+  /* An implicit auto track grows to a long account name and pushes the cards past the column. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.smart-plan__timeline h3,
+.smart-plan__card h3 {
+  color: var(--color-text-strong);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.smart-plan__hint {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.smart-plan__card {
+  padding: 14px 16px;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  background: color-mix(in srgb, var(--surface-soft) 40%, var(--color-surface));
+}
+
+.smart-plan__mode {
+  margin: 0;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.smart-plan__mode > svg {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex: none;
+  color: var(--color-primary);
+}
+
+.smart-plan__mode > span {
+  display: grid;
+  gap: 2px;
+  color: var(--color-text-secondary);
+}
+
+.smart-plan__mode strong {
+  color: var(--color-text-primary);
+  font-size: 13px;
+}
+
+.smart-plan__sources {
+  margin: 0;
+  padding: 0;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+
+  list-style: none;
+  counter-reset: smart-plan-source;
+}
+
+.smart-plan__sources li {
+  padding: 8px 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  border-radius: var(--radius-sm);
+
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.smart-plan__sources li > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.smart-plan__sources small {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.smart-plan__facts {
+  margin: 0;
+  display: grid;
+}
+
+.smart-plan__facts > div {
+  padding: 7px 0;
+
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+
+  font-size: 12px;
+}
+
+.smart-plan__facts > div + div {
+  border-top: 1px solid var(--border-soft, var(--color-border));
+}
+
+.smart-plan__facts dt {
+  color: var(--color-text-secondary);
+}
+
+.smart-plan__facts dd {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-weight: 600;
+  text-align: end;
+}
+
+/* ---------- Loading / error ---------- */
+
+.smart-plan__skeleton {
+  display: grid;
+  gap: 10px;
+}
+
+.smart-plan__skeleton > span:not(.smart-plan__sr-only) {
+  height: 14px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, var(--surface-soft), var(--surface-hover), var(--surface-soft));
+  background-size: 200% 100%;
+  animation: smart-plan-shimmer 1.4s ease-in-out infinite;
+}
+
+.smart-plan__skeleton > span:nth-child(2) {
+  width: 55%;
+  height: 22px;
+}
+
+.smart-plan__skeleton > span:nth-child(4) {
+  width: 80%;
+}
+
+@keyframes smart-plan-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.smart-plan__error p {
+  margin: 0;
+  color: var(--color-danger);
+  font-size: 13px;
+}
+
+.smart-plan__error button {
+  margin-top: 8px;
+  padding: 0;
+
+  border: 0;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1024px) {
+  .smart-plan__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .smart-plan__figures {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .smart-plan__figure:nth-child(3) {
+    border-inline-start: 0;
+  }
+
+  .smart-plan__figure:nth-child(n + 3) {
+    border-top: 1px solid var(--color-border);
+  }
+}
+
+@media (max-width: 640px) {
+  .smart-plan {
+    padding: 18px 16px;
+  }
+
+  .smart-plan::before {
+    inset-inline: 16px;
+  }
+
+  .smart-plan__head h2 {
+    font-size: 19px;
+  }
+
+  .smart-plan__figure {
+    padding: 12px;
+  }
+
+  .smart-plan__figure dd {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smart-plan,
+  .smart-plan__refreshing svg,
+  .smart-plan__skeleton > span {
+    animation: none;
+  }
+}
+
+/* ---------- Invite (flexible goal, flag on) ---------- */
+
+.smart-plan--invite {
+  gap: 10px;
+}
+
+.smart-plan__invite {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+}
+
+.smart-plan__invite > div {
+  min-width: 0;
+  flex: 1 1 320px;
+  display: grid;
+  gap: 4px;
+}
+
+.smart-plan__invite h2 {
+  color: var(--savings-navy);
+
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.smart-plan__invite p {
+  max-width: 620px;
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.smart-plan__invite-action {
+  min-height: 42px;
+  padding: 0 18px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  border-radius: 999px;
+
+  color: var(--navigation-active-text);
+  background: var(--color-primary);
+
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--color-primary) 22%, transparent);
+
+  transition: background-color 160ms ease;
+}
+
+.smart-plan__invite-action:hover {
+  background: var(--color-primary-hover);
+}
+
+.smart-plan__invite-action:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.smart-plan__invite-action svg {
+  width: 16px;
+  height: 16px;
+}
+
+[dir="rtl"] .smart-plan__invite-action svg {
+  transform: scaleX(-1);
+}
+
+@media (max-width: 640px) {
+  .smart-plan__invite-action {
+    width: 100%;
+    min-height: var(--dashboard-touch-target, 44px);
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .smart-plan__invite-action {
+    transition: none;
+  }
+}

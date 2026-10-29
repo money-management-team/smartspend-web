@@ -127,6 +127,6 @@
 @media (max-width: 420px) {
   .recurring-action-dialog__occurrence dl,
   .recurring-action-dialog__failure {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }

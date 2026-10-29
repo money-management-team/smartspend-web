@@ -1,0 +1,252 @@
+import { apiRequest, toMoneyString } from "./apiClient";
+
+const goalPath = (goalId) => `/savings-goals/${encodeURIComponent(goalId)}`;
+const installmentPath = (goalId, installmentId) =>
+  `${goalPath(goalId)}/planned-contributions/${encodeURIComponent(installmentId)}`;
+
+// Fields each installment write may carry. Versions pin the plan and the
+// installment the user reviewed: anything changed since is a 409, never a
+// write against a different state.
+const WRITE_FIELDS = {
+  confirm: ["expected_plan_version", "expected_lock_version", "from_account_id", "amount"],
+  postpone: ["expected_plan_version", "expected_lock_version", "new_date", "reason"],
+  skip: ["expected_plan_version", "expected_lock_version", "reason"],
+  "confirm-accounts": ["expected_plan_version", "expected_lock_version", "amount", "legs", "confirmation_intent"],
+  "reverse-legs": ["expected_lock_version", "reason", "leg_ids", "all"],
+};
+
+// Each leg's amount as a 4-decimal string, exactly as previewed.
+const toLegs = (legs) =>
+  legs.map((leg) => ({ account_id: Number(leg.account_id), amount: toMoneyString(leg.amount) }));
+
+function pickBody(payload, fields) {
+  const body = {};
+
+  fields.forEach((field) => {
+    if (payload?.[field] !== undefined && payload[field] !== "") body[field] = payload[field];
+  });
+
+  // Exactly the amount the preview showed, as a 4-decimal string.
+  if (body.amount !== undefined) body.amount = toMoneyString(body.amount);
+  if (Array.isArray(body.legs)) body.legs = toLegs(body.legs);
+
+  return body;
+}
+
+// Every installment write requires an Idempotency-Key: an identical retry
+// reuses it and the backend replays the stored result.
+function writeInstallment(goalId, installmentId, action, payload, idempotencyKey) {
+  if (!idempotencyKey) {
+    throw new Error(`POST …/planned-contributions/{id}/${action} requires an Idempotency-Key.`);
+  }
+
+  return apiRequest(`${installmentPath(goalId, installmentId)}/${action}`, {
+    method: "POST",
+    headers: { "Idempotency-Key": idempotencyKey },
+    body: pickBody(payload, WRITE_FIELDS[action]),
+  });
+}
+
+/*
+ * Smart savings plans (backend `feature/savings-reversal-integrity`). A goal
+ * without an active plan is flexible saving; a goal with one is a smart plan.
+ * A plan is intent, not money: it holds no balance, and nothing moves until
+ * the owner confirms an installment.
+ *
+ * Envelopes:
+ * - getActive → `data.savings_goal`, `data.balance` (saved / remaining from
+ *   the ledger), `data.savings_plan` (with `next_installment` and
+ *   `installments`) and `data.plan_health`. 404 when the goal has no active
+ *   plan, which is how a flexible goal is told apart.
+ * - getConfirmationPreview → `data.confirmation` (confirmable, blocker,
+ *   warnings, versions, suggested_amount, accounts with balances). Read only.
+ * - confirm → `data.contribution`, `data.installment`, `data.savings_goal`,
+ *   `data.balance`, `data.savings_plan` (id, status, plan_version),
+ *   `data.plan_health` (201). Moves money.
+ * - postpone / skip → `data.installment`, `data.result` (`money_moved:
+ *   false`), `data.balance`, `data.savings_plan`, `data.plan_health`.
+ *
+ * - previewProposal / getOptions → `data.plan_options`. Read only.
+ * - createWithGoal / createForGoal → 201 with the GET …/plan envelope. A
+ *   changed option is 409 `savings_plan_option_stale` with `verdict` and
+ *   `current_option` in `ApiError.payload`.
+ *
+ * Conflicts are 409 with the backend's `code` in `ApiError.serverCode` and
+ * its context (e.g. `latest_allowed_date`) in `ApiError.payload`.
+ */
+// Plan writes (create) carry the reviewed option's fingerprints; the backend
+// regenerates the option and rejects anything that no longer matches.
+function createPlan(endpoint, body, idempotencyKey) {
+  if (!idempotencyKey) throw new Error(`POST ${endpoint} requires an Idempotency-Key.`);
+
+  return apiRequest(endpoint, {
+    method: "POST",
+    headers: { "Idempotency-Key": idempotencyKey },
+    body,
+  });
+}
+
+export const savingsPlansApi = {
+  getActive: (goalId, options = {}) =>
+    apiRequest(`${goalPath(goalId)}/plan`, { signal: options.signal }),
+
+  /*
+   * Easy / Balanced / Intensive for a goal that doesn't exist yet. Read
+   * only. Body: workspace_id, target_amount (4-decimal string),
+   * currency_code, target_date?, frequency?, interval?, start_date?.
+   * → `data.plan_options` ({ goal, schedule, capacity, options[],
+   *   recommended_intensity, recommendation_reason, warnings }).
+   */
+  previewProposal: (body, options = {}) =>
+    apiRequest("/savings-plans/preview", {
+      method: "POST",
+      body: { ...body, target_amount: toMoneyString(body.target_amount) },
+      signal: options.signal,
+    }),
+
+  // The same options for an existing goal (remaining from its ledger).
+  // Query: frequency?, interval?, start_date?, target_date?.
+  getOptions: (goalId, query = {}, options = {}) =>
+    apiRequest(`${goalPath(goalId)}/plan-options`, { query, signal: options.signal }),
+
+  /*
+   * The goal and its accepted plan in one transaction. Body: the goal's
+   * fields plus `plan` { intensity, frequency, interval, start_date?,
+   * options_fingerprint, assessment_fingerprint, funding { mode,
+   * sources[] } }. Same key + same body replays the same goal.
+   * → 201, the GET …/plan envelope.
+   */
+  createWithGoal: (body, idempotencyKey) =>
+    createPlan("/savings-goals/with-plan", { ...body, target_amount: toMoneyString(body.target_amount) }, idempotencyKey),
+
+  // A plan for an existing flexible goal (owner only). Body: the `plan`
+  // fields above at the top level. → 201, the GET …/plan envelope.
+  createForGoal: (goalId, body, idempotencyKey) =>
+    createPlan(`${goalPath(goalId)}/plan`, body, idempotencyKey),
+
+  /*
+   * Revises the active plan (owner only). Body: `change` and the
+   * `expected_plan_version` the user reviewed, plus
+   * - change=schedule: the `plan` fields above (a fresh option from
+   *   getOptions with its two fingerprints, and the full funding). The plan
+   *   is superseded by the regenerated, verified option;
+   * - change=funding: `funding` { mode, sources[] } only. Same plan and
+   *   schedule; `plan_version` increments.
+   * → 200, the GET …/plan envelope (the replacement plan for a schedule
+   * change). 409 `savings_plan_version_conflict` (with
+   * `current_plan_version`) or `savings_plan_option_stale`. No money moves.
+   */
+  revise: (goalId, body, idempotencyKey) => {
+    if (!idempotencyKey) throw new Error("PATCH /savings-goals/{id}/plan requires an Idempotency-Key.");
+
+    return apiRequest(`${goalPath(goalId)}/plan`, {
+      method: "PATCH",
+      headers: { "Idempotency-Key": idempotencyKey },
+      body,
+    });
+  },
+
+  /*
+   * Ends the active plan (owner only): open installments are cancelled, the
+   * goal and its balance are untouched and the goal is flexible again.
+   * Body: `expected_plan_version`. → 200, the GET …/plan envelope with the
+   * discontinued plan. 409 `savings_plan_version_conflict` or
+   * `savings_plan_not_active`. No money moves.
+   */
+  discontinue: (goalId, payload, idempotencyKey) =>
+    createPlan(
+      `${goalPath(goalId)}/plan/discontinue`,
+      { expected_plan_version: payload.expected_plan_version },
+      idempotencyKey,
+    ),
+
+  /*
+   * Every plan the goal has had, newest first (active, completed,
+   * discontinued, superseded), paginated. → `data.savings_plans` (Laravel
+   * paginator: `data[]`, `current_page`, `last_page`, `total`). Summaries
+   * with installment counts only; `funding_revisions` and
+   * `capacity_snapshot` are null for anyone but the planner.
+   */
+  listHistory: (goalId, query = {}, options = {}) =>
+    apiRequest(`${goalPath(goalId)}/plans`, { query, signal: options.signal }),
+
+  /*
+   * Every installment of one plan — active, completed, discontinued or
+   * superseded — in schedule order, paginated (per_page 1–50). Read only.
+   * → `data.savings_plan` { id, savings_goal_id, status, plan_version,
+   * currency_code, can_manage } and `data.installments` (Laravel paginator)
+   * in the installment shape the installment actions return; the ids are
+   * the ones getFundingLegs / reverseLegs take. 404 for another goal's plan.
+   */
+  listPlanInstallments: (goalId, planId, query = {}, options = {}) =>
+    apiRequest(`${goalPath(goalId)}/plans/${encodeURIComponent(planId)}/installments`, {
+      query,
+      signal: options.signal,
+    }),
+
+  getConfirmationPreview: (goalId, installmentId, options = {}) =>
+    apiRequest(`${installmentPath(goalId, installmentId)}/confirmation-preview`, {
+      signal: options.signal,
+    }),
+
+  // Moves `amount` from `from_account_id` into the goal: one transfer.
+  confirm: (goalId, installmentId, payload, idempotencyKey) =>
+    writeInstallment(goalId, installmentId, "confirm", payload, idempotencyKey),
+
+  // Moves this installment's date only. No money.
+  postpone: (goalId, installmentId, payload, idempotencyKey) =>
+    writeInstallment(goalId, installmentId, "postpone", payload, idempotencyKey),
+
+  // Marks this installment skipped. No money; the target is unchanged.
+  skip: (goalId, installmentId, payload, idempotencyKey) =>
+    writeInstallment(goalId, installmentId, "skip", payload, idempotencyKey),
+
+  /*
+   * Read only, owner only: the exact amount from each account. With no
+   * body the backend proposes the breakdown (allocated: the plan's shares;
+   * priority: filled in the plan's order); `{ amount, legs }` checks the
+   * user's own split. → `data.funding_preview`: the confirmation preview's
+   * fields plus `funding { amount, legs[], shortfall_amount, problem }` and
+   * `confirmation_intent` (only when confirmable). Moves nothing.
+   */
+  fundingPreview: (goalId, installmentId, body = {}, options = {}) =>
+    apiRequest(`${installmentPath(goalId, installmentId)}/funding-preview`, {
+      method: "POST",
+      body: {
+        ...(body.amount !== undefined ? { amount: toMoneyString(body.amount) } : {}),
+        ...(Array.isArray(body.legs) ? { legs: toLegs(body.legs) } : {}),
+      },
+      signal: options.signal,
+    }),
+
+  /*
+   * Read only, owner only: the payments behind one installment.
+   * → `data.installment`, `data.current_confirmation` (the confirmation
+   * paying it now, or null) with its `funding_legs`, `data.funding_legs`
+   * (the same legs), `data.history` (earlier cycles, newest first, never
+   * actionable) and `data.reversal` { eligible, effective_leg_ids,
+   * expected_lock_version } — the only ids and the version reverse-legs
+   * accepts. 404 outside the user's scope, 403 for another member.
+   */
+  getFundingLegs: (goalId, installmentId, options = {}) =>
+    apiRequest(`${installmentPath(goalId, installmentId)}/funding-legs`, { signal: options.signal }),
+
+  /*
+   * Pays one installment from several accounts in one transaction, exactly
+   * as previewed: expected versions, amount, legs and the preview's
+   * `confirmation_intent`, unchanged. Moves money. → 201 with `installment`,
+   * `funding_legs`, `reversal`, `savings_goal`, `balance`, `plan_health`.
+   */
+  confirmAccounts: (goalId, installmentId, payload, idempotencyKey) =>
+    writeInstallment(goalId, installmentId, "confirm-accounts", payload, idempotencyKey),
+
+  /*
+   * Reverses the named payments (`leg_ids`) or every live one (`all: true`)
+   * of a multi-account installment, all or nothing. Needs `reason` and the
+   * installment's `expected_lock_version`. Moves money back to the source
+   * accounts. → the same envelope as confirmAccounts plus
+   * `previously_effective_amount`.
+   */
+  reverseLegs: (goalId, installmentId, payload, idempotencyKey) =>
+    writeInstallment(goalId, installmentId, "reverse-legs", payload, idempotencyKey),
+};

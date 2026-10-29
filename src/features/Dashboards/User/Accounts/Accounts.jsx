@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useLocation, useNavigate } from "react-router-dom";
-import { LuX } from "react-icons/lu";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { LuArchive, LuLayers3, LuSearch, LuWallet, LuX } from "react-icons/lu";
 
 import AccountsHeader from "./components/AccountsHeader/AccountsHeader";
 import AccountFilters from "./components/AccountFilters/AccountFilters";
@@ -32,7 +32,10 @@ export default function Accounts() {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const view = searchParams.get("view") === "archived" ? "archived" : "active";
   const [accounts, setAccounts] = useState([]);
+  const [loadedView, setLoadedView] = useState(null);
   const [activeFilter, setActiveFilter] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -48,9 +51,9 @@ export default function Accounts() {
   // Drop the one-time notice from history so a reload doesn't show it again.
   useEffect(() => {
     if (location.state?.archivedAccountName) {
-      navigate(location.pathname, { replace: true, state: null });
+      navigate(location.pathname + location.search, { replace: true, state: null });
     }
-  }, [location.pathname, location.state, navigate]);
+  }, [location.pathname, location.search, location.state, navigate]);
 
   // Bumped to refetch the list (retry, or after a mutation left it unsure).
   const [reloadKey, setReloadKey] = useState(0);
@@ -59,13 +62,17 @@ export default function Accounts() {
     const controller = new AbortController();
 
     accountsApi
-      .list(getListQuery(), { signal: controller.signal })
+      .list({ ...getListQuery(), status: view }, { signal: controller.signal })
       .then((response) => {
+        if (controller.signal.aborted) return;
         setAccounts(response.data?.accounts ?? []);
+        setLoadedView(view);
         setError("");
       })
       .catch((requestError) => {
         if (requestError.name === "AbortError" || controller.signal.aborted) return;
+        setLoadedView(view);
+        setAccounts([]);
         setError(getApiErrorMessage(requestError, t));
       })
       .finally(() => {
@@ -73,7 +80,7 @@ export default function Accounts() {
       });
 
     return () => controller.abort();
-  }, [reloadKey, t]);
+  }, [reloadKey, t, view]);
 
   const reloadAccounts = () => {
     setIsLoading(true);
@@ -81,13 +88,17 @@ export default function Accounts() {
     setReloadKey((key) => key + 1);
   };
 
-  const filteredAccounts = useMemo(
-    () =>
-      activeFilter === "all"
-        ? accounts
-        : accounts.filter((account) => account.type === activeFilter),
-    [accounts, activeFilter],
-  );
+  const listLoading = isLoading || loadedView !== view;
+  const visibleAccounts = loadedView === view ? accounts : [];
+  const filteredAccounts = activeFilter === "all"
+    ? visibleAccounts : visibleAccounts.filter((account) => account.type === activeFilter);
+
+  const selectView = (next) => {
+    if (next === view) return;
+    setActiveFilter("all");
+    setIsLoading(true);
+    setSearchParams(next === "archived" ? { view: "archived" } : {});
+  };
 
   // Called by ArchiveAccountDialog; errors are shown inside the dialog.
   const handleArchive = async () => {
@@ -105,6 +116,7 @@ export default function Accounts() {
     setAccounts((current) => current.filter((item) => item.id !== account.id));
     setArchiveTarget(null);
     setArchivedName(account.name);
+    selectView("archived");
   };
 
   const handleSave = async (values) => {
@@ -142,7 +154,8 @@ export default function Accounts() {
         const createdAccount = response?.data?.account;
 
         if (isAccountEntity(createdAccount)) {
-          setAccounts((current) => [...current, createdAccount]);
+          if (view === "active") setAccounts((current) => [...current, createdAccount]);
+          else selectView("active");
         } else {
           reloadAccounts();
         }
@@ -168,6 +181,13 @@ export default function Accounts() {
     <div className="accounts-page">
       <AccountsHeader onAdd={openCreateForm} />
 
+      <div className="accounts-page__overview" aria-label={t("dashboard.accounts.overviewLabel")}>
+        <div className="accounts-page__overview-mark"><LuWallet aria-hidden="true" /></div>
+        <div><span>{t("dashboard.accounts.overviewLabel")}</span><strong>{listLoading ? "—" : visibleAccounts.length}</strong>
+          <small>{t(view === "archived" ? "dashboard.accounts.archivedDescription" : "dashboard.accounts.activeDescription")}</small></div>
+        <LuLayers3 className="accounts-page__overview-art" aria-hidden="true" />
+      </div>
+
       {archivedName && (
         <div className="accounts-page__notice" role="status">
           <p>{t("dashboard.accounts.archiveSuccess", { name: archivedName })}</p>
@@ -181,17 +201,25 @@ export default function Accounts() {
         </div>
       )}
 
+      <nav className="accounts-page__views" aria-label={t("dashboard.accounts.viewsLabel")}>
+        <button type="button" aria-current={view === "active" ? "page" : undefined} onClick={() => selectView("active")}
+          className={view === "active" ? "is-selected" : ""}><LuWallet aria-hidden="true" />{t("dashboard.accounts.activeView")}</button>
+        <button type="button" aria-current={view === "archived" ? "page" : undefined} onClick={() => selectView("archived")}
+          className={view === "archived" ? "is-selected" : ""}><LuArchive aria-hidden="true" />{t("dashboard.accounts.archivedView")}</button>
+      </nav>
+      {view === "archived" && <p className="accounts-page__archive-hint">{t("dashboard.accounts.archivedDescription")}</p>}
+
       <AccountFilters
         activeFilter={activeFilter}
         onChange={setActiveFilter}
       />
 
-        {isLoading && (
+        {listLoading && (
           <Loading message={false} />
         )}
       <section className="accounts-page__grid">
 
-        {!isLoading && error && (
+        {!listLoading && error && (
           <div className="accounts-page__state accounts-page__state--error" role="alert">
             <p>{error}</p>
             <button type="button" onClick={reloadAccounts}>
@@ -200,26 +228,26 @@ export default function Accounts() {
           </div>
         )}
 
-        {!isLoading && !error && accounts.length === 0 && (
+        {!listLoading && !error && visibleAccounts.length === 0 && (
           <div className="accounts-page__state">
-            <p>{t("dashboard.accounts.states.emptyAll")}</p>
-            <button type="button" onClick={openCreateForm}>
-              {t("dashboard.accounts.add")}
-            </button>
+            <LuSearch aria-hidden="true" />
+            <p>{t(view === "archived" ? "dashboard.accounts.states.emptyArchived" : "dashboard.accounts.states.emptyAll")}</p>
+            {view === "active" && <button type="button" onClick={openCreateForm}>{t("dashboard.accounts.add")}</button>}
           </div>
         )}
 
-        {!isLoading && !error && accounts.length > 0 && filteredAccounts.length === 0 && (
+        {!listLoading && !error && visibleAccounts.length > 0 && filteredAccounts.length === 0 && (
           <p className="accounts-page__state">{t("dashboard.accounts.states.empty")}</p>
         )}
 
-        {!isLoading && !error && filteredAccounts.map((account) => (
+        {!listLoading && !error && filteredAccounts.map((account) => (
           <AccountCard
             key={account.id}
             account={account}
             onEdit={() => setFormState({ account })}
             onArchive={() => setArchiveTarget(account)}
             isArchiving={archiveTarget?.id === account.id}
+            isArchived={view === "archived"}
           />
         ))}
       </section>

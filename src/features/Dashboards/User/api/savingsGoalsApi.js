@@ -18,7 +18,7 @@ const CREATE_FIELDS = [
 ];
 const UPDATE_FIELDS = ["name", "target_amount", "target_date", "notes", "metadata"];
 const MOVEMENT_FIELDS = {
-  contribution: ["from_account_id", "amount", "description", "occurred_at"],
+  contribution: ["from_account_id", "amount", "description", "occurred_at", "planned_contribution_id"],
   withdrawal: ["to_account_id", "amount", "description", "occurred_at"],
 };
 

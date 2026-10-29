@@ -1,0 +1,63 @@
+/*
+ * Landing page: header.css from the approved SmartSpend landing design (Edition 03.2),
+ * scoped under .smartspend-landing so it cannot reach other screens. Keyframes carry a
+ * landing- prefix because the production build ships one global stylesheet.
+ */
+/* Floating island navigation, detached from the top edge. */
+.smartspend-landing .site-header { position: fixed; inset-inline: 0; top: 0; z-index: 50; padding: 14px var(--gutter) 0; pointer-events: none; }
+.smartspend-landing .island {
+  position: relative; z-index: 2; pointer-events: auto;
+  max-width: 1200px; height: 64px; margin-inline: auto;
+  display: flex; align-items: center; gap: 16px; padding-inline: 18px 8px;
+  border-radius: 999px; background: transparent; box-shadow: inset 0 0 0 1px var(--glass-line);
+  transition: background-color .6s var(--ease-out), box-shadow .6s var(--ease-out);
+}
+.smartspend-landing .site-header[data-scrolled] .island { background: var(--glass); box-shadow: inset 0 0 0 1px var(--glass-line), 0 24px 60px -34px rgba(0, 0, 0, .55); backdrop-filter: blur(22px) saturate(1.5); -webkit-backdrop-filter: blur(22px) saturate(1.5); }
+:root[data-theme='light'] .smartspend-landing .site-header[data-scrolled] .island { box-shadow: inset 0 0 0 1px var(--glass-line), 0 20px 50px -34px rgba(20, 50, 110, .4); }
+.smartspend-landing .island-brand { display: inline-flex; align-items: center; min-height: 44px; border-radius: 999px; flex-shrink: 0; }
+.smartspend-landing .island-nav { display: flex; align-items: center; gap: 2px; margin-inline: auto; }
+.smartspend-landing .nav-link { display: inline-flex; align-items: center; min-height: 40px; padding-inline: 14px; border-radius: 999px; font-size: 14px; font-weight: 500; color: var(--text-2); white-space: nowrap; transition: color .3s var(--ease-out), background-color .3s var(--ease-out); }
+.smartspend-landing .nav-link:hover { color: var(--text); background: var(--accent-soft); }
+.smartspend-landing .island-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.smartspend-landing .island-cta { margin-inline-start: 6px; }
+.smartspend-landing .menu-toggle { display: none; }
+
+/* Two lines that rotate into a precise X. */
+.smartspend-landing .burger { position: relative; width: 18px; height: 12px; }
+.smartspend-landing .burger > i { position: absolute; inset-inline: 0; height: 1.5px; border-radius: 2px; background: currentColor; transition: transform .55s var(--ease-spring), top .55s var(--ease-spring); }
+.smartspend-landing .burger > i:first-child { top: 2px; }
+.smartspend-landing .burger > i:last-child { top: 8.5px; }
+.smartspend-landing .burger[data-open] > i:first-child { top: 5.25px; transform: rotate(45deg); }
+.smartspend-landing .burger[data-open] > i:last-child { top: 5.25px; transform: rotate(-45deg); }
+
+/* Full-screen sheet with a staggered rise. */
+.smartspend-landing .menu-sheet { position: fixed; inset: 0; z-index: 1; pointer-events: auto; padding: 100px var(--gutter) 32px; overflow-y: auto; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px); animation: landing-fade-in .35s var(--ease-out); }
+.smartspend-landing .menu-sheet-inner { max-width: 640px; margin-inline: auto; }
+.smartspend-landing .menu-sheet li, .smartspend-landing .menu-prefs, .smartspend-landing .menu-sheet-foot { animation: landing-rise-in .7s var(--ease-spring) both; animation-delay: calc(80ms + var(--i) * 55ms); }
+.smartspend-landing .menu-sheet li > a { display: flex; align-items: center; gap: 16px; min-height: 68px; padding-block: 10px; border-bottom: 1px solid var(--line); font-size: 26px; font-weight: 700; line-height: 1.4; color: var(--text); }
+html[lang='ar'] .smartspend-landing .menu-sheet li > a { font-weight: 600; }
+html[lang='en'] .smartspend-landing .menu-sheet li > a { letter-spacing: -.02em; }
+.smartspend-landing .menu-index { font-family: var(--font-num); font-size: 12px; font-weight: 600; color: var(--text-3); min-width: 22px; }
+.smartspend-landing .menu-sheet li .menu-tag { margin-inline-start: auto; }
+.smartspend-landing .menu-prefs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+.smartspend-landing .menu-sheet-foot { margin-top: 24px; }
+.smartspend-landing .menu-sheet-foot .btn { width: 100%; }
+
+@media (max-width: 1100px) {
+  .smartspend-landing .island-nav { display: none; }
+  .smartspend-landing .island-actions { margin-inline-start: auto; }
+  .smartspend-landing .menu-toggle { display: inline-grid; }
+}
+@media (max-width: 640px) {
+  .smartspend-landing .site-header { padding-top: 10px; }
+  .smartspend-landing .island { height: 58px; padding-inline: 14px 6px; gap: 8px; }
+  .smartspend-landing .island-cta { display: none; }
+  .smartspend-landing .island-actions { gap: 2px; }
+  .smartspend-landing .menu-sheet { padding-top: 88px; }
+  .smartspend-landing .menu-sheet li > a { font-size: 22px; min-height: 62px; }
+}
+@media (max-width: 380px) {
+  .smartspend-landing .island .theme-button { display: none; }
+  .smartspend-landing .island .brand-sm .wordmark { font-size: 17px; }
+  .smartspend-landing .island .brand-sm { gap: 8px; }
+}

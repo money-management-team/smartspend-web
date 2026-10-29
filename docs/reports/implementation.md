@@ -10,11 +10,12 @@ src/features/Dashboards/User/
     ├── reportHelpers.js              # filters/URL, dates, tolerant readers, formatting, errors
     ├── reportDefinitions.js          # per-report summary groups, notes, analytics sections, columns
     └── components/
-        ├── ReportsHeader/            # title + subtitle
-        ├── ReportTabs/               # one button per report
+        ├── ReportsHeader/            # blue page header and existing export/history actions
+        ├── ReportTabs/               # grouped native report dropdown on every viewport
         ├── ReportFilters/            # filter bar (draft → apply)
         ├── ReportPeriod/             # backend period, previous period, filters echo, rule note
-        ├── ReportSummary/            # summary_by_currency cards
+        ├── ReportHighlights/         # KPI tiles: definition.highlights + backend comparison
+        ├── ReportSummary/            # "All figures": summary_by_currency cards
         ├── ReportAnalytics/          # orchestrates analytics sections
         ├── ReportTrendChart/         # trend_by_currency (recharts), one chart per currency
         ├── ReportComparison/         # current vs previous per currency
@@ -36,7 +37,7 @@ The previous Reports page built its numbers from 9 parallel `GET /dashboard` cal
 All filters live in the query string: `?report=…&from=…&to=…&currency=…&group_by=…&per_page=…&page=…`.
 
 - `readReportFilters` validates each value and falls back to a default when a value is invalid: `overview`, the current month in the workspace time zone, all currencies, `month`, `10`, page 1. An incomplete or reversed range from the URL is never sent.
-- Switching tabs keeps the dates, currency, and grouping, and resets to page 1. Report links are shareable.
+- Changing the report dropdown keeps the dates, currency, and grouping, and resets to page 1. Report links are shareable.
 - The time zone comes from the stored workspace (`getStoredWorkspace().timezone`, cached by `resolveWorkspaceId`); without it, the browser's zone is used. It only affects the default and preset ranges.
 
 ## Fetching
@@ -56,6 +57,7 @@ This follows the dashboard pattern with a request key, like `Debts.jsx`:
 
 `reportDefinitions.js` describes each report on top of the shared components:
 
+- `highlights`: the headline `summary_by_currency` fields shown as KPI tiles by `ReportHighlights`, one row per currency; only fields present in a row appear. Each tile's change line is the backend's comparison for that metric (`percent`, else `change`), read from the same `parseComparison` result as the comparison table and shown in a neutral color with a direction icon (`getChangeDirection` in `reportHelpers.js`, shared with `ReportComparison`). Nothing is calculated.
 - `summary`: ordered field groups (e.g. Debts: Payable / Receivable / Period movements; Recurring: Templates / Expected (forecast) / Occurrences; Overview: eight domain groups). Fields the backend sends that aren't listed are still shown under "Other figures", and nested objects (such as cash-flow buckets) become their own group.
 - `notes`: the financial rule shown under the period bar.
 - `analytics`: report-specific sections by `analytics` key and kind: `ranked`, `transactions`, `distribution`, `metrics`, or `generic`. Trend, comparison, and the recurring flags are handled for every report. Any other non-empty analytics key is still rendered with `ReportMetrics`, titled by its field label.
@@ -87,12 +89,23 @@ Unknown fields get a readable label from their key (`getFieldLabel` checks `i18n
 | Empty analytics | "No analytics for this period." |
 | Empty items | "No rows for this period."; on a page past the end, "This page is empty" with a first-page button. |
 
+## Layout and styling (2026-10-05)
+
+- `Reports.css` retains the page theme tokens and dark blue identity card, with one full-width content column and no secondary navigation rail.
+- One setup card contains native dropdowns for report type, period and currency. Presets still apply immediately. Custom dates, currency, grouping and page-size edits retain the original validated draft → Apply behavior.
+- Custom dates appear when Custom period is selected. Grouping and page size are under More options on **every** viewport. Saved views and the monthly-review link remain available in a separate expandable tools area.
+- The selected report's name and description precede the backend's actual period and currency. Previous period, timezone, grouping and financial notes are available under About this report.
+- Headline figures and analytics remain visible. All remaining summary fields are available in All financial details, initially folded. Items, detail links, pagination and export behavior are unchanged.
+- `.reports-page__content` remains the `report-content` size container. KPI and analytics grids respond to available content width, with one/two columns on narrow displays. An unpaired analytics card fills the final row.
+- Native selects, labelled inputs, keyboard focus indicators, expandable sections and logical CSS properties support touch, keyboard, RTL/LTR and both themes.
+- Both shared components modified for transaction entry (`ManualTemplateTools`, `AiInputAllowance`) have opt-in compact layouts; other pages keep their default presentations.
+
 ## i18n and RTL
 
-- All strings are under `dashboard.reports.*` in `en.json` and `ar.json`, in exact key parity. Groups: `names`, `descriptions`, `itemsTitle`, `notes`, `filters`, `period`, `sections`, `summaryGroups`, `comparison`, `flags`, `states`, `errors`, `fields` (backend field labels), and `values` (statuses, types, directions, scopes, frequencies, buckets).
+- All strings are under `dashboard.reports.*` in `en.json` and `ar.json`, in exact key parity. Groups: `tabs` (incl. `tabs.groups`), `highlights`, `names`, `descriptions`, `itemsTitle`, `notes`, `filters`, `period`, `sections`, `summaryGroups`, `comparison`, `flags`, `states`, `errors`, `fields` (backend field labels), and `values` (statuses, types, directions, scopes, frequencies, buckets).
 - Numbers and amounts are isolated with `<bdi dir="ltr">`. Dates and user text use a plain `<bdi>`.
 - Charts render in a `dir="ltr"` box, as on the dashboard. Pagination chevrons are mirrored in RTL. Layout uses logical properties (`inline-size`, `padding-inline`, `text-align: start`).
-- The tab bar scrolls horizontally on narrow screens. Transitions honor `prefers-reduced-motion`.
+- Every screen uses the same grouped report select and period select. Optional filters are collapsed on all screen sizes. Transitions honor `prefers-reduced-motion`.
 
 ## Verification
 
@@ -107,4 +120,8 @@ Done while implementing (no test framework is configured, so the harnesses were 
   - 401, 403, 404, 422, 429, and 500 mapping, and 401 clearing the session.
 - Render harness (Vite SSR): every report rendered in English and Arabic with documented payloads. It checked that no `[object Object]`, `NaN`, or raw key is printed, that no missing-translation warning fires, that detail links are present, that Overview has no pagination, that two currencies give two cards, and that the empty states render.
 
+Redesign (2026-09-29): headless Chrome against the built app with mocked two-currency reports rendered Overview, Income & Expense, Debts and Recurring at 360–1920px in English and Arabic (and dark mode spot checks) with no element outside the viewport; `npm run build` and `npm run lint` pass.
+
 At the time of writing, the backend at `VITE_API_BASE_URL` answered `404` for every `/reports/*` path (while e.g. `/dashboard` answered `401`), so the Sprint 6 routes were not deployed there yet. The page shows "This report isn't available" for that 404. Check the live responses against the tolerant readers once the routes are deployed.
+
+Responsive tables (2026-10-05): comparison and item rows keep their existing cells, values and links, with explicit table/row/cell roles. Below 720px of report-content width the rows render as labelled cards; desktop retains the original table view.

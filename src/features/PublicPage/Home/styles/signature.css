@@ -1,0 +1,93 @@
+/*
+ * Landing page: signature.css from the approved SmartSpend landing design (Edition 03.2),
+ * scoped under .smartspend-landing so it cannot reach other screens. Keyframes carry a
+ * landing- prefix because the production build ships one global stylesheet.
+ */
+/*
+ * Signature layer: the few touches that make the page recognisably SmartSpend.
+ * Each one is decorative, built on transform, opacity, background or masks,
+ * and switched off by html[data-motion='off']. Scroll-driven pieces use native
+ * CSS timelines (no scroll listeners) and fall back to the static design.
+ */
+
+/* ---------- 1. Capability ribbon ---------- */
+.smartspend-landing .ribbon { --ribbon-size: clamp(24px, 1rem + 2.2vw, 46px); position: relative; z-index: 1; overflow: hidden; padding-block: clamp(22px, 3vw, 36px); border-bottom: 1px solid var(--line); background: var(--bg); -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
+.smartspend-landing .ribbon-track { display: flex; width: max-content; animation: landing-ribbon 52s linear infinite; }
+html[dir='rtl'] .smartspend-landing .ribbon-track { animation-name: landing-ribbon-rtl; }
+.smartspend-landing .ribbon:hover .ribbon-track { animation-play-state: paused; }
+.smartspend-landing .ribbon-run { display: flex; align-items: center; flex-shrink: 0; }
+.smartspend-landing .ribbon-item { display: inline-flex; align-items: center; gap: clamp(22px, 3vw, 44px); padding-inline-end: clamp(22px, 3vw, 44px); font-size: var(--ribbon-size); font-weight: 600; line-height: 1.35; white-space: nowrap; color: var(--text); }
+.smartspend-landing .ribbon-item[data-tone='soft'] { color: var(--text-3); font-weight: 300; }
+html[lang='en'] .smartspend-landing .ribbon-item { letter-spacing: -.03em; }
+html[lang='en'] .smartspend-landing .ribbon-item[data-tone='soft'] { font-family: var(--font-en-serif); font-style: italic; font-weight: 400; font-size: calc(var(--ribbon-size) * 1.14); letter-spacing: -.01em; }
+.smartspend-landing .ribbon-dots { display: inline-flex; align-items: center; gap: 5px; }
+.smartspend-landing .ribbon-dots > b { width: 8px; height: 8px; border-radius: 50%; background: linear-gradient(135deg, var(--brand-blue), var(--brand-cyan)); box-shadow: 0 0 12px rgba(59, 130, 246, .5); }
+.smartspend-landing .ribbon-dots > b:last-child { width: 5px; height: 5px; opacity: .55; }
+@keyframes landing-ribbon { to { transform: translateX(-50%); } }
+@keyframes landing-ribbon-rtl { to { transform: translateX(50%); } }
+
+/* ---------- 2. Pointer spotlight on double-bezel cards ---------- */
+.smartspend-landing .bezel { position: relative; }
+.smartspend-landing .bezel::after { content: ''; position: absolute; inset: 0; z-index: 2; border-radius: inherit; padding: 1.5px; pointer-events: none; background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), rgba(140, 225, 255, 1), rgba(59, 130, 246, .45) 40%, transparent 72%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0; transition: opacity .5s var(--ease-out); }
+.smartspend-landing .bezel-core::before { content: ''; position: absolute; inset: 0; z-index: 1; border-radius: inherit; pointer-events: none; background: radial-gradient(520px circle at var(--mx, 50%) var(--my, 0%), rgba(96, 165, 250, .13), transparent 62%); opacity: 0; transition: opacity .6s var(--ease-out); }
+:root[data-theme='light'] .smartspend-landing .bezel::after { background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), rgba(37, 99, 235, .85), rgba(14, 165, 233, .32) 40%, transparent 72%); }
+:root[data-theme='light'] .smartspend-landing .bezel-core::before { background: radial-gradient(520px circle at var(--mx, 50%) var(--my, 0%), rgba(37, 99, 235, .075), transparent 62%); }
+@media (hover: hover) and (pointer: fine) {
+  .smartspend-landing .bezel:hover::after, .smartspend-landing .bezel:hover > .bezel-core::before { opacity: 1; }
+}
+html[data-motion='off'] .smartspend-landing .bezel::after, html[data-motion='off'] .smartspend-landing .bezel-core::before { display: none; }
+
+/* ---------- 3. Scroll progress in the island ---------- */
+.smartspend-landing .island-progress { position: absolute; inset-inline: 30px; bottom: 0; height: 1px; border-radius: 1px; pointer-events: none; background: linear-gradient(90deg, var(--brand-blue), var(--brand-cyan)); box-shadow: 0 0 10px rgba(34, 195, 238, .6); transform: scaleX(0); transform-origin: left center; opacity: 0; transition: opacity .5s var(--ease-out); }
+html[dir='rtl'] .smartspend-landing .island-progress { transform-origin: right center; background: linear-gradient(270deg, var(--brand-blue), var(--brand-cyan)); }
+.smartspend-landing .site-header[data-scrolled] .island-progress { opacity: 1; }
+@supports (animation-timeline: scroll()) {
+  html[data-motion='on'] .smartspend-landing .island-progress { animation: landing-progress linear both; animation-timeline: scroll(root block); }
+}
+@keyframes landing-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* ---------- 4. The demo settles flat as it scrolls into view ---------- */
+@supports (animation-timeline: view()) {
+  @media (min-width: 900px) {
+    html[data-motion='on'] .smartspend-landing .section-demo .container { perspective: 2200px; }
+    html[data-motion='on'] .smartspend-landing .demo-stage { transform-origin: 50% 100%; animation: landing-settle linear both; animation-timeline: view(); animation-range: entry 0% cover 42%; }
+  }
+}
+@keyframes landing-settle { from { transform: rotateX(14deg) translateY(48px) scale(.95); } to { transform: none; } }
+.smartspend-landing .demo-top .sample-badge > i { animation: landing-pulse 2.6s var(--ease-soft) infinite; }
+
+/* ---------- 5. The assistant types before it answers ---------- */
+.smartspend-landing .chat-response-body { position: relative; }
+.smartspend-landing .typing { position: absolute; top: 4px; inset-inline-start: 0; display: inline-flex; align-items: center; gap: 5px; padding: 12px 16px; border-radius: 18px; border-start-start-radius: 6px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); opacity: 0; pointer-events: none; }
+.smartspend-landing .typing > i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: .5; }
+.smartspend-landing .assistant[data-shown] .typing { animation: landing-typing-life 1.05s var(--ease-out); }
+.smartspend-landing .assistant[data-shown] .typing > i { animation: landing-typing-dot .7s var(--ease-soft) 2 alternate; }
+.smartspend-landing .assistant[data-shown] .typing > i:nth-child(2) { animation-delay: .12s; }
+.smartspend-landing .assistant[data-shown] .typing > i:nth-child(3) { animation-delay: .24s; }
+.smartspend-landing .assistant[data-shown] .chat-response-body > :not(.typing) { animation: landing-rise-soft .6s var(--ease-out) .9s backwards; }
+html[data-motion='off'] .smartspend-landing .typing { display: none; }
+@keyframes landing-typing-life { 0%, 78% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes landing-typing-dot { from { transform: translateY(0); opacity: .35; } to { transform: translateY(-4px); opacity: 1; } }
+@keyframes landing-rise-soft { from { opacity: 0; transform: translateY(8px); } }
+
+/* ---------- 6. One pass of light across the hero's accent line ---------- */
+.smartspend-landing .hero-line-accent > span { background-image: linear-gradient(100deg, transparent 36%, rgba(255, 255, 255, .95) 50%, transparent 64%), var(--hero-accent); background-size: 250% 100%, 100% 100%; background-repeat: no-repeat; background-position: -10% 0, 0 0; }
+html[data-motion='on'] .smartspend-landing .hero-line-accent > span { animation: landing-sheen 2.6s var(--ease-soft) 1.1s backwards; }
+html[dir='rtl'][data-motion='on'] .smartspend-landing .hero-line-accent > span { animation-name: landing-sheen-rtl; }
+@keyframes landing-sheen { from { background-position: 110% 0, 0 0; } to { background-position: -10% 0, 0 0; } }
+@keyframes landing-sheen-rtl { from { background-position: -10% 0, 0 0; } to { background-position: 110% 0, 0 0; } }
+
+/* ---------- 7. The footer name fills with brand light on arrival ---------- */
+.smartspend-landing .footer-mark { --mark-fill: linear-gradient(180deg, rgba(91, 151, 255, .55), rgba(60, 201, 243, .1) 82%); }
+:root[data-theme='light'] .smartspend-landing .footer-mark { --mark-fill: linear-gradient(180deg, rgba(29, 78, 216, .32), rgba(14, 165, 233, .06) 82%); }
+.smartspend-landing .footer-mark .wordmark { background-image: var(--mark-fill), linear-gradient(180deg, var(--line-strong), transparent 85%); background-size: 100% 100%, 100% 100%; background-repeat: no-repeat; background-position: left top, 0 0; }
+.smartspend-landing .footer-mark .wordmark > span { background: none; }
+@supports (animation-timeline: view()) {
+  html[data-motion='on'] .smartspend-landing .footer-mark .wordmark { animation: landing-mark-fill linear both; animation-timeline: view(); animation-range: entry 0% entry 100%; }
+}
+@keyframes landing-mark-fill { from { background-size: 0% 100%, 100% 100%; } to { background-size: 100% 100%, 100% 100%; } }
+
+@media (max-width: 640px) {
+  .smartspend-landing .ribbon-track { animation-duration: 38s; }
+  .smartspend-landing .island-progress { inset-inline: 22px; }
+}

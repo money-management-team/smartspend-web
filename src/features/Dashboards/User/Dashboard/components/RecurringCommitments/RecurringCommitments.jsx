@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
@@ -6,14 +7,25 @@ import { PATH, getRecurringDetailsPath } from "../../../../../../routes/Path";
 import { getDisplayLocale } from "../../../Accounts/accountHelpers";
 import { translateEnum } from "../../../FinancialOperations/transactionHelpers";
 import { formatDate } from "../../../utils/formatters";
-import { formatOptionalMoney, getBlockCounts, getBlockItems } from "../../dashboardHelpers";
+import {
+  formatOptionalMoney,
+  getBlockCounts,
+  getBlockItems,
+} from "../../dashboardHelpers";
 
 import "./RecurringCommitments.css";
 
-const COUNT_KEYS = ["active_count", "due_count", "overdue_count", "upcoming_count", "paused_count"];
+const COUNT_KEYS = [
+  "active_count",
+  "due_count",
+  "overdue_count",
+  "upcoming_count",
+  "paused_count",
+];
 const VISIBLE_ROWS = 4;
 
-const isTrue = (value) => value === true || value === 1 || value === "1" || value === "true";
+const isTrue = (value) =>
+  value === true || value === 1 || value === "1" || value === "true";
 
 /*
  * `commitments.recurring` of GET /dashboard: upcoming recurring rules and
@@ -45,24 +57,39 @@ export default function RecurringCommitments({ block }) {
                 <strong>
                   <bdi>{Number(value).toLocaleString(locale)}</bdi>
                 </strong>
-                <span>{translateEnum(t, i18n, "dashboard.user.commitments.counts", key)}</span>
+                <span>
+                  {translateEnum(
+                    t,
+                    i18n,
+                    "dashboard.user.commitments.counts",
+                    key,
+                  )}
+                </span>
               </li>
             ))}
           </ul>
         )}
 
         {rows.length === 0 ? (
-          <p className="recurring-commitments__empty">{t("dashboard.user.commitments.empty")}</p>
+          <p className="recurring-commitments__empty">
+            {t("dashboard.user.commitments.empty")}
+          </p>
         ) : (
           <ul className="recurring-commitments__list">
             {rows.map((row, index) => {
               const ruleId = row.recurring_transaction_id ?? row.id;
               const dueDate = row.next_due_date ?? row.due_date;
               const type = row.type ?? row.recurring_transaction?.type;
-              const name = row.name ?? row.recurring_transaction?.name ?? `#${ruleId ?? index + 1}`;
+              const name =
+                row.name ??
+                row.recurring_transaction?.name ??
+                `#${ruleId ?? index + 1}`;
 
               return (
-                <li key={`${ruleId ?? index}-${dueDate ?? ""}`} className="recurring-commitments__item">
+                <li
+                  key={`${ruleId ?? index}-${dueDate ?? ""}`}
+                  className="recurring-commitments__item"
+                >
                   <div className="recurring-commitments__copy">
                     {ruleId != null ? (
                       <Link to={getRecurringDetailsPath(ruleId)} dir="auto">
@@ -80,9 +107,17 @@ export default function RecurringCommitments({ block }) {
                       )}
                     </small>
                   </div>
-                  <strong className={`recurring-commitments__amount recurring-commitments__amount--${type ?? "neutral"}`}>
+                  <strong
+                    className={`recurring-commitments__amount recurring-commitments__amount--${type ?? "neutral"}`}
+                  >
                     {type === "income" ? "+" : type === "expense" ? "-" : ""}
-                    {formatOptionalMoney(row.amount, row.currency_code, locale)}
+                    <PrivateMoney>
+                      {formatOptionalMoney(
+                        row.amount,
+                        row.currency_code,
+                        locale,
+                      )}
+                    </PrivateMoney>
                   </strong>
                 </li>
               );

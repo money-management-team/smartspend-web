@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuCircleCheck, LuTriangleAlert } from "react-icons/lu";
@@ -154,15 +155,24 @@ export default function CaptureConfirm({
   };
 
   const renderValue = (field, value) => {
-    if (field === "account_id") return <bdi dir="auto">{named(accounts, value)}</bdi>;
-    if (field === "category_id") return <bdi dir="auto">{named(categories, value)}</bdi>;
+    if (field === "account_id")
+      return <bdi dir="auto">{named(accounts, value)}</bdi>;
+    if (field === "category_id")
+      return <bdi dir="auto">{named(categories, value)}</bdi>;
 
     // Display only. The stored value stays the backend's decimal string.
     if (CAPTURE_MONEY_FIELDS.includes(field)) {
-      return <bdi dir="ltr">{formatMoney(value, values.currency_code, locale)}</bdi>;
+      return (
+        <bdi dir="ltr">
+          <PrivateMoney>
+            {formatMoney(value, values.currency_code, locale)}
+          </PrivateMoney>
+        </bdi>
+      );
     }
 
-    if (field === "transaction_date") return <bdi dir="ltr">{formatDate(value, locale)}</bdi>;
+    if (field === "transaction_date")
+      return <bdi dir="ltr">{formatDate(value, locale)}</bdi>;
     if (field === "currency_code") return <bdi dir="ltr">{String(value)}</bdi>;
 
     return <bdi dir="auto">{String(value)}</bdi>;
@@ -197,7 +207,10 @@ export default function CaptureConfirm({
   const isBlocked = blockers.length > 0;
 
   return (
-    <section className="capture-confirm" aria-labelledby="capture-confirm-title">
+    <section
+      className="capture-confirm"
+      aria-labelledby="capture-confirm-title"
+    >
       <header className="capture-confirm__header">
         <h2 id="capture-confirm-title">
           <LuCircleCheck aria-hidden="true" />
@@ -207,13 +220,15 @@ export default function CaptureConfirm({
       </header>
 
       {/*
-        * What the saved draft is still missing. Named rather than described as
-        * "invalid", so the user knows which field to fill in.
-        */}
+       * What the saved draft is still missing. Named rather than described as
+       * "invalid", so the user knows which field to fill in.
+       */}
       {isBlocked && (
         <p className="capture-confirm__blocked" role="note">
           {t("dashboard.aiCaptures.confirm.blocked", {
-            fields: blockers.map(label).join(t("dashboard.aiCaptures.confirm.separator")),
+            fields: blockers
+              .map(label)
+              .join(t("dashboard.aiCaptures.confirm.separator")),
           })}
         </p>
       )}
@@ -257,7 +272,10 @@ export default function CaptureConfirm({
               </button>
             </header>
 
-            <div id="capture-confirm-dialog-description" className="capture-confirm__body">
+            <div
+              id="capture-confirm-dialog-description"
+              className="capture-confirm__body"
+            >
               <p>{t("dashboard.aiCaptures.confirm.effects.intro")}</p>
 
               <ul>
@@ -268,10 +286,10 @@ export default function CaptureConfirm({
               </ul>
 
               {/*
-                * Unsaved edits are saved first, because the backend confirms
-                * the draft it already holds. Said plainly rather than done
-                * silently.
-                */}
+               * Unsaved edits are saved first, because the backend confirms
+               * the draft it already holds. Said plainly rather than done
+               * silently.
+               */}
               {isDraftDirty && (
                 <p className="capture-confirm__note" role="note">
                   {t("dashboard.aiCaptures.confirm.willSaveFirst")}
@@ -297,14 +315,16 @@ export default function CaptureConfirm({
             </div>
 
             {/*
-              * Unknown, not failed. The expense may exist, so nothing here
-              * invites another attempt before the status has been read.
-              */}
+             * Unknown, not failed. The expense may exist, so nothing here
+             * invites another attempt before the status has been read.
+             */}
             {isUncertain && (
               <div className="capture-confirm__uncertain" role="alert">
                 <p>
                   <LuTriangleAlert aria-hidden="true" />
-                  <span>{t("dashboard.aiCaptures.confirm.uncertainTitle")}</span>
+                  <span>
+                    {t("dashboard.aiCaptures.confirm.uncertainTitle")}
+                  </span>
                 </p>
                 <p>{t("dashboard.aiCaptures.confirm.uncertainBody")}</p>
               </div>
@@ -314,17 +334,21 @@ export default function CaptureConfirm({
               <div className="capture-confirm__error" role="alert">
                 <p dir="auto">{errorMessage}</p>
 
-                {isVersionConflict && <p>{t("dashboard.aiCaptures.form.conflict.discards")}</p>}
-                {isBalance && <p>{t("dashboard.aiCaptures.confirm.nothingRecorded")}</p>}
+                {isVersionConflict && (
+                  <p>{t("dashboard.aiCaptures.form.conflict.discards")}</p>
+                )}
+                {isBalance && (
+                  <p>{t("dashboard.aiCaptures.confirm.nothingRecorded")}</p>
+                )}
               </div>
             )}
 
             <footer className="capture-confirm__actions">
               {/*
-                * After an uncertain result the only safe next step is a read.
-                * Retrying keeps the same Idempotency-Key, so it replays the
-                * original request rather than creating a second expense.
-                */}
+               * After an uncertain result the only safe next step is a read.
+               * Retrying keeps the same Idempotency-Key, so it replays the
+               * original request rather than creating a second expense.
+               */}
               {isUncertain && (
                 <button
                   type="button"

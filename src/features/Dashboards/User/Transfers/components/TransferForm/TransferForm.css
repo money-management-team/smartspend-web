@@ -76,6 +76,6 @@
 
 @media (max-width: 520px) {
   .transfer-form__row {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }

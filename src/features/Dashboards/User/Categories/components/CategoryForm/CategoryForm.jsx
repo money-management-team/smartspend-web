@@ -13,6 +13,8 @@ import {
 
 // Same modal shell as the account form, so dashboard dialogs look alike.
 import "../../../Accounts/components/AccountForm/AccountForm.css";
+import useDiscardChanges from "../../../../../../components/UnsavedChanges/useDiscardChanges";
+import { isFormDirty } from "../../../../../../components/UnsavedChanges/unsavedChanges";
 import "./CategoryForm.css";
 
 const toFormValues = (category, defaultType) => ({
@@ -77,6 +79,13 @@ export default function CategoryForm({ category, defaultType, onSave, onClose })
     if (!pendingRef.current) onClose();
   };
 
+  // Values the form opened with: closing with other values asks first.
+  const [initialForm] = useState(form);
+  const { requestClose, discardDialog } = useDiscardChanges({
+    isDirty: isFormDirty(form, initialForm) && !isSaving,
+    onClose: close,
+  });
+
   const updateField = (name, value) => {
     setForm((current) => ({ ...current, [name]: value }));
     setErrors((current) => ({ ...current, [name]: undefined }));
@@ -137,9 +146,10 @@ export default function CategoryForm({ category, defaultType, onSave, onClose })
     <div
       className="account-form-modal"
       role="presentation"
-      onMouseDown={close}
-      onKeyDown={(event) => event.key === "Escape" && close()}
+      onMouseDown={requestClose}
+      onKeyDown={(event) => event.key === "Escape" && requestClose()}
     >
+      {discardDialog}
       <section
         className="account-form-modal__dialog category-form"
         role="dialog"
@@ -157,7 +167,7 @@ export default function CategoryForm({ category, defaultType, onSave, onClose })
           </h2>
           <button
             type="button"
-            onClick={close}
+            onClick={requestClose}
             disabled={isSaving}
             aria-label={t("common.close")}
           >
@@ -320,7 +330,7 @@ export default function CategoryForm({ category, defaultType, onSave, onClose })
           )}
 
           <footer>
-            <button type="button" onClick={close} disabled={isSaving}>
+            <button type="button" onClick={requestClose} disabled={isSaving}>
               {t("common.cancel")}
             </button>
             <button

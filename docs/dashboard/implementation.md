@@ -55,3 +55,7 @@ Amounts and dates are wrapped in `<bdi>`, backend texts use `dir="auto"`, charts
 - ESLint on the changed files: clean. `npm run build`: passes.
 - The E2E smoke test (happy-dom, real pages through Vite, stateful fake backend) covered one request per period change, custom range validation, no alert refetch on period change, backend totals, the per-currency table, transfers kept separate, links, error + retry, and the Notifications page (no read state, refresh refetches). It passed in English and Arabic, together with the recurring flows.
 - On staging, `GET /dashboard` and `GET /financial-alerts` return `401` without a token, which confirms the routes; authenticated data still needs a manual pass with a real account.
+
+## Hero card style
+
+`DashboardHero.css` deliberately differs from the shared page hero (`financeExperience.css`): a sky-blue → deep-navy gradient (`--dashboard-hero-from/mid/to`, dark on the content side and light on the actions side, reversed under `[dir="rtl"]`) and a leaf shape (large `border-start-start` and `border-end-end` radii of 46px, 14px elsewhere, so it mirrors in RTL). Concentric rings sit behind the actions, and the action buttons use a darker glass fill so white text stays readable on the light end.

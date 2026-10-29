@@ -19,7 +19,7 @@ Both routes are in the `userRoutes` group, behind `RequireAuth` + `DashboardLayo
 | `PATH.USER.CATEGORIES` | `/dashboard/categories` | `src/features/Dashboards/User/Categories/Categories.jsx` |
 | `PATH.USER.CATEGORY_DETAILS` | `/dashboard/categories/:categoryId` | `src/features/Dashboards/User/CategoryDetails/CategoryDetails.jsx` |
 
-Build detail links with `getCategoryDetailsPath(categoryId)` from `src/routes/Path.js`. The sidebar has a "Categories" item (`LuTags`) at the top of the "Manage" group. It stays highlighted on the details page, because its `NavLink` isn't `end`.
+Build detail links with `getCategoryDetailsPath(categoryId)` from `src/routes/Path.js`. The sidebar has a "Categories" link at the top of the "Planning" group (see [../dashboard-sidebar/overview.md](../dashboard-sidebar/overview.md)). It stays highlighted on the details page, because its `NavLink` isn't `end`.
 
 ## Flow
 

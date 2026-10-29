@@ -16,24 +16,29 @@ npm run lint      # ESLint over the whole repo
 npx eslint src/path/to/File.jsx   # lint a single file
 ```
 
-There is no test framework configured.
+`npm test` runs the Node built-in runner over `tests/**/*.test.mjs` (API adapters and contracts, with `fetch` mocked; no framework dependency). UI tests render the real components in jsdom. See `docs/whatsapp/testing.md`.
 
 Environment variables (`.env`):
-- `VITE_API_BASE_URL`: the backend URL. If unset, `apiClient` falls back to `/api`. There is no Vite dev proxy.
+- `VITE_API_BASE_URL`: the backend URL. If unset, `apiClient` falls back to `/api`. The tracked `.env` sets it to `/api`; production gets its own value from the Hostinger workflow.
+- Local dev is fail-closed: the Vite dev server forwards `/api` to `http://127.0.0.1:8000` unless `SMARTSPEND_DEV_API_ORIGIN` says otherwise, and a remote origin (or an absolute remote `VITE_API_BASE_URL`) additionally needs `SMARTSPEND_ALLOW_REMOTE_API=true`. See `docs/dev-environment/local-api-target.md`. Never point a dev session at staging or production by editing the tracked `.env`.
 - `VITE_GOOGLE_CLIENT_ID`: the Google Identity Services client ID, read in `src/features/Auth/components/AuthSocial/googleIdentity.js`. If unset, the Google sign-in button is disabled and a warning is logged in dev.
+- `VITE_SMART_SAVINGS_ENABLED`: the Smart Savings release gate, off unless it is exactly `"true"`. Set it only in `.env.local`. A production build with it on fails unless `SMARTSPEND_SMART_SAVINGS_RELEASE_APPROVED=true` is set in the shell (`scripts/smartSavingsBuildFlag.mjs`), and the Hostinger workflow pins it off. See `docs/savings-goals/smart-plans.md`.
 
 ESLint uses the flat config with `eslint-plugin-react-hooks` v7 (recommended), which includes the stricter React Compiler–style rules, plus `react-refresh`.
 
 ## Architecture
 
 ### Bootstrapping and routing
-- `src/main.jsx` imports `./i18n` first (side-effect init), then wraps `<App/>` in `BrowserRouter > ThemeProvider > LanguageProvider > AuthProvider > EmailVerificationProvider`.
+- `src/main.jsx` imports `./i18n` first (side-effect init), then mounts a data router (`createBrowserRouter` with a single splat route) rendering `Root.jsx`: `ThemeProvider > LanguageProvider > ErrorBoundary > AuthProvider > EmailVerificationProvider > <App/>`. The data router exists for `useBlocker` (unsaved-changes prompts); the route table is still `Router.jsx` / `useRoutes`.
 - `src/routes/Routes.jsx` defines four route groups, all mounted at `/`, which `Router.jsx` merges via `useRoutes`:
-  - **public**: `PublicLayout`, with `Home` and the catch-all `NotFound`.
+  - **public**: `PublicLayout`, with `Home` and the catch-all `NotFound`. `Home` is mounted under `PublicLayout variant="landing"`, which leaves out the shared navbar and footer (the landing has its own); the other public pages keep them.
   - **guest**: `GuestOnly` + `AuthLayout`, for signin, register, and the password flows.
   - **email-link**: `AuthLayout` with no guard, for pages opened from emails (reset password, verify email) that must work signed in or out.
   - **user**: `RequireAuth` + `DashboardLayout`, for everything under `/dashboard/*`.
 - Always reference URLs through the `PATH` constants in `src/routes/Path.js`.
+- Pages are lazy-loaded (`src/routes/lazyPages.js`, `RouteSuspense`); layouts, guards, Home and NotFound are not. CSS is deliberately one file (`build.cssCodeSplit: false`); see `docs/performance/code-splitting.md` before adding global class names.
+- After sign-in the user returns to the page they asked for: `RequireAuth` stores `state.from`, `getPostAuthPath` (`src/routes/postAuthRedirect.js`) validates it. See `docs/auth/post-auth-redirect.md`.
+- `/verify-code` no longer has a page (it redirects to the dashboard); email verification is the signed link plus the dashboard banner.
 - The guards in `RouteGuards.jsx` render `<Loading/>` while `AuthContext.initializing` is true.
 
 ### API layer (important)
@@ -70,7 +75,9 @@ Dashboard pages (e.g. `Budgets.jsx`) follow the same shape:
 - errors are shown via `getApiErrorMessage`;
 - `components/Loading/Loading` is shown while loading.
 
-Not every dashboard page is wired to the backend yet. `Import` and `AIAssistant` are static UI with no API module. `Settings` uses `authApi` for Profile (`PUT /profile`) and Security (`PATCH /profile/password`, see `docs/auth/change-password/implementation.md`), but its Preferences tab is still a placeholder. Check a page for an `*Api` import before assuming it has backend support.
+The personal dashboard pages use resource API modules. `AIAssistant` uses `aiCopilotApi` for conversations, insights, forecasts, feedback and privacy settings; see `docs/ai-copilot/integration.md`. `Imports` uses `importsApi` for statement review and posting; see `docs/imports/integration.md`. `Settings` uses `authApi` for Profile, Security and saved locale/timezone preferences; see `docs/settings/implementation.md`. Theme remains a browser preference.
+WhatsApp (linking, draft inbox and review, pending count) is documented in `docs/whatsapp/` (start with `integration-overview.md`). The pending-review count is owned by `WhatsAppPendingProvider` in `DashboardLayout`; read it with `useWhatsAppPending()` instead of calling the summary endpoint.
+The supplied backend has no company registration or business workspace creation flow. The company auth screens are legacy presentation work and must not be presented as a functional business product without a separate backend implementation.
 
 ### i18n and RTL
 - `src/i18n.jsx` sets up i18next with a single `translation` namespace. Resources are one file per language, `src/locales/en/en.json` and `src/locales/ar/ar.json`, with top-level sections `common`, `api`, `auth`, `dashboard`, and `home`. `fallbackLng` is `en`.
@@ -94,10 +101,16 @@ Not every dashboard page is wired to the backend yet. `Import` and `AIAssistant`
   - dark overrides under `:root[data-theme="dark"]`.
 - `ThemeProvider` sets `data-theme` on `<html>` and persists it to localStorage `theme`.
 - Use tokens instead of hard-coded colors (`--color-primary`, `--color-surface`, `--color-text-strong`, `--primary-soft`, `--gradient-primary`, `--font-heading`, …). Write theme-specific rules as `:root[data-theme="dark"] .selector`.
-- Fonts: Tajawal for headings and large financial values; Cairo for the UI.
-- `src/features/PublicPage/Home/Home.css` is large and layered: later "FINAL …" sections override earlier rules for the same selectors, so search the whole file before changing a property.
-- `Home.jsx` adds `home-reveal*` classes to section selectors at runtime (IntersectionObserver) and drives the parallax CSS variables.
-- Honor `prefers-reduced-motion`; `Home.css` has a global reduced-motion block.
+- Dashboard pages: `DashboardLayout.css` owns the page gutter and max-width (`--dashboard-*` tokens); page roots must not set their own outer `max-width`/padding. Use `minmax(0, 1fr)` for single-column grids. Shared responsive fixes live in `layouts/DashboardLayout/dashboardPrimitives.css`; see `docs/dashboard-layout/responsive-system.md`.
+- Fonts: Tajawal for headings and large financial values; Cairo for the UI. The home page (landing) is the exception: IBM Plex Sans Arabic, Plus Jakarta Sans and Instrument Serif, bundled as woff2 in `src/assets/fonts`.
+- The home page is the landing design, with its own scoped styles: every rule in `src/features/PublicPage/Home/styles/` sits under `.smartspend-landing` (document-level rules key on `html[data-motion]`, present only while the page is mounted) and keyframes carry a `landing-` prefix. Keep it that way, since the CSS ships as one global file. Copy lives in the `landing` i18next namespace (`landingMessages.js`). See `docs/home/overview.md`.
+- `Home/publicShared.css` holds the rules of the previous home stylesheet that the public navbar, footer and information pages still use.
+- Honor `prefers-reduced-motion`; the landing also has its own motion switch (`html[data-motion="off"]`).
+
+### Report PDFs
+- PDF report exports are built in the browser with `@react-pdf/renderer` (`features/Dashboards/User/Reports/pdf/`, lazy-loaded from `Reports.jsx`); CSV / Excel stay on the backend export queue. See `docs/reports/pdf-export.md`.
+- PDF colours, fonts and page geometry live only in `pdf/pdfTheme.js`; Cairo / Tajawal TTFs are bundled in `src/assets/fonts`.
+- Use `PdfText` for any text in the PDF (it fixes Arabic paragraph direction), and call `registerPdfFonts` before each document.
 
 ## Documentation
 

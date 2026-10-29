@@ -1,9 +1,10 @@
+import SavedViews from "../Experience/SavedViews";
+import { useExperience } from "../Experience/useExperience";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { LuTriangleAlert, LuX } from "react-icons/lu";
 
-import AccountStep from "./components/AccountStep/AccountStep";
 import CaptureStep from "./components/CaptureStep/CaptureStep";
 import Ledger from "./components/Ledger/Ledger";
 import OperationsIntro from "./components/OperationsIntro/OperationsIntro";
@@ -34,7 +35,12 @@ import "./FinancialOperations.css";
 
 // Codes after which it is unknown whether the operation was recorded, so the
 // list is refreshed before the user tries again.
-const UNKNOWN_OUTCOME = ["NETWORK_ERROR", "TIMEOUT", "SERVER_ERROR", "MALFORMED_RESPONSE"];
+const UNKNOWN_OUTCOME = [
+  "NETWORK_ERROR",
+  "TIMEOUT",
+  "SERVER_ERROR",
+  "MALFORMED_RESPONSE",
+];
 
 /*
  * The backend caps `per_page` at 100 on every documented list endpoint, and
@@ -48,13 +54,14 @@ const TODAY_PER_PAGE = 100;
 const TODAY_MAX_PAGES = 5;
 
 /*
- * Guided capture page: pick the account (step 1), pick an input method
- * (step 2), then confirm a receipt-style review before anything is recorded.
+ * Compact capture page: type, account and method sit in one toolbar,
+ * then the existing explicit review runs before anything is recorded.
  * The ledger below lists the same transactions with its own filters.
  */
 export default function FinancialOperations() {
   const { t, i18n } = useTranslation();
   const location = useLocation();
+  const { workspaceId } = useExperience();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Filters, sort and page live in the URL, so the details page's back link
@@ -62,8 +69,10 @@ export default function FinancialOperations() {
   const filters = useMemo(() => readFilters(searchParams), [searchParams]);
   const query = useMemo(() => filtersToQuery(filters), [filters]);
   const [initialType] = useState(() => searchParams.get("new") ?? "expense");
-  // A ?new= link asks for the form, so it opens on manual entry.
-  const [initialMethod] = useState(() => (searchParams.get("new") ? "manual" : "voice"));
+  // Daily entry starts manually; a saved voice-capture link still resumes its workflow.
+  const [initialMethod] = useState(() =>
+    searchParams.get("voice_capture") && !searchParams.get("new") ? "voice" : "manual",
+  );
   // Transfers moved to their own section; old ?new=transfer links follow.
   const wantsTransfer = searchParams.get("new") === "transfer";
 
@@ -79,12 +88,17 @@ export default function FinancialOperations() {
     transactionsApi
       .list(query, { signal: controller.signal })
       .then((response) => {
+        if (controller.signal.aborted) return;
         const page = parseTransactionPage(response);
 
         setList(
           page
             ? { key: listKey, page, error: null }
-            : { key: listKey, page: null, error: new ApiError("", { code: "MALFORMED_RESPONSE" }) },
+            : {
+                key: listKey,
+                page: null,
+                error: new ApiError("", { code: "MALFORMED_RESPONSE" }),
+              },
         );
       })
       .catch((error) => {
@@ -100,14 +114,22 @@ export default function FinancialOperations() {
   /* ---------- Accounts and categories (capture card options) ---------- */
 
   const [optionsReloadKey, setOptionsReloadKey] = useState(0);
-  const [options, setOptions] = useState({ key: null, accounts: [], categories: [], error: null });
+  const [options, setOptions] = useState({
+    key: null,
+    accounts: [],
+    categories: [],
+    error: null,
+  });
 
   useEffect(() => {
     const controller = new AbortController();
     const { signal } = controller;
 
     // Active accounts and categories only (system categories included).
-    Promise.all([accountsApi.list({}, { signal }), categoriesApi.list({}, { signal })])
+    Promise.all([
+      accountsApi.list({}, { signal }),
+      categoriesApi.list({}, { signal }),
+    ])
       .then(([accountsResponse, categoriesResponse]) => {
         setOptions({
           key: optionsReloadKey,
@@ -180,7 +202,10 @@ export default function FinancialOperations() {
           key: listReloadKey,
           totals: [...byCurrency.entries()]
             .sort(([, left], [, right]) => right.length - left.length)
-            .map(([currency, amounts]) => ({ currency, amount: sumMoney(amounts) })),
+            .map(([currency, amounts]) => ({
+              currency,
+              amount: sumMoney(amounts),
+            })),
           error: null,
         });
       })
@@ -209,7 +234,9 @@ export default function FinancialOperations() {
    * is already answered.
    */
   const selectedAccount = useMemo(() => {
-    const chosen = options.accounts.find((account) => String(account.id) === chosenAccountId);
+    const chosen = options.accounts.find(
+      (account) => String(account.id) === chosenAccountId,
+    );
     if (chosen) return chosen;
 
     return options.accounts.length === 1 ? options.accounts[0] : null;
@@ -230,8 +257,12 @@ export default function FinancialOperations() {
     setWarning(t("dashboard.financialOperations.captureStep.accountRequired"));
     window.clearTimeout(warningTimerRef.current);
     warningTimerRef.current = window.setTimeout(() => setWarning(""), 4000);
-    accountStepRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    accountStepRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
 
+    accountStepRef.current?.querySelector("select")?.focus({ preventScroll: true });
     return false;
   };
 
@@ -257,7 +288,9 @@ export default function FinancialOperations() {
   const recordOperation = async (operation) => {
     const payload = {
       account_id: Number(operation.account_id),
-      category_id: operation.category_id ? Number(operation.category_id) : undefined,
+      category_id: operation.category_id
+        ? Number(operation.category_id)
+        : undefined,
       amount: String(operation.amount).trim(),
       description: operation.description?.trim() || undefined,
       reference_number: operation.reference_number?.trim() || undefined,
@@ -301,14 +334,21 @@ export default function FinancialOperations() {
 
   // Built from the live URL, not the last render: two quick changes must not
   // overwrite each other (setSearchParams' `prev` is also from the last render).
-  const readCurrentFilters = () => readFilters(new URLSearchParams(window.location.search));
+  const readCurrentFilters = () =>
+    readFilters(new URLSearchParams(window.location.search));
 
   const updateFilters = (changes) => {
-    const next = { ...readCurrentFilters(), ...changes, page: changes.page ?? 1 };
+    const next = {
+      ...readCurrentFilters(),
+      ...changes,
+      page: changes.page ?? 1,
+    };
 
     // A category of the other type can't match the new type filter.
     if ("type" in changes && next.category_id && next.type) {
-      const category = options.categories.find((item) => String(item.id) === next.category_id);
+      const category = options.categories.find(
+        (item) => String(item.id) === next.category_id,
+      );
       if (category && category.type !== next.type) next.category_id = "";
     }
 
@@ -336,7 +376,8 @@ export default function FinancialOperations() {
       await transactionsApi.reverse(transaction.id, reason);
     } catch (error) {
       // Already reversed or gone: the list is out of date.
-      if (["CONFLICT", "NOT_FOUND"].includes(error?.code)) setListReloadKey((key) => key + 1);
+      if (["CONFLICT", "NOT_FOUND"].includes(error?.code))
+        setListReloadKey((key) => key + 1);
       throw error;
     }
 
@@ -361,7 +402,6 @@ export default function FinancialOperations() {
           isLoading: today.key !== listReloadKey,
           currency: options.accounts[0]?.currency_code,
         }}
-        hasAccount={Boolean(selectedAccount)}
       />
 
       {notice && (
@@ -378,28 +418,28 @@ export default function FinancialOperations() {
             )}
           </p>
 
-          <button type="button" onClick={() => setNotice(null)} aria-label={t("common.close")}>
+          <button
+            type="button"
+            onClick={() => setNotice(null)}
+            aria-label={t("common.close")}
+          >
             <LuX aria-hidden="true" />
           </button>
         </div>
       )}
 
-      <div ref={accountStepRef}>
-        <AccountStep
-          accounts={options.accounts}
-          selectedAccountId={selectedAccountId}
-          onSelect={setChosenAccountId}
-          isLoading={isOptionsLoading}
-          error={isOptionsLoading ? null : options.error}
-          onRetry={() => setOptionsReloadKey((key) => key + 1)}
-        />
-      </div>
-
       <CaptureStep
+        accountSelectorRef={accountStepRef}
         account={selectedAccount}
+        accounts={options.accounts}
+        onCaptureConfirmed={refreshAfterMutation}
         categories={options.categories}
         initialType={initialType}
         initialMethod={initialMethod}
+        workspaceId={workspaceId}
+        initialCaptureId={searchParams.get("voice_capture")}
+        initialCaptureWorkspace={searchParams.get("voice_workspace")}
+        onSelectAccount={setChosenAccountId}
         isLoadingOptions={isOptionsLoading}
         optionsError={isOptionsLoading ? null : options.error}
         onRetryOptions={() => setOptionsReloadKey((key) => key + 1)}
@@ -408,6 +448,18 @@ export default function FinancialOperations() {
       />
 
       <Ledger
+        savedViews={
+          <SavedViews
+        scope="transactions"
+        filters={Object.fromEntries(filtersToSearchParams(filters))}
+        onApply={(values) =>
+          setSearchParams(
+            filtersToSearchParams(readFilters(new URLSearchParams(values))),
+            { replace: true },
+          )
+        }
+      />
+        }
         page={isListLoading ? null : list.page}
         isLoading={isListLoading}
         error={isListLoading ? null : list.error}

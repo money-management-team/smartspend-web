@@ -1,11 +1,14 @@
 import { useTranslation } from "react-i18next";
 
+import logo from "../../assets/smart-spend-logo.png";
+
 import "./Loading.css";
 
 /**
  * Reusable loading indicator: a brand-gradient comet ring with a soft glow
- * and a pulsing core. It fades in after a short delay, so quick loads don't
- * flash a spinner.
+ * and a pulsing core. `size="large"` is the branded version: the Smart Spend
+ * logo sits inside the ring and breathes. It fades in after a short delay, so
+ * quick loads don't flash a spinner.
  *
  * @param {object} props
  * @param {string|false} [props.message] Text displayed below the indicator.
@@ -23,6 +26,8 @@ export default function Loading({
 }) {
   const { t } = useTranslation();
   const text = message === undefined ? t("common.loading") : message;
+
+  const isBranded = size === "large";
 
   const classes = [
     "loading",
@@ -47,7 +52,11 @@ export default function Loading({
           <span className="loading__arc" />
           <span className="loading__head" />
         </span>
-        <span className="loading__core" />
+        {isBranded ? (
+          <img className="loading__logo" src={logo} alt="" draggable="false" />
+        ) : (
+          <span className="loading__core" />
+        )}
       </span>
 
       {text ? (

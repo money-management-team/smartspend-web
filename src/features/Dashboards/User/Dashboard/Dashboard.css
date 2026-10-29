@@ -89,7 +89,7 @@
 @media (max-width: 980px) {
   .user-dashboard__charts-grid,
   .user-dashboard__bottom-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .user-dashboard__three-grid {
@@ -107,7 +107,7 @@
   }
 
   .user-dashboard__three-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .user-dashboard__three-grid > :last-child {

@@ -59,84 +59,6 @@
 }
 
 /* ================================
-   SEARCH
-================================ */
-
-.dashboard-header__search {
-  width: 576px;
-  height: 40px;
-
-  max-width: 52%;
-
-  padding: 0 13px;
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 11px;
-
-  box-sizing: border-box;
-
-  border: 1px solid var(--color-border);
-
-  border-radius: 22px;
-
-  background: var(--color-surface);
-
-  box-shadow: var(--shadow-sm);
-
-  transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease;
-}
-
-.dashboard-header__search:focus-within {
-  border-color: var(--color-primary);
-
-  box-shadow: 0 0 0 3px var(--input-focus-ring);
-}
-
-.dashboard-header__search svg {
-  width: 17px;
-  height: 17px;
-
-  flex: 0 0 17px;
-
-  color: var(--color-text-secondary);
-}
-
-.dashboard-header__search input {
-  width: 100%;
-
-  min-width: 0;
-
-  padding: 0;
-
-  border: 0;
-
-  outline: 0;
-
-  color: var(--color-text-primary);
-
-  background: transparent;
-
-  font: inherit;
-
-  font-size: 13px;
-}
-
-.dashboard-header__search input::placeholder {
-  color: var(--color-text-secondary);
-}
-
-/* remove search clear */
-
-.dashboard-header__search input::-webkit-search-cancel-button {
-  display: none;
-}
-
-/* ================================
    ACTIONS
 ================================ */
 
@@ -355,12 +277,6 @@
   .dashboard-header__menu {
     display: flex;
   }
-
-  .dashboard-header__search {
-    width: 100%;
-
-    max-width: none;
-  }
 }
 
 /* ================================
@@ -376,10 +292,6 @@
     gap: 8px;
   }
 
-  .dashboard-header__search {
-    height: 38px;
-  }
-
   .dashboard-header__language span {
     display: none;
   }
@@ -389,17 +301,40 @@
   }
 }
 
-@media (max-width: 480px) {
-  .dashboard-header__search {
-    display: none;
-  }
 
+
+/* ================================
+   ACCESSIBILITY / TOUCH
+================================ */
+
+.dashboard-header :is(button, a):focus-visible,
+.dashboard-sidebar :is(button, a):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.dashboard-header__actions {
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1024px) {
   .dashboard-header__menu {
-    margin-inline-end: auto;
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
   }
 
-  [dir="rtl"] .dashboard-header__menu {
-    margin-inline-start: auto;
-    margin-inline-end: 0;
+  .dashboard-header__icon-button,
+  .dashboard-header__notification,
+  .dashboard-header__language {
+    min-width: 40px;
+    min-height: 40px;
+    justify-content: center;
+  }
+
+  .dashboard-header__avatar {
+    width: 40px;
+    height: 40px;
   }
 }

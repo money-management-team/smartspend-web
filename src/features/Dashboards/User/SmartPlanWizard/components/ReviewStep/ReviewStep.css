@@ -1,0 +1,368 @@
+/* The plan leads, full width; goal and funding sit side by side below it. */
+.review-step {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    "failure failure"
+    "plan plan"
+    "goal funding"
+    "assurance assurance"
+    "accept accept";
+  align-items: start;
+  gap: 14px;
+}
+
+.review-step > .review-step__failure {
+  grid-area: failure;
+}
+
+.review-step > .review-step__card--plan {
+  grid-area: plan;
+}
+
+.review-step > .review-step__card--goal {
+  grid-area: goal;
+}
+
+.review-step > .review-step__card--funding {
+  grid-area: funding;
+}
+
+.review-step > .review-step__assurance {
+  grid-area: assurance;
+}
+
+.review-step > .review-step__accept {
+  grid-area: accept;
+}
+
+/* ---------- Cards ---------- */
+
+.review-step__card {
+  min-width: 0;
+  padding: 16px 18px;
+
+  display: grid;
+  /* An implicit auto track grows to a long account name and pushes the card (and its Edit button) off screen. */
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 10px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface);
+}
+
+.review-step__card--plan {
+  position: relative;
+  background:
+    radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--smart-wizard-cyan, #0891b2) 7%, transparent), transparent 55%),
+    var(--color-surface);
+}
+
+[dir="rtl"] .review-step__card--plan {
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--smart-wizard-cyan, #0891b2) 7%, transparent), transparent 55%),
+    var(--color-surface);
+}
+
+.review-step__card header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.review-step__card h2 {
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.review-step__edit {
+  min-height: 30px;
+  padding: 0 10px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  border: 0;
+  border-radius: 999px;
+
+  color: var(--color-primary);
+  background: transparent;
+
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.review-step__edit:hover {
+  background: var(--primary-soft);
+}
+
+.review-step__edit:focus-visible {
+  outline: 2px solid var(--color-primary);
+}
+
+.review-step__edit svg {
+  width: 13px;
+  height: 13px;
+}
+
+.review-step__amount {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+}
+
+.review-step__amount strong {
+  color: var(--color-text-strong);
+
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.review-step__facts {
+  margin: 0;
+  display: grid;
+}
+
+.review-step__card--plan .review-step__facts {
+  /* Wide enough that a label and its value sit on one line (they wrapped at 160px). */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  column-gap: 20px;
+}
+
+.review-step__facts > div {
+  padding: 7px 0;
+
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+
+  border-top: 1px solid var(--border-soft, var(--color-border));
+
+  font-size: 13px;
+}
+
+.review-step__facts dt {
+  color: var(--color-text-secondary);
+}
+
+.review-step__facts dd {
+  margin: 0;
+
+  color: var(--color-text-primary);
+
+  font-weight: 600;
+  text-align: end;
+}
+
+.review-step__facts em {
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 500;
+}
+
+.review-step__mode {
+  margin: 0;
+  color: var(--color-text-strong);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.review-step__muted {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.review-step__sources {
+  margin: 0;
+  padding: 0;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+
+  list-style: none;
+}
+
+.review-step__sources li {
+  padding: 8px 10px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border-radius: var(--radius-sm);
+
+  color: var(--color-text-primary);
+  background: var(--surface-soft);
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* The approval screen shows each account's full name: it wraps instead of being cut. */
+.review-step__sources li > span[dir] {
+  min-width: 0;
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+
+.review-step__order {
+  width: 22px;
+  height: 22px;
+  flex: none;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  color: var(--color-primary);
+  background: var(--primary-soft);
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* ---------- Assurance + approval ---------- */
+
+.review-step__assurance {
+  padding: 14px 16px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  border: 1px solid color-mix(in srgb, var(--smart-wizard-cyan, #0891b2) 30%, var(--color-border));
+  border-radius: var(--radius-lg);
+
+  background: color-mix(in srgb, var(--smart-wizard-cyan, #0891b2) 6%, var(--color-surface));
+}
+
+.review-step__assurance > svg {
+  width: 20px;
+  height: 20px;
+  margin-top: 1px;
+  flex: none;
+  color: var(--smart-wizard-cyan, #0891b2);
+}
+
+.review-step__assurance strong {
+  color: var(--color-text-strong);
+  font-size: 14px;
+}
+
+.review-step__assurance p {
+  margin: 3px 0 0;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.review-step__accept {
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+
+  cursor: pointer;
+}
+
+.review-step__accept:has(input:checked) {
+  border-color: var(--color-primary);
+}
+
+.review-step__accept input {
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  flex: none;
+  accent-color: var(--color-primary);
+}
+
+.review-step__failure {
+  --review-step-tone: var(--color-danger);
+
+  padding: 12px 14px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  border: 1px solid color-mix(in srgb, var(--review-step-tone) 28%, var(--color-border));
+  border-radius: var(--radius-md);
+
+  background: color-mix(in srgb, var(--review-step-tone) 7%, var(--color-surface));
+}
+
+.review-step__failure--warning {
+  --review-step-tone: var(--color-warning);
+}
+
+.review-step__failure > svg {
+  width: 17px;
+  height: 17px;
+  margin-top: 2px;
+  flex: none;
+  color: var(--review-step-tone);
+}
+
+.review-step__failure p {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.review-step__failure button {
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  color: var(--color-primary);
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 760px) {
+  .review-step {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "failure"
+      "plan"
+      "goal"
+      "funding"
+      "assurance"
+      "accept";
+  }
+}

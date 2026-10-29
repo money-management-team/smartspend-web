@@ -1,0 +1,147 @@
+/*
+ * Landing page: demo.css from the approved SmartSpend landing design (Edition 03.2),
+ * scoped under .smartspend-landing so it cannot reach other screens. Keyframes carry a
+ * landing- prefix because the production build ships one global stylesheet.
+ */
+/* Interactive product demonstration. Real sizes on every screen, never a shrunken screenshot. */
+.smartspend-landing .section-demo::after { content: ''; position: absolute; inset: 22% 0 0; z-index: -1; pointer-events: none; background: radial-gradient(ellipse 50% 45% at 50% 50%, var(--halo), transparent 70%); opacity: .55; }
+.smartspend-landing .demo { max-width: 1120px; margin-inline: auto; }
+.smartspend-landing .demo-top { display: flex; align-items: center; gap: 16px; padding: 16px 24px; border-bottom: 1px solid var(--line); }
+.smartspend-landing .demo-period { margin-inline-end: auto; font-size: 13px; color: var(--text-3); }
+.smartspend-landing .demo-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 24px 0; }
+.smartspend-landing .demo-bar .segmented > button { min-width: 128px; }
+.smartspend-landing .demo-panel { padding: 20px 24px 24px; outline-offset: -4px; animation: landing-panel-in .5s var(--ease-out); }
+.smartspend-landing .demo-panel:focus-visible { outline-offset: -2px; border-radius: var(--radius-lg); }
+.smartspend-landing .demo-foot { padding: 16px 24px 18px; border-top: 1px solid var(--line); font-size: 13px; line-height: 1.8; color: var(--text-3); }
+
+.smartspend-landing .num-hero { display: block; margin-top: 12px; font-size: clamp(40px, 2rem + 2.4vw, 62px); font-weight: 600; line-height: 1.1; letter-spacing: -.035em; }
+.smartspend-landing .num-of { font-size: .42em; font-weight: 500; color: var(--text-3); letter-spacing: -.01em; }
+html[dir='rtl'] .smartspend-landing :is(.num-hero, .ov-flow .num, .goal-calc output, .answer-facts .num, .text-amount .num) { text-align: right; }
+
+/* Overview: an asymmetric 12-column arrangement. */
+.smartspend-landing .ov { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; }
+.smartspend-landing .ov-balance { grid-column: span 5; background: radial-gradient(ellipse 80% 70% at 0% 0%, rgba(37, 99, 235, .2), transparent 70%), var(--surface-2); }
+html[dir='rtl'] .smartspend-landing .ov-balance { background: radial-gradient(ellipse 80% 70% at 100% 0%, rgba(37, 99, 235, .2), transparent 70%), var(--surface-2); }
+:root[data-theme='light'] .smartspend-landing .ov-balance { background: radial-gradient(ellipse 80% 70% at 0% 0%, rgba(37, 99, 235, .09), transparent 70%), var(--surface-2); }
+:root[data-theme='light'][dir='rtl'] .smartspend-landing .ov-balance { background: radial-gradient(ellipse 80% 70% at 100% 0%, rgba(37, 99, 235, .09), transparent 70%), var(--surface-2); }
+.smartspend-landing .ov-chart { grid-column: span 7; display: flex; flex-direction: column; }
+.smartspend-landing .ov-goal { grid-column: span 4; display: flex; flex-direction: column; }
+.smartspend-landing .ov-recent { grid-column: span 8; }
+.smartspend-landing .ov-flow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+.smartspend-landing .ov-flow > div + div { padding-inline-start: 16px; border-inline-start: 1px solid var(--line); }
+.smartspend-landing .ov-flow > div > span { display: block; font-size: 13px; color: var(--text-3); line-height: 1.6; }
+.smartspend-landing .ov-flow .num { display: block; margin-top: 4px; font-size: clamp(21px, 1.1rem + .6vw, 26px); font-weight: 600; line-height: 1.25; }
+.smartspend-landing .ov-budget { margin-top: 20px; }
+.smartspend-landing .ov-budget > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; font-size: 13px; color: var(--text-3); }
+.smartspend-landing .ov-budget > div > .num { color: var(--text-2); font-weight: 600; }
+
+.smartspend-landing .chart { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; margin-top: 18px; }
+.smartspend-landing .chart-plot { position: relative; flex: 1; min-height: 190px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(14px, 3vw, 36px); padding-top: 30px; }
+.smartspend-landing .chart-grid { position: absolute; inset: 30px 0 0; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+.smartspend-landing .chart-grid > i { display: block; height: 1px; background: repeating-linear-gradient(90deg, var(--line-strong) 0 4px, transparent 4px 9px); opacity: .7; }
+.smartspend-landing .chart-grid > i:last-child { background: var(--line-strong); opacity: 1; }
+.smartspend-landing .chart-col { position: relative; display: flex; align-items: flex-end; justify-content: center; }
+.smartspend-landing .chart-bar { display: block; width: 100%; max-width: 68px; height: 100%; border-radius: 12px 12px 4px 4px; background: var(--chart-bar); box-shadow: inset 0 0 0 1px var(--accent-line); transform-origin: bottom center; transition: transform .9s var(--ease-spring); }
+.smartspend-landing .is-current .chart-bar { background: linear-gradient(180deg, #5aa6ff, #2563eb); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 14px 40px -12px rgba(59, 130, 246, .7); }
+.smartspend-landing .chart-value { position: absolute; left: 50%; transform: translateX(-50%); font-size: 12px; color: var(--text-3); white-space: nowrap; line-height: 1.4; }
+.smartspend-landing .is-current .chart-value { color: var(--text); font-weight: 600; }
+.smartspend-landing .chart-labels { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(14px, 3vw, 36px); margin-top: 10px; font-size: 12.5px; color: var(--text-3); text-align: center; line-height: 1.5; }
+
+.smartspend-landing .ring-wrap { position: relative; display: grid; place-items: center; flex-shrink: 0; }
+.smartspend-landing .ring-label { position: absolute; font-size: 22px; font-weight: 600; }
+.smartspend-landing .ring-wrap-lg .ring-label { font-size: 34px; letter-spacing: -.03em; }
+.smartspend-landing .goal-ring { transform: rotate(-90deg); }
+.smartspend-landing .goal-ring-track { fill: none; stroke: var(--line-strong); stroke-width: 7; }
+.smartspend-landing .goal-ring-value { fill: none; stroke-width: 7; stroke-linecap: round; transition: stroke-dashoffset 1.2s var(--ease-spring); }
+.smartspend-landing .ov-goal-body { display: flex; align-items: center; gap: 18px; margin-block: 16px 8px; }
+.smartspend-landing .ov-goal-name { display: block; font-size: 17px; font-weight: 700; line-height: 1.5; }
+.smartspend-landing .ov-goal-amount { display: block; margin-top: 2px; font-size: 21px; font-weight: 600; line-height: 1.4; }
+.smartspend-landing .ov-goal-amount > span, .smartspend-landing .goal-card-amount > span, .smartspend-landing .bud-row-top .num > span { font-size: .7em; font-weight: 500; color: var(--text-3); }
+.smartspend-landing .ov-goal .text-link { margin-top: auto; }
+
+.smartspend-landing .transaction-list { margin-top: 6px; }
+.smartspend-landing .transaction { display: flex; align-items: center; gap: 14px; padding-block: 13px; border-bottom: 1px solid var(--line); border-radius: 12px; }
+.smartspend-landing .transaction:last-child { border-bottom: 0; padding-bottom: 0; }
+.smartspend-landing .transaction.is-fresh { animation: landing-fresh 2s var(--ease-out); }
+.smartspend-landing .tx-amount { font-size: 17px; font-weight: 600; white-space: nowrap; }
+
+/* Budgets */
+.smartspend-landing .bud { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 16px; align-items: start; }
+.smartspend-landing .bud-summary .progress { margin-top: 22px; }
+.smartspend-landing .bud-remaining { margin-top: 14px; font-size: 14.5px; color: var(--text-2); }
+.smartspend-landing .bud-remaining > bdi { font-weight: 600; color: var(--text); }
+.smartspend-landing .bud-list { display: flex; flex-direction: column; gap: 10px; }
+.smartspend-landing .bud-row { display: flex; align-items: flex-start; gap: 14px; padding: 18px 20px; border-radius: var(--radius-md); background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+.smartspend-landing .bud-row-main { flex: 1; min-width: 0; }
+.smartspend-landing .bud-row-top { display: flex; align-items: baseline; justify-content: space-between; gap: 6px 12px; flex-wrap: wrap; }
+.smartspend-landing .bud-row-top > strong { font-size: 15.5px; font-weight: 600; line-height: 1.6; }
+.smartspend-landing .bud-row-top > .num { font-size: 15.5px; font-weight: 600; }
+.smartspend-landing .bud-row .progress { margin-top: 10px; }
+.smartspend-landing .bud-row small { display: block; margin-top: 8px; font-size: 12.5px; color: var(--text-3); line-height: 1.6; }
+.smartspend-landing .bud-row small.is-warn { color: var(--warn); }
+
+/* Goals */
+.smartspend-landing .goals { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 16px; }
+.smartspend-landing .goal-card { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 28px; }
+.smartspend-landing .goal-card .ring-wrap { margin-top: 22px; }
+.smartspend-landing .goal-card h3 { margin-top: 18px; font-size: 22px; line-height: 1.4; }
+.smartspend-landing .goal-card p { max-width: 340px; margin-top: 8px; font-size: 14.5px; color: var(--text-2); }
+.smartspend-landing .goal-card-amount { margin-top: 16px; font-size: 26px; font-weight: 600; }
+.smartspend-landing .goal-calc { padding: 28px; }
+.smartspend-landing .goal-calc h3 { margin-top: 8px; font-size: clamp(22px, 1.2rem + .8vw, 28px); line-height: 1.35; }
+.smartspend-landing .goal-calc label { display: block; margin-top: 24px; font-size: 14px; color: var(--text-2); }
+.smartspend-landing .goal-calc output { display: block; margin-block: 4px 16px; font-size: clamp(42px, 2rem + 2vw, 58px); font-weight: 600; line-height: 1.15; letter-spacing: -.035em; }
+
+.smartspend-landing input[type='range'] { -webkit-appearance: none; appearance: none; display: block; width: 100%; height: 32px; margin: 0; background: transparent; cursor: pointer; direction: ltr; }
+.smartspend-landing input[type='range']:focus { outline: none; }
+.smartspend-landing input[type='range']::-webkit-slider-runnable-track { height: 6px; border-radius: 99px; background: linear-gradient(90deg, var(--brand-blue), var(--brand-cyan)) 0 0 / var(--fill, 0%) 100% no-repeat, var(--line-strong); }
+.smartspend-landing input[type='range']::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 26px; margin-top: -10px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(37, 99, 235, .5), 0 6px 18px rgba(37, 99, 235, .45); transition: transform .4s var(--ease-spring); }
+.smartspend-landing input[type='range']:active::-webkit-slider-thumb { transform: scale(1.1); }
+.smartspend-landing input[type='range']:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 1px rgba(37, 99, 235, .6), 0 0 0 6px rgba(59, 130, 246, .3); }
+.smartspend-landing input[type='range']::-moz-range-track { height: 6px; border-radius: 99px; background: var(--line-strong); }
+.smartspend-landing input[type='range']::-moz-range-progress { height: 6px; border-radius: 99px; background: linear-gradient(90deg, var(--brand-blue), var(--brand-cyan)); }
+.smartspend-landing input[type='range']::-moz-range-thumb { width: 24px; height: 24px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(37, 99, 235, .5), 0 6px 18px rgba(37, 99, 235, .45); }
+.smartspend-landing input[type='range']:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 1px rgba(37, 99, 235, .6), 0 0 0 6px rgba(59, 130, 246, .3); }
+.smartspend-landing .range-ends { display: flex; justify-content: space-between; margin-top: 4px; font-size: 12.5px; color: var(--text-3); }
+
+.smartspend-landing .goal-forecast { display: flex; align-items: flex-start; gap: 14px; margin-top: 22px; padding: 18px; border-radius: var(--radius-md); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent-line); }
+.smartspend-landing .forecast-icon { width: 40px; height: 40px; flex-shrink: 0; display: grid; place-items: center; border-radius: 12px; color: var(--accent); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); }
+.smartspend-landing .goal-forecast p { font-size: 14px; color: var(--text-2); line-height: 1.7; }
+.smartspend-landing .goal-forecast strong { display: block; margin-top: 2px; font-size: 22px; font-weight: 700; color: var(--text); line-height: 1.4; }
+.smartspend-landing .goal-forecast small { display: block; margin-top: 4px; font-size: 13px; color: var(--text-3); }
+
+@media (max-width: 1100px) {
+  .smartspend-landing .demo-bar .segmented > button { min-width: 0; }
+}
+@media (max-width: 900px) {
+  .smartspend-landing .ov-balance, .smartspend-landing .ov-chart, .smartspend-landing .ov-goal, .smartspend-landing .ov-recent { grid-column: 1 / -1; }
+  .smartspend-landing .ov-goal-body { margin-block: 14px 4px; }
+  .smartspend-landing .bud, .smartspend-landing .goals { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .smartspend-landing .demo { --radius-xl: 1.5rem; --bezel-pad: 4px; }
+  .smartspend-landing .demo-top { flex-wrap: wrap; padding: 14px 16px; gap: 8px 12px; }
+  .smartspend-landing .demo-top .sample-badge { margin-inline-start: auto; }
+  .smartspend-landing .demo-period { order: 3; flex-basis: 100%; margin: 0; font-size: 12.5px; }
+  .smartspend-landing .demo-bar { flex-direction: column; align-items: stretch; padding: 16px 16px 0; gap: 12px; }
+  .smartspend-landing .demo-bar .segmented { display: grid; width: 100%; }
+  .smartspend-landing .demo-bar .segmented > button { padding-inline: 8px; font-size: 13.5px; gap: 6px; }
+  .smartspend-landing .demo-add { width: 100%; }
+  .smartspend-landing .demo-panel { padding: 16px; }
+  .smartspend-landing .demo-foot { padding: 14px 16px 16px; font-size: 12.5px; }
+  .smartspend-landing .tile { padding: 20px; border-radius: 1.15rem; }
+  .smartspend-landing .ov { gap: 12px; }
+  .smartspend-landing .chart-plot { min-height: 170px; }
+  .smartspend-landing .chart-value { font-size: 11px; }
+  .smartspend-landing .chart-labels { font-size: 11.5px; }
+  .smartspend-landing .bud-row { padding: 16px; gap: 12px; }
+  .smartspend-landing .goal-card, .smartspend-landing .goal-calc { padding: 22px 20px; }
+  .smartspend-landing .goal-forecast { padding: 16px; }
+  .smartspend-landing .goal-forecast strong { font-size: 20px; }
+}
+@media (max-width: 380px) {
+  .smartspend-landing .demo-bar .segmented > button .lucide { display: none; }
+  .smartspend-landing .ov-flow { gap: 12px; }
+  .smartspend-landing .ov-flow > div + div { padding-inline-start: 12px; }
+  .smartspend-landing .tile { padding: 18px 16px; }
+}

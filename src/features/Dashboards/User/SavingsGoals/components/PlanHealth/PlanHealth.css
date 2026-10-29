@@ -1,0 +1,90 @@
+.plan-health {
+  display: grid;
+  gap: 10px;
+}
+
+.plan-health__title {
+  margin: 0;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.plan-health__signals {
+  margin: 0;
+  padding: 0;
+
+  display: grid;
+  gap: 8px;
+
+  list-style: none;
+}
+
+.plan-health__signal {
+  --plan-health-tone: var(--color-text-secondary);
+
+  margin: 0;
+  padding: 10px 12px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  border: 1px solid color-mix(in srgb, var(--plan-health-tone) 22%, var(--color-border));
+  border-radius: var(--radius-md);
+
+  background: color-mix(in srgb, var(--plan-health-tone) 6%, var(--color-surface));
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.plan-health__signal > svg {
+  width: 16px;
+  height: 16px;
+  margin-top: 1px;
+  flex: none;
+
+  color: var(--plan-health-tone);
+}
+
+.plan-health__signal > span {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.plan-health__signal strong {
+  color: var(--color-text-primary);
+  font-weight: 700;
+}
+
+.plan-health__signal > span > span {
+  color: var(--color-text-secondary);
+}
+
+.plan-health__signal bdi {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.plan-health__signal--danger {
+  --plan-health-tone: var(--color-danger);
+}
+
+.plan-health__signal--warning {
+  --plan-health-tone: var(--color-warning);
+}
+
+.plan-health__signal--hold,
+.plan-health__signal--info {
+  --plan-health-tone: var(--color-primary);
+}
+
+.plan-health__signal--positive,
+.plan-health__signal--ok {
+  --plan-health-tone: var(--savings-cyan, #0891b2);
+}

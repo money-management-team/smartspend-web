@@ -2,6 +2,8 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LuCheck, LuEye, LuEyeOff, LuMail } from "react-icons/lu";
 
+import UnsavedChangesGuard from "../../../../../../components/UnsavedChanges/UnsavedChangesGuard";
+import { isFormDirty } from "../../../../../../components/UnsavedChanges/unsavedChanges";
 import { useAuthContext } from "../../../../../../contexts/auth/useAuthContext";
 import { getApiErrorMessage } from "../../../api/apiClient";
 import { authApi } from "../../../api/authApi";
@@ -235,6 +237,8 @@ export default function ChangePassword() {
 
   return (
     <section className="change-password" aria-labelledby="change-password-title">
+      <UnsavedChangesGuard when={isFormDirty(form, EMPTY_FORM) && !isSubmitting} />
+
       <header className="change-password__header">
         <h2 id="change-password-title">{t("dashboard.settings.security.changePassword")}</h2>
         <p>{t("dashboard.settings.security.subtitle")}</p>

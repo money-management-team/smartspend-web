@@ -327,7 +327,7 @@
   .debt-form__direction-options,
   .debt-form__row,
   .debt-form__fixed dl {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

@@ -1,10 +1,18 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { getDisplayLocale } from "../../../Accounts/accountHelpers";
-import { REASON_MAX, REASON_MIN } from "../../../FinancialOperations/transactionHelpers";
+import {
+  REASON_MAX,
+  REASON_MIN,
+} from "../../../FinancialOperations/transactionHelpers";
 import { formatDate, formatMoney } from "../../../utils/formatters";
-import { getDebtErrorMessage, getReverseErrorHint, toDateOnly } from "../../debtHelpers";
+import {
+  getDebtErrorMessage,
+  getReverseErrorHint,
+  toDateOnly,
+} from "../../debtHelpers";
 
 // Same modal shell and body styles as the transaction reverse dialog.
 import "../../../Accounts/components/AccountForm/AccountForm.css";
@@ -21,7 +29,12 @@ const POINTS = ["keepsHistory", "restoresRemaining", "once"];
  * `onConfirm(reason)` performs the request and throws on failure; errors stay
  * in the dialog.
  */
-export default function ReverseDebtPaymentDialog({ payment, debt, onConfirm, onClose }) {
+export default function ReverseDebtPaymentDialog({
+  payment,
+  debt,
+  onConfirm,
+  onClose,
+}) {
   const { t, i18n } = useTranslation();
   const locale = getDisplayLocale(i18n.language);
   const pendingRef = useRef(false);
@@ -32,7 +45,11 @@ export default function ReverseDebtPaymentDialog({ payment, debt, onConfirm, onC
   const [isReversing, setIsReversing] = useState(false);
 
   const direction = debt.direction === "receivable" ? "receivable" : "payable";
-  const amount = formatMoney(payment.amount, payment.currency_code || debt.currency_code, locale);
+  const amount = formatMoney(
+    payment.amount,
+    payment.currency_code || debt.currency_code,
+    locale,
+  );
 
   const close = () => {
     if (!pendingRef.current) onClose();
@@ -45,7 +62,12 @@ export default function ReverseDebtPaymentDialog({ payment, debt, onConfirm, onC
     const trimmed = reason.trim();
 
     if (trimmed.length < REASON_MIN || trimmed.length > REASON_MAX) {
-      setReasonError(t("dashboard.transactions.validation.reasonLength", { min: REASON_MIN, max: REASON_MAX }));
+      setReasonError(
+        t("dashboard.transactions.validation.reasonLength", {
+          min: REASON_MIN,
+          max: REASON_MAX,
+        }),
+      );
       return;
     }
 
@@ -87,19 +109,36 @@ export default function ReverseDebtPaymentDialog({ payment, debt, onConfirm, onC
         onMouseDown={(event) => event.stopPropagation()}
       >
         <header>
-          <h2 id="reverse-debt-payment-title">{t("dashboard.debts.reverseDialog.title")}</h2>
-          <button type="button" onClick={close} disabled={isReversing} aria-label={t("common.close")}>
+          <h2 id="reverse-debt-payment-title">
+            {t("dashboard.debts.reverseDialog.title")}
+          </h2>
+          <button
+            type="button"
+            onClick={close}
+            disabled={isReversing}
+            aria-label={t("common.close")}
+          >
             ×
           </button>
         </header>
 
-        <div id="reverse-debt-payment-description" className="reverse-transaction-dialog__body">
+        <div
+          id="reverse-debt-payment-description"
+          className="reverse-transaction-dialog__body"
+        >
           <p>
             {t("dashboard.debts.reverseDialog.summary", {
-              date: formatDate(toDateOnly(payment.paid_at) || payment.created_at, locale),
-              account: payment.account?.name ?? (payment.account?.id != null ? `#${payment.account.id}` : "—"),
+              date: formatDate(
+                toDateOnly(payment.paid_at) || payment.created_at,
+                locale,
+              ),
+              account:
+                payment.account?.name ??
+                (payment.account?.id != null ? `#${payment.account.id}` : "—"),
             })}{" "}
-            <bdi dir="ltr">{amount}</bdi>
+            <bdi dir="ltr">
+              <PrivateMoney>{amount}</PrivateMoney>
+            </bdi>
           </p>
 
           <ul>
@@ -152,8 +191,16 @@ export default function ReverseDebtPaymentDialog({ payment, debt, onConfirm, onC
             <button type="button" onClick={close} disabled={isReversing}>
               {t("common.cancel")}
             </button>
-            <button type="submit" disabled={isReversing} aria-busy={isReversing || undefined}>
-              {t(isReversing ? "dashboard.debts.reverseDialog.reversing" : "dashboard.debts.reverseDialog.confirm")}
+            <button
+              type="submit"
+              disabled={isReversing}
+              aria-busy={isReversing || undefined}
+            >
+              {t(
+                isReversing
+                  ? "dashboard.debts.reverseDialog.reversing"
+                  : "dashboard.debts.reverseDialog.confirm",
+              )}
             </button>
           </footer>
         </form>

@@ -226,7 +226,7 @@
   .budget-form__row,
   .budget-form__scope-options,
   .budget-form__fixed dl {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 

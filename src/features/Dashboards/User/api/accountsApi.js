@@ -3,16 +3,23 @@ import { apiRequest } from "./apiClient";
 const accountPath = (accountId) => `/accounts/${encodeURIComponent(accountId)}`;
 
 /*
- * Envelopes: list → `data.accounts` (active accounts only);
+ * Envelopes: list → `data.accounts` (active by default, or archived with status);
  * get / create / update / archive → `data.account`.
  *
  * There is intentionally no `delete`: DELETE /accounts/{id} is a backend
  * alias of archive (nothing is removed), and `archive` states that clearly.
  */
 export const accountsApi = {
-  // `query.id_workspace` limits the list to one workspace.
+  // Older callers use id_workspace; the accounts API validates workspace_id.
   list: (query = {}, options = {}) =>
-    apiRequest("/accounts", { query, signal: options.signal }),
+    apiRequest("/accounts", {
+      query: {
+        ...query,
+        ...(query.id_workspace != null ? { workspace_id: query.id_workspace } : {}),
+        id_workspace: undefined,
+      },
+      signal: options.signal,
+    }),
 
   get: (accountId, options = {}) =>
     apiRequest(accountPath(accountId), { signal: options.signal }),

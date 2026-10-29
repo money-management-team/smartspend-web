@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { createElement, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -59,7 +60,9 @@ export default function GoalActivity({ goalId, currency, refreshKey = 0 }) {
   // again from page 1, where the newest movement is.
   const [pageState, setPageState] = useState({ refreshKey, tab, page: 1 });
   const page =
-    pageState.refreshKey === refreshKey && pageState.tab === tab ? pageState.page : 1;
+    pageState.refreshKey === refreshKey && pageState.tab === tab
+      ? pageState.page
+      : 1;
   const [reloadKey, setReloadKey] = useState(0);
   const requestKey = `${goalId}:${tab}:${page}:${refreshKey}:${reloadKey}`;
   const [result, setResult] = useState({ key: null, page: null, error: null });
@@ -70,7 +73,11 @@ export default function GoalActivity({ goalId, currency, refreshKey = 0 }) {
 
     savingsGoalsApi[source.list](
       goalId,
-      { ...source.query, per_page: HISTORY_PER_PAGE, page: page > 1 ? page : undefined },
+      {
+        ...source.query,
+        per_page: HISTORY_PER_PAGE,
+        page: page > 1 ? page : undefined,
+      },
       { signal: controller.signal },
     )
       .then((response) => {
@@ -95,7 +102,9 @@ export default function GoalActivity({ goalId, currency, refreshKey = 0 }) {
   }, [goalId, tab, page, requestKey]);
 
   const isLoading = result.key !== requestKey;
-  const { page: listPage, error } = isLoading ? { page: null, error: null } : result;
+  const { page: listPage, error } = isLoading
+    ? { page: null, error: null }
+    : result;
   const items = listPage?.items ?? [];
 
   const goToPage = (next) => setPageState({ refreshKey, tab, page: next });
@@ -106,12 +115,18 @@ export default function GoalActivity({ goalId, currency, refreshKey = 0 }) {
         <div>
           <h2 id="goal-activity-title">
             {t("dashboard.savingsGoals.activity.title")}
-            {listPage && !isLoading && <span className="goal-activity__count">{listPage.total}</span>}
+            {listPage && !isLoading && (
+              <span className="goal-activity__count">{listPage.total}</span>
+            )}
           </h2>
           <p>{t("dashboard.savingsGoals.activity.subtitle")}</p>
         </div>
 
-        <div className="goal-activity__tabs" role="tablist" aria-label={t("dashboard.savingsGoals.activity.title")}>
+        <div
+          className="goal-activity__tabs"
+          role="tablist"
+          aria-label={t("dashboard.savingsGoals.activity.title")}
+        >
           {HISTORY_TABS.map((key) => (
             <button
               type="button"
@@ -128,12 +143,23 @@ export default function GoalActivity({ goalId, currency, refreshKey = 0 }) {
       </header>
 
       <div className="goal-activity__list" role="tabpanel">
-        {isLoading && <Loading size="small" message={t("dashboard.savingsGoals.activity.loading")} />}
+        {isLoading && (
+          <Loading
+            size="small"
+            message={t("dashboard.savingsGoals.activity.loading")}
+          />
+        )}
 
         {!isLoading && error && (
-          <div className="goal-activity__state goal-activity__state--error" role="alert">
+          <div
+            className="goal-activity__state goal-activity__state--error"
+            role="alert"
+          >
             <p>{getGoalErrorMessage(error, t)}</p>
-            <button type="button" onClick={() => setReloadKey((key) => key + 1)}>
+            <button
+              type="button"
+              onClick={() => setReloadKey((key) => key + 1)}
+            >
               {t("common.retry")}
             </button>
           </div>
@@ -150,11 +176,17 @@ export default function GoalActivity({ goalId, currency, refreshKey = 0 }) {
           items.map((movement, index) => {
             const type = getMovementType(movement);
             const isReversed = isReversedMovement(movement);
-            const from = getAccountLabel(movement.from_account, movement.from_account_id);
-            const to = getAccountLabel(movement.to_account, movement.to_account_id);
+            const from = getAccountLabel(
+              movement.from_account,
+              movement.from_account_id,
+            );
+            const to = getAccountLabel(
+              movement.to_account,
+              movement.to_account_id,
+            );
             const title =
               type === "unknown"
-                ? movement.type ?? "—"
+                ? (movement.type ?? "—")
                 : t(`dashboard.savingsGoals.activity.types.${type}`);
 
             return (
@@ -169,7 +201,10 @@ export default function GoalActivity({ goalId, currency, refreshKey = 0 }) {
                 <div className="goal-activity-row__copy">
                   {movement.transfer_id != null ? (
                     // Stretched over the row: the row opens the transfer.
-                    <Link className="goal-activity-row__link" to={getTransferDetailsPath(movement.transfer_id)}>
+                    <Link
+                      className="goal-activity-row__link"
+                      to={getTransferDetailsPath(movement.transfer_id)}
+                    >
                       <strong>{title}</strong>
                     </Link>
                   ) : (
@@ -180,7 +215,13 @@ export default function GoalActivity({ goalId, currency, refreshKey = 0 }) {
                     {" → "}
                     <bdi>{to}</bdi>
                     {" · "}
-                    <bdi>{formatDate(movement.occurred_at ?? movement.created_at, locale, timeZone)}</bdi>
+                    <bdi>
+                      {formatDate(
+                        movement.occurred_at ?? movement.created_at,
+                        locale,
+                        timeZone,
+                      )}
+                    </bdi>
                     {movement.description && (
                       <>
                         {" · "}
@@ -193,7 +234,13 @@ export default function GoalActivity({ goalId, currency, refreshKey = 0 }) {
                 <div className="goal-activity-row__side">
                   <strong className="goal-activity-row__amount" dir="ltr">
                     {SIGNS[type] ?? ""}
-                    {formatMoney(movement.amount, movement.currency_code || currency, locale)}
+                    <PrivateMoney>
+                      {formatMoney(
+                        movement.amount,
+                        movement.currency_code || currency,
+                        locale,
+                      )}
+                    </PrivateMoney>
                   </strong>
                   {isReversed ? (
                     <TransactionStatusBadge status="reversed" />

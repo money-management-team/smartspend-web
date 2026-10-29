@@ -1,0 +1,136 @@
+/* =========================================
+   REPORT HIGHLIGHTS (KPI tiles)
+========================================= */
+
+.report-highlights {
+  display: grid;
+  gap: 16px;
+}
+
+.report-highlights__group {
+  min-width: 0;
+
+  display: grid;
+  gap: 10px;
+}
+
+.report-highlights__currency {
+  width: fit-content;
+  margin: 0;
+  padding: 3px 11px;
+
+  border-radius: var(--radius-pill);
+
+  color: var(--color-primary);
+  background: var(--primary-soft);
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+/* One row of equal tiles when the report column is wide enough (the count
+   comes from the component), otherwise a 2-up grid, so a fourth tile is
+   never left alone on its own row. */
+.report-highlights__grid {
+  margin: 0;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@container report-content (min-width: 680px) {
+  .report-highlights__grid {
+    grid-template-columns: repeat(var(--highlight-count, 4), minmax(0, 1fr));
+  }
+}
+
+.report-highlight {
+  min-width: 0;
+  padding: 16px 18px;
+
+  display: grid;
+  align-content: start;
+  gap: 6px;
+
+  border: 1px solid var(--report-line);
+  border-radius: var(--radius-lg);
+
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+
+  text-align: start;
+}
+
+.report-highlight dt {
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.report-highlight dd {
+  margin: 0;
+}
+
+.report-highlight__value {
+  min-width: 0;
+
+  color: var(--color-text-strong);
+
+  font-family: var(--font-heading);
+  font-size: clamp(20px, 2vw, 26px);
+  font-weight: 800;
+  line-height: 1.2;
+
+  overflow-wrap: anywhere;
+}
+
+.report-highlight__change {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 11px;
+}
+
+.report-highlight__change svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+.report-highlight__change .report-value {
+  color: var(--color-text-strong);
+  font-weight: 700;
+}
+
+/* Direction is shown by the icon; color stays neutral on purpose. */
+.report-highlight__change--positive svg,
+.report-highlight__change--negative svg {
+  color: var(--color-primary);
+}
+
+@media (max-width: 640px) {
+  .report-highlights__grid {
+    gap: 10px;
+  }
+
+  .report-highlight {
+    padding: 13px 14px;
+  }
+
+  .report-highlight__value {
+    font-size: clamp(16px, 4.6vw, 20px);
+  }
+}
+
+@container report-content (max-width: 300px) {
+  .report-highlights__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

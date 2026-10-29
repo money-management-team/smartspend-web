@@ -40,4 +40,22 @@ export const notificationsApi = {
   // No body. Safe to repeat: `marked_count` is 0 when nothing was unread.
   markAllRead: () =>
     apiRequest("/notifications/read-all", { method: "POST" }),
+
+  /*
+   * The requester's in-app preferences. → `data.preferences`
+   * { savings_installment_reminders }, `data.channels` (["in_app"]) and
+   * `data.savings_installment_reminders_available`: the backend's global
+   * switch. While it is false nothing is sent whatever the preference, and
+   * no client request can turn it on. Reading creates nothing.
+   */
+  getPreferences: (options = {}) =>
+    apiRequest("/notifications/preferences", { signal: options.signal }),
+
+  // Only the fields sent change. Today the only one is
+  // `savings_installment_reminders` (boolean). Same envelope as above.
+  updatePreferences: (preferences) =>
+    apiRequest("/notifications/preferences", {
+      method: "PATCH",
+      body: { savings_installment_reminders: preferences.savings_installment_reminders === true },
+    }),
 };

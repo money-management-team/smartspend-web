@@ -69,4 +69,4 @@ The backend's email links to `/reset-password?token=…&identifier=…` on the f
 
 ## Notes
 
-- `AuthSteps` still shows step 1 of 4. The link-based flow skips the Verify Code step, so the step indicator no longer matches the real flow. It is unchanged because redesigning the recovery pages was out of scope.
+- `AuthSteps` shows step 1 of 3 (forgot, reset, changed). The demo Verify Code step was removed, so the indicator matches the real link-based flow.

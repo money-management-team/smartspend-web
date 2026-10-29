@@ -1,47 +1,59 @@
-import AccountType from "../features/Auth/AccountType/AccountType";
-import CompanyLogin from "../features/Auth/CompanyLogin/CompanyLogin";
-import CompanyRegister from "../features/Auth/CompanyRegister/CompanyRegister";
-import ForgotPassword from "../features/Auth/ForgotPassword/ForgotPassword";
-import Login from "../features/Auth/Login/Login";
-import PasswordChanged from "../features/Auth/PasswordChanged/PasswordChanged";
-import Register from "../features/Auth/Register/Register";
-import ResetPassword from "../features/Auth/ResetPassword/ResetPassword";
-import VerifyCode from "../features/Auth/VerifyCode/VerifyCode";
-import VerifyEmail from "../features/Auth/VerifyEmail/VerifyEmail";
-import AccountDetails from "../features/Dashboards/User/AccountDetails/AccountDetails";
-import Accounts from "../features/Dashboards/User/Accounts/Accounts";
-import AIAssistant from "../features/Dashboards/User/AIAssistant/AIAssistant";
-import AiExpenseCaptureDetails from "../features/Dashboards/User/AiExpenseCaptureDetails/AiExpenseCaptureDetails";
-import AiExpenseCaptures from "../features/Dashboards/User/AiExpenseCaptures/AiExpenseCaptures";
-import BudgetDetails from "../features/Dashboards/User/BudgetDetails/BudgetDetails";
-import Budgets from "../features/Dashboards/User/Budgets/Budgets";
-import Calendar from "../features/Dashboards/User/Calendar/Calendar";
-import Categories from "../features/Dashboards/User/Categories/Categories";
-import CategoryDetails from "../features/Dashboards/User/CategoryDetails/CategoryDetails";
-import Dashboard from "../features/Dashboards/User/Dashboard/Dashboard";
-import DebtDetails from "../features/Dashboards/User/DebtDetails/DebtDetails";
-import Debts from "../features/Dashboards/User/Debts/Debts";
-import FinancialOperations from "../features/Dashboards/User/FinancialOperations/FinancialOperations";
-import Import from "../features/Dashboards/User/Import/Import";
-import ImportHistory from "../features/Dashboards/User/ImportHistory/ImportHistory";
-import Notifications from "../features/Dashboards/User/Notifications/Notifications";
-import Recurring from "../features/Dashboards/User/Recurring/Recurring";
-import RecurringDetails from "../features/Dashboards/User/RecurringDetails/RecurringDetails";
-import ReportExports from "../features/Dashboards/User/ReportExports/ReportExports";
-import Reports from "../features/Dashboards/User/Reports/Reports";
-import SavingsGoalDetails from "../features/Dashboards/User/SavingsGoalDetails/SavingsGoalDetails";
-import SavingsGoals from "../features/Dashboards/User/SavingsGoals/SavingsGoals";
-import Settings from "../features/Dashboards/User/Settings/Settings";
-import TransactionDetails from "../features/Dashboards/User/TransactionDetails/TransactionDetails";
-import TransferDetails from "../features/Dashboards/User/TransferDetails/TransferDetails";
-import Transfers from "../features/Dashboards/User/Transfers/Transfers";
-
+import PublicInformationRoute from "../features/PublicPage/Information/PublicInformationRoute";
 import Home from "../features/PublicPage/Home/Home";
 import NotFound from "../features/PublicPage/NotFound/NotFound";
 
 import AuthLayout from "../layouts/AuthLayout/AuthLayout";
 import DashboardLayout from "../layouts/DashboardLayout/DashboardLayout";
 import PublicLayout from "../layouts/PublicLayout/PublicLayout";
+import { Navigate } from "react-router-dom";
+import WhatsAppDraftLink from "../features/Dashboards/User/WhatsAppDrafts/WhatsAppDraftLink";
+import { SMART_SAVINGS_ENABLED } from "../features/Dashboards/User/SavingsGoals/smartSavingsFlag";
+import SavingsGoalRedirect from "./SavingsGoalRedirect";
+
+import {
+  AttentionCenter,
+  MonthlyReview,
+  QuickTemplates,
+  GettingStarted,
+  AccountType,
+  CompanyUnavailable,
+  ForgotPassword,
+  Login,
+  PasswordChanged,
+  Register,
+  ResetPassword,
+  VerifyEmail,
+  AccountDetails,
+  Accounts,
+  AIAssistant,
+  Imports,
+  AiExpenseCaptureDetails,
+  AiExpenseCaptures,
+  BudgetDetails,
+  Budgets,
+  Calendar,
+  Categories,
+  CategoryDetails,
+  Dashboard,
+  DebtDetails,
+  Debts,
+  FinancialOperations,
+  Notifications,
+  WhatsAppDrafts,
+  WhatsAppDraftDetails,
+  Recurring,
+  RecurringDetails,
+  ReportExports,
+  Reports,
+  SavingsGoalDetails,
+  SavingsGoals,
+  SmartPlanWizard,
+  SmartPlanRevision,
+  Settings,
+  TransactionDetails,
+  TransferDetails,
+  Transfers,
+} from "./lazyPages";
 import { PATH } from "./Path";
 import { GuestOnly, RequireAuth } from "./RouteGuards";
 
@@ -50,13 +62,31 @@ import { GuestOnly, RequireAuth } from "./RouteGuards";
 ========================= */
 
 const routes = [
+  /* The home page brings its own header and footer (the landing design). */
   {
     path: "/",
-    element: <PublicLayout />,
+    element: <PublicLayout variant="landing" />,
     children: [
       {
         index: true,
         element: <Home />,
+      },
+    ],
+  },
+  {
+    path: "/",
+    element: <PublicLayout />,
+    children: [
+      ...Object.entries(PATH.PUBLIC).map(([key, path]) => ({
+        path,
+        element: <PublicInformationRoute pageKey={key.toLowerCase()} />,
+      })),
+      /* Legacy demo page, removed. Verification is by the emailed link and the
+         dashboard banner, so old links go to the dashboard (sign-in first when
+         signed out, and back here afterwards). */
+      {
+        path: PATH.AUTH.VERIFY_CODE,
+        element: <Navigate to={PATH.USER.DASHBOARD} replace />,
       },
       {
         path: "*",
@@ -93,19 +123,15 @@ const guestRoutes = [
       },
       {
         path: PATH.AUTH.COMPANY_SIGNIN,
-        element: <CompanyLogin />,
+        element: <CompanyUnavailable />,
       },
       {
         path: PATH.AUTH.COMPANY_REGISTER,
-        element: <CompanyRegister />,
+        element: <CompanyUnavailable />,
       },
       {
         path: PATH.AUTH.FORGOT_PASSWORD,
         element: <ForgotPassword />,
-      },
-      {
-        path: PATH.AUTH.VERIFY_CODE,
-        element: <VerifyCode />,
       },
       {
         path: PATH.AUTH.PASSWORD_CHANGED,
@@ -151,6 +177,13 @@ const userRoutes = [
     ),
     children: [
       {
+        path: PATH.USER.ATTENTION,
+        element: <AttentionCenter />,
+      },
+      { path: PATH.USER.MONTHLY_REVIEW, element: <MonthlyReview /> },
+      { path: PATH.USER.QUICK_TEMPLATES, element: <QuickTemplates /> },
+      { path: PATH.USER.GETTING_STARTED, element: <GettingStarted /> },
+      {
         path: PATH.USER.DASHBOARD,
         element: <Dashboard />,
       },
@@ -191,14 +224,6 @@ const userRoutes = [
         element: <Calendar />,
       },
       {
-        path: PATH.USER.IMPORT,
-        element: <Import />,
-      },
-      {
-        path: PATH.USER.IMPORT_HISTORY,
-        element: <ImportHistory />,
-      },
-      {
         path: PATH.USER.AI_EXPENSE_CAPTURES,
         element: <AiExpenseCaptures />,
       },
@@ -231,6 +256,19 @@ const userRoutes = [
         path: PATH.USER.SAVINGS_GOAL_DETAILS,
         element: <SavingsGoalDetails />,
       },
+      // Unreleased: registered only when smart savings is enabled. With it off,
+      // the same URLs lead to the existing savings pages instead.
+      ...(SMART_SAVINGS_ENABLED
+        ? [
+            { path: PATH.USER.SAVINGS_SMART_PLAN_NEW, element: <SmartPlanWizard /> },
+            { path: PATH.USER.SAVINGS_GOAL_SMART_PLAN, element: <SmartPlanWizard /> },
+            { path: PATH.USER.SAVINGS_GOAL_PLAN_REVISE, element: <SmartPlanRevision /> },
+          ]
+        : [
+            { path: PATH.USER.SAVINGS_SMART_PLAN_NEW, element: <Navigate to={PATH.USER.SAVINGS_GOALS} replace /> },
+            { path: PATH.USER.SAVINGS_GOAL_SMART_PLAN, element: <SavingsGoalRedirect /> },
+            { path: PATH.USER.SAVINGS_GOAL_PLAN_REVISE, element: <SavingsGoalRedirect /> },
+          ]),
       {
         path: PATH.USER.DEBTS,
         element: <Debts />,
@@ -251,6 +289,11 @@ const userRoutes = [
         path: PATH.USER.AI_ASSISTANT,
         element: <AIAssistant />,
       },
+      { path: PATH.USER.IMPORTS, element: <Imports /> },
+      { path: PATH.USER.IMPORT_DETAILS, element: <Imports /> },
+      { path: PATH.USER.WHATSAPP_DRAFTS, element: <WhatsAppDrafts /> },
+      { path: PATH.USER.WHATSAPP_DRAFT_DETAILS, element: <WhatsAppDraftDetails /> },
+      { path: PATH.USER.WHATSAPP_REVIEW_LINK, element: <WhatsAppDraftLink /> },
       {
         path: PATH.USER.NOTIFICATIONS,
         element: <Notifications />,

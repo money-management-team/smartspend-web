@@ -13,6 +13,7 @@ import {
   updateStoredWorkspace,
 } from "../../features/Dashboards/User/api/apiClient";
 import { AuthContext } from "./authContext";
+import { createWelcomeNotice, dismissWelcomeNotice } from "./welcomeNotice";
 
 const emptySession = {
   user: null,
@@ -23,19 +24,30 @@ const emptySession = {
 
 export default function AuthProvider({ children }) {
   const [session, setSession] = useState(() => getStoredAuthSession());
-  const [initializing, setInitializing] = useState(true);
+  const [initializing, setInitializing] = useState(() =>
+    Boolean(getStoredAuthSession().token),
+  );
   const [initializationError, setInitializationError] = useState(null);
   // Token whose user/workspace just came from login or register, so the
   // restore effect doesn't fetch GET /user again for it.
   const freshTokenRef = useRef(null);
+  const googleAttemptRef = useRef(0);
+  const welcomeSequenceRef = useRef(0);
+  const [welcomeNotice, setWelcomeNotice] = useState(null);
+  const dismissWelcome = useCallback((id) => {
+    setWelcomeNotice((current) => dismissWelcomeNotice(current, id));
+  }, []);
 
   const clearAuth = useCallback(() => {
+    googleAttemptRef.current++;
     freshTokenRef.current = null;
+    setWelcomeNotice(null);
     clearAuthSession();
     setSession(emptySession);
   }, []);
 
-  const applyAuthData = useCallback((authData, options) => {
+  const applyAuthData = useCallback((authData, options, kind = "login") => {
+    googleAttemptRef.current++;
     persistAuthSession(authData, options);
     freshTokenRef.current = authData.token;
     setSession({
@@ -44,6 +56,9 @@ export default function AuthProvider({ children }) {
       workspace: authData.workspace ?? null,
       role: authData.user.role ?? "user",
     });
+    setWelcomeNotice(
+      createWelcomeNotice(authData.user, kind, ++welcomeSequenceRef.current),
+    );
     setInitializationError(null);
     setInitializing(false);
   }, []);
@@ -81,7 +96,7 @@ export default function AuthProvider({ children }) {
         throw new ApiError("", { code: "MALFORMED_RESPONSE" });
       }
 
-      applyAuthData(authData, { remember: true });
+      applyAuthData(authData, { remember: true }, "register");
       return authData.user;
     },
     [applyAuthData],
@@ -89,15 +104,30 @@ export default function AuthProvider({ children }) {
 
   // 200 (existing user) and 201 (new user) carry the same full session.
   const loginWithGoogle = useCallback(
-    async (idToken, { remember = true } = {}) => {
-      const response = await authApi.loginWithGoogle(idToken);
+    async (
+      idToken,
+      { remember = true, acceptedPolicies = false, signal } = {},
+    ) => {
+      const attempt = ++googleAttemptRef.current;
+      const response = await authApi.loginWithGoogle(idToken, {
+        acceptedPolicies,
+        signal,
+      });
       const authData = response.data;
+
+      if (signal?.aborted || attempt !== googleAttemptRef.current) {
+        throw new DOMException("Google sign-in was cancelled.", "AbortError");
+      }
 
       if (!authData?.token || !authData?.user) {
         throw new ApiError("", { code: "MALFORMED_RESPONSE" });
       }
 
-      applyAuthData(authData, { remember });
+      applyAuthData(
+        authData,
+        { remember },
+        authData.is_new_user === true ? "register" : "login",
+      );
       return authData.user;
     },
     [applyAuthData],
@@ -148,7 +178,6 @@ export default function AuthProvider({ children }) {
 
   useEffect(() => {
     if (!session.token) {
-      setInitializing(false);
       return undefined;
     }
 
@@ -202,6 +231,8 @@ export default function AuthProvider({ children }) {
       initializing,
       initializationError,
       isAuthenticated: Boolean(session.token),
+      welcomeNotice,
+      dismissWelcome,
     }),
     [
       clearAuth,
@@ -212,6 +243,8 @@ export default function AuthProvider({ children }) {
       logout,
       register,
       session,
+      welcomeNotice,
+      dismissWelcome,
       updateUser,
       updateWorkspace,
     ],

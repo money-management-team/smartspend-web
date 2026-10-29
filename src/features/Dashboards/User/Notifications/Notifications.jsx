@@ -19,7 +19,9 @@ import "./Notifications.css";
  *   budgets on each request (GET /financial-alerts); nothing is stored and
  *   there is no read state.
  */
-export default function Notifications() {
+// `smartSavingsEnabled` defaults to the build flag (tests pass it); it only
+// decides whether savings reminders get a link.
+export default function Notifications({ smartSavingsEnabled } = {}) {
   const { t, i18n } = useTranslation();
   const locale = getDisplayLocale(i18n.language);
   const { workspace } = useAuthContext();
@@ -67,7 +69,7 @@ export default function Notifications() {
         className="notifications-page__panel"
       >
         {tab === "inbox" ? (
-          <NotificationInbox searchParams={searchParams} onSearchParamsChange={setSearchParams} />
+          <NotificationInbox searchParams={searchParams} onSearchParamsChange={setSearchParams} smartSavingsEnabled={smartSavingsEnabled} />
         ) : (
           <FinancialAlerts workspaceId={workspace?.id} variant="full" />
         )}

@@ -16,7 +16,8 @@
 }
 
 .report-section__header {
-  margin-bottom: 14px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
 
   display: flex;
   align-items: flex-start;
@@ -35,7 +36,7 @@
   color: var(--color-text-strong);
 
   font-family: var(--font-heading);
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   line-height: 1.35;
 }
@@ -49,8 +50,8 @@
   line-height: 1.5;
 }
 
-@media (max-width: 720px) {
+@media (max-width: 640px) {
   .report-section {
-    padding: 16px;
+    padding: 16px 14px;
   }
 }

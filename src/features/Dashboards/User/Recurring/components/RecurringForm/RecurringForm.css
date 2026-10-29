@@ -200,6 +200,6 @@
 
 @media (max-width: 520px) {
   .recurring-form__types > div {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }

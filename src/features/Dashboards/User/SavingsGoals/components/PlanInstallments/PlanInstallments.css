@@ -1,0 +1,295 @@
+/* =========================================
+   PLAN INSTALLMENTS (plan history, gated)
+
+   A plan's installments inside its history card: the plan panel's
+   timeline on a soft inset surface, with paging and a read-only note.
+========================================= */
+
+.plan-installments {
+  padding: 14px 16px;
+
+  display: grid;
+  gap: 12px;
+
+  border: 1px solid var(--border-soft, var(--color-border));
+  border-radius: var(--radius-md);
+
+  background: color-mix(in srgb, var(--surface-soft) 55%, var(--color-surface));
+
+  animation: plan-installments-in 200ms ease-out;
+}
+
+/* Opacity only: no transform, the reversal dialog is position: fixed inside. */
+@keyframes plan-installments-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.plan-installments__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.plan-installments--loading > span:not(.plan-installments__sr-only) {
+  height: 46px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(90deg, var(--surface-soft), var(--color-surface), var(--surface-soft));
+  background-size: 200% 100%;
+  animation: plan-installments-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes plan-installments-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.plan-installments__readonly,
+.plan-installments__hint {
+  margin: 0;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+
+  color: var(--color-text-secondary);
+
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.plan-installments__readonly {
+  padding: 8px 10px;
+
+  border-radius: var(--radius-sm);
+
+  color: var(--color-text-primary);
+  background: var(--primary-soft);
+
+  font-size: 13px;
+}
+
+.plan-installments__readonly svg,
+.plan-installments__hint svg {
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  flex: none;
+}
+
+.plan-installments__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+
+.plan-installments__count {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.plan-installments__more {
+  min-height: 36px;
+  padding: 0 14px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+
+  color: var(--color-text-primary);
+  background: var(--color-surface);
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.plan-installments__more:hover:not(:disabled) {
+  background: var(--surface-hover, var(--primary-soft));
+}
+
+.plan-installments__more:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.plan-installments__more:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+.plan-installments__more svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* A reminder's installment inside this plan: found, still looking, or missing. */
+.plan-installments__focus {
+  padding: 10px 12px;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  border: 1px solid color-mix(in srgb, #0891b2 40%, var(--color-border));
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, #0891b2 8%, var(--color-surface));
+
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+:root[data-theme="dark"] .plan-installments__focus {
+  border-color: color-mix(in srgb, #22c3ee 40%, var(--color-border));
+  background: color-mix(in srgb, #22c3ee 9%, var(--color-surface));
+}
+
+.plan-installments__focus > svg {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex: none;
+  color: #0891b2;
+}
+
+:root[data-theme="dark"] .plan-installments__focus > svg {
+  color: #22c3ee;
+}
+
+.plan-installments__focus p {
+  margin: 0;
+  flex: 1;
+}
+
+.plan-installments__focus button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  flex: none;
+
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: 50%;
+
+  color: inherit;
+  background: transparent;
+
+  cursor: pointer;
+}
+
+.plan-installments__focus button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.plan-installments__spin {
+  animation: plan-installments-spin 900ms linear infinite;
+}
+
+@keyframes plan-installments-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.plan-installments__notice {
+  padding: 10px 12px;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  border: 1px solid color-mix(in srgb, var(--color-success) 28%, transparent);
+  border-radius: var(--radius-md);
+
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-success) 9%, var(--color-surface));
+
+  font-size: 13px;
+}
+
+.plan-installments__notice p {
+  margin: 0;
+  flex: 1;
+}
+
+.plan-installments__notice button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+
+  display: grid;
+  place-items: center;
+
+  border: 0;
+  border-radius: 50%;
+
+  color: inherit;
+  background: transparent;
+
+  cursor: pointer;
+}
+
+.plan-installments__error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  font-size: 13px;
+}
+
+.plan-installments__error p {
+  margin: 0;
+}
+
+.plan-installments__error button {
+  padding: 0;
+  border: 0;
+  color: var(--color-primary);
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+@media (max-width: 640px) {
+  .plan-installments {
+    padding: 12px;
+  }
+
+  .plan-installments__more {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plan-installments__spin,
+  .plan-installments,
+  .plan-installments--loading > span {
+    animation: none;
+  }
+}

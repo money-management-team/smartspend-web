@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import PrivateMoney from "../../../Experience/PrivateMoney";
 
 import { getDisplayLocale } from "../../../Accounts/accountHelpers";
 import { formatReportValue, getAmountTone } from "../../reportHelpers";
@@ -12,16 +13,28 @@ const NUMERIC_TYPES = new Set(["money", "count", "decimal", "percent"]);
  * keeps the backend's string until the formatter; numbers are isolated as LTR
  * so they read correctly inside Arabic text. `tone` colors a signed amount.
  */
-export default function ReportValue({ value, type, currency, tone = false, className = "" }) {
+export default function ReportValue({
+  value,
+  type,
+  currency,
+  tone = false,
+  className = "",
+}) {
   const { t, i18n } = useTranslation();
   const locale = getDisplayLocale(i18n.language);
   const text = formatReportValue(value, type, { currency, locale, t, i18n });
-  const classes = ["report-value", tone ? `report-value--${getAmountTone(value)}` : "", className]
+  const classes = [
+    "report-value",
+    tone ? `report-value--${getAmountTone(value)}` : "",
+    className,
+  ]
     .filter(Boolean)
     .join(" ");
 
   return NUMERIC_TYPES.has(type) ? (
-    <bdi dir="ltr" className={classes}>{text}</bdi>
+    <bdi dir="ltr" className={classes}>
+      {type === "money" ? <PrivateMoney>{text}</PrivateMoney> : text}
+    </bdi>
   ) : (
     <bdi className={classes}>{text}</bdi>
   );

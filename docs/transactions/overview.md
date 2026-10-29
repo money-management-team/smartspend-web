@@ -32,8 +32,7 @@ Financial operations
  ├─ Step 1: choose the account (GET /accounts)
  ├─ Step 2: choose an input method
  │   ├─ Manual entry: Expense | Income ─┐
- │   ├─ Voice / Receipt (no backend yet) ┤ (both point at manual entry)
- │   └─ Statement ──▶ import wizard      │
+ │   └─ Voice / Receipt (no backend yet) ┘ (both point at manual entry)
  │                                       ▼
  │                        Review (receipt) ── POST (Idempotency-Key) ──▶ list + balances refetched
  └─ Transactions list (GET /transactions, paginated, filtered)
@@ -64,7 +63,6 @@ Financial operations
 | `…/FinancialOperations/components/CaptureStep/` | Step 2: method tabs + the shared panel/button styles |
 | `…/FinancialOperations/components/NewOperation/` | Manual entry panel (opens the review, does not post) |
 | `…/FinancialOperations/components/VoiceCapture/`, `…/ReceiptCapture/` | Input methods with no backend yet |
-| `…/FinancialOperations/components/StatementCapture/` | Hand-off to the import wizard |
 | `…/FinancialOperations/components/ReviewOperationDialog/` | Receipt confirmation; posts income / expense |
 | `…/FinancialOperations/components/Ledger/` | Paginated list with rows, badges, pagination |
 | `…/FinancialOperations/components/TransactionFilters/` | Account, category, status, date range, sort |

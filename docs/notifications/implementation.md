@@ -81,3 +81,12 @@ Copy lives in `dashboard.notifications.*` (tabs, bell, inbox, filters, severitie
 - ESLint on the changed files: clean. `npm run build`: passes.
 - A Node script with a mocked `fetch` checked: paths (`/notifications`, `/unread-count`, `/{id}/read`, `/read-all`) with a single `/api` prefix; `PATCH` / `POST` without a body; no `workspace_id` even when present in the page URL; paginator parsing (and rejection of a plain array); unread-count validation; row replacement from the mark-read response; `marked_count: 0`; 404 wording.
 - Not run: a browser pass against the real backend with a signed-in account (the badge, mark-read and navigation flows need real notifications).
+
+## Savings reminders (smart savings, gated)
+
+- `savings_installment_due` / `savings_installment_overdue` render with the existing item. Their link comes from `getNotificationPath` (`notificationHelpers.js`), which reads only the top-level `action` (null for other types):
+  - none with the flag off;
+  - `/dashboard/savings-goals/{goal}?plan={plan}&installment={id}`, built from the action's validated ids;
+  - the savings goals overview when the action is null or malformed.
+- The action's preview paths are never used for navigation. See `docs/savings-goals/plan-management.md`.
+- `notificationsApi.getPreferences` / `updatePreferences` back the savings reminder switch in Settings → Preferences. `PATCH` sends only `savings_installment_reminders`.

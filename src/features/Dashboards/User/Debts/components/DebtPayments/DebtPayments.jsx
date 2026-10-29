@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -5,11 +6,18 @@ import { LuChevronLeft, LuChevronRight, LuUndo2 } from "react-icons/lu";
 
 import Loading from "../../../../../../components/Loading/Loading";
 import { useAuthContext } from "../../../../../../contexts/auth/useAuthContext";
-import { getAccountDetailsPath, getTransactionDetailsPath } from "../../../../../../routes/Path";
+import {
+  getAccountDetailsPath,
+  getTransactionDetailsPath,
+} from "../../../../../../routes/Path";
 import { ApiError } from "../../../api/apiClient";
 import { debtsApi } from "../../../api/debtsApi";
 import { getDisplayLocale } from "../../../Accounts/accountHelpers";
-import { formatDate, formatDateTime, formatMoney } from "../../../utils/formatters";
+import {
+  formatDate,
+  formatDateTime,
+  formatMoney,
+} from "../../../utils/formatters";
 import {
   PAYMENTS_PER_PAGE,
   canReversePayment,
@@ -71,7 +79,11 @@ export default function DebtPayments({ debt, refreshKey = 0, onReverse }) {
         setResult(
           parsed
             ? { key: requestKey, page: parsed, error: null }
-            : { key: requestKey, page: null, error: new ApiError("", { code: "MALFORMED_RESPONSE" }) },
+            : {
+                key: requestKey,
+                page: null,
+                error: new ApiError("", { code: "MALFORMED_RESPONSE" }),
+              },
         );
       })
       .catch((error) => {
@@ -83,13 +95,21 @@ export default function DebtPayments({ debt, refreshKey = 0, onReverse }) {
   }, [debtId, page, requestKey]);
 
   const isLoading = result.key !== requestKey;
-  const { page: listPage, error } = isLoading ? { page: null, error: null } : result;
+  const { page: listPage, error } = isLoading
+    ? { page: null, error: null }
+    : result;
   const items = listPage?.items ?? [];
 
   const goToPage = (next) => setPageState({ refreshKey, page: next });
 
-  const money = (payment) => formatMoney(payment.amount, payment.currency_code || debt.currency_code, locale);
-  const dateTime = (value) => (value ? <bdi>{formatDateTime(value, locale, timeZone)}</bdi> : "—");
+  const money = (payment) =>
+    formatMoney(
+      payment.amount,
+      payment.currency_code || debt.currency_code,
+      locale,
+    );
+  const dateTime = (value) =>
+    value ? <bdi>{formatDateTime(value, locale, timeZone)}</bdi> : "—";
 
   return (
     <section className="debt-payments" aria-labelledby="debt-payments-title">
@@ -97,16 +117,23 @@ export default function DebtPayments({ debt, refreshKey = 0, onReverse }) {
         <div>
           <h2 id="debt-payments-title">
             {t("dashboard.debts.payments.title")}
-            {listPage && !isLoading && <span className="debt-payments__count">{listPage.total}</span>}
+            {listPage && !isLoading && (
+              <span className="debt-payments__count">{listPage.total}</span>
+            )}
           </h2>
           <p>{t("dashboard.debts.payments.subtitle")}</p>
         </div>
       </header>
 
-      {isLoading && <Loading size="small" message={t("dashboard.debts.payments.loading")} />}
+      {isLoading && (
+        <Loading size="small" message={t("dashboard.debts.payments.loading")} />
+      )}
 
       {!isLoading && error && (
-        <div className="debt-payments__state debt-payments__state--error" role="alert">
+        <div
+          className="debt-payments__state debt-payments__state--error"
+          role="alert"
+        >
           <p>{getDebtErrorMessage(error, t)}</p>
           <button type="button" onClick={() => setReloadKey((key) => key + 1)}>
             {t("common.retry")}
@@ -132,41 +159,69 @@ export default function DebtPayments({ debt, refreshKey = 0, onReverse }) {
       {!isLoading && !error && items.length > 0 && (
         <div className="debt-payments__table-wrap">
           <table className="debt-payments__table">
-            <caption className="debt-payments__caption">{t("dashboard.debts.payments.caption")}</caption>
+            <caption className="debt-payments__caption">
+              {t("dashboard.debts.payments.caption")}
+            </caption>
             <thead>
               <tr>
-                <th scope="col">{t("dashboard.debts.payments.fields.paidAt")}</th>
+                <th scope="col">
+                  {t("dashboard.debts.payments.fields.paidAt")}
+                </th>
                 <th scope="col" className="debt-payments__amount">
                   {t("dashboard.debts.payments.fields.amount")}
                 </th>
-                <th scope="col">{t("dashboard.debts.payments.fields.account")}</th>
-                <th scope="col">{t("dashboard.debts.payments.fields.status")}</th>
-                <th scope="col">{t("dashboard.debts.payments.fields.transaction")}</th>
-                <th scope="col">{t("dashboard.debts.payments.fields.notes")}</th>
-                <th scope="col">{t("dashboard.debts.payments.fields.createdAt")}</th>
                 <th scope="col">
-                  <span className="debt-payments__caption">{t("dashboard.debts.payments.fields.actions")}</span>
+                  {t("dashboard.debts.payments.fields.account")}
+                </th>
+                <th scope="col">
+                  {t("dashboard.debts.payments.fields.status")}
+                </th>
+                <th scope="col">
+                  {t("dashboard.debts.payments.fields.transaction")}
+                </th>
+                <th scope="col">
+                  {t("dashboard.debts.payments.fields.notes")}
+                </th>
+                <th scope="col">
+                  {t("dashboard.debts.payments.fields.createdAt")}
+                </th>
+                <th scope="col">
+                  <span className="debt-payments__caption">
+                    {t("dashboard.debts.payments.fields.actions")}
+                  </span>
                 </th>
               </tr>
             </thead>
             <tbody>
               {items.map((payment, index) => {
                 const isReversed = isReversedPayment(payment);
-                const account = payment.account && typeof payment.account === "object" ? payment.account : null;
+                const account =
+                  payment.account && typeof payment.account === "object"
+                    ? payment.account
+                    : null;
                 const paidAt = toDateOnly(payment.paid_at);
 
                 return (
                   <tr
                     key={payment.id ?? `${payment.transaction_id}-${index}`}
-                    className={isReversed ? "debt-payments__row--reversed" : undefined}
+                    className={
+                      isReversed ? "debt-payments__row--reversed" : undefined
+                    }
                   >
                     <td>
-                      <bdi>{paidAt ? formatDate(paidAt, locale) : formatDate(payment.paid_at, locale, timeZone)}</bdi>
+                      <bdi>
+                        {paidAt
+                          ? formatDate(paidAt, locale)
+                          : formatDate(payment.paid_at, locale, timeZone)}
+                      </bdi>
                     </td>
                     <td className="debt-payments__amount">
-                      <bdi dir="ltr" className={`debt-payments__value debt-payments__value--${debt.direction}`}>
+                      <bdi
+                        dir="ltr"
+                        className={`debt-payments__value debt-payments__value--${debt.direction}`}
+                      >
                         {SIGNS[debt.direction] ?? ""}
-                        {money(payment)}
+                        <PrivateMoney>{money(payment)}</PrivateMoney>
                       </bdi>
                     </td>
                     <td>
@@ -179,10 +234,14 @@ export default function DebtPayments({ debt, refreshKey = 0, onReverse }) {
                       )}
                     </td>
                     <td>
-                      <DebtBadge kind="payment" value={isReversed ? "reversed" : payment.status} />
+                      <DebtBadge
+                        kind="payment"
+                        value={isReversed ? "reversed" : payment.status}
+                      />
                       {isReversed && payment.reversed_at && (
                         <small className="debt-payments__meta">
-                          {t("dashboard.debts.payments.reversedOn")} {dateTime(payment.reversed_at)}
+                          {t("dashboard.debts.payments.reversedOn")}{" "}
+                          {dateTime(payment.reversed_at)}
                         </small>
                       )}
                     </td>
@@ -191,24 +250,37 @@ export default function DebtPayments({ debt, refreshKey = 0, onReverse }) {
                         {transactionLink(payment.transaction_id) ?? "—"}
                         {payment.reversal_transaction_id != null && (
                           <small className="debt-payments__meta">
-                            {t("dashboard.debts.payments.reversal")} {transactionLink(payment.reversal_transaction_id)}
+                            {t("dashboard.debts.payments.reversal")}{" "}
+                            {transactionLink(payment.reversal_transaction_id)}
                           </small>
                         )}
                       </span>
                     </td>
                     <td className="debt-payments__notes">
-                      {payment.notes ? <span dir="auto">{payment.notes}</span> : "—"}
+                      {payment.notes ? (
+                        <span dir="auto">{payment.notes}</span>
+                      ) : (
+                        "—"
+                      )}
                     </td>
                     <td>{dateTime(payment.created_at)}</td>
                     <td className="debt-payments__actions">
                       {canReversePayment(payment, debt) && (
-                        <button type="button" className="debt-payments__reverse" onClick={() => onReverse(payment)}>
+                        <button
+                          type="button"
+                          className="debt-payments__reverse"
+                          onClick={() => onReverse(payment)}
+                        >
                           <LuUndo2 aria-hidden="true" />
-                          <span>{t("dashboard.debts.actions.reversePayment")}</span>
+                          <span>
+                            {t("dashboard.debts.actions.reversePayment")}
+                          </span>
                         </button>
                       )}
                       {isReversed && (
-                        <span className="debt-payments__muted">{t("dashboard.debts.payments.alreadyReversed")}</span>
+                        <span className="debt-payments__muted">
+                          {t("dashboard.debts.payments.alreadyReversed")}
+                        </span>
                       )}
                     </td>
                   </tr>
@@ -239,7 +311,10 @@ export default function DebtPayments({ debt, refreshKey = 0, onReverse }) {
               <LuChevronLeft aria-hidden="true" />
             </button>
             <span aria-live="polite">
-              {t("dashboard.transactions.pagination.page", { page: listPage.page, lastPage: listPage.lastPage })}
+              {t("dashboard.transactions.pagination.page", {
+                page: listPage.page,
+                lastPage: listPage.lastPage,
+              })}
             </span>
             <button
               type="button"

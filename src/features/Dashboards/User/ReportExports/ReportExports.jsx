@@ -13,6 +13,7 @@ import ExportHistoryRow from "./components/ExportHistoryRow/ExportHistoryRow";
 import {
   EXPORT_FORMATS,
   EXPORT_STATUSES,
+  getFormatName,
   exportFiltersToQuery,
   exportFiltersToSearchParams,
   getExportErrorMessage,
@@ -117,7 +118,7 @@ export default function ReportExports() {
             <option value="">{t("dashboard.reportExports.history.all")}</option>
             {EXPORT_FORMATS.map((format) => (
               <option key={format} value={format}>
-                {format.toUpperCase()}
+                {getFormatName(format)}
               </option>
             ))}
           </select>
@@ -170,7 +171,7 @@ export default function ReportExports() {
             <table className="report-exports-page__table">
               <thead>
                 <tr>
-                  {["report", "format", "status", "created_at", "completed_at", "expires_at", "file_size", "download", "actions"].map(
+                  {["report", "format", "period", "status", "created_at", "completed_at", "expires_at", "file_size", "download", "actions"].map(
                     (column) => (
                       <th scope="col" key={column}>
                         {t(`dashboard.reportExports.fields.${column}`)}

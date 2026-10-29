@@ -11,7 +11,7 @@ import {
 
 import AuthAlert from "../components/AuthAlert/AuthAlert";
 import AuthButton from "../components/AuthButton/AuthButton";
-import AuthCheckbox from "../components/AuthCheckbox/AuthCheckbox";
+import PolicyConsent from "../components/PolicyConsent/PolicyConsent";
 import AuthField from "../components/AuthField/AuthField";
 import AuthHeading from "../components/AuthHeading/AuthHeading";
 import {
@@ -75,6 +75,7 @@ export default function CompanyRegister() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
 
     setErrors({});
     setGeneralError("");
@@ -95,6 +96,8 @@ export default function CompanyRegister() {
         account_type: "company",
         company_name: form.company_name.trim(),
         team_size: form.team_size,
+        terms_accepted: form.terms,
+        privacy_accepted: form.terms,
       });
 
       navigate(PATH.USER.DASHBOARD, { replace: true });
@@ -133,7 +136,10 @@ export default function CompanyRegister() {
           subtitle={t("auth.companyRegister.subtitle")}
         />
 
-        <form className="auth-form company-register-form" onSubmit={handleSubmit}>
+        <form
+          className="auth-form company-register-form"
+          onSubmit={handleSubmit}
+        >
           <div className="company-register-form__row">
             <AuthField
               id="company-register-company-name"
@@ -144,7 +150,9 @@ export default function CompanyRegister() {
               name="company_name"
               value={form.company_name}
               onChange={handleChange}
-              placeholder={t("auth.companyRegister.fields.companyName.placeholder")}
+              placeholder={t(
+                "auth.companyRegister.fields.companyName.placeholder",
+              )}
               autoComplete="organization"
               disabled={isSubmitting}
               required
@@ -252,17 +260,20 @@ export default function CompanyRegister() {
             required
           />
 
-          <AuthCheckbox
+          <PolicyConsent
             id="company-register-terms"
             name="terms"
             checked={form.terms}
-            onChange={handleChange}
-            errors={errors.terms}
+            onChange={(accepted) => {
+              setForm((current) => ({ ...current, terms: accepted }));
+              setErrors((current) => ({ ...current, terms: undefined }));
+              setGeneralError("");
+            }}
+            errors={
+              errors.terms ?? errors.terms_accepted ?? errors.privacy_accepted
+            }
             disabled={isSubmitting}
-          >
-            {t("auth.register.terms.prefix")}{" "}
-            <a href="#terms">{t("auth.register.terms.link")}</a>
-          </AuthCheckbox>
+          />
 
           {generalError && <AuthAlert>{generalError}</AuthAlert>}
 

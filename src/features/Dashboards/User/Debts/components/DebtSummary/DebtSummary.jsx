@@ -1,8 +1,12 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useTranslation } from "react-i18next";
 import { LuTriangleAlert } from "react-icons/lu";
 
 import Loading from "../../../../../../components/Loading/Loading";
-import { getDisplayLocale, isNegativeMoney } from "../../../Accounts/accountHelpers";
+import {
+  getDisplayLocale,
+  isNegativeMoney,
+} from "../../../Accounts/accountHelpers";
 import { formatOptionalMoney } from "../../../Dashboard/dashboardHelpers";
 import { isPositiveMoney } from "../../../SavingsGoals/savingsGoalHelpers";
 import { getDebtErrorMessage } from "../../debtHelpers";
@@ -42,7 +46,10 @@ export default function DebtSummary({ rows, isLoading, error, onRetry }) {
       {isLoading && <Loading message={t("dashboard.debts.summary.loading")} />}
 
       {!isLoading && error && (
-        <div className="debt-summary__state debt-summary__state--error" role="alert">
+        <div
+          className="debt-summary__state debt-summary__state--error"
+          role="alert"
+        >
           <p>{getDebtErrorMessage(error, t)}</p>
           <button type="button" onClick={onRetry}>
             {t("common.retry")}
@@ -60,7 +67,13 @@ export default function DebtSummary({ rows, isLoading, error, onRetry }) {
         <div className="debt-summary__grid">
           {rows.map((row) => {
             const currency = row.currency_code;
-            const money = (value) => <bdi dir="ltr">{formatOptionalMoney(value, currency, locale)}</bdi>;
+            const money = (value) => (
+              <bdi dir="ltr">
+                <PrivateMoney>
+                  {formatOptionalMoney(value, currency, locale)}
+                </PrivateMoney>
+              </bdi>
+            );
             const netTone = getNetTone(row.net_position);
 
             return (
@@ -72,40 +85,62 @@ export default function DebtSummary({ rows, isLoading, error, onRetry }) {
                   {row.overdue_debts_count > 0 && (
                     <span className="debt-summary-card__overdue">
                       <LuTriangleAlert aria-hidden="true" />
-                      {t("dashboard.debts.summary.overdueCount", { count: count(row.overdue_debts_count) })}
+                      {t("dashboard.debts.summary.overdueCount", {
+                        count: count(row.overdue_debts_count),
+                      })}
                     </span>
                   )}
                 </header>
 
                 <dl className="debt-summary-card__sides">
                   {SIDES.map(({ key, label }) => (
-                    <div className={`debt-summary-card__side debt-summary-card__side--${key}`} key={key}>
+                    <div
+                      className={`debt-summary-card__side debt-summary-card__side--${key}`}
+                      key={key}
+                    >
                       <dt>
                         {t(`dashboard.debts.summary.${label}`)}
-                        <span>{t(`dashboard.debts.directionShort.${key}`)}</span>
+                        <span>
+                          {t(`dashboard.debts.directionShort.${key}`)}
+                        </span>
                       </dt>
-                      <dd>{money(row[key].remaining_amount)}</dd>
+                      <dd>
+                        <PrivateMoney>
+                          {money(row[key].remaining_amount)}
+                        </PrivateMoney>
+                      </dd>
                       <dd className="debt-summary-card__side-meta">
-                        {t("dashboard.debts.summary.sideMeta", { count: count(row[key].debts_count) })}
+                        {t("dashboard.debts.summary.sideMeta", {
+                          count: count(row[key].debts_count),
+                        })}
                         <span aria-hidden="true"> · </span>
-                        {t("dashboard.debts.fields.paidAmount")} {money(row[key].paid_amount)}
+                        {t("dashboard.debts.fields.paidAmount")}{" "}
+                        <PrivateMoney>
+                          {money(row[key].paid_amount)}
+                        </PrivateMoney>
                       </dd>
                     </div>
                   ))}
                 </dl>
 
-                <div className={`debt-summary-card__net debt-summary-card__net--${netTone}`}>
+                <div
+                  className={`debt-summary-card__net debt-summary-card__net--${netTone}`}
+                >
                   <span>{t("dashboard.debts.summary.netPosition")}</span>
-                  <strong>{money(row.net_position)}</strong>
+                  <strong>
+                    <PrivateMoney>{money(row.net_position)}</PrivateMoney>
+                  </strong>
                   <small>{t(`dashboard.debts.summary.net.${netTone}`)}</small>
                 </div>
 
                 <footer className="debt-summary-card__counts">
                   <span>
-                    {t("dashboard.debts.summary.activeDebts")} <bdi>{count(row.active_debts_count)}</bdi>
+                    {t("dashboard.debts.summary.activeDebts")}{" "}
+                    <bdi>{count(row.active_debts_count)}</bdi>
                   </span>
                   <span>
-                    {t("dashboard.debts.summary.overdueDebts")} <bdi>{count(row.overdue_debts_count)}</bdi>
+                    {t("dashboard.debts.summary.overdueDebts")}{" "}
+                    <bdi>{count(row.overdue_debts_count)}</bdi>
                   </span>
                 </footer>
               </article>

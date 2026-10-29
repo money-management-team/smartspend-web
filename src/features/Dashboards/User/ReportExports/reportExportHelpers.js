@@ -4,8 +4,9 @@ import { REPORT_NAMES } from "../Reports/reportHelpers";
 export const EXPORT_STATUSES = ["queued", "processing", "completed", "failed", "expired", "cancelled"];
 // Statuses that can still change on their own: only these are polled.
 export const ACTIVE_EXPORT_STATUSES = ["queued", "processing"];
-// The documented export format.
-export const EXPORT_FORMATS = ["csv"];
+// The formats the backend builds, sent exactly as written. Word / DOCX is not
+// one of them and must never be offered.
+export const EXPORT_FORMATS = ["csv", "xlsx", "pdf"];
 export const DEFAULT_EXPORT_FORMAT = "csv";
 export const EXPORTS_PER_PAGE = 20;
 
@@ -22,6 +23,8 @@ export const getPollDelay = (count) => POLL_DELAYS_MS[count] ?? POLL_STEADY_MS;
 // Errors after which polling stops: the export is gone, not ours, or the
 // session ended. Network / timeout / 5xx / 429 are retried on the schedule.
 export const FATAL_POLL_CODES = ["NOT_FOUND", "FORBIDDEN", "UNAUTHENTICATED"];
+// A single failed check is not shown: only this many failures in a row are.
+export const POLL_ERROR_THRESHOLD = 2;
 
 /* ---------- Entities ---------- */
 
@@ -52,6 +55,19 @@ export function getExportStopAction(record) {
   return null;
 }
 
+export const isExportFormat = (format) => EXPORT_FORMATS.includes(format);
+
+// "CSV", "XLSX", "PDF": the short name used in buttons, badges and titles.
+// An unknown format is shown as the backend sent it.
+export const getFormatName = (format) => String(format ?? "—").toUpperCase();
+
+// The period the export was built for, from the filters it was created with.
+export function getExportPeriod(record) {
+  const from = record?.filters?.from ?? null;
+  const to = record?.filters?.to ?? null;
+  return from || to ? { from, to } : null;
+}
+
 export const getExportStatus = (record) =>
   EXPORT_STATUSES.includes(record?.status) ? record.status : "unknown";
 
@@ -61,7 +77,7 @@ export function getExportFilename(record, headerFilename) {
   if (headerFilename) return headerFilename;
   if (record?.file_name) return record.file_name;
 
-  const format = record?.format || DEFAULT_EXPORT_FORMAT;
+  const format = isExportFormat(record?.format) ? record.format : DEFAULT_EXPORT_FORMAT;
   return `smartspend-${record?.report || "report"}-${record?.id ?? "export"}.${format}`;
 }
 
@@ -93,7 +109,8 @@ export function getReportName(report, t) {
 /*
  * Export wording for codes where the generic message would mislead.
  * `context`: "create" | "download" | "cancel" | "status" | "list".
- * 410 Gone (an expired file) reads like an expired export.
+ * 410 Gone (an expired file) reads like an expired export. A download that
+ * fails for any other reason says the file exists but did not arrive.
  */
 export function getExportErrorMessage(error, t, context = "status") {
   if (error?.code === "FORBIDDEN") return t("dashboard.reportExports.errors.forbidden");
@@ -106,6 +123,9 @@ export function getExportErrorMessage(error, t, context = "status") {
   }
   if (error?.code === "VALIDATION_ERROR" && context === "create") {
     return error.message || t("dashboard.reportExports.errors.invalid");
+  }
+  if (context === "download" && ["NETWORK_ERROR", "TIMEOUT", "SERVER_ERROR", "MALFORMED_RESPONSE"].includes(error?.code)) {
+    return t("dashboard.reportExports.errors.downloadFailed");
   }
 
   return getApiErrorMessage(error, t);

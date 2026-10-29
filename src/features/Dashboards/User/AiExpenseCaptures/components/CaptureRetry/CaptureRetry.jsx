@@ -5,6 +5,10 @@ import { LuRefreshCw, LuRotateCcw, LuTriangleAlert } from "react-icons/lu";
 import { getApiErrorMessage } from "../../../api/apiClient";
 import { canRetryCapture, isUncertainOutcome } from "../../captureHelpers";
 
+import useAiInputQuotas from "../../../FinancialOperations/useAiInputQuotas.js";
+import AiInputAllowance from "../../../FinancialOperations/components/AiInputAllowance/AiInputAllowance";
+import { getAiInputLimitError } from "../../../api/aiInputQuotasApi.js";
+
 import "./CaptureRetry.css";
 
 /*
@@ -32,6 +36,7 @@ export default function CaptureRetry({
   onBusyChange,
 }) {
   const { t } = useTranslation();
+  const quota = useAiInputQuotas(canRetryCapture(status));
 
   const [isRetrying, setIsRetrying] = useState(false);
   const [error, setError] = useState(null);
@@ -44,7 +49,7 @@ export default function CaptureRetry({
   if (!canRetryCapture(status)) return null;
 
   const retry = async () => {
-    if (pendingRef.current) return;
+    if (pendingRef.current || !quota.store.canUse("receipt")) return;
 
     pendingRef.current = true;
     setIsRetrying(true);
@@ -54,10 +59,12 @@ export default function CaptureRetry({
     try {
       await onRetry();
     } catch (requestError) {
+      quota.store.handleError(requestError);
       // 401 is the global session-expired flow; nothing to show here. A 422
       // is handled by the parent, which refetches the real state once.
       if (requestError?.code !== "UNAUTHENTICATED") setError(requestError);
     } finally {
+      void quota.store.refresh();
       pendingRef.current = false;
       setIsRetrying(false);
       onBusyChange?.(false);
@@ -82,10 +89,14 @@ export default function CaptureRetry({
         <p>{t("dashboard.aiCaptures.retry.description")}</p>
       </header>
 
+      <AiInputAllowance quota={quota} channels={["receipt"]} />
+
       {error && (
         <div className="capture-retry__error" role="alert">
           <p dir="auto">
-            {isForbidden
+            {getAiInputLimitError(error)
+              ? t(`dashboard.financialOperations.aiInput.${getAiInputLimitError(error).kind === "daily" ? "exhausted" : "minute"}`)
+              : isForbidden
               ? t("dashboard.aiCaptures.details.forbiddenMessage")
               : `${t("dashboard.aiCaptures.retry.failed")} ${getApiErrorMessage(error, t)}`}
           </p>
@@ -115,7 +126,7 @@ export default function CaptureRetry({
           type="button"
           className="capture-retry__action"
           onClick={retry}
-          disabled={isRetrying || isBusy}
+          disabled={isRetrying || isBusy || !quota.store.canUse("receipt")}
         >
           <LuRotateCcw aria-hidden="true" />
           {t(

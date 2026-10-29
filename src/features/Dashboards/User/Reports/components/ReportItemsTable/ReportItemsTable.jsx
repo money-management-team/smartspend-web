@@ -3,12 +3,11 @@ import { Link } from "react-router-dom";
 
 import { OCCURRENCE_STATES } from "../../reportDefinitions";
 import {
-  getExtraScalarKeys,
   getFieldLabel,
+  getRowCurrency,
   getValueLabel,
-  getValueType,
-  isCurrencyCode,
-  isObject,
+  getVisibleColumns,
+  pickScalar,
   pickValue,
   toBarWidth,
 } from "../../reportHelpers";
@@ -16,33 +15,6 @@ import ReportBadge from "../ReportBadge/ReportBadge";
 import ReportValue from "../ReportValue/ReportValue";
 
 import "./ReportItemsTable.css";
-
-const MAX_AUTO_COLUMNS = 10;
-
-// First present scalar among `keys`: an object (e.g. a nested next
-// occurrence without a date) is never printed.
-function pickScalar(row, keys = []) {
-  for (const key of keys) {
-    const value = pickValue(row, [key]);
-    if (value != null && typeof value !== "object") return value;
-  }
-
-  return null;
-}
-
-function hasColumnValue(column, row) {
-  // The name column also carries the link to the row's details page.
-  if (column.primary && column.link?.(row)) return true;
-  if (column.type === "occurrences") return isObject(pickValue(row, column.keys));
-  if (column.type === "progress") return pickScalar(row, [...column.keys, ...(column.statusKeys ?? [])]) != null;
-  if (column.type === "range") return pickScalar(row, [...column.keys, ...(column.endKeys ?? [])]) != null;
-  return pickScalar(row, column.keys) != null;
-}
-
-const getRowCurrency = (row, fallback) => {
-  const currency = pickValue(row, ["currency_code", "account.currency_code"]);
-  return isCurrencyCode(currency) ? currency : fallback;
-};
 
 function Cell({ column, row, currency, t, i18n }) {
   const value = pickScalar(row, column.keys);
@@ -142,27 +114,13 @@ function PrimaryCell({ column, row }) {
  */
 export default function ReportItemsTable({ columns, rows, fallbackCurrency }) {
   const { t, i18n } = useTranslation();
-  let visible = columns.filter((column) => rows.some((row) => hasColumnValue(column, row)));
-
-  if (visible.length === 0) {
-    const keys = [];
-    rows.forEach((row) => {
-      getExtraScalarKeys(row, new Set()).forEach((key) => {
-        if (!keys.includes(key) && keys.length < MAX_AUTO_COLUMNS) keys.push(key);
-      });
-    });
-    visible = keys.map((key) => ({
-      id: key,
-      keys: [key],
-      type: key === "currency_code" ? "currency" : getValueType(key, rows.find((row) => row[key] != null)?.[key]),
-    }));
-  }
+  const visible = getVisibleColumns(columns, rows);
 
   return (
     <div className="report-items__scroll">
-      <table className="report-items">
-        <thead>
-          <tr>
+      <table className="report-items" role="table">
+        <thead role="rowgroup">
+          <tr role="row">
             {visible.map((column) => (
               <th scope="col" key={column.id}>
                 {getFieldLabel(column.id, t, i18n)}
@@ -170,14 +128,14 @@ export default function ReportItemsTable({ columns, rows, fallbackCurrency }) {
             ))}
           </tr>
         </thead>
-        <tbody>
+        <tbody role="rowgroup">
           {rows.map((row, index) => {
             const currency = getRowCurrency(row, fallbackCurrency);
 
             return (
-              <tr key={row.id ?? `${index}-${pickValue(row, ["name", "counterparty_name", "description"]) ?? ""}`}>
+              <tr role="row" key={row.id ?? `${index}-${pickValue(row, ["name", "counterparty_name", "description"]) ?? ""}`}>
                 {visible.map((column) => (
-                  <td key={column.id} className={column.primary ? "report-items__cell--primary" : ""}>
+                  <td role="cell" data-label={getFieldLabel(column.id, t, i18n)} key={column.id} className={column.primary ? "report-items__cell--primary" : ""}>
                     {column.primary ? (
                       <PrimaryCell column={column} row={row} />
                     ) : (

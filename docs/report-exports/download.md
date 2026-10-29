@@ -29,7 +29,7 @@ A failed download still answers with the normal envelope, so its `message` reach
 
 1. the `Content-Disposition` name;
 2. the export's own `file_name`;
-3. a built name — `smartspend-{report}-{id}.{format}`.
+3. a built name — `smartspend-{report}-{id}.{format}`, where `format` is `csv`, `xlsx` or `pdf` (an unknown value falls back to `csv`).
 
 The header is not always readable: a cross-origin response only exposes it when the backend sends `Access-Control-Expose-Headers: Content-Disposition`. `filename` is `null` in that case, which is why the fallbacks exist.
 
@@ -43,4 +43,4 @@ Creates an object URL, clicks a hidden `<a download>`, removes the link, and rev
 
 ## In the UI
 
-`ExportActions` enables Download only when `canDownloadExport(record)` — the backend's `download_available` flag — is true, guards against a double click with its own pending state, and shows `getExportErrorMessage(error, t, "download")` on failure. The export record itself is not changed by a download.
+The same path serves every format: a PDF, an XLSX and a CSV are all read with `response.blob()` and saved with their own extension. `ExportActions` labels the button by format (**Download PDF**, **Download XLSX**, **Download CSV**), enables it only when `canDownloadExport(record)` — the backend's `download_available` flag — is true, guards against a double click with its own pending state, and shows `getExportErrorMessage(error, t, "download")` on failure. The export record itself is not changed by a download.

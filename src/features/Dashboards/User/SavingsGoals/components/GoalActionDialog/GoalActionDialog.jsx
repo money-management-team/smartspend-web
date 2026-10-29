@@ -1,3 +1,4 @@
+import PrivateMoney from "../../../Experience/PrivateMoney";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -51,7 +52,8 @@ export default function GoalActionDialog({
   const [isRunning, setIsRunning] = useState(false);
   const [message, setMessage] = useState("");
 
-  const isBlocked = action === "archive" && getGoalActions(goal).mustWithdrawFirst;
+  const isBlocked =
+    action === "archive" && getGoalActions(goal).mustWithdrawFirst;
   const savedAmount = getGoalProgress(goal)?.saved_amount;
   const prefix = `dashboard.savingsGoals.actionDialog.${action}`;
 
@@ -98,7 +100,12 @@ export default function GoalActionDialog({
           <h2 id="goal-action-title" dir="auto">
             {t(`${prefix}.title`, { name: goal.name })}
           </h2>
-          <button type="button" onClick={close} disabled={isRunning} aria-label={t("common.close")}>
+          <button
+            type="button"
+            onClick={close}
+            disabled={isRunning}
+            aria-label={t("common.close")}
+          >
             ×
           </button>
         </header>
@@ -118,9 +125,15 @@ export default function GoalActionDialog({
             <LuTriangleAlert aria-hidden="true" />
             <div>
               <p>
-                {t("dashboard.savingsGoals.actionDialog.archive.hasBalance", {
-                  amount: formatMoney(savedAmount, getGoalCurrency(goal), locale),
-                })}
+                <PrivateMoney>
+                  {t("dashboard.savingsGoals.actionDialog.archive.hasBalance", {
+                    amount: formatMoney(
+                      savedAmount,
+                      getGoalCurrency(goal),
+                      locale,
+                    ),
+                  })}
+                </PrivateMoney>
               </p>
               {onWithdraw && (
                 <button type="button" onClick={onWithdraw}>
@@ -128,14 +141,19 @@ export default function GoalActionDialog({
                 </button>
               )}
               {!onWithdraw && withdrawPath && (
-                <Link to={withdrawPath}>{t("dashboard.savingsGoals.actionDialog.archive.openGoal")}</Link>
+                <Link to={withdrawPath}>
+                  {t("dashboard.savingsGoals.actionDialog.archive.openGoal")}
+                </Link>
               )}
             </div>
           </div>
         )}
 
         {message && (
-          <div className="account-form-modal__error goal-action-dialog__error" role="alert">
+          <div
+            className="account-form-modal__error goal-action-dialog__error"
+            role="alert"
+          >
             <p dir="auto">{message}</p>
           </div>
         )}
