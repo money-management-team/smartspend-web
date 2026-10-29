@@ -23,6 +23,8 @@
  */
 
 export const PWA_FLAG = "VITE_MOBILE_PWA";
+// Rollback of a staging origin that once ran the PWA build (see resolvePwaRetire).
+export const PWA_RETIRE_FLAG = "SMARTSPEND_MOBILE_PWA_RETIRE";
 export const PWA_ENTRY_ID = "virtual:smartspend-mobile-pwa";
 export const PWA_SCOPE = "/m/";
 export const PWA_SW_PATH = "/m/sw.js";
@@ -34,6 +36,44 @@ export function resolveMobilePwa({ mobileEnabled, command, mode, env }) {
   const production = mode === "production" && command === "build";
   if (asked && production) return { enabled: false, refusedInProduction: true };
   return { enabled: Boolean(asked && mobileEnabled && mode !== "production"), refusedInProduction: false };
+}
+
+/*
+ * The retire worker, for rolling a staging origin back from a PWA build to any
+ * non-PWA build, flag-off included. A flag-off build has no Mobile code, so it
+ * cannot unregister the worker an earlier build installed; but the browser
+ * itself re-fetches /m/sw.js whenever an in-scope page opens. With
+ * SMARTSPEND_MOBILE_PWA_RETIRE=true the build emits, as a static file and
+ * nothing else, a worker at that address that deletes the sm-pwa-* caches,
+ * unregisters itself and reloads the Mobile pages it controlled. The JS and CSS
+ * bundles are not touched (tests/mobilePwa.test.mjs compares them).
+ *
+ * Like the PWA, it is refused in a production-mode build: production has never
+ * run the PWA, so it has nothing to retire, and production gets no worker file.
+ * The variable is the build shell's, not a VITE_ one, so it never reaches the
+ * page code.
+ *
+ * @returns {{ enabled: boolean, refusedInProduction: boolean }}
+ */
+export function resolvePwaRetire({ pwaEnabled, command, mode, env }) {
+  const asked = env?.[PWA_RETIRE_FLAG] === "true";
+  if (asked && mode === "production" && command === "build") return { enabled: false, refusedInProduction: true };
+  return { enabled: Boolean(asked && !pwaEnabled && command === "build"), refusedInProduction: false };
+}
+
+export function retireSwSource() {
+  return `/* SmartSpend Mobile: retires the local/staging PWA worker (scripts/mobilePwa.mjs). */
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (event) => {
+  event.waitUntil((async () => {
+    const names = await caches.keys();
+    await Promise.all(names.filter((name) => name.startsWith(${JSON.stringify(PWA_CACHE_PREFIX)})).map((name) => caches.delete(name)));
+    await self.registration.unregister();
+    const pages = await self.clients.matchAll({ type: "window" });
+    await Promise.all(pages.map((page) => page.navigate(page.url).catch(() => undefined)));
+  })());
+});
+`;
 }
 
 export function pwaEntrySource(enabled, version) {

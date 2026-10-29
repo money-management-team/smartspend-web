@@ -22,7 +22,23 @@ const MOBILE_ENTRY = "virtual:smartspend-mobile";
 const MOBILE_PWA = "virtual:smartspend-mobile-pwa";
 const MOBILE_PWA_SOURCE = 'export const MOBILE_PWA = false; export const PWA_VERSION = ""; export const PWA_SW_PATH = "/m/sw.js"; export const PWA_SCOPE = "/m/"; export const PWA_CACHE_PREFIX = "sm-pwa-";';
 
+/*
+ * Windows drive letters: started from a working directory spelled "f:\..." (Git
+ * Bash does that), Node gives the test file and its relative imports
+ * file:///f:/... URLs, while packages that CommonJS code requires (react, from
+ * react-dom) are found as F:\... paths. Node keys modules by URL, so the same
+ * file loaded twice under two spellings: two copies of React, and every hook
+ * failed with "Cannot read properties of null (reading 'useContext')". One
+ * spelling for every resolved file URL makes it one module again. This is a
+ * test-harness fix only; the app is built by Vite, which is not affected.
+ */
+const sameDrive = (result) => (result?.url && /^file:\/\/\/[a-z]:/.test(result.url) ? { ...result, url: `file:///${result.url[8].toUpperCase()}${result.url.slice(9)}` } : result);
+
 export async function resolve(specifier, context, nextResolve) {
+  return sameDrive(await resolveRaw(specifier, context, nextResolve));
+}
+
+async function resolveRaw(specifier, context, nextResolve) {
   if (specifier === MOBILE_PWA) {
     return { url: `data:text/javascript,${encodeURIComponent(MOBILE_PWA_SOURCE)}`, format: "module", shortCircuit: true };
   }

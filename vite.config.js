@@ -5,7 +5,7 @@ import { resolveDevApiTarget } from './scripts/devApiTarget.mjs'
 import { readCommittableEnvFiles, resolveSmartSavingsBuild } from './scripts/smartSavingsBuildFlag.mjs'
 import { resolveMobileBuild } from './scripts/mobileBuildFlag.mjs'
 import { mobileEntryPlugin } from './scripts/mobileEntryPlugin.mjs'
-import { resolveMobilePwa } from './scripts/mobilePwa.mjs'
+import { resolveMobilePwa, resolvePwaRetire } from './scripts/mobilePwa.mjs'
 
 // https://vite.dev/config/
 export default defineConfig(({ command, mode }) => {
@@ -75,10 +75,17 @@ export default defineConfig(({ command, mode }) => {
     console.warn('[smartspend] VITE_MOBILE_PWA is ignored in a production build: the Mobile PWA stays OFF.')
   }
 
+  // Rolling a staging origin back from the PWA: a static retire worker only (scripts/mobilePwa.mjs).
+  const retire = resolvePwaRetire({ pwaEnabled: pwa.enabled, command, mode, env: process.env })
+
+  if (retire.refusedInProduction) {
+    console.warn('[smartspend] SMARTSPEND_MOBILE_PWA_RETIRE is ignored in a production build: no worker file is emitted.')
+  }
+
   return {
     // The Mobile code enters the build only through this plugin, and only
     // when the flag resolved to on (see scripts/mobileEntryPlugin.mjs).
-    plugins: [react(), mobileEntryPlugin(mobile.enabled, { pwa: pwa.enabled })],
+    plugins: [react(), mobileEntryPlugin(mobile.enabled, { pwa: pwa.enabled, retire: retire.enabled })],
     build: {
       // Pages are lazy-loaded (see routes/Routes.jsx), but the stylesheet stays
       // one file in source order. Many page and component stylesheets share

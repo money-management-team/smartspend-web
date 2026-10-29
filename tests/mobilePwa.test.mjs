@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { PWA_CACHE_PREFIX, pwaEntrySource, pwaManifest, resolveMobilePwa, swSource } from "../scripts/mobilePwa.mjs";
+import { PWA_CACHE_PREFIX, pwaEntrySource, pwaManifest, resolveMobilePwa, resolvePwaRetire, retireSwSource, swSource } from "../scripts/mobilePwa.mjs";
 import { mobileEntryPlugin } from "../scripts/mobileEntryPlugin.mjs";
 
 const { registerWorker, removeWorker, syncPwa } = await import("../src/mobile/pwa/worker.js");
@@ -194,5 +194,56 @@ describe("registration and rollback in the page", () => {
     assert.equal(PWA_BUILD, false);
     // ...so syncPwa takes the clean-up path (here there is no service worker at all).
     assert.deepEqual(await syncPwa(), { state: "unsupported" });
+  });
+});
+
+describe("retiring the PWA from a staging origin (the rollback a flag-off build can't do itself)", () => {
+  it("is asked for with the exact string, only in a build without the PWA, and never in production", () => {
+    const env = { SMARTSPEND_MOBILE_PWA_RETIRE: "true" };
+    assert.deepEqual(resolvePwaRetire({ pwaEnabled: false, command: "build", mode: "staging", env }), { enabled: true, refusedInProduction: false });
+    assert.deepEqual(resolvePwaRetire({ pwaEnabled: false, command: "build", mode: "production", env }), { enabled: false, refusedInProduction: true });
+    assert.equal(resolvePwaRetire({ pwaEnabled: true, command: "build", mode: "staging", env }).enabled, false, "a PWA build has its real worker");
+    assert.equal(resolvePwaRetire({ pwaEnabled: false, command: "build", mode: "staging", env: { SMARTSPEND_MOBILE_PWA_RETIRE: "TRUE" } }).enabled, false);
+    assert.equal(resolvePwaRetire({ pwaEnabled: false, command: "serve", mode: "development", env }).enabled, false);
+  });
+
+  it("emits only the retire worker, also when Mobile is off", () => {
+    const emitted = (enabled, options) => {
+      const files = [];
+      const plugin = mobileEntryPlugin(enabled, options);
+      plugin.configResolved({ root: process.cwd() });
+      plugin.generateBundle.call({ emitFile: (file) => files.push([file.fileName, String(file.source)]) }, {}, {});
+      return files;
+    };
+    const off = emitted(false, { retire: true });
+    assert.deepEqual(off.map(([name]) => name), ["m/sw.js"]);
+    assert.equal(off[0][1], retireSwSource());
+    assert.deepEqual(emitted(false, {}), [], "without the option a flag-off build emits nothing, as before");
+  });
+
+  it("the retire worker deletes only the PWA's caches, unregisters itself and reloads the pages it controlled", async () => {
+    const listeners = {};
+    const stores = new Set(["sm-pwa-abc", "sm-pwa-def", "other-app"]);
+    const reloaded = [];
+    let unregistered = false;
+    let skipped = false;
+    const self = {
+      skipWaiting: () => { skipped = true; },
+      registration: { unregister: async () => { unregistered = true; return true; } },
+      clients: { matchAll: async () => [{ url: "https://app.test/m/accounts", navigate: async (url) => reloaded.push(url) }] },
+      addEventListener: (type, fn) => { listeners[type] = fn; },
+    };
+    const caches = { keys: async () => [...stores], delete: async (name) => stores.delete(name) };
+    new Function("self", "caches", retireSwSource())(self, caches);
+    listeners.install({});
+    assert.equal(skipped, true);
+    let work;
+    listeners.activate({ waitUntil: (promise) => { work = promise; } });
+    await work;
+    assert.deepEqual([...stores], ["other-app"]);
+    assert.equal(unregistered, true);
+    assert.deepEqual(reloaded, ["https://app.test/m/accounts"]);
+    assert.equal(listeners.fetch, undefined, "it intercepts nothing");
+    assert.doesNotMatch(retireSwSource(), /fetch|\/api|postMessage/);
   });
 });

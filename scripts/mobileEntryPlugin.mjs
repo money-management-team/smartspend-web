@@ -23,7 +23,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
-import { PWA_ENTRY_ID, pwaEntrySource, pwaManifest, swSource } from "./mobilePwa.mjs";
+import { PWA_ENTRY_ID, pwaEntrySource, pwaManifest, retireSwSource, swSource } from "./mobilePwa.mjs";
 
 export const MOBILE_ENTRY_ID = "virtual:smartspend-mobile";
 const RESOLVED_ID = `\0${MOBILE_ENTRY_ID}`;
@@ -40,8 +40,10 @@ export function mobileEntrySource(enabled, root) {
  * `pwa` (scripts/mobilePwa.mjs) is only ever true in a non-production build with
  * Mobile on. Then the worker, the manifest and the icon are emitted under m/;
  * otherwise nothing is, and "virtual:smartspend-mobile-pwa" says MOBILE_PWA = false.
+ * `retire` (never with `pwa`, never in production) emits only the retire
+ * worker at m/sw.js, whatever the Mobile flag says: the rollback path.
  */
-export function mobileEntryPlugin(enabled, { pwa = false } = {}) {
+export function mobileEntryPlugin(enabled, { pwa = false, retire = false } = {}) {
   let root = process.cwd();
   const withPwa = Boolean(enabled && pwa);
 
@@ -61,7 +63,10 @@ export function mobileEntryPlugin(enabled, { pwa = false } = {}) {
       return null;
     },
     generateBundle(_options, bundle) {
-      if (!withPwa) return;
+      if (!withPwa) {
+        if (retire) this.emitFile({ type: "asset", fileName: "m/sw.js", source: retireSwSource() });
+        return;
+      }
       // The worker's version follows the build's own file names, so a new build is a new cache.
       const version = createHash("sha256").update(Object.keys(bundle).sort().join(",")).digest("hex").slice(0, 12);
       this.emitFile({ type: "asset", fileName: "m/sw.js", source: swSource(version) });
