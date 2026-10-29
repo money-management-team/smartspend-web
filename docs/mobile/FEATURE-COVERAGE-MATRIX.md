@@ -1,79 +1,75 @@
 # Mobile — feature coverage matrix
 
-**Real backend evidence is "none" in every row:** no backend repository or isolated backend was available. "Browser" means real headless Chrome with fictional mocked data, not a physical device; device verification is pending in every row.
+**No row is backend-verified.** No backend repository or isolated backend was available, so every GET is tested against fictional mocks shaped like the frontend docs, and **no write is enabled anywhere**. "Browser" means headless Chrome 156 on a local origin with fictional data, not a physical device; device verification is pending in every row.
 
 Column key:
-- **UI:** the Mobile screens for the feature.
-- **GET:** whether its reads are integrated.
-- **Write:** what happens to its writes on Mobile.
-- **Gate:** the safety gate that applies.
-- **Tests:** the automated test files that cover it.
-- **Browser:** real-browser evidence. A sprint name (S04B1–S04B4.1) means earlier sprints; "this pass" means the 114-job Mobile matrix (390/320/430 px, English and Arabic, light and dark, 1.25×/1.5×/2× text, empty and error states) or the two-tab run.
+- **Screens:** the Mobile addresses (under `/m`).
+- **Local interaction:** what works on the device without the backend.
+- **GET:** reads integrated through `data/readApi.js` or `data/readAssistApi.js`.
+- **Write UI:** the form and review Mobile has for the change.
+- **Write enabled:** whether Mobile sends it. "No" everywhere; none of the form operations has send code (`src/mobile/forms/workflows.js`), and the two category writes are closed in `data/writeGate.js`.
+- **Tests:** automated test files (`tests/…`).
+- **Browser:** "unblocked pass" is the final-build matrix (`m10`): 53 screens and states × 5 variants (390 px en light, 390 px ar dark, 320 px en 2× text, 430 px ar 1.5× text, 360 px en dark 1.25× text). Earlier sprints are named.
 
-| ID | Feature | UI | GET | Write | Gate | Tests | Browser | Status |
-|---|---|---|---|---|---|---|---|---|
-| P01 | Sign in / Google | shared Desktop pages | — | — | — | auth suites | two-tab run (sign-in elsewhere) | Not applicable to Mobile (shared pages) |
-| P02 | Register | shared | — | — | — | auth suites | — | Not applicable to Mobile |
-| P03 | Forgot / reset password | shared | — | — | — | auth suites | — | Not applicable to Mobile |
-| P04 | Email verification | shared banner and pages | — | — | — | auth suites | — | Partially implemented (no Mobile banner) |
-| P05 | Logout / session expiry | identity boundary, cross-tab fix | — | — | — | mobileIdentity, authCrossTab | two-tab run, Desktop and Mobile | Implemented and tested with mocks |
-| P06 | Profile, password | link to the full version | — | none | — | — | — | Partially implemented |
-| P07 | Theme, language | More | — | local | — | mobileScreens | S04B1–S04B4.1, this pass | Implemented and tested with mocks |
-| P08 | Dashboard summary, periods | `/m` | yes | — | — | mobileScreens | this pass | Partially implemented (no period picker) |
-| P09 | Attention, alerts | Home, Planning | yes | — | — | mobilePlanning | earlier sprints | Read-only complete with mocked contract |
-| P10 | Monthly review, templates | — | — | — | — | — | — | Partially implemented (not on Mobile) |
-| P11 | Accounts create / edit / archive | `/m/accounts` | yes | no code | write gate | mobileScreens | this pass | Partially implemented (read only) |
-| P12 | Account details, movements | `/m/accounts/:id` | yes | — | — | mobileScreens | earlier sprints | Read-only complete with mocked contract (no statement PDF) |
-| P13 | History, filters | `/m/activity` | yes | — | — | mobileActivity | this pass | Read-only complete with mocked contract |
-| P14 | Expense / income | Add sheet (informational) | — | no code | write gate | — | — | Blocked by backend; form not built |
-| P15 | Correct / reverse transaction | detail (read) | yes | no code | write gate | mobileTransaction | earlier sprints | Blocked by backend; forms not built |
-| P16 | Receipt capture | — | — | — | — | — | — | Partially implemented (not on Mobile) |
-| P17 | Voice capture | — | — | — | — | — | — | Partially implemented (not on Mobile) |
-| P18 | Transfers | `/m/transfers`, `/m/transfers/:id` | yes | no code | notice | mobileMoreScreens | this pass | Read-only complete with mocked contract; writes blocked by backend |
-| P19 | Categories | `/m/planning/categories…` | yes | code exists | **closed** | mobileCategories, mobileWriteGate | this pass | UI complete, write disabled |
-| P20 | Budgets | `/m/planning/budgets…` | yes | no code | — | mobilePlanning | earlier sprints | Read-only complete with mocked contract |
-| P21 | Savings goals | `/m/planning/goals…` | yes | no code | — | mobilePlanning | earlier sprints | Read-only complete with mocked contract; writes blocked |
-| P22 | Smart plans | goal page (flagged) | yes | no code | — | mobileSavings | earlier sprints | Read-only complete with mocked contract (behind its flag) |
-| P23 | Planned contributions | — | — | — | — | — | — | Blocked by backend |
-| P24 | Debts | `/m/planning/debts…` | yes | no code | notice | mobileMoreScreens | this pass | Read-only complete with mocked contract; writes blocked |
-| P25 | Recurring rules | `/m/planning/recurring…` | yes | no code | — | mobilePlanning | earlier sprints | Read-only complete with mocked contract |
-| P26 | Calendar | `/m/planning/calendar` | yes | — | — | mobileMoreScreens | this pass | Read-only complete with mocked contract |
-| P27 | Reports (ten) | `/m/reports`, `/m/reports/:type` | yes | — | — | mobileReports | this pass (all ten) | Read-only complete with mocked contract (summaries and documented items; no trend charts) |
-| P28 | PDF export | — | — | — | — | — | — | Partially implemented (full version only) |
-| P29 | CSV / Excel exports | `/m/exports` | yes, and download | create and cancel: no code | — | mobileReports | this pass | Partially implemented |
-| P30 | AI assistant | — | — | — | — | — | — | Partially implemented (not on Mobile) |
-| P31 | AI privacy settings | — | — | — | — | — | — | Partially implemented (not on Mobile) |
-| P32 | AI capture review | — | — | — | — | — | — | Blocked by backend |
-| P33 | Imports | `/m/imports`, `/m/imports/:id` | yes | no code | notice | mobileReports | this pass | Partially implemented (history and status only) |
-| P34 | WhatsApp linking | — | — | — | — | — | — | Blocked by product decision (consent and legal) |
-| P35 | WhatsApp drafts | — | — | — | — | — | — | Blocked by backend and product decision |
-| P36 | Notifications | `/m/notifications` | yes | mark-read: no code | — | mobileMoreScreens | this pass | Read-only complete with mocked contract |
-| P37 | Search | — | — | — | — | — | — | Partially implemented (not on Mobile) |
-| P38 | Display prefs, hide amounts | More, money privacy | — | local | — | mobileMoney | earlier sprints | Implemented and tested with mocks |
-| P39 | Company sign-in | — | — | — | — | — | — | Not applicable (excluded) |
-| X1 | Welcome dialog | shared | — | — | — | — | — | Not applicable to Mobile |
-| X2 | Policy consent | shared | — | — | — | — | — | Not applicable to Mobile |
-| X3 | Dashboard blocks | — | — | — | — | — | — | Partially implemented (not on Mobile) |
-| X4 | Savings reminder preference | — | — | — | — | — | — | Partially implemented (not on Mobile) |
-| X5 | Public and legal content | shared public pages | — | — | — | — | — | Not applicable to Mobile |
-| X6 | Account statement PDF | — | — | — | — | — | — | Partially implemented (full version) |
-| X7 | Saved report filters | — | — | — | — | — | — | Partially implemented (not on Mobile) |
-| — | PWA (local and staging) | offline and update notices, install card | — | none | production refusal; `/m/` scope | mobilePwa, mobileBundle | this pass (lifecycle in Chrome) | Implemented and tested locally; device verification pending |
+Status words: **Full safe local UX complete** · **Read-only complete with mocked contracts** · **Form and review complete, backend write disabled** · **Partially implemented** · **Backend-dependent** · **Product-approval-dependent** · **Device-validation-dependent** · **Not applicable**.
+
+| ID | Feature | Screens | Local interaction | GET | Write UI | Write enabled | Tests | Browser | Remaining blocker | Status |
+|---|---|---|---|---|---|---|---|---|---|---|
+| P01 | Sign in / Google | shared pages | — | — | shared | shared (Desktop) | auth suites | two-tab run | Google script not exercised in a browser | Not applicable to Mobile (shared pages, unchanged) |
+| P02 | Register | shared | — | — | shared | shared | auth suites | — | — | Not applicable to Mobile |
+| P03 | Forgot / reset password | shared | — | — | shared | shared | auth suites | — | — | Not applicable to Mobile |
+| P04 | Email verification | `/m/profile` | Check again (re-read) | `GET /auth/email/status` (the shared provider) | resend: link to full version | No | mobileAssist | unblocked pass | resend is a write | Read-only complete with mocked contracts |
+| P05 | Logout / session expiry | identity boundary, cross-tab fix | — | `GET /user` (shared) | — | — | mobileIdentity, authCrossTab | two-tab run (this pass, final build) | — | Read-only complete with mocked contracts |
+| P06 | Profile, password | `/m/profile`, `/m/profile/edit`, `/m/profile/password` | form, validation (email, the full version's password rules), review; passwords never shown | session (no extra read) | yes | No | mobileAssist | unblocked pass | `PUT /profile`, `PATCH /profile/password` unverified | Form and review complete, backend write disabled |
+| P07 | Theme, language | More | yes | — | local | local | mobileScreens | all passes | — | Full safe local UX complete |
+| P08 | Dashboard summary, periods | `/m?period=…` | the seven documented periods and a custom range in the address; refresh; stale; empty; multi-currency | `GET /dashboard?period=…` | — | — | mobileTools, mobileScreens | unblocked pass | — | Read-only complete with mocked contracts |
+| P09 | Attention, alerts | Home, Planning | — | yes | — | — | mobilePlanning | earlier sprints | — | Read-only complete with mocked contracts |
+| P10 | Monthly review, templates | `/m/review?month=`, `/m/templates` | month navigation; templates created, edited, deleted on the device; a template opens a pre-filled expense or income form | four reports for the month | template use ends at the entry form's review | No | mobileTools | unblocked pass | — | Full safe local UX complete (review read-only) |
+| P11 | Accounts create / edit / archive | `/m/add/account`, `/m/accounts/:id/edit`, `/m/accounts/:id/archive` | forms, validation, review, leave guard; goal accounts and archived ones refused | account read first | yes | No | mobileForms | unblocked pass | writes unverified | Form and review complete, backend write disabled |
+| P12 | Account details, movements | `/m/accounts/:id` | — | yes | links to forms | — | mobileScreens | earlier sprints | statement PDF (X6) | Read-only complete with mocked contracts |
+| P13 | History, filters | `/m/activity` | filters in the address; saved filters on the device | yes | — | — | mobileActivity, mobileTools | unblocked pass | — | Read-only complete with mocked contracts |
+| P14 | Expense / income | `/m/add/expense`, `/m/add/income` | full form (documented fields), Arabic digits, review, leave guard, templates | accounts, categories | yes | No | mobileForms, mobileTools | unblocked pass | key dedup unverified (checklist 1–7) | Form and review complete, backend write disabled |
+| P15 | Correct / reverse transaction | `/m/activity/:id/correct`, `/reverse` | prefilled correction, changed fields marked, reason 3–500, eligibility | transaction read first | yes | No | mobileForms | unblocked pass | checklist 1–8 | Form and review complete, backend write disabled |
+| P16 | Receipt capture | `/m/captures`, `/m/captures/receipts/:id`, `/m/captures/receipts/new` | photo chosen and checked (type, 10 MB), preview, replace, remove; review of what was read | captures list and detail, quotas | review form; upload disabled | No | mobileAssist | unblocked pass | upload and confirm unverified; no signed source URL in the contract | Form and review complete, backend write disabled |
+| P17 | Voice capture | `/m/captures/voice/new`, `/m/captures/voice/:id` | microphone asked on Record, 60 s limit, interruption, too-short, playback, discard confirmation; transcript review | voice captures, quotas | review form; upload disabled | No | mobileAssist | unblocked pass (Chrome fake microphone) | upload unverified; real microphones untested | Form and review complete, backend write disabled; device-validation-dependent |
+| P18 | Transfers | `/m/add/transfer`, `/m/transfers/:id/reverse` | same-currency second account, fee needs an expense category | yes | yes | No | mobileForms, mobileMoreScreens | unblocked pass | checklist 1–8 | Form and review complete, backend write disabled |
+| P19 | Categories | `/m/planning/categories…` | — | yes | code exists | **closed** | mobileCategories, mobileWriteGate | earlier sprints | dedup unverified (checklist 11) | Form and review complete, backend write disabled |
+| P20 | Budgets | `/m/add/budget`, `/m/planning/budgets/:id/edit` | general or one category, period order | yes | yes | No | mobileForms | unblocked pass | — | Form and review complete, backend write disabled |
+| P21 | Savings goals | `/m/add/goal`, `…/goals/:id/edit`, `/contribute`, `/withdraw` | same-currency accounts, not the goal's own; withdrawal within what is saved | yes | yes | No | mobileForms | unblocked pass | checklist 1–8 | Form and review complete, backend write disabled |
+| P22 | Smart plans | goal page (flagged) | — | plan read (behind its flag) | **none** | No | mobileSavings | earlier sprints | setup needs `POST /savings-plans/preview`; installment confirm/postpone/skip review screens not built | Partially implemented |
+| P23 | Planned contributions | `/m/planning/goals/:id/planned` | future date, same currency | goal read | yes | No | mobileForms | unblocked pass | — | Form and review complete, backend write disabled |
+| P24 | Debts | `/m/add/debt`, `…/debts/:id/edit`, `/payment`, `/payments/:id/reverse` | payment within what is owed, fill-remaining, no future date | yes | yes | No | mobileForms | unblocked pass | checklist 1–8 | Form and review complete, backend write disabled |
+| P25 | Recurring rules | `/m/add/recurring`, `…/recurring/:id/edit`, `/confirm`, `/skip` | interval 1–60, end after start; confirm and skip reviews | yes | yes | No | mobileForms | unblocked pass | checklist 10 | Form and review complete, backend write disabled |
+| P26 | Calendar | `/m/planning/calendar` | month navigation | yes | — | — | mobileMoreScreens, mobileTools | unblocked pass | — | Read-only complete with mocked contracts (statuses now labelled from the full version's list) |
+| P27 | Reports (ten) | `/m/reports`, `/m/reports/:type` | range, saved report filters | yes | — | — | mobileReports, mobileTools | earlier sprints | trend charts not built | Read-only complete with mocked contracts |
+| P28 | PDF export | — | — | — | — | — | — | — | built in the browser by Desktop code Mobile may not import | Partially implemented (full version only) |
+| P29 | CSV / Excel exports | `/m/exports`, `/m/add/export` | report, CSV/XLSX, range, currency; review | yes, download | yes | No | mobileReports, mobileForms | unblocked pass | create/cancel unverified | Form and review complete, backend write disabled |
+| P30 | AI assistant | `/m/assistant`, `/m/assistant/conversations/:id` | composer with suggested questions (Send disabled), forecast on request with a table, insights and conversations (read only after consent), quotas, everything labelled as generated | settings, conversations, messages, insights, forecast, quotas | composer, disabled | No | mobileAssist | unblocked pass | message, feedback and delete are writes; feedback form and conversation delete review not built | Partially implemented |
+| P31 | AI privacy settings | `/m/assistant` | — | `GET /ai/settings` | link to full version | No | mobileAssist | unblocked pass | — | Read-only complete with mocked contracts |
+| P32 | AI capture review | `/m/captures/…/:id` | as P16, P17 | yes | yes | No | mobileAssist | unblocked pass | confirm unverified | Form and review complete, backend write disabled |
+| P33 | Imports | `/m/imports`, `/m/imports/:id`, `/m/imports/new` | account, CSV read on the device, mapping (the full version's nine fields), advisory row checks and in-file duplicates; Excel explained | yes | upload disabled | No | mobileReports, mobileTools | unblocked pass | upload, mapping, confirm, cancel, reverse unverified | Form and review complete, backend write disabled |
+| P34 | WhatsApp linking | `/m/whatsapp` | status, linking steps, disconnect confirmation (last step disabled); legal wording marked as awaiting review | `GET /integrations/whatsapp` | disconnect, disabled | No | mobileAssist | unblocked pass | link challenge is a write; consent wording needs the product owner | Product-approval-dependent |
+| P35 | WhatsApp drafts | `/m/whatsapp/drafts`, `/m/whatsapp/drafts/:id` | status filter, issues, expired and missing states, review version shown | drafts list and detail | review form | No | mobileAssist | unblocked pass | confirm unverified | Form and review complete, backend write disabled |
+| P36 | Notifications | `/m/notifications`, `/m/profile` | preference toggle (Save disabled) | list, preferences | preference only | No | mobileMoreScreens, mobileAssist | unblocked pass | mark-read and preference save are writes | Read-only complete with mocked contracts |
+| P37 | Search | `/m/search` | pages and forms, both languages, Arabic spelling folded | — | — | — | mobileTools | unblocked pass | no documented record search | Full safe local UX complete (pages and forms only, labelled) |
+| P38 | Display prefs, hide amounts | Home, More | hide amounts (the full version's own preference), Home cards shown, hidden and ordered per person and workspace | — | local | local | mobileTools, mobileMoney | unblocked pass | — | Full safe local UX complete |
+| P39 | Company sign-in | — | — | — | — | — | — | — | no backend flow | Not applicable (excluded) |
+| X1 | Welcome dialog | shared | — | — | — | — | — | — | — | Not applicable to Mobile |
+| X2 | Policy consent | shared | — | — | — | — | — | — | — | Not applicable to Mobile |
+| X3 | Dashboard blocks | `/m` (Arrange Home) | show, hide, reorder, reset; storage failure handled | — | local | local | mobileTools | unblocked pass | — | Full safe local UX complete |
+| X4 | Savings reminder preference | `/m/profile` | toggle (Save disabled) | `GET /notifications/preferences` | yes | No | mobileAssist | unblocked pass | save unverified | Form and review complete, backend write disabled |
+| X5 | Public and legal content | links from Profile | — | — | — | — | — | — | no privacy or terms routes in the app (static pages only) | Not applicable to Mobile |
+| X6 | Account statement PDF | — | — | — | — | — | — | — | Desktop PDF code | Partially implemented (full version only) |
+| X7 | Saved report filters | report pages | save, open, remove per report | — | local | local | mobileTools | unblocked pass | — | Full safe local UX complete |
+| — | PWA (local and staging) | notices, install card | update on tap, offline page | — | none | — | mobilePwa, mobileBundle | lifecycle and rollback in Chrome (final builds) | device install untested | Device-validation-dependent |
 
 ## Still open, and could be built without the backend
 
-Each item below is UI or GET work that needs no server evidence. It was not done in this pass.
-
 | Item | What is missing |
 |---|---|
-| P14, P15, P11, P20, P21, P24, P25 | Entry, review and simulated-result forms with the write gate closed |
-| P30, P31 | AI insights, forecast and conversation-history reads |
-| P16, P17 | Voice and receipt history reads, and their capture UIs |
-| P34, P35 | WhatsApp status and draft reads |
-| P06 | Profile display |
-| P08 | Period picker |
-| P37 | Search |
-| P10 | Monthly review and templates |
-| X3, X7 | Dashboard blocks, saved report filters |
-| X4 | Notification preference read |
-| P04 | Email-verification banner |
+| P22 | Smart Savings: a read-only view of `GET /savings-goals/{id}/plan-options`, and review screens for installment confirm, postpone and skip (the plan read already exists) |
+| P30 | AI feedback form and conversation-delete review (both end at a disabled send) |
+| P27 | Trend charts for reports (the summary bars exist) |
+| P28, X6 | PDF generation on Mobile; needs a reviewed exception to import Desktop's PDF module, or a Mobile copy |
+| P36 | A disabled "mark as read" control |
+| P01–P03 | A Mobile-specific sign-in and registration presentation (the shared responsive pages are used today) |

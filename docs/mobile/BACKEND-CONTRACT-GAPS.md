@@ -23,6 +23,10 @@ No backend repository was available on this machine (`F:\Projects` holds only `s
 | Mark notification read | `PATCH /notifications/{id}/read` | none | idempotent per docs | n/a | n/a | inbox | no code |
 | AI message, feedback, settings; voice and receipt capture | AI endpoints | varies | UNVERIFIED | UNVERIFIED | n/a | conversation reads | no code |
 | WhatsApp draft confirm / discard, link, unlink | WhatsApp endpoints | review version | UNVERIFIED; consent and legal pending | UNVERIFIED | n/a | draft reads | no code |
+| Profile update, password change | `PUT /profile`, `PATCH /profile/password` | none | UNVERIFIED | UNVERIFIED | n/a | `GET /user` | form only, no send code |
+| Notification preference | `PATCH /notifications/preferences` | none | idempotent by nature? UNVERIFIED | n/a | n/a | preferences read | toggle only, Save disabled |
+
+Since the unblocked-feature pass, every row marked "no code" has a Mobile form and review that ends at a disabled send: there is still no code that sends it (SECURITY-AND-FINANCIAL-GATES.md §1).
 
 ## Questions that must be answered from the backend source and staging
 
@@ -39,7 +43,16 @@ No backend repository was available on this machine (`F:\Projects` holds only `s
 
 ## Read contracts Mobile relies on (from the frontend docs, not verified on a server)
 
-`/dashboard`, `/financial-alerts`, `/accounts`, `/transactions`, `/categories`, `/budgets`, `/savings-goals`, `/savings-goals/{id}/plan`, `/recurring-transactions`, `/debts`, `/debts/{id}/payments`, `/transfers`, `/notifications`, `/calendar`, `/reports/{type}`, `/report-exports`, `/report-exports/{id}/download`, `/imports`, `/imports/{id}`. Each has tests against a fake backend shaped like the docs. None was run against a real server in this sprint.
+`/dashboard` (now with every documented `period`, and `date_from`/`date_to` for `custom`), `/financial-alerts`, `/accounts`, `/transactions`, `/categories`, `/budgets`, `/savings-goals`, `/savings-goals/{id}/plan`, `/recurring-transactions`, `/debts`, `/debts/{id}/payments`, `/transfers`, `/notifications`, `/calendar`, `/reports/{type}`, `/report-exports`, `/report-exports/{id}/download`, `/imports`, `/imports/{id}`.
+
+Added in the unblocked-feature pass, through `data/readAssistApi.js` (GET only; the guard test lists the methods): `/ai/settings`, `/ai/conversations`, `/ai/conversations/{id}`, `/ai/insights`, `/ai/forecast`, `/ai/input-quotas`, `/ai/expense-captures`, `/ai/expense-captures/{id}`, `/ai/voice-expense-captures`, `/ai/voice-expense-captures/{id}`, `/integrations/whatsapp`, `/integrations/whatsapp/expense-drafts`, `/integrations/whatsapp/expense-drafts/{id}`, `/notifications/preferences`. Insights, the forecast and conversations are read only when `/ai/settings` reports consent.
+
+Each has tests against a fake backend shaped like the docs and the full version's parsers. None was run against a real server.
+
+Open questions added by these reads:
+11. The exact shapes of `data.forecast.currencies[]`, `data.insights` items and message `sources` (Mobile reads the fields the full version's panels read, and shows nothing it cannot validate).
+12. Whether a receipt capture's detail ever carries a signed source URL (none is documented; Mobile shows no original photo).
+13. The voice capture's `transcript` field name on the detail read (Mobile shows it only when present).
 
 ## External evidence checklist (each item needs backend source plus a staging run with fictional data)
 

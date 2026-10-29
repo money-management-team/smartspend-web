@@ -13,6 +13,7 @@ The Mobile PWA is for local and staging builds only. It is built from these file
 | Mobile on, PWA not asked for | No worker file, no manifest, no registration code. Only the clean-up path, which removes an earlier worker. |
 | `VITE_MOBILE_PWA=true` in a **production-mode** build | Refused with a warning; nothing is emitted. There is no approval switch: the Hostinger workflow builds in production mode, so it cannot produce a PWA. |
 | `VITE_MOBILE_ENABLED=true VITE_MOBILE_PWA=true vite build --mode staging` (or `vite` in development) | `m/sw.js`, `m/manifest.webmanifest`, `m/icon-256.png`, plus the registration code. |
+| `SMARTSPEND_MOBILE_PWA_RETIRE=true vite build --mode staging` (any non-PWA build, Mobile on or off) | Only a static **retire worker** at `m/sw.js`. The JS and CSS are byte-identical to the same build without it (151 files against 150; only `m/sw.js` differs). Refused in a production-mode build, with a warning, and nothing is emitted. |
 
 The bundler removes the registration code from non-PWA builds because the build constant `MOBILE_PWA` alone selects `registerWorker` or `removeWorker`. This was checked on all four builds by searching their JavaScript for `m/sw.js`, `updateViaCache` and `manifest.webmanifest`.
 
@@ -29,17 +30,20 @@ The bundler removes the registration code from non-PWA builds because the build 
 - **No queue:** there is no write queue, background sync or replay.
 - **Activation** deletes only older `sm-pwa-*` caches.
 - **Updates:** a new worker waits. The app shows "A new version is ready" with a Reload button, and only that tap activates the new worker, which reloads the page once.
-- **Rollback:** any later build without the PWA unregisters the `/m/` worker and deletes its caches on the next Mobile page load. Navigations are network-first, so that page comes from the new build.
+- **Rollback:**
+  - a later **Mobile-on** build without the PWA unregisters the `/m/` worker and deletes its caches on the next Mobile page load (its Mobile code runs `removeWorker`);
+  - a later **flag-off** build has no Mobile code, so it cannot. For that, build it with `SMARTSPEND_MOBILE_PWA_RETIRE=true`: the browser re-fetches `/m/sw.js` when a Mobile page opens, finds the retire worker, which deletes the `sm-pwa-*` caches, unregisters itself and reloads the pages it controlled. It intercepts no request. Leave it deployed until visitors have come back (the browser checks at least once a day, and on every in-scope navigation).
 - **App side:** an offline notice ("nothing can be loaded or sent, and nothing is saved to send later"). In More, an Install card: the browser's own prompt where offered, Share → Add to Home Screen steps on iOS, nothing once installed.
 
 ### Evidence
 
-**Unit tests** (`tests/mobilePwa.test.mjs`, 11 tests) run the worker's source against a fake service-worker global. They cover:
+**Unit tests** (`tests/mobilePwa.test.mjs`, 14 tests) run the worker's source against a fake service-worker global. They cover:
 - the flag rules, including the production refusal and that no approval switch can override it;
 - what the plugin emits;
 - the worker leaving the API, writes, other origins and non-Mobile pages alone;
 - asset-only caching, the offline page, cache clean-up and skip-waiting only on request;
-- registration and rollback in the page.
+- registration and rollback in the page;
+- the retire option's rules (exact string, never with the PWA, never in production) and the retire worker against fake globals (only `sm-pwa-*` caches deleted, unregistered, pages reloaded, no fetch handler).
 
 **Real browser.** Headless Chrome 156 on a local origin, using the staging PWA build and then a non-PWA build on the same origin (scratchpad `pwatest.mjs`):
 
@@ -53,6 +57,8 @@ The bundler removes the registration code from non-PWA builds because the build 
 | Server down: Desktop navigation | the browser's own error (not controlled) |
 | New worker version | waits; the "ready" notice appears; only the Reload tap activates it |
 | Rollback to a non-PWA build | worker unregistered and `sm-pwa-*` caches deleted on the first load; the next load is uncontrolled |
+| Rollback to a **flag-off** build with the retire worker (final source, `fin_pwa` → `fin_retire`) | first `/m/accounts` load: registrations `[]`, caches `[]`, uncontrolled; same on the next load |
+| Control: rollback to a flag-off build **without** it (`fin_pwa` → `fin_stg`) | worker still active and controlling, cache `sm-pwa-111ed0022990` still there: the old gap, reproduced |
 | JavaScript errors | 0 |
 
 Chrome's offline emulation does not apply to the worker's own fetches. That is why the server was stopped for the offline checks.
@@ -65,4 +71,5 @@ Chrome's offline emulation does not apply to the worker's own fetches. That is w
   - `/m/sw.js` and `/m/manifest.webmanifest` served as real files with correct MIME types;
   - `no-cache` on `sw.js` and `index.html`;
   - immutable caching on `/assets/*`;
-  - the SPA fallback must never serve `index.html` for `/m/sw.js` in a PWA build (it may in a non-PWA build: the registration update then fails and the clean-up path removes the worker).
+  - the SPA fallback must never serve `index.html` for `/m/sw.js` in a PWA build or a retire build (it may in a Mobile-on non-PWA build: the registration update then fails and the clean-up path removes the worker);
+  - the retire worker must be served as JavaScript with `no-cache`, or browsers keep the old worker.

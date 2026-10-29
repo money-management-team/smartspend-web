@@ -13,18 +13,24 @@ The write facade (`data/writeApi.js`) checks the gate before calling the wrapper
 
 The screens never offer a closed write. The category list, a category's page and both form addresses show `WriteClosedNotice`, which links to the full version. The form addresses render no form and make no request.
 
-Mobile has no code at all for any other write, and the PWA (PWA-AND-DEVICE-QA.md) queues nothing and caches no API answer:
-- transactions, transfers and reversals;
-- debt payments;
-- savings contributions and installments;
-- recurring confirm and skip;
-- import steps, export creation and cancellation;
-- marking notifications read;
-- AI and WhatsApp actions.
+### The forms (unblocked-feature pass)
 
-Their pages are read-only. They show the same notice with `data-sm-write` set to a descriptive name.
+Mobile now has a form for every change the full version makes that has a documented field list: 30 forms in `src/mobile/forms/workflows.js` (entries, corrections, reversals, accounts, budgets, goals and contributions, planned contributions, recurring rules and their confirm and skip, debts and payments, payment reversal, exports, receipt, voice and WhatsApp reviews, profile and password). Each validates against the documented rules, shows a review, and **ends at a send button that is disabled for good**:
 
-Tests: `tests/mobileWriteGate.test.mjs` and `tests/mobileReadOnly.test.mjs`. The read-only test covers which wrapper methods each Mobile file may name, plus a runtime refusal of anything but GET.
+- No file in `src/mobile/forms/` has request code, names an API wrapper, imports the write facade or touches storage (`tests/mobileForms.test.mjs`).
+- None of the 30 operation names is in `MOBILE_WRITES`, so the gate answers "closed" for every one (`tests/mobileForms.test.mjs`). Opening one would need a reviewed send path, which does not exist, plus the evidence in section 3.
+- Tested bypass attempts, all with the strict fake backend that fails on any non-GET: clicking the disabled button, removing `disabled` and clicking, Enter on it, `submit` on every form of the page, the browser's Back while a draft exists, another person signing in mid-draft (the draft is gone; it is in no storage).
+- The other new controls that would write (the assistant's Send, receipt and voice upload, statement upload, WhatsApp disconnect, the notification preference's Save) are disabled buttons with no handler, next to a note saying nothing was sent.
+
+Mobile has no code at all for any write but the two closed category writes. The PWA (PWA-AND-DEVICE-QA.md) queues nothing and caches no API answer.
+
+### Device storage
+
+Mobile writes to browser storage in two places (`tests/mobileReadOnly.test.mjs`):
+- `presentation/preference.js`: the one presentation word, as before;
+- `preferences/deviceStore.js`: Mobile's own choices (Home layout, saved filters, quick-entry templates), under a key naming the person and the workspace. Only what the person chose or typed is kept; no token, no response, no draft. Unwritable storage leaves the choices working for the visit only.
+
+Mobile also changes one value of the full version's own preference store: `hiddenMoney` (hide amounts), in `money/MoneyPrivacy.jsx` only.
 
 ## 2. Why the gate exists: the browser can send a write twice
 

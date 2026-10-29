@@ -65,6 +65,9 @@
   inset: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
+  /* One column exactly the screen's width: an implicit auto column grew to the compact bar's widest content at 2x text
+     (the 1-4 px overhang on 320 px screens). */
+  grid-template-columns: minmax(0, 1fr);
   box-sizing: border-box;
   color: var(--sm-text);
   background: var(--sm-bg);
@@ -1727,3 +1730,31 @@
 /* The notifications row at enlarged text on a narrow screen (1 px overhang in the last browser pass). */
 .sm-root .sm-note-row .sm-row-main { min-inline-size: 0; overflow-wrap: anywhere; }
 .sm-root .sm-note-row .sm-chips-inline { flex-wrap: wrap; }
+
+/* Actions at the end of a form or inside a card stay where they are: a sticky bar there covered the error summary and the
+   "not sent" note, and at 2x text on a 320 px screen most of the screen (unblocked-pass browser run). */
+.sm-root .sm-form-actions,
+.sm-root .sm-card .sm-actions,
+.sm-root .sm-saved-form .sm-actions,
+.sm-root .sm-paged-nav {
+  position: static;
+  margin-block-end: 0;
+  padding-block: 0.5rem 0.25rem;
+  background: none;
+}
+.sm-root .sm-form-actions { border-block-start: 0; }
+
+/* ---------- Final browser pass: enlarged text on narrow screens ---------- */
+.sm-root .sm-nav-compact > *, .sm-root .sm-nav-compact .sm-add { min-inline-size: 0; }
+.sm-root .sm-nav-compact .sm-nav-label, .sm-root .sm-nav-compact .sm-add-label { overflow-wrap: anywhere; }
+/* A fieldset is as wide as its widest choice by default; a long list of options must wrap instead. */
+.sm-root .sm-fieldset { min-inline-size: 0; }
+.sm-root .sm-choice { min-inline-size: 0; overflow-wrap: anywhere; }
+.sm-root .sm-choice > span { min-inline-size: 0; }
+/* Values in a list (an email address, a long name, a large amount) wrap under their label rather than past the edge. */
+.sm-root .sm-stats-stacked .sm-stat { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0 0.5rem; }
+.sm-root .sm-stats-stacked .sm-stat dt { flex: 1 1 auto; }
+.sm-root .sm-stats-stacked .sm-stat dd { flex: 0 1 auto; margin-inline-start: auto; min-inline-size: 0; overflow-wrap: anywhere; }
+/* The forecast's day-by-day table scrolls inside its card; the card never grows past the screen. */
+.sm-root .sm-page > section, .sm-root .sm-page > div, .sm-root .sm-ai-forecast, .sm-root .sm-ai-timeline { min-inline-size: 0; max-inline-size: 100%; }
+.sm-root .sm-ai-timeline .sm-table-wrap { inline-size: 100%; }

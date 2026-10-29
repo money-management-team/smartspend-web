@@ -30,9 +30,6 @@
 - **The PWA has never been built for production:** a production-mode build refuses it (`scripts/mobilePwa.mjs`).
   - If a staging origin ever ran the PWA build, the next non-PWA build removes the `/m/` worker and its caches on the first Mobile page load. This was tested in Chrome; see PWA-AND-DEVICE-QA.md.
   - On such an origin, `/m/sw.js` must then not be served as a real file from an old deploy.
-  - **Gap:** a *flag-off* build has no Mobile code, so it cannot remove that worker. The worker is harmless (network-first navigations, hashed assets only, never `/api`), but it stays. To roll a PWA staging origin all the way back:
-    - deploy one Mobile-on non-PWA build first; or
-    - serve, at `/m/sw.js`, a worker that clears the `sm-pwa-*` caches and calls `self.registration.unregister()`.
-
-    This path has not been tested.
+  - **Flag-off rollback (resolved for staging):** a flag-off build has no Mobile code, so it cannot remove that worker itself. Build it with `SMARTSPEND_MOBILE_PWA_RETIRE=true` (build shell only; refused in production mode). That adds one static file, `m/sw.js`, a retire worker that deletes the `sm-pwa-*` caches and unregisters itself, and changes nothing else in the output. Verified in Chrome on the final source: the worker and its cache were gone on the first Mobile visit after the switch, and a control run without the option kept them (PWA-AND-DEVICE-QA.md). Serve it as JavaScript with `no-cache`, and keep it deployed until visitors have returned. Not yet verified on a real staging host or a device.
+- **The test-loader fix** (`tests/helpers/loader.mjs`, `7205aad`) touches tests only.
 - **The cross-tab auth change** is two commits (`9fe88c7`, `355ee62`) and can be reverted on its own. Reverting it brings back the cross-tab identity mismatch described in SECURITY-AND-FINANCIAL-GATES.md §4.
