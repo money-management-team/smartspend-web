@@ -1,0 +1,13 @@
+import { FiFileText, FiClock, FiAlertCircle } from "react-icons/fi";
+import { useTranslation } from "react-i18next";
+
+export default function PersonalProcessing() {
+  const { i18n } = useTranslation();
+  const ar = i18n.language === "ar";
+  const copy = ar ? {
+    title: "سلامة المعالجة", subtitle: "التعرف على المستندات والاستيراد والتقارير التي تحتاج متابعة تقنية", job: "المهمة", type: "النوع", provider: "المزوّد", status: "الحالة", duration: "المدة", failed: "فشلت", completed: "مكتملة", metric: "مقاييس الموثوقية", metricHint: "مقاييس تشغيلية من مسارات الأفراد", rows: [["تسجيل المعاملات", "التسجيل وتحديث الرصيد", "98.9%", "green"], ["تأكيد العمليات المتكررة", "تأكيد العمليات المتكررة", "97.8%", "green"], ["وضوح التعرف على المستندات", "الحقول جاهزة للمراجعة", "94.8%", "blue"], ["تصدير التقارير", "PDF / Excel / CSV", "94.2%", "blue"]]
+  } : {
+    title: "Processing health", subtitle: "Document recognition, imports and reports requiring technical follow-up", job: "Job", type: "Type", provider: "Provider", status: "Status", duration: "Duration", failed: "Failed", completed: "Completed", metric: "Reliability metrics", metricHint: "Operational metrics from Personal workflows", rows: [["Transaction recording", "Recording & balance update", "98.9%", "green"], ["Recurring confirmations", "Recurring confirmations", "97.8%", "green"], ["Clear document recognition", "Fields ready for review", "94.8%", "blue"], ["Report exports", "PDF / Excel / CSV", "94.2%", "blue"]]
+  };
+  return <div className="admin-personal-processing"><section className="admin-panel"><div className="admin-panel__header"><div><h2>{copy.title}</h2><p>{copy.subtitle}</p></div></div><div className="admin-personal-processing__table"><table><thead><tr>{[copy.job,copy.type,copy.provider,copy.status,copy.duration].map(x=><th key={x}>{x}</th>)}</tr></thead><tbody><tr><td><span className="admin-personal-job">JOB-99144</span></td><td>Receipt OCR</td><td>Vision OCR</td><td><span className="admin-pill admin-personal-suspended">{copy.failed}</span></td><td>—</td></tr><tr><td><span className="admin-personal-job">JOB-99141</span></td><td>Report export</td><td>Internal</td><td><span className="admin-pill">{copy.completed}</span></td><td>1.8s</td></tr></tbody></table></div></section><section className="admin-panel"><div className="admin-panel__header"><div><h2>{copy.metric}</h2><p>{copy.metricHint}</p></div></div><div className="admin-personal-reliability">{copy.rows.map(([name,hint,value,color])=><div key={name}><div><strong>{name}</strong><bdi>{value}</bdi></div><span>{hint}</span><i><em className={`admin-personal-progress--${color}`} style={{width:value}} /></i></div>)}</div></section></div>;
+}

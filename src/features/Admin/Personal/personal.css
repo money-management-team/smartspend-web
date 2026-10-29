@@ -41,12 +41,14 @@
 .admin-personal-users .admin-panel__header { min-height: 69px; }
 .admin-personal-users__scroll { overflow-x: auto; }
 .admin-personal-users table { width: 100%; border-collapse: collapse; text-align: start; font-size: 11px; }
+.admin-personal-users--full { min-height: 600px; }
 .admin-personal-users :is(th,td) { padding: 11px 13px; text-align: start; border-bottom: 1px solid var(--admin-border); }
 .admin-personal-users thead th { background: var(--admin-soft); color: var(--admin-muted); font-size: 10px; text-transform: uppercase; padding-block: 15px 8px; }
 .admin-personal-users tbody tr:last-child :is(th,td) { border-bottom: 0; }
 .admin-personal-users tbody th { width: 31%; font-weight: 400; }
 .admin-personal-users td { width: 18%; }
 .admin-personal-users td:last-child { width: 16%; }
+.admin-personal-users td:nth-last-child(2) { width: 11%; }
 .admin-personal-user { display: flex; align-items: center; gap: 9px; }
 .admin-personal-user > div { min-width: 0; }
 .admin-personal-user .admin-avatar { width: 32px; height: 35px; border-radius: 10px; flex-shrink: 0; font-size: 10px; }
@@ -60,6 +62,39 @@
 .admin-personal-suspended { color: var(--admin-red); background: var(--admin-red-soft); border-color: color-mix(in srgb,var(--admin-red) 20%,transparent); }
 .admin-personal-last-signin { color: var(--admin-muted); }
 .admin-personal-users__tools { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 16px; border-bottom: 1px solid var(--admin-border); color: var(--admin-muted); }
+.admin-personal-users__filter { display:flex; align-items:center; gap:7px; border:1px solid var(--admin-border); border-radius:9px; padding:9px; background:var(--admin-surface); color:var(--admin-muted); }
+.admin-personal-users__filter select { border:0; color:var(--admin-text); background:transparent; font:inherit; font-weight:700; }
+.admin-personal-row-link { width:36px; height:36px; border-radius:10px; }
+.admin-personal-risk--low { color:var(--admin-green); background:var(--admin-green-soft); }
+.admin-personal-risk--medium { color:var(--admin-orange); background:var(--admin-orange-soft); }
+.admin-personal-risk--high { color:var(--admin-red); background:var(--admin-red-soft); }
+.admin-personal-processing { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.admin-personal-processing > .admin-panel { min-height:450px; }
+.admin-personal-processing__table { overflow:auto; }
+.admin-personal-processing table { width:100%; border-collapse:collapse; min-width:580px; }
+.admin-personal-processing th,.admin-personal-processing td { padding:20px 16px; text-align:start; border-bottom:1px solid var(--admin-border); color:var(--admin-muted); }
+.admin-personal-processing th { text-transform:uppercase; background:var(--admin-soft); color:var(--admin-muted); font-size:11px; }
+.admin-personal-job { color:var(--admin-accent); background:var(--admin-blue-soft); border-radius:5px; padding:4px 7px; font-weight:700; }
+.admin-personal-reliability { padding:14px 24px; }
+.admin-personal-reliability > div { padding:17px 0; border-bottom:1px solid var(--admin-border); }
+.admin-personal-reliability > div:last-child { border:0; }
+.admin-personal-reliability > div > div { display:flex; justify-content:space-between; gap:16px; font-size:13px; }
+.admin-personal-reliability span { color:var(--admin-muted); display:block; margin-top:3px; }
+.admin-personal-reliability i { display:block; height:9px; background:var(--admin-soft); border-radius:9px; margin-top:8px; overflow:hidden; }
+.admin-personal-reliability em { display:block; height:100%; background:var(--admin-accent); border-radius:inherit; }
+.admin-personal-progress--green { background:var(--admin-green) !important; }
+.admin-personal-report-list { padding:12px 24px; }
+.admin-personal-report-list > div { display:flex; align-items:center; gap:13px; padding:16px 0; border-bottom:1px solid var(--admin-border); }
+.admin-personal-report-list > div:last-child { border:0; }
+.admin-personal-report-list .admin-icon-tile { width:38px; height:38px; border-radius:10px; }
+.admin-personal-report-list small { display:block; color:var(--admin-muted); margin-top:3px; }
+.admin-personal-report-list bdi { margin-inline-start:auto; font-size:15px; font-weight:700; }
+.admin-personal-controls { padding:10px 22px 22px; }
+.admin-personal-controls > div { display:flex; align-items:center; gap:15px; background:var(--admin-soft); border:1px solid var(--admin-border); border-radius:15px; margin-top:12px; padding:18px; }
+.admin-personal-controls > div > svg { color:var(--admin-accent); width:24px; height:24px; }
+.admin-personal-controls div > div { flex:1; }
+.admin-personal-controls p { color:var(--admin-muted); margin-top:4px !important; line-height:1.6 !important; }
+@media(max-width:900px) { .admin-personal-processing { grid-template-columns:1fr; }.admin-personal-processing > .admin-panel{min-height:0;} }
 .admin-personal-users__search { display: flex; align-items: center; gap: 8px; width: min(420px,75%); }
 .admin-personal-users__search input { border: 1px solid var(--admin-border); background: var(--admin-soft); border-radius: 9px; padding: 10px; color: var(--admin-text); min-width: 0; width: 100%; font-size: 12px; }
 .admin-personal-users__search input::placeholder { color: var(--admin-muted); opacity: 1; }
@@ -94,6 +129,7 @@
   .admin-personal-health__status .admin-pill { font-size: 10px; padding-inline: 6px; }
   .admin-personal-follow__items button { padding-inline: 8px; }
   .admin-personal-users table { min-width: 710px; }
+  .admin-personal-processing { grid-template-columns:1fr; }
   .admin-personal-users__tools { flex-wrap: wrap; gap: 10px; }
   .admin-personal-users__search { width: 100%; }
   .admin-personal-health__grid--single .admin-personal-health__module { grid-template-columns: 32px minmax(0,1fr); }

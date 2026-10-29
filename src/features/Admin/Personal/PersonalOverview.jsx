@@ -6,6 +6,8 @@ import AdminShell from "../components/AdminShell";
 import AdminDialog from "../components/AdminDialog";
 import PersonalHealth from "./components/PersonalHealth";
 import PersonalUsers from "./components/PersonalUsers";
+import PersonalProcessing from "./components/PersonalProcessing";
+import PersonalReportUsage from "./components/PersonalReportUsage";
 import "../admin.css";
 import "./personal.css";
 
@@ -71,10 +73,10 @@ export default function PersonalOverview() {
         {tabs.map(({ key, icon: Icon }, index) => <button role="tab" id={`admin-personal-tab-${key}`} key={key} aria-selected={tab === key} aria-controls="admin-personal-panel" tabIndex={tab === key ? 0 : -1} onClick={() => selectTab(key)} onKeyDown={event => handleTabKey(event, index)}><Icon />{p(key)}</button>)}
       </div>
       <div role="tabpanel" id="admin-personal-panel" aria-labelledby={`admin-personal-tab-${tab}`} tabIndex={0}>
-        <section className="admin-metrics admin-personal-metrics" aria-label={p("overview")}>
+        {tab === "overview" && <section className="admin-metrics admin-personal-metrics" aria-label={p("overview")}>
           {metrics.map(({ label, value, note, icon: Icon, color }) => <article className="admin-panel admin-metric" key={label}><span className={`admin-icon-tile admin-icon-tile--${color}`}><Icon /></span><div><h2>{p(label)}</h2><strong className="admin-metric__value"><bdi>{value}</bdi></strong><p><bdi>{p(note)}</bdi></p></div></article>)}
-        </section>
-        {(tab === "overview" || tab === "health") && <div className="admin-personal-panels">
+        </section>}
+        {tab === "overview" && <div className="admin-personal-panels">
           <PersonalHealth />
           <section className="admin-panel admin-personal-follow" aria-labelledby="admin-personal-follow-title"><div className="admin-panel__header"><div><h2 id="admin-personal-follow-title">{p("followTitle")}</h2><p>{p("followHint")}</p></div></div>
             <div className="admin-personal-follow__items">{followUps.map(({ key, icon: Icon, color }) => <button key={key} onClick={() => openDetail(`personalPage.${key}Title`, `personalPage.${key}Detail`)}><span className={`admin-icon-tile admin-icon-tile--${color}`}><Icon /></span><span><strong>{p(`${key}Title`)}</strong><small>{p(`${key}Hint`)}</small></span><FiArrowUpRight className="admin-link-arrow" /></button>)}</div>
@@ -82,7 +84,8 @@ export default function PersonalOverview() {
           </section>
         </div>}
         {(tab === "overview" || tab === "users") && <PersonalUsers fullList={tab === "users"} onViewAll={() => { selectTab("users"); document.getElementById("admin-personal-tab-users").focus(); }} />}
-        {tab === "reports" && <div className="admin-personal-reports"><PersonalHealth reportsOnly /><button className="admin-button admin-button--primary" onClick={exportSummary}><FiDownload />{p("reportsExport")}</button></div>}
+        {tab === "health" && <PersonalProcessing />}
+        {tab === "reports" && <PersonalReportUsage />}
       </div>
       <AdminDialog detail={detail} onClose={() => setDetail(null)} />
     </div>

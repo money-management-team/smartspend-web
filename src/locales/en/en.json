@@ -3639,7 +3639,9 @@
         "lina": "Lina Sakalla",
         "omar": "Omar Khalil",
         "sarah": "Sarah Ahmad",
-        "yousef": "Yousef Nasser"
+        "yousef": "Yousef Nasser",
+        "maya": "Maya Saleh",
+        "adam": "Adam Mansour"
       },
       "searchUsers": "Search demo users by name or email…",
       "noUsers": "No users match your search.",
@@ -3654,7 +3656,14 @@
       "usersCount": "{{count}} demo users",
       "exportMetric": "Metric",
       "exportValue": "Value",
-      "exportSource": "Synthetic demo data"
+      "exportSource": "Synthetic demo data",
+      "risk": "Risk",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "inactive": "Inactive",
+      "allStatuses": "All statuses",
+      "export": "Export"
     }
   }
 }
