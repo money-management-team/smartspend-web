@@ -25,6 +25,7 @@ for (const key of ["localStorage", "sessionStorage", "matchMedia"]) {
 
 export const { default: i18n } = await import("../../src/i18n.js");
 export const { AuthContext } = await import("../../src/contexts/auth/authContext.js");
+const { default: AuthProvider } = await import("../../src/contexts/auth/authProvider.jsx");
 const { default: ThemeProvider } = await import("../../src/contexts/theme/themeProvider.jsx");
 const { default: LanguageProvider } = await import("../../src/contexts/language/languageProvider.jsx");
 export const { default: MobileEntry } = await import("../../src/mobile/entry/MobileEntry.jsx");
@@ -82,7 +83,8 @@ const stub = (id) => h("div", { id }, id);
  * @param {{ entry?: string, auth?: object, preference?: string }} options
  * `auth` is the AuthContext value; by default it is user A, matching what the caller stored.
  */
-export async function mountMobile({ entry = "/m", auth, preference = "mobile" } = {}) {
+// `realAuth: true` mounts the app's real AuthProvider instead of a fixed context value (for tests of real sign-in dispatch).
+export async function mountMobile({ entry = "/m", auth, preference = "mobile", realAuth = false } = {}) {
   if (preference) window.localStorage.setItem(PRESENTATION_KEY, preference);
 
   const value = auth ?? { isAuthenticated: true, initializing: false, token: TOKEN_A, user: USER_A, workspace: { id: 1, base_currency_code: "ILS", timezone: "UTC" } };
@@ -93,7 +95,7 @@ export async function mountMobile({ entry = "/m", auth, preference = "mobile" } 
   const view = await render(
     h(ThemeProvider, null,
       h(LanguageProvider, null,
-        h(AuthHarness, { initial: value },
+        realAuth ? h(AuthProvider, null, h(RouterProvider, { router })) : h(AuthHarness, { initial: value },
           h(RouterProvider, { router })))),
   );
 

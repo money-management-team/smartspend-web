@@ -81,7 +81,7 @@ describe("Mobile sign-in", () => {
     await click(action("toggle-password"));
     assert.equal(password.type, "text");
     assert.equal(qa("a").find((link) => /Forgot/.test(link.textContent)).getAttribute("href"), "/forgot-password");
-    assert.equal(action("google").getAttribute("href"), "/signin");
+    assert.ok(q("[data-sm-google]"), "Google sign-in uses the app's own mechanism (Decision C); unconfigured in tests");
     await view.unmount();
     api.restore();
     storeSession({ token: TOKEN_A, user: USER_A });

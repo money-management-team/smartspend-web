@@ -126,6 +126,8 @@ if (!ON) {
       assert.equal(q("[data-sm-account='1'] input", dialog).checked, true, "the plan's own account, which can pay");
       assert.equal(q("[data-sm-account='2'] input", dialog).disabled, true, "an account the backend says can't cover it");
       assert.equal(q("[data-sm-versions]", dialog).dataset.smVersions, "2:4");
+      assert.ok(q("[data-sm-note='funding-unavailable']", dialog), "multi-account funding is said to be unavailable");
+      assert.equal(api.calls.some((call) => /funding/.test(call.path)), false, "the funding preview (a POST) is never asked for");
       const send = q("[data-sm-action='send']", dialog);
       assert.equal(send.disabled, true);
       await click(send);

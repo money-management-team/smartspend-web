@@ -68,6 +68,7 @@ export const reportsImports = {
       },
     },
     exports: {
+      download_denied: "You can't download this file.", download_gone: "This file is no longer available. Request a new export in the full version.", expiredNote: "Expired: the file was removed.",
       downloadFormat: "Download {{format}}", pdfNote: "PDF, CSV and Excel files SmartSpend has built can be downloaded here. Building a PDF on this device is only in the full version.",
       loading: "Loading exports",
       openFull: "Open exports in the full version",
@@ -151,6 +152,7 @@ export const reportsImports = {
       },
     },
     exports: {
+      download_denied: "لا يمكنك تنزيل هذا الملف.", download_gone: "هذا الملف لم يعد متاحًا. اطلب تصديرًا جديدًا في النسخة الكاملة.", expiredNote: "منتهي الصلاحية: أُزيل الملف.",
       downloadFormat: "تنزيل {{format}}", pdfNote: "يمكن هنا تنزيل ملفات PDF وCSV وExcel التي أعدّها SmartSpend. إنشاء PDF على هذا الجهاز متاح في النسخة الكاملة فقط.",
       loading: "جارٍ تحميل عمليات التصدير",
       openFull: "افتح التصدير في النسخة الكاملة",

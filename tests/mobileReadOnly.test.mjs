@@ -69,6 +69,10 @@ describe("the source", () => {
     assert.deepEqual(find(/from\s*["'][^"']*data\/writeApi(?:\.js)?["']/), ["src/mobile/categories/MobileCategoryForm.jsx"]);
   });
 
+  it("never asks for the Smart Savings funding preview: a POST, blocked until the backend shows it has no consequential side effect", () => {
+    assert.deepEqual(find(/fundingPreview|funding-preview|confirmAccounts|reverseLegs/), []);
+  });
+
   it("has no way to build a write request of its own", () => {
     assert.deepEqual(find(/["'`](POST|PATCH|PUT|DELETE)["'`]/i), []);
     assert.deepEqual(find(/\bmethod\s*:/), []);

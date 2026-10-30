@@ -73,6 +73,7 @@ function ConfirmBody({ goalId, installment, currency, locale }) {
         ))}
       </fieldset>
       <p className="sm-text sm-muted sm-fine">{t(`${P}.balanceNote`)}</p>
+      <p className="sm-text sm-muted sm-fine" role="note" data-sm-note="funding-unavailable">{t(`${P}.fundingUnavailable`)}</p>
       <p className="sm-text sm-muted sm-fine" data-sm-versions={`${preview.planVersion ?? "?"}:${preview.lockVersion ?? "?"}`}>{t(`${P}.versions`, { plan: preview.planVersion ?? "—", lock: preview.lockVersion ?? "—" })}</p>
     </div>
   );

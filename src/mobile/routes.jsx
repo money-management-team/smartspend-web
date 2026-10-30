@@ -73,7 +73,8 @@ export const mobileRoutes = [
     ),
   },
   { path: MOBILE_SIGNIN, element: <MobileGuestOnly><MobileSignIn /></MobileGuestOnly> },
-  { path: MOBILE_REGISTER, element: <MobileGuestOnly><MobileRegister /></MobileGuestOnly> },
+  // Registration applies the guest rule itself, so a registration that succeeds can go on to Profile (verification).
+  { path: MOBILE_REGISTER, element: <MobileRegister /> },
   {
     path: MOBILE_PREFIX,
     element: (

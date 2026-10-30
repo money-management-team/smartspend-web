@@ -1803,3 +1803,11 @@
 .sm-root .sm-password .sm-input { flex: 1 1 8rem; }
 /* The trend's table scrolls inside its card when opened; the card and page never widen. */
 .sm-root .sm-trend > *, .sm-root .sm-trend-table, .sm-root .sm-trend-table .sm-table-wrap { min-inline-size: 0; max-inline-size: 100%; }
+
+/* Google sign-in (the app's own Google button in a slot) and the auth title at enlarged text. */
+.sm-root .sm-google { display: grid; gap: 0.5rem; min-inline-size: 0; }
+.sm-root .sm-google-slot { min-block-size: 44px; max-inline-size: 100%; overflow: hidden; }
+.sm-root .sm-auth-divider { display: flex; align-items: center; gap: 0.75rem; color: var(--sm-muted); margin: 0.25rem 0; }
+.sm-root .sm-auth-divider::before, .sm-root .sm-auth-divider::after { content: ""; flex: 1; border-block-start: 1px solid var(--sm-border); }
+/* A heading word that is longer than the line breaks only as a last resort, never inside a word that fits. */
+.sm-root.sm-auth .sm-identity-title { overflow-wrap: break-word; hyphens: manual; }

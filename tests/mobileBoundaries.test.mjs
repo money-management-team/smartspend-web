@@ -42,6 +42,10 @@ const ALLOWED_OUTSIDE = [
   /^src\/assets\/smart-spend-logo\.png$/,
   /^src\/features\/Dashboards\/User\/api\/[A-Za-z]+\.js$/,
   /^src\/features\/Dashboards\/User\/Experience\/experienceStore\.js$/,
+  // Decision C (product owner, Google sign-in): the full version's own Google mechanism, reused rather than copied:
+  // the hook (provider's loginWithGoogle, consent, safe return) and the Google Identity loader. Plain JS, no JSX, no CSS.
+  /^src\/features\/Auth\/components\/AuthSocial\/useGoogleSignIn\.js$/,
+  /^src\/features\/Auth\/components\/AuthSocial\/googleIdentity\.js$/,
 ];
 
 const ALLOWED_PACKAGES = ["react", "react-dom", "react-router-dom", "react-i18next", "react-icons/lu"];
@@ -88,6 +92,8 @@ describe("Mobile import boundaries", () => {
   it("imports no Desktop page, layout, shared component or CSS", () => {
     for (const file of mobileSource) {
       for (const specifier of specifiers(readFileSync(file, "utf8"))) {
+        // Decision C: the two plain-JS Google sign-in modules, by exact name (no component, no CSS from that folder).
+        if (/\/features\/Auth\/components\/AuthSocial\/(useGoogleSignIn|googleIdentity)\.js$/.test(specifier)) continue;
         assert.doesNotMatch(specifier, /\/(layouts|components|features\/(?!Dashboards\/User\/api\/|Dashboards\/User\/Experience\/experienceStore))/, `${rel(file)} -> ${specifier}`);
 
         if (specifier.endsWith(".css")) {

@@ -17,6 +17,20 @@ import StateChip from "../ui/StateChip.jsx";
 // The full version's built name when the server sends none (docs/report-exports/download.md): smartspend-{report}-{id}.{format}, csv for an unknown format.
 const exportFileName = (item) => `smartspend-${item.report ?? "report"}-${item.id}.${["csv", "xlsx", "pdf"].includes(item.format) ? item.format : "csv"}`;
 
+/*
+ * The name a downloaded file is saved under: the server's, made safe (no folder
+ * part, no control or reserved characters, no leading dots, at most 120
+ * characters), or the built name above when nothing usable is left.
+ */
+const safeFileName = (name, item) => {
+  const base = String(name ?? "").split(/[\\/]/).pop() ?? "";
+  const clean = [...base].filter((char) => char.charCodeAt(0) >= 32 && !'<>:"|?*'.includes(char)).join("").replace(/^[.\s]+/, "").trim().slice(0, 120);
+  return clean || exportFileName(item);
+};
+
+// A failed download in words: refused (403), gone or expired (404, 410), or another failure. Nothing is retried by itself.
+const downloadFailure = (error) => (error?.status === 403 ? "denied" : error?.status === 404 || error?.status === 410 ? "gone" : "failed");
+
 const EXPORT_TONES = { queued: "warn", processing: "warn", completed: "good", failed: "bad", expired: "neutral", cancelled: "neutral" };
 
 /*
@@ -57,7 +71,8 @@ function ExportRow({ item, locale, onDownload, state }) {
         ) : (
           <span className="sm-row-meta">{t(item.status === "queued" || item.status === "processing" ? "exports.notReady" : "exports.noFile")}</span>
         )}
-        {state === "failed" && <span className="sm-text sm-form-error" role="alert">{t("exports.downloadFailed")}</span>}
+        {["failed", "denied", "gone"].includes(state) && <span className="sm-text sm-form-error" role="alert" data-sm-download-error={state}>{t(state === "failed" ? "exports.downloadFailed" : `exports.download_${state}`)}</span>}
+        {item.status === "expired" && <span className="sm-row-meta" data-sm-note="expired">{t("exports.expiredNote")}</span>}
         {state === "saved" && <span className="sm-text sm-muted" role="status">{t("exports.saved")}</span>}
       </span>
     </div>
@@ -90,10 +105,10 @@ export default function MobileExports() {
       const file = await readExportFile(item.id);
       // A file that arrives after the signed-in person changed is not saved here.
       if (!guard.check()) return;
-      saveFile(linkRef.current, file.blob, file.filename ?? item.fileName ?? exportFileName(item));
+      saveFile(linkRef.current, file.blob, safeFileName(file.filename ?? item.fileName, item));
       setStates((current) => ({ ...current, [item.id]: "saved" }));
-    } catch {
-      if (guard.check()) setStates((current) => ({ ...current, [item.id]: "failed" }));
+    } catch (error) {
+      if (guard.check()) setStates((current) => ({ ...current, [item.id]: downloadFailure(error) }));
     } finally {
       running.current.delete(item.id);
     }

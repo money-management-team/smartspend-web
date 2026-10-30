@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import logo from "../../assets/smart-spend-logo.png";
 import { useAuthContext } from "../../contexts/auth/useAuthContext";
@@ -13,6 +13,7 @@ import { MOBILE_PROFILE, MOBILE_REGISTER, MOBILE_SIGNIN } from "../navigation.js
 import { usePresentation } from "../presentation/usePresentation.js";
 import { useOnline } from "../ui/useOnline.js";
 import { mobileDestination } from "./destination.js";
+import GoogleSignIn from "./GoogleSignIn.jsx";
 
 const PASSWORD_MIN = 8;
 const firstOf = (value) => (Array.isArray(value) ? value.find((item) => typeof item === "string") : typeof value === "string" ? value : null)?.slice(0, 300) ?? null;
@@ -121,7 +122,7 @@ export function MobileSignIn() {
   };
 
   return (
-    <AuthFrame screen="signin" title={t("auth.signin.title")}>
+    <AuthFrame screen="signin" title={t("auth.signin.heading")}>
       <p className="sm-text sm-muted">{t("auth.signin.intro")}</p>
       <form className="sm-auth-form" onSubmit={onSubmit} noValidate aria-busy={busy} data-sm-form="signin">
         {general && <div className="sm-error sm-error-compact" role="alert" tabIndex={-1} ref={alertRef} data-sm-auth-error>{general}</div>}
@@ -144,8 +145,8 @@ export function MobileSignIn() {
         </label>
         <button type="submit" className="sm-button" disabled={busy} aria-busy={busy} data-sm-action="signin">{t(busy ? "auth.signin.busy" : "auth.signin.submit")}</button>
       </form>
-      <Link className="sm-button sm-button-quiet" to={PATH.AUTH.SIGNIN} state={location.state} data-sm-action="google">{t("auth.google")}</Link>
-      <p className="sm-text sm-muted sm-fine">{t("auth.googleNote")}</p>
+      <p className="sm-auth-divider" aria-hidden="true"><span>{t("auth.or")}</span></p>
+      <GoogleSignIn remember={remember} disabled={busy} />
       <p className="sm-text">{t("auth.noAccount")} <Link to={MOBILE_REGISTER} state={location.state}>{t("auth.register.link")}</Link></p>
     </AuthFrame>
   );
@@ -154,7 +155,10 @@ export function MobileSignIn() {
 export function MobileRegister() {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const ids = useId();
-  const { register } = useAuthContext();
+  const { register, isAuthenticated, initializing } = useAuthContext();
+  // Set when this page's own registration is on its way: the session the provider then stores must lead to
+  // Profile (email verification), not to the guest rule's usual destination.
+  const [registering, setRegistering] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const online = useOnline();
@@ -164,11 +168,13 @@ export function MobileRegister() {
   const alertRef = useRef(null);
   const set = (name) => (event) => setValues((current) => ({ ...current, [name]: event.target.type === "checkbox" ? event.target.checked : event.target.value }));
   const [submit, busy] = useSubmit(async () => {
+    setRegistering(true);
     try {
       await register({ name: values.name.trim(), identifier: values.identifier.trim(), password: values.password, password_confirmation: values.confirmation, terms_accepted: values.accepted, privacy_accepted: values.accepted });
       // A new account starts unverified: Profile shows the email status and how to verify.
       navigate(MOBILE_PROFILE, { replace: true });
     } catch (error) {
+      setRegistering(false);
       const fields = error?.code === "VALIDATION_ERROR" ? error.errors ?? {} : {};
       setErrors({ name: firstOf(fields.name), identifier: firstOf(fields.identifier), password: firstOf(fields.password), confirmation: firstOf(fields.password_confirmation), accepted: firstOf(fields.terms_accepted) ?? firstOf(fields.privacy_accepted) });
       setGeneral(failureText(error, t, online, "register"));
@@ -194,6 +200,9 @@ export function MobileRegister() {
     setGeneral(bad ? t("auth.fix") : "");
     if (!bad) submit();
   };
+
+  // The guest rule, here rather than in MobileGuestOnly: a registration that just succeeded goes to Profile.
+  if (!initializing && isAuthenticated) return <Navigate to={registering ? MOBILE_PROFILE : mobileDestination(location.state)} replace />;
 
   const field = (name, label, input) => (
     <div className="sm-field">
