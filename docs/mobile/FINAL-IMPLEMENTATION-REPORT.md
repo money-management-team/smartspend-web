@@ -1,14 +1,16 @@
-﻿# Mobile — implementation report (after the final source closure)
+﻿# Mobile — implementation report (after the product decisions)
 
-**Verdict: MAXIMUM SAFE SOURCE IMPLEMENTATION COMPLETE — RELEASE GATES REMAIN OPEN.**
+**Verdict: UI SOURCE COMPLETE WITHIN THE PRODUCT DECISIONS — BACKEND, STAGING AND DEVICE GATES REMAIN OPEN.**
 
-Every Mobile feature that can be built within the current rules now exists in source. That means without the backend, without a product decision and without crossing the Mobile import boundary.
+Every Mobile feature allowed by the product owner's decisions exists in source. The decisions:
+- **A — PDF:** approved, backend PDFs only.
+- **B — funding preview:** not approved; stays blocked.
+- **C — Google sign-in:** conditionally approved, local source only.
 
-What is left needs a decision or external evidence:
-- **On-device PDF:** needs an import-boundary exception.
-- **Multi-account funding review:** needs a decision that `POST …/funding-preview` is a read.
-- **Google sign-in inside Mobile:** needs a boundary exception.
-- **Backend:** no write can open until it is verified.
+What is left needs external evidence. The item list for each is in BACKEND-VERIFICATION-HANDOFF.md:
+- **Backend:** no write can open until it is verified against Laravel.
+- **Decision B:** `POST …/funding-preview` stays blocked until the backend shows it has no lasting or consequential effect (handoff §4).
+- **Google:** real Google OAuth on an authorised staging origin (handoff §6).
 - **Staging and devices:** hosting and physical-device validation.
 
 None of this means production-ready. Nothing was pushed, merged or deployed.
@@ -17,52 +19,57 @@ Branch: local `integration/mobile`.
 
 | Pass | Range | Commits |
 |---|---|---|
-| Earlier passes | `eff8fff` → `17d78ee` | see git log |
-| Final source closure | `17d78ee` → final | `7fb5c31` (Smart Savings, AI feedback and delete, trends, PDF downloads, mark as read), `9586419` (Mobile sign-in and registration), `f8003b3` (browser-pass fixes and docs), and the final documentation commit |
+| Earlier passes | `eff8fff` → `f8003b3` | see git log |
+| Final source closure | `f8003b3` → `ac7e7ae` | documentation, PWA re-run, coverage matrix |
+| Product decisions | `ac7e7ae` → final | `39db937` (decisions A and C, funding preview stays blocked, title fix) and the documentation commit (handoff, verdicts) |
 
-## The six feature groups
+## Verdicts, kept separate
 
-| Group | State |
+| Question | Answer |
 |---|---|
-| Smart Savings | **Shown:** plan details, health, open installments, and plan options per rhythm for a goal with no plan. **Reviews:** confirm (preview read first; backend's amount, accounts and blocker), postpone (the backend's stated date rules), skip ("Keep it" by default). **Sends nothing:** every last button is disabled. **Flag:** off means no code, string or request in the build. |
-| AI feedback and delete | Feedback on answers and insights: rating, optional reason, comment of at most 1,000 characters. The delete review says what is known from the source and removes nothing. |
-| Report trends | `trend_by_currency`, one chart per currency, in date order, with gaps and negatives as sent. A table has every figure. Day, week or month in the address. |
-| PDF | Backend-built PDFs download from Exports ("Download PDF", named `smartspend-{report}-{id}.pdf`). PDF is offered in the export form, which ends disabled. On-device PDF is blocked by the import boundary (FEATURE-COVERAGE-MATRIX.md, "Still open"). |
-| Mark as read | Per unread row and for all, both disabled with an explanation. The unread count is the server's and is never changed optimistically. |
-| Mobile sign-in and registration | `/m/signin` and `/m/register` on the app's AuthProvider (`login`, `register`). The fields and the Remember me default are the full version's. Shell screens send signed-out visitors there with a safe return address. Google sign-in and password reset link to the full version's pages. |
+| Mobile UI source complete | **Yes**, within decisions A–C. Funding preview is blocked by decision B, not missing. |
+| Verified through tests and mocks | **Yes**: unit and jsdom tests, plus Chrome against a fictional mock API. |
+| Verified against the real Laravel backend | **No.** |
+| Financially safe for real users | **No financial write is enabled**, so no money can move from Mobile. Opening any write needs the handoff evidence. |
+| PWA verified on staging | **No**: verified locally only. |
+| Verified on physical devices | **No.** |
+| Ready for a controlled production release | **No.** |
 
-## Evidence (final source `f8003b3`)
+## Decisions applied
 
-- **Tests:** 1,579 of 1,579 pass from `F:\` and from `f:\`; lint is clean. Smart Savings is tested with its flag off and on.
+| Decision | What the source does |
+|---|---|
+| A — PDF | Exports downloads ready PDFs from `GET …/download` only. Saved names are cleaned (basename only, no control or reserved characters, no leading dots, 120 characters at most, fallback `smartspend-{report}-{id}.pdf`). Denied (403), gone (404/410), failed and expired states are shown. No PDF library or Desktop PDF module is imported. The export form offers PDF and ends disabled. |
+| B — funding preview | No Mobile code calls `POST …/funding-preview` (guard test in `tests/mobileReadOnly.test.mjs`). The confirm review says multi-account funding information is unavailable. The write gate is unchanged: no POST is exempted. |
+| C — Google | `/m/signin` uses the full version's `useGoogleSignIn` hook and `googleIdentity` loader. These are the only two files allowed across the boundary, and they are unchanged. It uses the same AuthProvider and session storage. Handled: consent required (accept or cancel), failure, Google not loading or not configured, popup and installed-app notes. Password sign-in stays. Covered by mocks only. |
+| Title | The sign-in heading is "Sign in" / "تسجيل الدخول", with SmartSpend in the intro. Titles wrap at word boundaries. No scaling cap and no clipping (checked at 320 px with 2× text, both languages and themes). |
+
+## Evidence (final source `39db937`)
+
+- **Tests:** 1,591 of 1,591 pass; lint is clean; Smart Savings flag on 12 of 12.
+  - The real AuthProvider runs against a fake server. Sign-in sends `POST /login` + `GET /user`; registration sends `POST /register` and goes on to Profile; a 401 stores nothing and is not retried.
+  - This found and fixed a defect: a successful registration skipped Profile.
 - **Builds:**
   - Flag-off is byte-identical to the build verified in earlier passes (150 files).
-  - Smart Savings text exists only in its lazy chunk.
-  - A production build with the retire option emits no worker.
-- **Mobile browser:**
-  - 171 jobs on the six groups: 19 screens and states × 9 sampled variants, covering 320, 360, 390 and 430 px, English and Arabic, light and dark, 1.25×, 1.5× and 2× text, and landscape.
-  - 265 jobs re-run on the earlier screens.
-  - Results: 0 JavaScript errors, 0 non-GET requests, 0 page-level horizontal scroll, one `h1` per page.
-  - The only elements wider than the screen are cells of the forecast and trend tables, which scroll inside their cards by design.
-- **Desktop:**
-  - Flag off and flag on with Desktop chosen, 36 jobs each against the original baseline `33070de`.
-  - URL, text, API calls and errors are identical; no writes; Mobile code is never loaded.
-  - Pixel differences are the logo anti-aliasing patch and today's date only. Both also appear between byte-identical builds, so they are rendering noise.
-- **Two tabs:** 18 jobs, 0 requests with B's token while A was shown, 0 errors and 0 writes. A sign-out elsewhere goes to `/signin` on Desktop and `/m/signin` on Mobile.
-- **PWA:**
-  - Scope `/m/`; the cache holds only `/assets/*`; Desktop pages are not controlled.
-  - The offline page and update-on-tap work.
-  - With the retire worker, the worker and caches are gone after rollback. The control run without it keeps them.
-- **Defects found and fixed in this pass:**
-  - A centred standalone page lost its top when taller than the screen.
-  - The password field was squeezed at 2× text on 320 px.
-  - Choice labels broke mid-word.
-  - An opened trend table widened the page.
-  - Trend series showed raw field names.
-- **Review package:** `F:\Projects\smartspend-mobile-review\smartspend-mobile-final-source-closure-review.zip`: 526 screenshots and `INDEX.txt`, fictional data only.
+  - The Google modules stay in the full version's existing chunk.
+  - A retire build emits no worker.
+- **Mobile browser:** 0 JavaScript errors and 0 non-GET requests in every run. Jobs:
+  - 48 on the decisions (sign-in, registration, exports, funding note), with sign-in in all four language and theme combinations at 320 px and 2×;
+  - 171 on the six groups;
+  - 265 on earlier screens.
+
+  The only elements wider than the screen are cells of the forecast and trend tables, which scroll inside their cards. The list is identical to the previous pass.
+- **Desktop:** flag off and flag on, 36 jobs each against baseline `33070de`.
+  - Text and HTML are identical; no writes; Mobile code is never loaded.
+  - Pixel differences are the logo anti-aliasing patch and today's date only.
+- **Two tabs:** 18 jobs, 0 errors, 0 writes. A sign-out elsewhere goes to `/signin` or `/m/signin`.
+- **PWA:** see PWA-AND-DEVICE-QA.md, "Product-decision re-run".
+- **Review package:** `F:\Projects\smartspend-mobile-review\smartspend-mobile-product-decisions-review.zip`. 574 screenshots and `INDEX.txt` only, fictional data.
 
 ## Not verified
 
-- **Backend:** no backend; no write is enabled.
+- **Backend:** no Laravel backend; no write is enabled; handoff evidence is not yet supplied.
+- **Google:** no real Google OAuth; the client ID origin is not checked.
 - **Devices:** no physical device, screen reader, real microphone or camera.
 - **Staging:** no staging host.
 - **Coverage:** the browser matrix is sampled, not every combination.

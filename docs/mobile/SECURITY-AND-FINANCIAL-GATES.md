@@ -37,6 +37,29 @@ New GETs: `GET …/plan-options` and `GET …/confirmation-preview` in the flag-
 
 `/m/signin` and `/m/register` call the app's own AuthProvider (`login`, `register`). Mobile builds no request and stores no token: the provider makes the same calls, stores the session in the same keys and keeps the cross-tab protection of §4. This is the existing shared sign-in, not a financial write, and nothing in the write gate changes. One request per tap; nothing is retried. The return address is checked with the app's `getSafeRedirectPath` and must be a Mobile page other than sign-in or registration (no loop).
 
+### How sign-in is tested (reconciling "GET only" with sign-in)
+
+The earlier statement "every Mobile request is a GET" is about **Mobile's own code and the financial API**. It does not cover the shared sign-in contract, which is a set of POSTs made by the AuthProvider.
+
+1. **Flows tested:**
+   - email/phone and password sign-in: success, empty fields, refused 401;
+   - registration: client checks, a server refusal, success going on to Profile (email status);
+   - Google sign-in: credential, consent required then accepted or cancelled, failure, Google not loading or not configured;
+   - the redirect after sign-in;
+   - signed-out visits sent to `/m/signin`;
+   - a signed-in visitor kept away from sign-in.
+2. **Mocked at provider level:** in `tests/mobileAuthAndTrends.test.mjs` and the Google tests of `tests/mobileDecisions.test.mjs`, `login`, `register` and `loginWithGoogle` are fakes in the AuthContext. Those tests prove what the page calls, with which arguments, and where it goes after.
+3. **Real HTTP dispatch:** in `tests/mobileDecisions.test.mjs`, "through the REAL AuthProvider", the app's real provider runs against a fake server.
+   - Sign-in sends `POST /login` then `GET /user`. Registration sends `POST /register` with the full version's six fields.
+   - No other non-GET request is made, and the session lands in the provider's usual key.
+   - A 401 is shown, not retried, and stores nothing.
+   - This test found and fixed a real defect: a successful registration skipped Profile.
+4. **Permitted by the auth contract:** these are the existing shared auth requests (`authApi.login`, `register`, `loginWithGoogle`), used the same way by the full version. Mobile code does not build them; it calls the provider.
+5. **Separate from the financial write gate:** yes. The gate lists financial and record writes only. Sign-in is not in it and is not affected by it. The guard tests (`tests/mobileReadOnly.test.mjs`) still find no request code, no `method:`, no `POST` string and no API wrapper import in Mobile outside the read facades.
+6. **Redirect safety after sign-in:** tested (`mobileDestination`). Only a Mobile address that the app's `getSafeRedirectPath` accepts; never `/m/signin` or `/m/register`; `//host` and Desktop addresses fall back to `/m`. Google uses the full version's `getPostAuthPath`, and the presentation rules send `/dashboard` to Mobile Home.
+7. **Registration errors and email verification:** client errors, a server refusal and success are tested. Profile's email status (verified, unverified, unknown, "Check again") is tested in `tests/mobileAssist.test.mjs`. The emailed link itself is the full version's page and is unchanged.
+8. **Google:** only mocked coverage, with a fake Google Identity loader and a fake or real provider. **No real Google OAuth was exercised**, and none is claimed.
+
 ### Device storage
 
 Mobile writes to browser storage in two places (`tests/mobileReadOnly.test.mjs`):

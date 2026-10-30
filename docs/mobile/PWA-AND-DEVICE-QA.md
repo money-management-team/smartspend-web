@@ -84,3 +84,18 @@ The same Chrome lifecycle on the final builds (`g_pwa` → `g_retire` and → `g
 - 0 JavaScript errors.
 
 Hosting and devices remain unverified.
+
+## Product-decision re-run (`39db937`)
+
+The same Chrome lifecycle on the final builds (`k_pwa` → `k_retire` and → `k_stg`):
+- registered with scope `/m/`; all 38 cache entries are under `/assets/`;
+- API calls reach the server and are never cached;
+- `/dashboard` and `/dashboard/accounts` are not controlled;
+- the offline page is shown for `/m`, and an update waits for the tap;
+- with the retire worker: no registrations and no caches after rollback;
+- without it (control): the worker and cache `sm-pwa-bc8189c930f8` stay;
+- 0 JavaScript errors.
+
+The cache now also holds the full version's Google sign-in chunk (decision C), a hashed asset like the others.
+
+Hosting and devices remain unverified.
