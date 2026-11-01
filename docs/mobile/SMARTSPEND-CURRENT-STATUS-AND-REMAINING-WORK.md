@@ -1,6 +1,8 @@
 # تقرير الحالة الحالية والأعمال المتبقية — SmartSpend Mobile
 
 **تاريخ التدقيق:** 2026-11-01
+
+> **تحديث لاحق (2026-11-01):** أنجز فريق Backend إصلاح BE-01/BE-02 وسياسة انتهاء المفاتيح المالية على الفرع `fix/financial-idempotency-p0` @ `c18d4ea` (غير مدموج وغير منشور). وجُهِّز تكامل الكتابة لكل النماذج في Mobile مع بقاء كل الكتابات مغلقة. التفاصيل وقائمة عوائق Backend المحدّثة في `WRITE-INTEGRATION.md`.
 **نوع العمل:** تدقيق وتوثيق فقط. لم يُعدَّل أي كود تطبيقي في Frontend أو Backend أثناء إعداد هذا التقرير.
 
 **نطاق الأدلة:**
@@ -284,7 +286,7 @@
 - **الديون:** `RecordDebtPaymentAction` (نمط مكافئ يدوي، السطر 164).
 - **الاستيراد:** `ConfirmImportBatchAction`، `ReverseImportBatchAction`.
 - **Smart Savings:** `ConfirmSavingsInstallmentAction`، `PostponeSavingsInstallmentAction`، `SkipSavingsInstallmentAction`، `CreateSavingsPlanAction`، `CreateSavingsGoalWithPlanAction`، `ReviseSavingsPlanAction`، `DiscontinueSavingsPlanAction`.
-- **الإيصالات:** `AiExpenseCaptureController` (تأكيد الإيصال).
+- ~~**الإيصالات:** `AiExpenseCaptureController` (تأكيد الإيصال).~~ **تصحيح:** `run()` غير الذري في هذا الـController يخص **رفع** الإيصال (`ai_receipt_upload`) ولا يحرك مالًا؛ أما التأكيد فيجري داخل معاملة واحدة مع قفل صف (`AiCaptureConfirmationService`). انظر `WRITE-INTEGRATION.md`.
 
 **غير المتأثرة** (كل الخطوات في معاملة واحدة): `TransferMoneyAction`، `PostOccurrenceAction`، `ConfirmSavingsInstallmentFromAccountsAction`، `ReverseSavingsInstallmentLegsAction`، `AiVoiceCaptureAdmissionService`، `AiVoiceCaptureConfirmationService`، `WhatsAppExpenseDraftConfirmationService`.
 

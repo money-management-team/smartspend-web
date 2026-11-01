@@ -9,6 +9,7 @@ import { categoriesBackend, category } from "./helpers/categoryFixture.mjs";
 const gate = await import("../src/mobile/data/writeGate.js");
 const writeApi = await import("../src/mobile/data/writeApi.js");
 const { classifyOutcome } = await import("../src/mobile/models/categoryForm.js");
+const { WORKFLOWS } = await import("../src/mobile/forms/workflows.js");
 
 /*
  * The write gate, in the state the product ships in: every write closed. Nothing
@@ -41,12 +42,17 @@ afterEach(async () => {
 
 describe("the gate", () => {
   it("knows every write Mobile has code for, and has all of them closed", () => {
-    assert.deepEqual(Object.keys(gate.MOBILE_WRITES).sort(), ["category.create", "category.update"]);
-    for (const operation of Object.keys(gate.MOBILE_WRITES)) {
+    const formWrites = Object.values(WORKFLOWS).map((workflow) => workflow.operation);
+    assert.deepEqual(Object.keys(gate.MOBILE_WRITES).sort(), ["category.create", "category.update", ...formWrites].sort());
+    const DEDUP = ["unique-index", "key-atomic", "key-fix-pending", "once-only", "same-result", "duplicates", "unverified"];
+    for (const [operation, write] of Object.entries(gate.MOBILE_WRITES)) {
       assert.equal(gate.isWriteOpen(operation), false, operation);
-      assert.equal(gate.MOBILE_WRITES[operation].serverDedup, "unverified");
+      assert.ok(DEDUP.includes(write.serverDedup), operation);
+      assert.ok(["client", "derived", "none"].includes(write.key), operation);
+      // A write that moves money is never registered as "nothing stops a copy".
+      if (write.moves) assert.notEqual(write.serverDedup, "duplicates", operation);
     }
-    assert.equal(gate.isWriteOpen("transaction.expense"), false, "an unknown write is closed");
+    assert.equal(gate.isWriteOpen("transaction.unknown"), false, "an unknown write is closed");
     assert.equal(gate.isWriteOpen("toString"), false);
   });
 
@@ -57,8 +63,8 @@ describe("the gate", () => {
   });
 
   it("the test switch cannot open an unknown write", () => {
-    gate.setWriteApprovalsForTests(["transaction.expense"]);
-    assert.equal(gate.isWriteOpen("transaction.expense"), false);
+    gate.setWriteApprovalsForTests(["transaction.unknown"]);
+    assert.equal(gate.isWriteOpen("transaction.unknown"), false);
     gate.setWriteApprovalsForTests(null);
   });
 });

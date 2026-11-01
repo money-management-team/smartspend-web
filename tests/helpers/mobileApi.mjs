@@ -29,12 +29,26 @@ export const CATEGORY_WRITES = Object.freeze([
   { method: "PATCH", path: /^\/categories\/[1-9]\d{0,14}$/ },
 ]);
 
+/*
+ * The form writes a test of the (closed) send path may allow, one rule each, so
+ * a test names exactly the request it expects. Tests open the gate for them with
+ * setWriteApprovalsForTests; the product's gate stays closed.
+ */
+export const FORM_WRITES = Object.freeze({
+  expense: { method: "POST", path: /^\/transactions\/expense$/ },
+  transfer: { method: "POST", path: /^\/transfers$/ },
+  receiptSave: { method: "PATCH", path: /^\/ai\/expense-captures\/[1-9]\d*$/ },
+  receiptConfirm: { method: "POST", path: /^\/ai\/expense-captures\/[1-9]\d*\/confirm$/ },
+  budget: { method: "POST", path: /^\/budgets$/ },
+});
+
 /**
  * @param {(call) => unknown} handler
- * @param {{ allowWrites?: { method: string, path: RegExp }[] }} options `allowWrites` must be a subset of CATEGORY_WRITES
+ * @param {{ allowWrites?: { method: string, path: RegExp }[] }} options `allowWrites` must be rules from CATEGORY_WRITES or FORM_WRITES
  */
 export function installFakeApi(handler, { allowWrites = [] } = {}) {
-  if (allowWrites.some((rule) => !CATEGORY_WRITES.includes(rule))) throw new Error("Only the category writes can be allowed.");
+  const known = [...CATEGORY_WRITES, ...Object.values(FORM_WRITES)];
+  if (allowWrites.some((rule) => !known.includes(rule))) throw new Error("Only the listed category and form writes can be allowed.");
   const calls = [];
   const violations = [];
   const pending = [];

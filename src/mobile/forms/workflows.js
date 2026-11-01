@@ -663,9 +663,11 @@ export const WORKFLOWS = Object.freeze({
     fields: [
       { name: "name", kind: "text", required: true, max: 255 },
       { name: "email", kind: "email", required: true, max: 255, hint: "emailHint" },
-      { name: "phone", kind: "text", max: 30 },
+      { name: "phone", kind: "text", max: 20 },
     ],
     initial: (ctx) => ({ name: ctx.record.name, email: ctx.record.email, phone: ctx.record.phone }),
+    // UpdateProfileRequest: phone is optional, at most 20 characters, 7–20 digits with an optional leading +.
+    check: (values) => (typeof values.phone === "string" && values.phone.trim() && !/^\+?[0-9]{7,20}$/.test(values.phone.trim()) ? { phone: "phoneFormat" } : {}),
   },
 
   "password-change": {

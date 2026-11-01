@@ -169,8 +169,12 @@ Which callers have the window:
 
 | Pattern | Callers |
 |---|---|
-| **Affected:** `complete()` after the posting commits | `PostIncomeAction`, `PostExpenseAction`, `UpdateTransactionAction` (correction), `RecordDebtPaymentAction`, `ConfirmImportBatchAction`, `ReverseImportBatchAction`, `ConfirmSavingsInstallmentAction`, `PostponeSavingsInstallmentAction`, `SkipSavingsInstallmentAction`, `CreateSavingsPlanAction`, `CreateSavingsGoalWithPlanAction`, `ReviseSavingsPlanAction`, `DiscontinueSavingsPlanAction`, `AiExpenseCaptureController` (receipt confirm) |
+| **Affected:** `complete()` after the posting commits | `PostIncomeAction`, `PostExpenseAction`, `UpdateTransactionAction` (correction), `RecordDebtPaymentAction`, `ConfirmImportBatchAction`, `ReverseImportBatchAction`, `ConfirmSavingsInstallmentAction`, `PostponeSavingsInstallmentAction`, `SkipSavingsInstallmentAction`, `CreateSavingsPlanAction`, `CreateSavingsGoalWithPlanAction`, `ReviseSavingsPlanAction`, `DiscontinueSavingsPlanAction` |
 | **Safe:** reserve, post and complete in one transaction | `TransferMoneyAction` (control test passes: a failed completion rolls the transfer back and a same-key retry posts once), `PostOccurrenceAction` (recurring), `ConfirmSavingsInstallmentFromAccountsAction`, `ReverseSavingsInstallmentLegsAction`, `AiVoiceCaptureAdmissionService`, `AiVoiceCaptureConfirmationService`, `WhatsAppExpenseDraftConfirmationService` |
+
+**Correction (2026-11-01, later):** receipt confirmation was listed above by mistake. The non-atomic `run()` in `AiExpenseCaptureController` is the receipt **upload** (`ai_receipt_upload`), which moves no money; confirmation runs in `AiCaptureConfirmationService` inside one transaction with a row lock (WRITE-INTEGRATION.md).
+
+**Fix status:** the backend team's branch `fix/financial-idempotency-p0` @ `c18d4ea` makes income, expense, correction, single-account savings confirm, debt payment and import rows atomic, and stops 13 money operation types from re-running an expired key. It is unmerged and undeployed; Mobile keeps those writes closed.
 
 **Severity:** low likelihood, high impact.
 - **Likelihood:** it needs a failure in the few milliseconds between two commits, and then the *same key* resent more than 24 hours later.

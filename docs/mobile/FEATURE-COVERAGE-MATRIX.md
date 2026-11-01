@@ -7,7 +7,7 @@ Column key:
 - **Local interaction:** what works on the device without the backend.
 - **GET:** reads integrated through `data/readApi.js` or `data/readAssistApi.js`.
 - **Write UI:** the form and review Mobile has for the change.
-- **Write enabled:** whether Mobile sends it. "No" everywhere; none of the form operations has send code (`src/mobile/forms/workflows.js`), and the two category writes are closed in `data/writeGate.js`.
+- **Write enabled:** whether Mobile sends it. "No" everywhere. Every form now has a defined request and a send path (WRITE-INTEGRATION.md), and every one, like the two category writes, is closed in `data/writeGate.js` (`APPROVED = []`).
 - **Tests:** automated test files (`tests/…`).
 - **Browser:** "unblocked pass" is the final-build matrix (`m10`): 53 screens and states × 5 variants (390 px en light, 390 px ar dark, 320 px en 2× text, 430 px ar 1.5× text, 360 px en dark 1.25× text). Earlier sprints are named.
 

@@ -66,6 +66,20 @@ The backend source was audited and tested locally (BACKEND-VERIFICATION-RESULTS.
 
 One Mobile change followed from the source: a category create refused 422 as a duplicate may be the second copy of a request whose first copy created the category (`CreateCategoryAction` refuses a duplicate and the losing side of a race identically). After such a refusal Mobile now drops its cached category list, so the next view reads the server, and the wording no longer says that nothing was saved, only that this request saved nothing (`useCategoryMutation.js`, `tests/mobileCategories.test.mjs`).
 
+### Write integration prepared, still closed
+
+Every form's request is now defined and has a send path (WRITE-INTEGRATION.md). This changes what is in the source, not what is sent:
+- `APPROVED` is still `Object.freeze([])`.
+- `sendWorkflowWrite` asserts the gate as its first statement.
+- With the gate closed, the review shows the disabled button and has no click handler.
+- The guard tests pin:
+  - the facade's exact wrapper calls;
+  - that only `MobileCategoryForm.jsx` and `forms/useWorkflowSubmit.js` import it;
+  - that every registered write is closed;
+  - that no money write is registered as unprotected against duplicates.
+
+Opening a write still means changing that one line in a reviewed commit, for one operation, after its staging evidence.
+
 ### Device storage
 
 Mobile writes to browser storage in two places (`tests/mobileReadOnly.test.mjs`):

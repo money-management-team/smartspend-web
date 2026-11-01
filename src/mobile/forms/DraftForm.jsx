@@ -2,6 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 
+import { sessionWorkspace } from "../data/readApi.js";
 import { isWriteOpen } from "../data/writeGate.js";
 import { useLeaveGuard } from "../categories/useLeaveGuard.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
@@ -13,26 +14,36 @@ import ErrorPanel from "../ui/ErrorPanel.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
 import StaleNotice from "../ui/StaleNotice.jsx";
 import { useOnline } from "../ui/useOnline.js";
+import { useWorkflowSubmit } from "./useWorkflowSubmit.js";
 import { normalizeAmount } from "./validation.js";
+import { buildWrite } from "./writePayloads.js";
 import { FORM_CURRENCIES, accountChoices, categoryChoices, changedFields, currencyFor, effectKeyOf, isDirty, isLocked, isRequired, validateWorkflow, visibleFields } from "./workflows.js";
 
 const MAX_FOR = (field) => (field.kind === "text" || field.kind === "textarea" ? field.max ?? 255 : undefined);
 
 /*
- * One Mobile form, from the first field to the review, and no further.
+ * One Mobile form, from the first field to the review.
  *
- *   edit -> review
+ *   edit -> review [-> sending -> recorded | refused | unknown | changed]
  *
  * "Review" checks every field (the documented rules, workflows.js) and moves the
  * focus to a summary of what is wrong, or shows the review. The review lists
- * what would be sent and what it would do, and ends where the request would
- * start: the send button is disabled, the reason is next to it, and the full
- * version is one tap away. There is no code here that sends anything: no
- * request, no queue, no storage. The draft lives in this component's state
- * only, so it is gone when the page is left, when the identity changes (the
- * identity boundary remounts everything) and when the tab is closed.
+ * what would be sent and what it would do.
  *
- * The leave guard holds every navigation away while anything was typed.
+ * While the write gate is closed for this form's operation (data/writeGate.js:
+ * every operation, in the production-bound source), the review ends where the
+ * request would start: the send button is disabled, the reason is next to it,
+ * and the full version is one tap away. Nothing is sent.
+ *
+ * Only when the gate is open does the send button send, once, through
+ * useWorkflowSubmit (one Idempotency-Key per submission intent, no retry, no
+ * queue, no storage) with the input built by writePayloads.js. The draft lives
+ * in this component's state only, so it is gone when the page is left, when the
+ * identity changes (the identity boundary remounts everything) and when the tab
+ * is closed.
+ *
+ * The leave guard holds every navigation away while anything was typed and
+ * nothing was sent; after a recorded or unknown outcome there is no draft to lose.
  */
 export default function DraftForm({ workflow, ctx, choices, backTo, recordSummary }) {
   const { t, i18n } = useTranslation(MOBILE_NAMESPACE);
@@ -52,10 +63,19 @@ export default function DraftForm({ workflow, ctx, choices, backTo, recordSummar
   const shown = attempted ? errors : {};
   const errorNames = Object.keys(shown);
   const dirty = isDirty(workflow, values, full);
-  const guard = useLeaveGuard(dirty);
+  const sent = useWorkflowSubmit();
+  const settled = ["confirmed", "unknown", "changed"].includes(sent.phase);
+  const guard = useLeaveGuard(dirty && !settled && !sent.sending);
   const fields = visibleFields(workflow, values, full);
   const operationOpen = isWriteOpen(workflow.operation);
   const effectKey = effectKeyOf(workflow, full);
+  const outcomeRef = useRef(null);
+
+  useEffect(() => {
+    if (sent.phase !== "idle" && sent.phase !== "sending") outcomeRef.current?.focus();
+  }, [sent.phase]);
+
+  const send = () => sent.submit(buildWrite(workflow, values, { ...full, workspaceId: sessionWorkspace()?.id ?? null }));
 
   const problemSignal = attempted ? errorNames.join(",") : "";
   useEffect(() => {
@@ -148,24 +168,38 @@ export default function DraftForm({ workflow, ctx, choices, backTo, recordSummar
           {effectKey && <p className="sm-text sm-review-effect" data-sm-effect={effectKey}>{t(`forms.effects.${effectKey}`)}</p>}
         </div>
 
-        <div className="sm-card sm-closed" role="note" data-sm-note="write-closed" data-sm-write={workflow.operation} id={`${ids}-closed`}>
-          <h2 className="sm-card-title">{t("forms.notSentTitle")}</h2>
-          <p className="sm-text sm-muted">{t("forms.notSentBody")}</p>
-          <Link className="sm-link-row" to={workflow.fullPath(full)} data-sm-action="full-version">
-            <span>{t(`forms.flows.${workflow.id}.full`)}</span>
-            <Chevron />
-          </Link>
-        </div>
+        {!operationOpen && (
+          <div className="sm-card sm-closed" role="note" data-sm-note="write-closed" data-sm-write={workflow.operation} id={`${ids}-closed`}>
+            <h2 className="sm-card-title">{t("forms.notSentTitle")}</h2>
+            <p className="sm-text sm-muted">{t("forms.notSentBody")}</p>
+            <Link className="sm-link-row" to={workflow.fullPath(full)} data-sm-action="full-version">
+              <span>{t(`forms.flows.${workflow.id}.full`)}</span>
+              <Chevron />
+            </Link>
+          </div>
+        )}
 
-        <div className="sm-actions sm-form-actions">
-          {/* Disabled for good: no handler, and the write gate answers "closed" for this operation (workflows.js). */}
-          <button type="button" className="sm-button" disabled aria-describedby={`${ids}-closed`} data-sm-action="send" data-sm-open={operationOpen ? "true" : "false"}>
-            {t(`forms.flows.${workflow.id}.send`)}
-          </button>
-          <button type="button" className="sm-button sm-button-quiet" onClick={() => setStep("edit")} data-sm-action="edit">
-            {t("forms.backToEdit")}
-          </button>
-        </div>
+        {operationOpen && sent.phase !== "idle" && sent.phase !== "sending" && (
+          <WriteOutcome outcome={sent} outcomeRef={outcomeRef} backTo={backTo} t={t} />
+        )}
+
+        {!settled && (
+          <div className="sm-actions sm-form-actions">
+            {operationOpen ? (
+              <button type="button" className="sm-button" onClick={send} disabled={sent.sending} aria-busy={sent.sending ? "true" : undefined} data-sm-action="send" data-sm-open="true">
+                {sent.sending ? t("forms.outcome.sending") : t(`forms.flows.${workflow.id}.send`)}
+              </button>
+            ) : (
+              /* Disabled: no handler, and the write gate answers "closed" for this operation. */
+              <button type="button" className="sm-button" disabled aria-describedby={`${ids}-closed`} data-sm-action="send" data-sm-open="false">
+                {t(`forms.flows.${workflow.id}.send`)}
+              </button>
+            )}
+            <button type="button" className="sm-button sm-button-quiet" onClick={() => { sent.reset(); setStep("edit"); }} disabled={sent.sending} data-sm-action="edit">
+              {t("forms.backToEdit")}
+            </button>
+          </div>
+        )}
         {leaveSheet()}
       </section>
     );
@@ -218,6 +252,43 @@ export default function DraftForm({ workflow, ctx, choices, backTo, recordSummar
       </div>
       {leaveSheet()}
     </form>
+  );
+}
+
+/* The answer to a sent write, as the server gave it; an unknown one claims nothing either way. */
+function WriteOutcome({ outcome, outcomeRef, backTo, t }) {
+  const kind = outcome.phase;
+  const serverMessage = kind === "rejected" && typeof outcome.error?.message === "string" ? outcome.error.message.slice(0, 300) : null;
+  const fieldMessages = kind === "rejected" && outcome.error?.errors && typeof outcome.error.errors === "object"
+    ? Object.values(outcome.error.errors).flat().filter((item) => typeof item === "string").slice(0, 6).map((item) => item.slice(0, 300))
+    : [];
+  const bodyKey = kind === "rejected" ? (outcome.code === "RATE_LIMITED" ? "rateLimited" : outcome.code === "NO_WORKSPACE" ? "noWorkspace" : outcome.code === "WRITE_CLOSED" ? "closed" : "rejectedBody") : `${kind}Body`;
+  const refused = kind === "rejected";
+
+  return (
+    <div
+      className={refused ? "sm-card sm-error" : "sm-card"}
+      role={kind === "rejected" ? "alert" : "status"}
+      tabIndex={-1}
+      ref={outcomeRef}
+      data-sm-outcome={kind}
+      data-sm-code={outcome.code ?? undefined}
+    >
+      <h2 className="sm-card-title">{t(`forms.outcome.${kind}Title`)}</h2>
+      <p className="sm-text">{t(`forms.outcome.${bodyKey}`)}</p>
+      {serverMessage && <p className="sm-text sm-muted" dir="auto">{serverMessage}</p>}
+      {fieldMessages.length > 0 && (
+        <ul className="sm-cat-summary-list">
+          {fieldMessages.map((message) => <li key={message} dir="auto">{message}</li>)}
+        </ul>
+      )}
+      {kind !== "rejected" && (
+        <Link className="sm-link-row" to={backTo} data-sm-action="after-write">
+          <span>{t("forms.outcome.back")}</span>
+          <Chevron />
+        </Link>
+      )}
+    </div>
   );
 }
 

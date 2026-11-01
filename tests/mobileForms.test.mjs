@@ -15,6 +15,8 @@ const { MOBILE_WRITES, isWriteOpen } = await import("../src/mobile/data/writeGat
 const { amountError, compareAmounts, dateError, integerError, normalizeAmount, textError } = await import("../src/mobile/forms/validation.js");
 const { DRAFT_ONLY_OPERATIONS, FORM_CURRENCIES, NEW_ENTRY_ORDER, WORKFLOWS, changedFields, validateWorkflow } = await import("../src/mobile/forms/workflows.js");
 const { RECORD_ACTIONS, actionPath, workflowAt } = await import("../src/mobile/forms/actionRoutes.js");
+const { SENDABLE_OPERATIONS } = await import("../src/mobile/data/writeApi.js");
+const { PAYLOAD_WORKFLOWS } = await import("../src/mobile/forms/writePayloads.js");
 
 /*
  * The Mobile forms (src/mobile/forms): every one can be filled in, checked and
@@ -97,23 +99,27 @@ describe("what a form accepts", () => {
 });
 
 describe("no form can send", () => {
-  it("no file in forms/ has request code, imports an API wrapper or the write facade, or stores anything", () => {
+  it("no file in forms/ has request code, imports an API wrapper, or stores anything; only the submission hook reaches the (closed) write facade", () => {
     const files = readdirSync(FORMS).map((name) => path.join(FORMS, name));
+    const withoutComments = (source) => source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
     for (const file of files) {
-      const source = code(file);
-      assert.doesNotMatch(source, /\bfetch\s*\(|XMLHttpRequest|sendBeacon|apiRequest|Dashboards\/User\/api|data\/writeApi|Idempotency|toMoneyString|localStorage|sessionStorage|indexedDB|\bmethod\s*:/m, path.basename(file));
+      const source = withoutComments(code(file));
+      assert.doesNotMatch(source, /\bfetch\s*\(|XMLHttpRequest|sendBeacon|apiRequest|Dashboards\/User\/api|Idempotency|toMoneyString|localStorage|sessionStorage|indexedDB|\bmethod\s*:/m, path.basename(file));
+      if (path.basename(file) !== "useWorkflowSubmit.js") assert.doesNotMatch(source, /data\/writeApi/, path.basename(file));
     }
     // The forms read through the same loaders as every screen, and use nothing else of the facade but two plain readers.
     const reads = [...code(path.join(FORMS, "MobileWorkflow.jsx")).matchAll(/import\s*\{([^}]*)\}\s*from\s*["']\.\.\/data\/readApi\.js["']/g)].flatMap((match) => match[1].split(",").map((name) => name.trim()));
     assert.deepEqual(reads.sort(), ["isAccountId", "sessionWorkspace"]);
   });
 
-  it("every write a form stands for is closed in the gate, and none is a write Mobile has code for", () => {
+  it("every write a form stands for is registered, has a send path and a payload, and is closed in the gate", () => {
     assert.equal(DRAFT_ONLY_OPERATIONS.length, Object.keys(WORKFLOWS).length);
     for (const operation of DRAFT_ONLY_OPERATIONS) {
       assert.equal(isWriteOpen(operation), false, operation);
-      assert.equal(Object.hasOwn(MOBILE_WRITES, operation), false, operation);
+      assert.equal(Object.hasOwn(MOBILE_WRITES, operation), true, operation);
+      assert.ok(SENDABLE_OPERATIONS.includes(operation), operation);
     }
+    assert.deepEqual([...PAYLOAD_WORKFLOWS].sort(), Object.keys(WORKFLOWS).sort());
   });
 
   it("each form has one address, and each address one form", () => {
