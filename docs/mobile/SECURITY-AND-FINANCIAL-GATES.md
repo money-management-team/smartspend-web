@@ -60,6 +60,12 @@ The earlier statement "every Mobile request is a GET" is about **Mobile's own co
 7. **Registration errors and email verification:** client errors, a server refusal and success are tested. Profile's email status (verified, unverified, unknown, "Check again") is tested in `tests/mobileAssist.test.mjs`. The emailed link itself is the full version's page and is unchanged.
 8. **Google:** only mocked coverage, with a fake Google Identity loader and a fake or real provider. **No real Google OAuth was exercised**, and none is claimed.
 
+### Backend verification (2026-11-01)
+
+The backend source was audited and tested locally (BACKEND-VERIFICATION-RESULTS.md). **The gate is unchanged:** `APPROVED` is still empty, and no write was opened, not even the two category writes the backend handles safely.
+
+One Mobile change followed from the source: a category create refused 422 as a duplicate may be the second copy of a request whose first copy created the category (`CreateCategoryAction` refuses a duplicate and the losing side of a race identically). After such a refusal Mobile now drops its cached category list, so the next view reads the server, and the wording no longer says that nothing was saved, only that this request saved nothing (`useCategoryMutation.js`, `tests/mobileCategories.test.mjs`).
+
 ### Device storage
 
 Mobile writes to browser storage in two places (`tests/mobileReadOnly.test.mjs`):

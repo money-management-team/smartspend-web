@@ -82,8 +82,11 @@ export function useCategoryMutation() {
 
       if (outcome.kind === "identity") return;
 
-      // A write that may have happened makes everything read before it unreliable.
-      if (outcome.kind !== "rejected" && !store.isDisposed()) store.drop(isCategoryKey);
+      // A write that may have happened makes everything read before it unreliable. So does a create the
+      // backend refused as a duplicate (422 on name, CreateCategoryAction): if the request was delivered
+      // twice, the first copy created the category and this answer is the second copy's refusal.
+      const duplicateRefusal = outcome.kind === "rejected" && request.operation === "create" && outcome.code === "VALIDATION_ERROR";
+      if ((outcome.kind !== "rejected" || duplicateRefusal) && !store.isDisposed()) store.drop(isCategoryKey);
 
       if (outcome.kind === "rejected") busy.current = false;
       if (!alive.current) return;

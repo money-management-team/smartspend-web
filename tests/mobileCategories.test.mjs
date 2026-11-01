@@ -271,7 +271,7 @@ describe("a new category", () => {
     await settle();
 
     assert.equal(q("[data-sm-summary]").dataset.smSummary, "rejected:VALIDATION_ERROR");
-    assert.match(text(q("[data-sm-summary]")), /didn't accept this.*Nothing was saved.*The given data was invalid.*Name: The name has already been taken/);
+    assert.match(text(q("[data-sm-summary]")), /didn't accept this.*This request saved nothing.*may already be in your list.*The given data was invalid.*Name: The name has already been taken/);
     assert.equal(nameInput().value, "Groceries");
     assert.equal(radio("expense").checked, true);
     assert.equal(submitButton().disabled, false);
@@ -282,6 +282,36 @@ describe("a new category", () => {
     await settle();
     assert.equal(writes().length, 2);
     assert.ok(q("[data-sm-outcome='confirmed']"));
+  });
+
+  it("a duplicate 422 after the backend already created the category (a request delivered twice) reads the list again", async () => {
+    // CreateCategoryAction (backend develop @ fd87531): a second copy of the same create is refused 422 on name.
+    await open("/m/planning/categories", {
+      hooks: {
+        onCreate: (body, call, state) => {
+          state.rows.push(category(102, body));
+          return { status: 422, body: { status: false, message: "The given data was invalid.", errors: { name: ["A category with this name and type already exists in this workspace."] } } };
+        },
+      },
+    });
+    const listReads = () => api.calls.filter((call) => call.method === "GET" && call.path === "/categories").length;
+    assert.equal(listReads(), 1);
+
+    await click(link("New category"));
+    await settle();
+    await fillCreate("Rent");
+    await click(submitButton());
+    await settle();
+    assert.equal(q("[data-sm-summary]").dataset.smSummary, "rejected:VALIDATION_ERROR");
+    assert.equal(writes().length, 1, "nothing was sent again by itself");
+
+    await click(button("Cancel"));
+    await settle();
+    await click(button("Discard changes", q("[role='dialog']")));
+    await settle();
+    assert.equal(location(), "/m/planning/categories");
+    assert.equal(listReads(), 2, "the list was read again, not taken from memory");
+    assert.match(text(q("main")), /Rent/);
   });
 
   it("a 403 is a refusal by the contract: said in words, the draft stays, nothing resent", async () => {

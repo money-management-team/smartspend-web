@@ -69,8 +69,10 @@ export function confirmUpdate(data, categoryId, sentName) {
  * "rejected" is claimed only where the documented contract says the server
  * refused the request (docs/categories/api.md): a 422 is its validation of the
  * fields (name, type), a 403 is "system category, or one you can't manage", and,
- * for a rename only, a 404 is "doesn't exist or isn't yours". The backend source
- * was not available, so even these rest on the documentation, not on the code.
+ * for a rename only, a 404 is "doesn't exist or isn't yours". Checked against the
+ * backend source (develop @ fd87531, Create/UpdateCategoryAction): a duplicate name,
+ * including the losing side of a race, is that 422, so a create refused this way may
+ * follow its own first copy (see useCategoryMutation.js).
  *
  * Everything else is "unknown", because nothing documented says the write did not
  * happen: 400, 408, 409 (no category meaning is documented), 429 (a rate limit may

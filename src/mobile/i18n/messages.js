@@ -250,7 +250,7 @@ const BASE_MESSAGES = {
         noWorkspace: "Your workspace isn't available right now, so a category can't be created from Mobile. Nothing was sent.",
         validation: { required: "Enter a name.", tooLong: "Use at most {{max}} characters.", typeRequired: "Choose income or expense." },
         rejected: {
-          validation: "Something in the form needs changing. Nothing was saved.",
+          validation: "Something in the form needs changing. This request saved nothing. If the name is already taken, the category may already be in your list.",
           forbidden: "You can't change this category. Nothing was saved.",
           notFound: "This category isn't available. It may not exist, or you may not have access to it. Nothing was saved.",
           other: "SmartSpend refused this request. Nothing was saved.",
@@ -828,7 +828,7 @@ const BASE_MESSAGES = {
         noWorkspace: "مساحة عملك غير متاحة حاليًا، لذا لا يمكن إنشاء فئة من نسخة الجوال. لم يُرسل شيء.",
         validation: { required: "أدخل اسمًا.", tooLong: "استخدم {{max}} حرفًا على الأكثر.", typeRequired: "اختر دخلًا أو مصروفًا." },
         rejected: {
-          validation: "شيء في النموذج يحتاج إلى تعديل. لم يُحفظ شيء.",
+          validation: "شيء في النموذج يحتاج إلى تعديل. هذا الطلب لم يحفظ شيئًا. إن كان الاسم مستخدمًا، فقد تكون الفئة موجودة في قائمتك.",
           forbidden: "لا يمكنك تغيير هذه الفئة. لم يُحفظ شيء.",
           notFound: "هذه الفئة غير متاحة. قد لا تكون موجودة، أو ليس لديك صلاحية الوصول إليها. لم يُحفظ شيء.",
           other: "رفض SmartSpend هذا الطلب. لم يُحفظ شيء.",

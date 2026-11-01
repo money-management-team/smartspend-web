@@ -1,6 +1,10 @@
 # Mobile — backend contract gaps
 
-No backend repository was available on this machine (`F:\Projects` holds only `smartspend-web` and `smartspend-design-preview`), and none was found in the usual local paths. **No server-side guarantee below has been verified.** Everything Mobile relies on comes from the frontend docs under `docs/` and the Desktop wrappers.
+**Update 2026-11-01:** the backend source (`money-management-team/smartspend-backend`, `develop` @ `fd87531`) is now available and has been audited and tested locally. See BACKEND-VERIFICATION-RESULTS.md, which supersedes this file where they differ:
+- **Reads:** verified over real HTTP against a local Laravel with fictional data; the read-contract script below passed 16 of 16.
+- **Gaps that remain:** staging, the production commit, the idempotency completion window (results §6), and MariaDB vs MySQL.
+
+The rest of this file is the gap list as it stood before the source was available, kept for the record.
 
 ## Writes: evidence matrix
 

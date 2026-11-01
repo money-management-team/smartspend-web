@@ -68,7 +68,7 @@ Branch: local `integration/mobile`.
 
 ## Not verified
 
-- **Backend:** no Laravel backend; no write is enabled; handoff evidence is not yet supplied.
+- **Backend:** no Laravel backend; no write is enabled; handoff evidence is not yet supplied. The 2026-11-01 discovery pass could not reach the backend source (BACKEND-VERIFICATION-RESULTS.md).
 - **Google:** no real Google OAuth; the client ID origin is not checked.
 - **Devices:** no physical device, screen reader, real microphone or camera.
 - **Staging:** no staging host.

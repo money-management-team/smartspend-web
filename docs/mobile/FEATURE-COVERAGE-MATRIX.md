@@ -1,6 +1,6 @@
 # Mobile — feature coverage matrix
 
-**No row is backend-verified.** No backend repository or isolated backend was available, so every GET is tested against fictional mocks shaped like the frontend docs, and **no write is enabled anywhere**. "Browser" means headless Chrome 156 on a local origin with fictional data, not a physical device; device verification is pending in every row.
+**Backend status (2026-11-01):** every read screen was run against the real Laravel (`develop` @ `fd87531`), locally on fictional data, in English and Arabic. Results are in BACKEND-VERIFICATION-RESULTS.md §4: 45 endpoints, no errors. That is local verification, **not staging**, and **no write is enabled anywhere**. The rows below still describe the mocked tests. "Browser" means headless Chrome 156 on a local origin with fictional data, not a physical device; device verification is pending in every row.
 
 Column key:
 - **Screens:** the Mobile addresses (under `/m`).

@@ -1,8 +1,12 @@
 # Mobile — backend verification handoff
 
 **For:** an engineer with access to the Laravel backend source and an isolated backend loaded with fictional data.
-**State:**
-- No backend source and no backend were available to the Mobile work. **Nothing below has been verified.**
+**State (updated 2026-11-01):**
+- The backend source (`develop` @ `fd87531`) has been audited and tested locally. Results, with file references, are in BACKEND-VERIFICATION-RESULTS.md, and they replace the "unverified" notes below where they overlap:
+  - every read Mobile uses works against the real Laravel (local, fictional data);
+  - funding preview is proven side-effect free (§4 below: items 1–6 answered);
+  - `IdempotencyService::run()` has a completion window that can post twice after 24 hours (results §6), which affects income, expense, correction, debt payment, imports and single-account Smart Savings confirm.
+- Still needed: staging, the production commit confirmed from the server, the §6 fix, and staging-enablement approval.
 - Every value in the "Frontend sends" column comes from the web app's own wrappers (`src/features/Dashboards/User/api/*`) and their docs (`docs/<feature>/`). They are what the frontend sends, not what the backend guarantees.
 - Every Mobile write is closed (`src/mobile/data/writeGate.js` and SECURITY-AND-FINANCIAL-GATES.md). Mobile has send code for exactly two of them, category create and rename, and both are closed.
 
@@ -96,6 +100,8 @@ For each operation in §3, record answers to every item. Each needs a source ref
 | WhatsApp link challenge, confirm link, unlink, preferences, draft update, discard | `whatsappApi` | — | Consent and legal wording is the product owner's decision |
 
 ## 4. Smart Savings funding preview (Decision B: blocked)
+
+**2026-11-01:** all six items below are answered in BACKEND-VERIFICATION-RESULTS.md §7. The source shows no write; the query log shows SELECT only; the intent is a stateless HMAC; another user gets 404; every table's row hash is unchanged; only the general `api` limiter applies. It is still blocked: approving it as a read is the product owner's Decision B.
 
 The request: `POST /savings-goals/{id}/planned-contributions/{iid}/funding-preview`, with no body or `{amount, legs[]}`. It returns `data.funding_preview`: the preview fields, plus `funding {amount, legs[], shortfall_amount, problem}` and `confirmation_intent`.
 
