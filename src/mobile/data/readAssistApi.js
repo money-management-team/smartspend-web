@@ -32,6 +32,9 @@ export const readVoiceCaptures = (page, signal) => aiVoiceExpenseCapturesApi.lis
 export const readVoiceCapture = (captureId, signal) => aiVoiceExpenseCapturesApi.get(captureId, { signal });
 export const readReceiptCaptures = (page, signal) => aiExpenseCapturesApi.list({ page, per_page: ASSIST_PER_PAGE, sort_dir: "desc" }, { signal });
 export const readReceiptCapture = (captureId, signal) => aiExpenseCapturesApi.get(captureId, { signal });
+// What waits for review (the Attention screen): the same list reads, filtered by the documented status.
+export const readReceiptsToReview = (signal) => aiExpenseCapturesApi.list({ status: "ready_for_review", page: 1, per_page: ASSIST_PER_PAGE, sort_dir: "desc" }, { signal });
+export const readVoiceToReview = (signal) => aiVoiceExpenseCapturesApi.list({ status: "ready_for_review", page: 1, per_page: ASSIST_PER_PAGE, sort_dir: "desc" }, { signal });
 
 export const readWhatsApp = (signal) => whatsappApi.getIntegration({ signal });
 export const readWhatsAppDrafts = (status, page, signal) => whatsappApi.listDrafts({ status: status || undefined, page, per_page: ASSIST_PER_PAGE }, { signal });

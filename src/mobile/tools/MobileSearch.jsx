@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { newEntryPath } from "../forms/actionRoutes.js";
 import { NEW_ENTRY_ORDER } from "../forms/workflows.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
-import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_AI, MOBILE_BUDGETS, MOBILE_CALENDAR, MOBILE_CAPTURES, MOBILE_CATEGORIES, MOBILE_DEBTS, MOBILE_EXPORTS, MOBILE_GOALS, MOBILE_IMPORTS, MOBILE_MORE, MOBILE_NOTIFICATIONS, MOBILE_PLANNING, MOBILE_PREFIX, MOBILE_PROFILE, MOBILE_RECURRING, MOBILE_REPORTS, MOBILE_REVIEW, MOBILE_TEMPLATES, MOBILE_TRANSFERS, MOBILE_WHATSAPP } from "../navigation.js";
+import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_AI, MOBILE_ATTENTION, MOBILE_BUDGETS, MOBILE_CALENDAR, MOBILE_CAPTURES, MOBILE_CATEGORIES, MOBILE_DEBTS, MOBILE_EXPORTS, MOBILE_GOALS, MOBILE_IMPORTS, MOBILE_MORE, MOBILE_NOTIFICATIONS, MOBILE_PLANNING, MOBILE_PREFIX, MOBILE_PROFILE, MOBILE_RECURRING, MOBILE_REPORTS, MOBILE_REVIEW, MOBILE_TEMPLATES, MOBILE_TRANSFERS, MOBILE_WHATSAPP } from "../navigation.js";
 import Chevron from "../ui/Chevron.jsx";
 
 // Every Mobile page that can be opened directly, with the title key it is known by.
@@ -15,7 +15,7 @@ const PAGES = [
   [MOBILE_RECURRING, "titles.recurring"], [MOBILE_CATEGORIES, "titles.categories"], [MOBILE_DEBTS, "titles.debts"], [MOBILE_CALENDAR, "titles.calendar"],
   [MOBILE_REPORTS, "titles.reports"], [MOBILE_EXPORTS, "titles.exports"], [MOBILE_IMPORTS, "titles.imports"], [MOBILE_NOTIFICATIONS, "titles.notifications"],
   [MOBILE_AI, "titles.assistant"], [MOBILE_CAPTURES, "titles.captures"], [MOBILE_WHATSAPP, "titles.whatsapp"], [MOBILE_PROFILE, "titles.profile"],
-  [MOBILE_REVIEW, "titles.review"], [MOBILE_TEMPLATES, "titles.templates"],
+  [MOBILE_REVIEW, "titles.review"], [MOBILE_TEMPLATES, "titles.templates"], [MOBILE_ATTENTION, "titles.attention"],
 ];
 
 /* Lower case, no Arabic diacritics, one spelling of alef, yaa and taa marbuta, so a search matches however the word was typed. */

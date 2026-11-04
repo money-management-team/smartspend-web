@@ -65,6 +65,8 @@ export const MOBILE_ADD_ENTRY = `${MOBILE_PREFIX}/add`;
  * review only (forms/).
  */
 export const MOBILE_MORE = `${MOBILE_PREFIX}/more`;
+// Everything that waits for the person (alerts, items to review, what is due): the full version's Attention Center.
+export const MOBILE_ATTENTION = `${MOBILE_PREFIX}/attention`;
 export const aiConversationPath = (conversationId) => `${MOBILE_AI}/conversations/${encodeURIComponent(conversationId)}`;
 export const MOBILE_CAPTURES = `${MOBILE_PREFIX}/captures`;
 export const MOBILE_RECEIPT_NEW = `${MOBILE_CAPTURES}/receipts/new`;
@@ -83,7 +85,7 @@ export const MOBILE_SIGNIN = `${MOBILE_PREFIX}/signin`;
 export const MOBILE_REGISTER = `${MOBILE_PREFIX}/register`;
 
 /* The More pages: More's current-page marker stays on inside them. */
-const MORE_WITHIN = [MOBILE_ACCOUNTS, MOBILE_TRANSFERS, MOBILE_NOTIFICATIONS, MOBILE_REPORTS, MOBILE_EXPORTS, MOBILE_IMPORTS, MOBILE_AI, MOBILE_WHATSAPP, MOBILE_PROFILE, MOBILE_CAPTURES, MOBILE_SEARCH, MOBILE_REVIEW, MOBILE_TEMPLATES];
+const MORE_WITHIN = [MOBILE_ATTENTION, MOBILE_ACCOUNTS, MOBILE_TRANSFERS, MOBILE_NOTIFICATIONS, MOBILE_REPORTS, MOBILE_EXPORTS, MOBILE_IMPORTS, MOBILE_AI, MOBILE_WHATSAPP, MOBILE_PROFILE, MOBILE_CAPTURES, MOBILE_SEARCH, MOBILE_REVIEW, MOBILE_TEMPLATES];
 
 /*
  * The four primary destinations. Add is an action (a button that opens a

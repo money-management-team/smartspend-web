@@ -1,4 +1,4 @@
-import { readAiSettings, readConversation, readConversations, readForecast, readInputQuotas, readInsights, readNotificationPreferences, readReceiptCapture, readReceiptCaptures, readVoiceCapture, readVoiceCaptures, readWhatsApp, readWhatsAppDraft, readWhatsAppDrafts } from "./readAssistApi.js";
+import { readAiSettings, readConversation, readConversations, readForecast, readInputQuotas, readInsights, readNotificationPreferences, readReceiptCapture, readReceiptCaptures, readReceiptsToReview, readVoiceCapture, readVoiceCaptures, readVoiceToReview, readWhatsApp, readWhatsAppDraft, readWhatsAppDrafts } from "./readAssistApi.js";
 
 /*
  * What each store entry of the assistant, capture, WhatsApp and preference
@@ -18,6 +18,8 @@ export const voiceCapturesLoader = (page) => (signal) => dataOf(readVoiceCapture
 export const voiceCaptureLoader = (id) => (signal) => dataOf(readVoiceCapture)(id, signal);
 export const receiptCapturesLoader = (page) => (signal) => dataOf(readReceiptCaptures)(page, signal);
 export const receiptCaptureLoader = (id) => (signal) => dataOf(readReceiptCapture)(id, signal);
+export const loadReceiptsToReview = dataOf(readReceiptsToReview);
+export const loadVoiceToReview = dataOf(readVoiceToReview);
 export const loadWhatsApp = dataOf(readWhatsApp);
 export const whatsAppDraftsLoader = (status, page) => (signal) => dataOf(readWhatsAppDrafts)(status, page, signal);
 export const whatsAppDraftLoader = (id) => (signal) => dataOf(readWhatsAppDraft)(id, signal);
@@ -34,6 +36,8 @@ export const assistKeys = {
   voiceCapture: (id) => `voiceCapture:${id}`,
   receiptCaptures: (page) => `receipts:${page}`,
   receiptCapture: (id) => `receiptCapture:${id}`,
+  receiptsToReview: "receipts:to-review",
+  voiceToReview: "voice:to-review",
   whatsapp: "whatsapp",
   whatsappDrafts: (status, page) => `whatsappDrafts:${status || "all"}:${page}`,
   whatsappDraft: (id) => `whatsappDraft:${id}`,

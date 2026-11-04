@@ -2,7 +2,7 @@
 export const assist = {
   en: {
     titles: {
-      assistant: "Assistant", conversation: "Conversation", captures: "Receipts and voice", receiptNew: "Add a receipt", voiceNew: "Record an expense", capture: "Capture",
+      attention: "Needs your attention", assistant: "Assistant", conversation: "Conversation", captures: "Receipts and voice", receiptNew: "Add a receipt", voiceNew: "Record an expense", capture: "Capture",
       whatsapp: "WhatsApp", whatsappDrafts: "WhatsApp drafts", whatsappDraft: "WhatsApp draft", profile: "Profile and settings", search: "Search", review: "Monthly review", templates: "Quick entries",
     },
     assist: {
@@ -33,6 +33,23 @@ export const assist = {
       role: { user: "You", assistant: "Assistant" },
       quotasTitle: "Receipt and voice reading today", quotaUnknown: "How many are left today isn't known right now.", quota: { voice: "Voice recordings", receipt: "Receipts" }, quotaLeft: "{{remaining}} of {{limit}} left",
       privacyTitle: "Assistant and privacy", consent: "Agreement to use your data", on: "Given", offShort: "Not given", unknown: "Not known", retention: "Kept for", days: "{{count}} days", settingsFull: "Change these in the full version",
+    },
+    attentionCenter: {
+      intro: "Everything that's waiting for you: alerts, items to review, and what's due soon.",
+      openAll: "See everything that needs your attention",
+      moreHint: "Alerts, items to review and what's due",
+      loading: "Loading what needs your attention",
+      alerts: "Alerts",
+      review: "To review",
+      reviewEmpty: "Nothing is waiting for review.",
+      reviewNote: "Opening one shows what SmartSpend read. Nothing is recorded until you confirm it there.",
+      kinds: { receipt: "Receipt", voice: "Voice note", whatsapp: "WhatsApp draft" },
+      comingUp: "Coming up",
+      comingUpEmpty: "Nothing is overdue or due in the next 14 days.",
+      overdue: "Overdue",
+      untitledEvent: "Scheduled item",
+      clearTitle: "You're all caught up",
+      clearBody: "No alerts, nothing to review, and nothing due in the next 14 days.",
     },
     captures: {
       back: "Back",
@@ -121,7 +138,7 @@ export const assist = {
   },
   ar: {
     titles: {
-      assistant: "المساعد", conversation: "محادثة", captures: "الإيصالات والصوت", receiptNew: "إضافة إيصال", voiceNew: "تسجيل مصروف", capture: "قراءة",
+      attention: "ما يحتاج إلى انتباهك", assistant: "المساعد", conversation: "محادثة", captures: "الإيصالات والصوت", receiptNew: "إضافة إيصال", voiceNew: "تسجيل مصروف", capture: "قراءة",
       whatsapp: "واتساب", whatsappDrafts: "مسودات واتساب", whatsappDraft: "مسودة واتساب", profile: "الملف الشخصي والإعدادات", search: "البحث", review: "المراجعة الشهرية", templates: "القيود السريعة",
     },
     assist: {
@@ -152,6 +169,23 @@ export const assist = {
       role: { user: "أنت", assistant: "المساعد" },
       quotasTitle: "قراءة الإيصالات والصوت اليوم", quotaUnknown: "عدد المرات المتبقية اليوم غير معروف الآن.", quota: { voice: "التسجيلات الصوتية", receipt: "الإيصالات" }, quotaLeft: "متبقٍ {{remaining}} من {{limit}}",
       privacyTitle: "المساعد والخصوصية", consent: "الموافقة على استخدام بياناتك", on: "ممنوحة", offShort: "غير ممنوحة", unknown: "غير معروف", retention: "مدة الاحتفاظ", days: "{{count}} يومًا", settingsFull: "غيّرها في النسخة الكاملة",
+    },
+    attentionCenter: {
+      intro: "كل ما ينتظرك: التنبيهات، وما يحتاج إلى مراجعة، وما يستحق قريبًا.",
+      openAll: "اعرض كل ما يحتاج إلى انتباهك",
+      moreHint: "التنبيهات وما يحتاج إلى مراجعة وما يستحق",
+      loading: "جارٍ تحميل ما يحتاج إلى انتباهك",
+      alerts: "التنبيهات",
+      review: "بانتظار المراجعة",
+      reviewEmpty: "لا شيء بانتظار المراجعة.",
+      reviewNote: "فتح أي منها يعرض ما قرأه SmartSpend. لا يُسجَّل شيء حتى تؤكده هناك.",
+      kinds: { receipt: "إيصال", voice: "ملاحظة صوتية", whatsapp: "مسودة واتساب" },
+      comingUp: "قادم قريبًا",
+      comingUpEmpty: "لا يوجد ما تأخر أو يستحق خلال الأيام الأربعة عشر القادمة.",
+      overdue: "متأخر",
+      untitledEvent: "بند مجدول",
+      clearTitle: "لا شيء بانتظارك",
+      clearBody: "لا تنبيهات، ولا شيء للمراجعة، ولا شيء يستحق خلال الأيام الأربعة عشر القادمة.",
     },
     captures: {
       back: "رجوع",

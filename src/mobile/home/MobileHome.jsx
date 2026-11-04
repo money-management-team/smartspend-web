@@ -21,7 +21,7 @@ import { currencyName } from "../money/decimal.js";
 import { formatDay, formatDayMonth, formatToday } from "../money/format.js";
 import Money from "../money/Money.jsx";
 import { buildAlertsModel, buildHomeModel } from "../models/home.js";
-import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_PREFIX, MOBILE_RECEIPT_NEW, MOBILE_VOICE_NEW, accountDetailPath, activityDetailPath } from "../navigation.js";
+import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_ATTENTION, MOBILE_PREFIX, MOBILE_RECEIPT_NEW, MOBILE_VOICE_NEW, accountDetailPath, activityDetailPath } from "../navigation.js";
 import Chevron from "../ui/Chevron.jsx";
 import IconButton from "../ui/IconButton.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
@@ -274,6 +274,10 @@ function AttentionCard({ alerts }) {
           </li>
         ))}
       </ul>
+      <Link className="sm-link-row" to={MOBILE_ATTENTION} data-sm-action="open-attention">
+        <span>{t("attentionCenter.openAll")}</span>
+        <Chevron />
+      </Link>
     </Card>
   );
 }

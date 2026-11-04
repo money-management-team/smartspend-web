@@ -29,6 +29,7 @@ const ENTRY_ICONS = { income: LuArrowDownLeft, transfer: LuArrowLeftRight, accou
 const EXTRA_TITLES = [
   [/^\/m\/assistant$/, "titles.assistant"],
   [/^\/m\/assistant\/conversations\/[^/]+$/, "titles.conversation"],
+  [/^\/m\/attention$/, "titles.attention"],
   [/^\/m\/captures$/, "titles.captures"],
   [/^\/m\/captures\/receipts\/new$/, "titles.receiptNew"],
   [/^\/m\/captures\/voice\/new$/, "titles.voiceNew"],

@@ -10,6 +10,7 @@ import { RECORD_ACTIONS } from "./forms/actionRoutes.js";
 import { MobileNewEntry, MobileRecordAction } from "./forms/MobileWorkflow.jsx";
 import MobileAssistant, { MobileConversation } from "./assist/MobileAssistant.jsx";
 import MobileCaptures, { MobileCaptureDetail } from "./assist/MobileCaptures.jsx";
+import MobileAttention from "./assist/MobileAttention.jsx";
 import MobileReceiptNew from "./assist/MobileReceiptNew.jsx";
 import MobileVoiceNew from "./assist/MobileVoiceNew.jsx";
 import { MobileGuestOnly, MobileRequireAuth } from "./auth/guards.jsx";
@@ -117,6 +118,7 @@ export const mobileRoutes = [
       ...RECORD_ACTIONS.map((action) => ({ path: action.path, element: <MobileRecordAction workflowId={action.workflow} /> })),
       { path: "assistant", element: <MobileAssistant /> },
       { path: "assistant/conversations/:conversationId", element: <MobileConversation /> },
+      { path: "attention", element: <MobileAttention /> },
       { path: "captures", element: <MobileCaptures /> },
       { path: "captures/receipts/new", element: <MobileReceiptNew /> },
       { path: "captures/receipts/:captureId", element: <MobileCaptureDetail source="receipt" /> },
