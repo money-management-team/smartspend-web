@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { LuCamera, LuMic, LuPencilLine } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link, Outlet, useLocation } from "react-router-dom";
 
 import logo from "../../assets/smart-spend-logo.png";
 import "../i18n/register.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
-import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_BUDGETS, MOBILE_CALENDAR, MOBILE_CATEGORIES, MOBILE_CATEGORY_NEW, MOBILE_DEBTS, MOBILE_EXPORTS, MOBILE_GOALS, MOBILE_IMPORTS, MOBILE_NOTIFICATIONS, MOBILE_REPORTS, MOBILE_RECURRING, MOBILE_SCREENS, MOBILE_TRANSFERS } from "../navigation.js";
+import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_BUDGETS, MOBILE_CALENDAR, MOBILE_CATEGORIES, MOBILE_CATEGORY_NEW, MOBILE_DEBTS, MOBILE_EXPORTS, MOBILE_GOALS, MOBILE_IMPORTS, MOBILE_NOTIFICATIONS, MOBILE_RECEIPT_NEW, MOBILE_REPORTS, MOBILE_RECURRING, MOBILE_SCREENS, MOBILE_TRANSFERS, MOBILE_VOICE_NEW } from "../navigation.js";
 import { normalizePathname } from "../presentation/resolver.js";
 import PwaNotices from "../pwa/PwaNotices.jsx";
 import { PwaContext } from "../pwa/pwaContext.js";
@@ -165,8 +166,29 @@ export default function MobileAppShell() {
           returnFocusRef={addRef}
         >
           <p className="sm-text sm-muted">{t("forms.addBody")}</p>
-          <nav className="sm-add-list" aria-label={t("add.title")}>
-            {NEW_ENTRY_ORDER.map((id) => (
+
+          <p className="sm-add-section-label" id="sm-add-expense-label">{t("add.expenseHeading")}</p>
+          <div className="sm-add-choices" role="group" aria-labelledby="sm-add-expense-label">
+            <Link className="sm-add-choice" to={newEntryPath("expense")} state={{ from: pathname }} onClick={closeOverlay} data-sm-action="add-expense-manual">
+              <span className="sm-add-choice-icon" aria-hidden="true"><LuPencilLine /></span>
+              <span className="sm-add-choice-label">{t("add.manual")}</span>
+              <span className="sm-add-choice-hint">{t("add.manualHint")}</span>
+            </Link>
+            <Link className="sm-add-choice" to={MOBILE_RECEIPT_NEW} state={{ from: pathname }} onClick={closeOverlay} data-sm-action="add-expense-scan">
+              <span className="sm-add-choice-icon" aria-hidden="true"><LuCamera /></span>
+              <span className="sm-add-choice-label">{t("add.scan")}</span>
+              <span className="sm-add-choice-hint">{t("add.scanHint")}</span>
+            </Link>
+            <Link className="sm-add-choice" to={MOBILE_VOICE_NEW} state={{ from: pathname }} onClick={closeOverlay} data-sm-action="add-expense-voice">
+              <span className="sm-add-choice-icon" aria-hidden="true"><LuMic /></span>
+              <span className="sm-add-choice-label">{t("add.voice")}</span>
+              <span className="sm-add-choice-hint">{t("add.voiceHint")}</span>
+            </Link>
+          </div>
+
+          <p className="sm-add-section-label">{t("add.otherHeading")}</p>
+          <nav className="sm-add-list" aria-label={t("add.otherHeading")}>
+            {NEW_ENTRY_ORDER.filter((id) => id !== "expense").map((id) => (
               <Link key={id} className="sm-link-row" to={newEntryPath(id)} state={{ from: pathname }} onClick={closeOverlay} data-sm-action={`add-${id}`}>
                 <span className="sm-row-main">
                   <span className="sm-row-title">{t(`forms.flows.${id}.link`)}</span>

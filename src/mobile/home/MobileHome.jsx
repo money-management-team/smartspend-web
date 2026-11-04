@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import { LuCamera, LuMic, LuPencilLine } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router-dom";
 
@@ -8,6 +9,7 @@ import AccountRow from "../accounts/AccountRow.jsx";
 import { typeKey } from "../accounts/typeKey.js";
 import { dashboardLoader, keys, loadAlerts, loadDashboard } from "../data/loaders.js";
 import { DASHBOARD_PERIODS } from "../data/readApi.js";
+import { newEntryPath } from "../forms/actionRoutes.js";
 import { isCalendarDay } from "../forms/validation.js";
 import { useMoneyHidden, useMoneyHiddenToggle } from "../money/privacyContext.js";
 import { useDevicePreferences } from "../preferences/deviceStore.js";
@@ -18,11 +20,39 @@ import { currencyName } from "../money/decimal.js";
 import { formatDay, formatDayMonth } from "../money/format.js";
 import Money from "../money/Money.jsx";
 import { buildAlertsModel, buildHomeModel } from "../models/home.js";
-import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_PREFIX, activityDetailPath } from "../navigation.js";
+import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_PREFIX, MOBILE_RECEIPT_NEW, MOBILE_VOICE_NEW, activityDetailPath } from "../navigation.js";
 import Chevron from "../ui/Chevron.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
 import StaleNotice from "../ui/StaleNotice.jsx";
+
+/* The same three expense entry points as the Add sheet (shell/MobileAppShell.jsx), surfaced directly on Home. */
+function QuickAddExpense() {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+
+  return (
+    <section aria-labelledby="sm-home-quick-add">
+      <p className="sm-add-section-label" id="sm-home-quick-add">{t("add.expenseHeading")}</p>
+      <div className="sm-add-choices" role="group" aria-labelledby="sm-home-quick-add">
+        <Link className="sm-add-choice" to={newEntryPath("expense")} state={{ from: MOBILE_PREFIX }} data-sm-action="home-add-manual">
+          <span className="sm-add-choice-icon" aria-hidden="true"><LuPencilLine /></span>
+          <span className="sm-add-choice-label">{t("add.manual")}</span>
+          <span className="sm-add-choice-hint">{t("add.manualHint")}</span>
+        </Link>
+        <Link className="sm-add-choice" to={MOBILE_RECEIPT_NEW} state={{ from: MOBILE_PREFIX }} data-sm-action="home-add-scan">
+          <span className="sm-add-choice-icon" aria-hidden="true"><LuCamera /></span>
+          <span className="sm-add-choice-label">{t("add.scan")}</span>
+          <span className="sm-add-choice-hint">{t("add.scanHint")}</span>
+        </Link>
+        <Link className="sm-add-choice" to={MOBILE_VOICE_NEW} state={{ from: MOBILE_PREFIX }} data-sm-action="home-add-voice">
+          <span className="sm-add-choice-icon" aria-hidden="true"><LuMic /></span>
+          <span className="sm-add-choice-label">{t("add.voice")}</span>
+          <span className="sm-add-choice-hint">{t("add.voiceHint")}</span>
+        </Link>
+      </div>
+    </section>
+  );
+}
 
 const ACCOUNT_PREVIEW = 4;
 const MALFORMED = Object.freeze({ code: "MALFORMED_RESPONSE" });
@@ -308,6 +338,8 @@ export default function MobileHome() {
         )}
         <button type="button" ref={arrangeRef} className="sm-button sm-button-quiet sm-button-small" onClick={() => setArranging(true)} data-sm-action="arrange">{t("home.arrange")}</button>
       </div>
+
+      <QuickAddExpense />
 
       {picker}
       {dashboard.stale && <StaleNotice error={dashboard.error} updatedAt={dashboard.updatedAt} onRetry={dashboard.reload} retrying={dashboard.refreshing} />}

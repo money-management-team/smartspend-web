@@ -93,6 +93,20 @@ describe("Home: a normal single-currency day", () => {
     assert.deepEqual(spoken(recent), ["minus 45.25 Israeli New Shekel", "plus 300.00 Israeli New Shekel"]);
   });
 
+  it("offers manual entry, scanning a receipt and recording by voice directly from Home", async () => {
+    await open("/m");
+    const main = q("main");
+
+    assert.deepEqual(
+      qa(".sm-add-choice", main).map((link) => link.getAttribute("href")),
+      ["/m/add/expense", "/m/captures/receipts/new", "/m/captures/voice/new"],
+    );
+    assert.match(text(main), /Add an expense/);
+    assert.match(text(main), /Manual entry/);
+    assert.match(text(main), /Scan receipt/);
+    assert.match(text(main), /Record voice/);
+  });
+
   it("has no period control that does nothing: the period is a label, not a button, link or input", async () => {
     await open("/m");
     const summary = card("sm-home-summary");
@@ -653,7 +667,7 @@ describe("Every Mobile screen reads, and only reads", () => {
     await click$(qa("nav.sm-nav button").find((item) => item.textContent.trim() === "Add"));
     const dialog = q("[role='dialog']");
     assert.match(text(dialog), /Mobile doesn't send it yet/);
-    assert.deepEqual(qa("a", dialog).map((link) => link.getAttribute("href")), ["/m/add/expense", "/m/add/income", "/m/add/transfer", "/m/add/account", "/m/add/budget", "/m/add/goal", "/m/add/recurring", "/m/add/debt"]);
+    assert.deepEqual(qa("a", dialog).map((link) => link.getAttribute("href")), ["/m/add/expense", "/m/captures/receipts/new", "/m/captures/voice/new", "/m/add/income", "/m/add/transfer", "/m/add/account", "/m/add/budget", "/m/add/goal", "/m/add/recurring", "/m/add/debt"]);
     assert.equal(qa("form, input, textarea, select", dialog).length, 0);
     assert.equal(api.calls.length, before);
   });

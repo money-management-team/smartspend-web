@@ -230,10 +230,22 @@ describe("Mobile shell: Add action", () => {
     assert.equal(dialog.getAttribute("aria-modal"), "true");
     assert.equal(q(`#${dialog.getAttribute("aria-labelledby")}`).textContent, "Add");
     assert.match(dialog.textContent, /doesn't send it yet/i);
-    assert.equal(qa("a", dialog).length, 8);
+    assert.equal(qa("a", dialog).length, 10);
     assert.equal(qa("form, input, textarea, select", dialog).length, 0);
     assert.ok(q(".sm-portal").contains(dialog), "the dialog lives in the Mobile overlay container");
     assert.ok(q(".sm-root").contains(dialog), "and inside the Mobile root");
+  });
+
+  it("offers manual entry, scanning a receipt and recording by voice as the three expense choices, ahead of the other forms", async () => {
+    await mount();
+    await openAdd();
+    const dialog = q('[role="dialog"]');
+
+    assert.deepEqual(qa("a", dialog).map((link) => link.getAttribute("href")).slice(0, 3), ["/m/add/expense", "/m/captures/receipts/new", "/m/captures/voice/new"]);
+    assert.deepEqual(qa(".sm-add-choice", dialog).map((link) => link.getAttribute("href")), ["/m/add/expense", "/m/captures/receipts/new", "/m/captures/voice/new"]);
+    assert.match(q(".sm-add-choices", dialog).textContent, /Manual entry/);
+    assert.match(q(".sm-add-choices", dialog).textContent, /Scan receipt/);
+    assert.match(q(".sm-add-choices", dialog).textContent, /Record voice/);
   });
 
   it("moves focus into the dialog, makes the page behind inert, and closes on Escape with focus restored", async () => {
