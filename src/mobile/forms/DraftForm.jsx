@@ -16,6 +16,7 @@ import Skeleton from "../ui/Skeleton.jsx";
 import StaleNotice from "../ui/StaleNotice.jsx";
 import { useOnline } from "../ui/useOnline.js";
 import { useWorkflowSubmit } from "./useWorkflowSubmit.js";
+import WriteOutcome from "./WriteOutcome.jsx";
 import { normalizeAmount } from "./validation.js";
 import { buildWrite } from "./writePayloads.js";
 import { FORM_CURRENCIES, accountChoices, categoryChoices, changedFields, currencyFor, effectKeyOf, isDirty, isLocked, isRequired, validateWorkflow, visibleFields } from "./workflows.js";
@@ -261,43 +262,6 @@ export default function DraftForm({ workflow, ctx, choices, backTo, recordSummar
       </div>
       {leaveSheet()}
     </form>
-  );
-}
-
-/* The answer to a sent write, as the server gave it; an unknown one claims nothing either way. */
-function WriteOutcome({ outcome, outcomeRef, backTo, t }) {
-  const kind = outcome.phase;
-  const serverMessage = kind === "rejected" && typeof outcome.error?.message === "string" ? outcome.error.message.slice(0, 300) : null;
-  const fieldMessages = kind === "rejected" && outcome.error?.errors && typeof outcome.error.errors === "object"
-    ? Object.values(outcome.error.errors).flat().filter((item) => typeof item === "string").slice(0, 6).map((item) => item.slice(0, 300))
-    : [];
-  const bodyKey = kind === "rejected" ? (outcome.code === "RATE_LIMITED" ? "rateLimited" : outcome.code === "NO_WORKSPACE" ? "noWorkspace" : outcome.code === "WRITE_CLOSED" ? "closed" : "rejectedBody") : `${kind}Body`;
-  const refused = kind === "rejected";
-
-  return (
-    <div
-      className={refused ? "sm-card sm-error" : "sm-card"}
-      role={kind === "rejected" ? "alert" : "status"}
-      tabIndex={-1}
-      ref={outcomeRef}
-      data-sm-outcome={kind}
-      data-sm-code={outcome.code ?? undefined}
-    >
-      <h2 className="sm-card-title">{t(`forms.outcome.${kind}Title`)}</h2>
-      <p className="sm-text">{t(`forms.outcome.${bodyKey}`)}</p>
-      {serverMessage && <p className="sm-text sm-muted" dir="auto">{serverMessage}</p>}
-      {fieldMessages.length > 0 && (
-        <ul className="sm-cat-summary-list">
-          {fieldMessages.map((message) => <li key={message} dir="auto">{message}</li>)}
-        </ul>
-      )}
-      {kind !== "rejected" && (
-        <Link className="sm-link-row" to={backTo} data-sm-action="after-write">
-          <span>{t("forms.outcome.back")}</span>
-          <Chevron />
-        </Link>
-      )}
-    </div>
   );
 }
 

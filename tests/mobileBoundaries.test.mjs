@@ -28,6 +28,15 @@ const mobileCss = mobileFiles.filter((file) => file.endsWith(".css"));
  *  - Experience/experienceStore.js: the full app's device-preference store, read
  *    (never written) so that "hide amounts" is respected in Mobile. It is plain
  *    JavaScript with no component and no CSS.
+ *  - FinancialOperations/voiceRecorder.js and voiceCaptureContract.js: the full
+ *    version's own microphone-to-WAV recorder and its policy constants, reused
+ *    (Phase 6UI.3) rather than rebuilt a second time in Mobile. The backend's
+ *    WAV contract is byte-exact (mono PCM16 at 24000 Hz; AiVoiceFileGuard on
+ *    fix/financial-idempotency-p0 @ 6b696d72); a second, independently
+ *    maintained encoder is exactly how two copies of that contract would drift
+ *    apart. Both are plain JavaScript, environment-injected like Mobile's own
+ *    code, with no component and no CSS; voiceRecorder.js's own import of
+ *    voiceAudioWav.js (same folder) is not a new boundary crossing.
  * Which of the api/ modules may be imported, and by which file, is checked in
  * tests/mobileReadOnly.test.mjs.
  */
@@ -42,6 +51,8 @@ const ALLOWED_OUTSIDE = [
   /^src\/assets\/smart-spend-logo\.png$/,
   /^src\/features\/Dashboards\/User\/api\/[A-Za-z]+\.js$/,
   /^src\/features\/Dashboards\/User\/Experience\/experienceStore\.js$/,
+  /^src\/features\/Dashboards\/User\/FinancialOperations\/voiceRecorder\.js$/,
+  /^src\/features\/Dashboards\/User\/FinancialOperations\/voiceCaptureContract\.js$/,
   // Decision C (product owner, Google sign-in): the full version's own Google mechanism, reused rather than copied:
   // the hook (provider's loginWithGoogle, consent, safe return) and the Google Identity loader. Plain JS, no JSX, no CSS.
   /^src\/features\/Auth\/components\/AuthSocial\/useGoogleSignIn\.js$/,
@@ -94,6 +105,8 @@ describe("Mobile import boundaries", () => {
       for (const specifier of specifiers(readFileSync(file, "utf8"))) {
         // Decision C: the two plain-JS Google sign-in modules, by exact name (no component, no CSS from that folder).
         if (/\/features\/Auth\/components\/AuthSocial\/(useGoogleSignIn|googleIdentity)\.js$/.test(specifier)) continue;
+        // Phase 6UI.3: the full version's voice recorder/WAV-policy modules, reused rather than duplicated (see ALLOWED_OUTSIDE above).
+        if (/\/features\/Dashboards\/User\/FinancialOperations\/(voiceRecorder|voiceCaptureContract)\.js$/.test(specifier)) continue;
         assert.doesNotMatch(specifier, /\/(layouts|components|features\/(?!Dashboards\/User\/api\/|Dashboards\/User\/Experience\/experienceStore))/, `${rel(file)} -> ${specifier}`);
 
         if (specifier.endsWith(".css")) {

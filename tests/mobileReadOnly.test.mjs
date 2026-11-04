@@ -70,8 +70,8 @@ describe("the source", () => {
     assert.deepEqual(find(/categoriesApi|accountsApi|Api\.archive/, sources.filter((file) => rel(file).startsWith("src/mobile/forms/"))), [], "forms/ names no API wrapper at all");
     const calls = [...code(path.join(ROOT, WRITE)).matchAll(/\b(\w+Api)\.(\w+)\s*\(/g)].map((match) => `${match[1]}.${match[2]}`);
     assert.deepEqual([...new Set(calls)].sort(), [
-      "accountsApi.archive", "accountsApi.create", "accountsApi.update", "aiExpenseCapturesApi.confirm", "aiExpenseCapturesApi.update",
-      "aiVoiceExpenseCapturesApi.confirm", "aiVoiceExpenseCapturesApi.update", "authApi.changePassword", "authApi.updateProfile",
+      "accountsApi.archive", "accountsApi.create", "accountsApi.update", "aiExpenseCapturesApi.confirm", "aiExpenseCapturesApi.create", "aiExpenseCapturesApi.update",
+      "aiVoiceExpenseCapturesApi.confirm", "aiVoiceExpenseCapturesApi.create", "aiVoiceExpenseCapturesApi.update", "authApi.changePassword", "authApi.updateProfile",
       "budgetsApi.create", "budgetsApi.update", "categoriesApi.create", "categoriesApi.update", "debtsApi.create", "debtsApi.recordPayment",
       "debtsApi.reversePayment", "debtsApi.update", "plannedSavingsApi.create", "recurringTransactionsApi.confirmNext", "recurringTransactionsApi.create",
       "recurringTransactionsApi.skipNext", "recurringTransactionsApi.update", "reportExportsApi.create", "savingsGoalsApi.contribute", "savingsGoalsApi.create",
@@ -80,8 +80,8 @@ describe("the source", () => {
     ], "the facade names these writes and no other (no budget, goal, debt, rule or category archive; no import, discard or unlink)");
     // Every one of them is behind the gate: the only function that reaches SENDERS asserts it first.
     assert.match(code(path.join(ROOT, WRITE)), /export function sendWorkflowWrite\(write, key\) \{\n  assertWriteOpen\(write\.operation\);/);
-    // Two places send: the category form, and the forms' submission hook. No other screen imports the write facade.
-    assert.deepEqual(find(/from\s*["'][^"']*data\/writeApi(?:\.js)?["']/), ["src/mobile/categories/MobileCategoryForm.jsx", "src/mobile/forms/useWorkflowSubmit.js"]);
+    // Three places send: the category form, the forms' submission hook, and the receipt/voice upload hook. No other screen imports the write facade.
+    assert.deepEqual(find(/from\s*["'][^"']*data\/writeApi(?:\.js)?["']/), ["src/mobile/assist/useCaptureUpload.js", "src/mobile/categories/MobileCategoryForm.jsx", "src/mobile/forms/useWorkflowSubmit.js"]);
   });
 
   it("never asks for the Smart Savings funding preview: a POST, blocked until the backend shows it has no consequential side effect", () => {

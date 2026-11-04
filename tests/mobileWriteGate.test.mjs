@@ -43,7 +43,9 @@ afterEach(async () => {
 describe("the gate", () => {
   it("knows every write Mobile has code for, and has all of them closed", () => {
     const formWrites = Object.values(WORKFLOWS).map((workflow) => workflow.operation);
-    assert.deepEqual(Object.keys(gate.MOBILE_WRITES).sort(), ["category.create", "category.update", ...formWrites].sort());
+    // receipt.upload / voice.upload have no forms/workflows.js entry: assist/MobileReceiptNew.jsx and
+    // MobileVoiceNew.jsx send them directly (assist/useCaptureUpload.js), never through DraftForm's review step.
+    assert.deepEqual(Object.keys(gate.MOBILE_WRITES).sort(), ["category.create", "category.update", "receipt.upload", "voice.upload", ...formWrites].sort());
     const DEDUP = ["unique-index", "key-atomic", "key-fix-pending", "once-only", "same-result", "duplicates", "unverified"];
     for (const [operation, write] of Object.entries(gate.MOBILE_WRITES)) {
       assert.equal(gate.isWriteOpen(operation), false, operation);

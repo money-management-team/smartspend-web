@@ -182,75 +182,107 @@ describe("receipts and voice", () => {
 });
 
 describe("recording an expense by voice", () => {
-  let restore;
-  const install = ({ deny = false } = {}) => {
-    const stopped = [];
-    const track = { stop: () => stopped.push("track"), addEventListener() {} };
-    class FakeRecorder {
-      constructor() {
-        this.state = "inactive";
-        this.mimeType = "audio/webm";
-      }
-      start() {
-        this.state = "recording";
-      }
-      stop() {
-        this.state = "inactive";
-        this.ondataavailable?.({ data: new window.Blob([new Uint8Array(4000)], { type: "audio/webm" }) });
-        this.onstop?.();
-      }
-    }
-    const previous = { media: Object.getOwnPropertyDescriptor(window.navigator, "mediaDevices"), recorder: window.MediaRecorder, now: Date.now };
-    Object.defineProperty(window.navigator, "mediaDevices", { configurable: true, value: { getUserMedia: async () => (deny ? Promise.reject(Object.assign(new Error("no"), { name: "NotAllowedError" })) : { getTracks: () => [track] }) } });
-    window.MediaRecorder = FakeRecorder;
-    let clock = 1_000_000;
-    Date.now = () => clock;
-    restore = () => {
-      if (previous.media) Object.defineProperty(window.navigator, "mediaDevices", previous.media);
-      else delete window.navigator.mediaDevices;
-      window.MediaRecorder = previous.recorder;
-      Date.now = previous.now;
-    };
-    return { stopped, advance: (ms) => (clock += ms) };
-  };
-  afterEach(() => restore?.());
+  /*
+   * MobileVoiceNew.jsx now records through the full version's own recorder
+   * and WAV conversion (FinancialOperations/voiceRecorder.js, reused rather
+   * than duplicated — see assist/voiceRecorderFactory.js and
+   * tests/mobileBoundaries.test.mjs's reviewed exception for it). jsdom has
+   * no Web Audio API to drive that engine with, so this file replaces it
+   * outright (setVoiceRecorderForTests) with a minimal fake of the same
+   * public shape; the engine's own byte-level correctness is
+   * tests/voiceRecording.test.mjs's job, not this one's.
+   */
+  let setVoiceRecorderForTests;
+  let recorder;
 
-  it("asks for the microphone only on Record, records, stops, plays back here, and frees the microphone", async () => {
-    const media = install();
+  function fakeRecorder() {
+    let snapshot = Object.freeze({ status: "idle", elapsedMs: 0, level: 0, result: null, error: null, stopReason: null, support: Object.freeze({ supported: true, code: null }) });
+    const listeners = new Set();
+    const set = (changes) => {
+      snapshot = Object.freeze({ ...snapshot, ...changes });
+      listeners.forEach((listener) => listener());
+    };
+    let failNextStart = null;
+    let failNextStop = null;
+
+    return {
+      getSnapshot: () => snapshot,
+      subscribe: (listener) => {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+      start: () => {
+        if (failNextStart) {
+          const code = failNextStart;
+          failNextStart = null;
+          set({ status: "error", error: { code }, result: null });
+          return Promise.reject(Object.assign(new Error(code), { code }));
+        }
+        set({ status: "recording", elapsedMs: 0, error: null, result: null, stopReason: null });
+        return Promise.resolve();
+      },
+      stop: () => {
+        if (failNextStop) {
+          const code = failNextStop;
+          failNextStop = null;
+          set({ status: "error", error: { code }, result: null });
+          return Promise.resolve();
+        }
+        set({ status: "ready", result: { blob: new Blob([new Uint8Array(44)], { type: "audio/wav" }), durationMs: 1200, byteLength: 44, wasTrimmed: false, previewUrl: "blob:test-1" } });
+        return Promise.resolve();
+      },
+      cancel: () => set({ status: "idle", elapsedMs: 0, level: 0, result: null, error: null, stopReason: null }),
+      failNextStart: (code) => {
+        failNextStart = code;
+      },
+      failNextStop: (code) => {
+        failNextStop = code;
+      },
+    };
+  }
+
+  beforeEach(async () => {
+    ({ setVoiceRecorderForTests } = await import("../src/mobile/assist/voiceRecorderFactory.js"));
+    recorder = fakeRecorder();
+    setVoiceRecorderForTests(() => recorder);
+  });
+  afterEach(() => setVoiceRecorderForTests(null));
+
+  it("asks for the microphone only on Record, records, stops, and plays back here", async () => {
     await open("/m/captures/voice/new");
     assert.equal(q("[data-sm-screen='voice-new']").dataset.smPhase, "idle");
     await click(action("record"));
     await settle();
     assert.equal(q("[data-sm-screen='voice-new']").dataset.smPhase, "recording");
-    media.advance(3000);
-    await click(action("stop"));
-    assert.equal(q("[data-sm-screen='voice-new']").dataset.smPhase, "recorded");
+    await act(async () => recorder.stop());
+    await settle();
+    assert.equal(q("[data-sm-screen='voice-new']").dataset.smPhase, "ready");
     assert.ok(q("[data-sm-clip='recorded']"));
-    assert.deepEqual(media.stopped, ["track"]);
     assert.equal(action("upload").disabled, true);
     assert.ok(api.calls.every((call) => call.method === "GET"));
   });
 
   it("a refused microphone explains how to allow it", async () => {
-    install({ deny: true });
+    recorder.failNextStart("VOICE_PERMISSION_DENIED");
     await open("/m/captures/voice/new");
     await click(action("record"));
     await settle();
-    assert.equal(q("[data-sm-status]").dataset.smStatus, "denied");
+    assert.equal(q("[data-sm-status]").dataset.smStatus, "VOICE_PERMISSION_DENIED");
+    assert.match(text(), /Microphone access was refused/);
   });
 
   it("a recording that is too short is not kept; discarding one asks first", async () => {
-    const media = install();
     await open("/m/captures/voice/new");
+    recorder.failNextStop("VOICE_TOO_SHORT");
     await click(action("record"));
     await settle();
-    media.advance(200);
-    await click(action("stop"));
-    assert.equal(q("[data-sm-status]").dataset.smStatus, "tooShort");
+    await act(async () => recorder.stop());
+    await settle();
+    assert.equal(q("[data-sm-status]").dataset.smStatus, "VOICE_TOO_SHORT");
     await click(action("record"));
     await settle();
-    media.advance(2000);
-    await click(action("stop"));
+    await act(async () => recorder.stop());
+    await settle();
     await click(action("discard-recording"));
     assert.ok(q("[role='dialog']"));
     await click(action("confirm-discard"));

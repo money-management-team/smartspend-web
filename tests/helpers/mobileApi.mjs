@@ -37,8 +37,10 @@ export const CATEGORY_WRITES = Object.freeze([
 export const FORM_WRITES = Object.freeze({
   expense: { method: "POST", path: /^\/transactions\/expense$/ },
   transfer: { method: "POST", path: /^\/transfers$/ },
+  receiptUpload: { method: "POST", path: /^\/ai\/expense-captures$/ },
   receiptSave: { method: "PATCH", path: /^\/ai\/expense-captures\/[1-9]\d*$/ },
   receiptConfirm: { method: "POST", path: /^\/ai\/expense-captures\/[1-9]\d*\/confirm$/ },
+  voiceUpload: { method: "POST", path: /^\/ai\/voice-expense-captures$/ },
   budget: { method: "POST", path: /^\/budgets$/ },
 });
 

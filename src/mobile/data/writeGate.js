@@ -53,6 +53,16 @@ export const MOBILE_WRITES = Object.freeze({
   "recurring.confirmNext": write("POST /recurring-transactions/{id}/confirm-next", true, "derived", "key-atomic"),
   "receipt.confirm": write("POST /ai/expense-captures/{id}/confirm", true, "client", "key-atomic"),
   "voice.confirm": write("POST /ai/voice-expense-captures/{id}/confirm", true, "client", "key-atomic"),
+  // Neither upload moves money or creates a transaction: it only stores the file and queues AI
+  // reading. The key header is optional for the receipt and required for voice
+  // (StoreAiExpenseCaptureRequest / StoreAiVoiceExpenseCaptureRequest on
+  // fix/financial-idempotency-p0 @ 6b696d72); Mobile always sends one. Both are
+  // reserved/completed through the same IdempotencyService as a money write, keyed to
+  // {workspace_id, file_hash} (AiCaptureUploadService / AiVoiceCaptureAdmissionService), so a
+  // retry with the same key and the same file replays the first capture and a different file
+  // under a reused key is refused with a 409 rather than silently accepted.
+  "receipt.upload": write("POST /ai/expense-captures", false, "client", "key-atomic"),
+  "voice.upload": write("POST /ai/voice-expense-captures", false, "client", "key-atomic"),
   "whatsapp.confirm": write("POST /integrations/whatsapp/expense-drafts/{id}/confirm", true, "client", "key-atomic"),
 
   "account.create": write("POST /accounts", false, "none", "duplicates"),

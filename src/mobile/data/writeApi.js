@@ -65,6 +65,9 @@ const SENDERS = {
   "recurring.confirmNext": ({ ids }) => recurringTransactionsApi.confirmNext(ids.ruleId),
   "receipt.confirm": (write, key) => saveThenConfirm(write, key, (id, body) => aiExpenseCapturesApi.update(id, body), (id, version, k) => aiExpenseCapturesApi.confirm(id, { review_version: version }, { idempotencyKey: k })),
   "voice.confirm": (write, key) => saveThenConfirm(write, key, (id, body) => aiVoiceExpenseCapturesApi.update(id, body), (id, version, k) => aiVoiceExpenseCapturesApi.confirm(id, { review_version: version }, { idempotencyKey: k })),
+  // Stores the file and queues it for AI reading; creates no transaction. input: { file, workspaceId, signal }.
+  "receipt.upload": ({ input }, key) => aiExpenseCapturesApi.create(input.file, { workspaceId: input.workspaceId, idempotencyKey: key, signal: input.signal }),
+  "voice.upload": ({ input }, key) => aiVoiceExpenseCapturesApi.create(input.file, { workspaceId: input.workspaceId, idempotencyKey: key, signal: input.signal }),
   "whatsapp.confirm": async ({ ids, input, reviewVersion }, key) => {
     const saved = await whatsappApi.updateDraft(ids.draftId, input, reviewVersion);
     return whatsappApi.confirmDraft(ids.draftId, { reviewVersion: savedVersion(saved, "draft"), idempotencyKey: key });
