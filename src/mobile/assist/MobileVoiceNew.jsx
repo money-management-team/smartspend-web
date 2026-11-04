@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
+import { LuMic, LuRotateCcw, LuSquare } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
@@ -11,6 +12,7 @@ import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { MOBILE_CAPTURES, backPathFrom, captureDetailPath } from "../navigation.js";
 import MobileSheet from "../shell/MobileSheet.jsx";
 import Chevron from "../ui/Chevron.jsx";
+import CaptureSteps from "./CaptureSteps.jsx";
 import { useCaptureUpload } from "./useCaptureUpload.js";
 import { VOICE_RECORDING_POLICY, createMobileVoiceRecorder } from "./voiceRecorderFactory.js";
 
@@ -101,31 +103,38 @@ export default function MobileVoiceNew() {
         <Chevron back />
         <span>{t("captures.back")}</span>
       </Link>
-      <div className="sm-card">
-        <h2 className="sm-card-title">{t("captures.voiceTitle")}</h2>
+      <div className="sm-capture-head">
+        <h2 className="sm-capture-title">{t("captures.voiceTitle")}</h2>
         <p className="sm-text sm-muted">{t("captures.voiceIntro")}</p>
-        <p className="sm-text sm-muted sm-fine">{t("captures.voiceRules", { max: VOICE_RECORDING_POLICY.maxDurationSeconds })}</p>
+        <CaptureSteps first="record" current={0} />
+      </div>
+
+      <div className="sm-card sm-voice-stage" data-sm-live={recording ? "true" : undefined}>
+        {recording ? (
+          <button type="button" className="sm-orb" onClick={stop} data-sm-action="stop">
+            <span className="sm-orb-circle" aria-hidden="true"><LuSquare /></span>
+            <span className="sm-orb-label">{t("captures.stop")}</span>
+          </button>
+        ) : (
+          <button type="button" className="sm-orb" onClick={record} disabled={busy || !rec.support.supported} data-sm-action="record">
+            <span className="sm-orb-circle" aria-hidden="true">{ready ? <LuRotateCcw /> : <LuMic />}</span>
+            <span className="sm-orb-label">{t(ready ? "captures.recordAgain" : "captures.record")}</span>
+          </button>
+        )}
 
         {recording ? (
           <div className="sm-recording" role="status" aria-live="polite" data-sm-recording="true">
             <span className="sm-recording-dot" aria-hidden="true" />
             <span className="sm-text">{t("captures.recording")}</span>
-            <bdi dir="ltr" className="sm-recording-clock" aria-label={t("captures.elapsed", { time: clock(rec.elapsedMs) })}>{clock(rec.elapsedMs)} / {clock(VOICE_RECORDING_POLICY.maxDurationSeconds * 1000)}</bdi>
           </div>
         ) : (
-          <p className="sm-text" role="status" aria-live="polite" data-sm-status={errorCode ?? undefined}>
+          <p className="sm-text sm-voice-status" role="status" aria-live="polite" data-sm-status={errorCode ?? undefined}>
             {errorCode ? t(`captures.voiceError.${errorCode}`, { defaultValue: t("captures.voiceError.VOICE_RECORDING_FAILED") }) : busy ? t(rec.status === "processing" ? "captures.voicePhase.processing" : "captures.voicePhase.asking") : ""}
           </p>
         )}
-
-        <div className="sm-actions">
-          {recording ? (
-            <button type="button" className="sm-button" onClick={stop} data-sm-action="stop">{t("captures.stop")}</button>
-          ) : (
-            <button type="button" className="sm-button" onClick={record} disabled={busy || !rec.support.supported} data-sm-action="record">{t(ready ? "captures.recordAgain" : "captures.record")}</button>
-          )}
-          {ready && !recording && <button type="button" ref={discardRef} className="sm-button sm-button-quiet" onClick={() => setConfirmDiscard(true)} data-sm-action="discard-recording">{t("captures.discardRecording")}</button>}
-        </div>
+        <bdi dir="ltr" className="sm-recording-clock" aria-label={t("captures.elapsed", { time: clock(rec.elapsedMs) })}>{clock(rec.elapsedMs)} / {clock(VOICE_RECORDING_POLICY.maxDurationSeconds * 1000)}</bdi>
+        <p className="sm-text sm-muted sm-fine">{t("captures.voiceRules", { max: VOICE_RECORDING_POLICY.maxDurationSeconds })}</p>
+        {ready && !recording && <button type="button" ref={discardRef} className="sm-button sm-button-quiet sm-button-small" onClick={() => setConfirmDiscard(true)} data-sm-action="discard-recording">{t("captures.discardRecording")}</button>}
       </div>
 
       {ready && (

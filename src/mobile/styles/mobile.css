@@ -2217,3 +2217,39 @@
 .sm-root .sm-more-link { justify-content: flex-start; color: var(--sm-text); font-weight: 600; }
 .sm-root .sm-more-link:hover { color: var(--sm-text); }
 .sm-root .sm-more-link .sm-chevron { margin-inline-start: auto; }
+
+/* ---------- Receipt and voice capture ---------- */
+.sm-root .sm-capture-head { display: grid; gap: 0.5rem; }
+.sm-root .sm-capture-title { font-size: 1.375rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; color: var(--sm-text); }
+.sm-root .sm-stepper { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; margin-block-start: 0.5rem; padding: 0; list-style: none; }
+.sm-root .sm-stepper-item { display: grid; gap: 0.375rem; align-content: start; padding-block-start: 0.5rem; border-block-start: 3px solid var(--sm-border); color: var(--sm-muted); font-size: 0.8125rem; font-weight: 600; line-height: 1.3; }
+.sm-root .sm-stepper-item[data-sm-step-state="current"] { border-block-start-color: var(--sm-blue); color: var(--sm-text); }
+.sm-root .sm-stepper-item[data-sm-step-state="done"] { border-block-start-color: var(--sm-cyan); color: var(--sm-text); }
+.sm-root .sm-stepper-dot { display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: 999px; color: var(--sm-muted); background: var(--sm-surface-2); font-size: 0.75rem; font-weight: 700; }
+.sm-root .sm-stepper-item[data-sm-step-state="current"] .sm-stepper-dot { color: #ffffff; background: var(--sm-blue); }
+.sm-root .sm-stepper-item[data-sm-step-state="done"] .sm-stepper-dot { color: var(--sm-navy); background: var(--sm-cyan); }
+.sm-root .sm-stepper-label { overflow-wrap: anywhere; }
+
+.sm-root .sm-capture-zone { display: grid; justify-items: center; gap: 1rem; padding: 2rem 1.25rem 1.5rem; border: 2px dashed var(--sm-border); border-radius: var(--sm-radius-xl); background: var(--sm-surface); text-align: center; }
+.sm-root .sm-capture-zone-icon { display: inline-flex; align-items: center; justify-content: center; width: 4.5rem; height: 4.5rem; border-radius: 999px; color: #ffffff; background: linear-gradient(135deg, var(--sm-blue), var(--sm-cyan)); font-size: 2rem; box-shadow: var(--sm-shadow-glow); }
+.sm-root .sm-capture-zone-actions { display: grid; gap: 0.5rem; inline-size: min(100%, 20rem); }
+.sm-root .sm-capture-zone-actions .sm-button, .sm-root .sm-capture-tools .sm-button { gap: 0.5rem; }
+.sm-root .sm-capture-preview { justify-items: center; text-align: center; }
+.sm-root .sm-capture-preview .sm-receipt-preview { inline-size: 100%; max-block-size: 60vh; background: var(--sm-surface-2); }
+.sm-root .sm-capture-nopreview { padding: 2rem 1rem; inline-size: 100%; border-radius: var(--sm-radius-md); background: var(--sm-surface-2); }
+.sm-root .sm-capture-tools { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+
+.sm-root .sm-voice-stage { justify-items: center; gap: 0.75rem; padding-block: 1.75rem 1.25rem; text-align: center; }
+.sm-root .sm-orb { display: grid; justify-items: center; gap: 0.625rem; padding: 0; border: 0; color: var(--sm-text); background: transparent; font-weight: 700; cursor: pointer; }
+.sm-root .sm-orb:disabled { cursor: not-allowed; opacity: 0.55; }
+.sm-root .sm-orb-circle { display: inline-flex; align-items: center; justify-content: center; width: 6rem; height: 6rem; border-radius: 999px; color: #ffffff; background: linear-gradient(135deg, var(--sm-blue), var(--sm-cyan)); font-size: 2.5rem; box-shadow: var(--sm-shadow-glow), 0 0 0 0.5rem var(--sm-in-soft); transition: transform 0.15s ease, box-shadow 0.2s ease; }
+.sm-root .sm-orb:active:not(:disabled) .sm-orb-circle { transform: scale(0.95); }
+.sm-root .sm-voice-stage[data-sm-live="true"] .sm-orb-circle { background: var(--sm-navy); font-size: 2rem; animation: sm-live 1.6s ease-in-out infinite; }
+@keyframes sm-live { 0%, 100% { box-shadow: 0 0 0 0.5rem rgba(34, 195, 238, 0.28); } 50% { box-shadow: 0 0 0 1.125rem rgba(34, 195, 238, 0.08); } }
+.sm-root .sm-orb-label { font-size: 1rem; }
+.sm-root .sm-voice-status:empty { display: none; }
+.sm-root .sm-voice-stage .sm-recording { justify-content: center; padding: 0; }
+.sm-root .sm-voice-stage .sm-recording-clock { font-family: var(--sm-font-figures); font-size: 1.5rem; font-weight: 700; color: var(--sm-text); }
+@media (prefers-reduced-motion: reduce) { .sm-root .sm-voice-stage[data-sm-live="true"] .sm-orb-circle { animation: none; } }
+/* A write that Mobile does not send yet: its button is present and plainly unavailable, not a faded primary that looks broken. */
+.sm-root [data-sm-note="write-closed"] .sm-button:disabled { color: var(--sm-muted); border: 1px dashed var(--sm-border); background: var(--sm-surface-2); box-shadow: none; opacity: 1; }

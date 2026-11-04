@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { LuCamera, LuImage, LuRefreshCw, LuTrash2 } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
@@ -11,6 +12,7 @@ import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { MOBILE_CAPTURES, backPathFrom, captureDetailPath } from "../navigation.js";
 import MobileSheet from "../shell/MobileSheet.jsx";
 import Chevron from "../ui/Chevron.jsx";
+import CaptureSteps from "./CaptureSteps.jsx";
 import { useCaptureUpload } from "./useCaptureUpload.js";
 import { RECEIPT_TYPES, localUrl, receiptFileError, releaseUrl } from "./captureRules.js";
 
@@ -37,6 +39,8 @@ export default function MobileReceiptNew() {
   const navigate = useNavigate();
   const backTo = backPathFrom(location.state, MOBILE_CAPTURES);
   const inputRef = useRef(null);
+  // The camera directly (capture), for a receipt in hand; the gallery input above takes a photo already taken.
+  const cameraRef = useRef(null);
   const [file, setFile] = useState(null);
   const [error, setError] = useState(null);
   const open = isWriteOpen("receipt.upload");
@@ -86,25 +90,37 @@ export default function MobileReceiptNew() {
         <Chevron back />
         <span>{t("captures.back")}</span>
       </Link>
-      <div className="sm-card">
-        <h2 className="sm-card-title">{t("captures.receiptTitle")}</h2>
+      <div className="sm-capture-head">
+        <h2 className="sm-capture-title">{t("captures.receiptTitle")}</h2>
         <p className="sm-text sm-muted">{t("captures.receiptIntro")}</p>
-        <p id={`${ids}-rules`} className="sm-text sm-muted sm-fine">{t("captures.receiptRules")}</p>
-        <input ref={inputRef} id={`${ids}-file`} className="sm-sr" type="file" accept={RECEIPT_TYPES.join(",")} onChange={choose} aria-describedby={`${ids}-rules`} data-sm-input="receipt" disabled={send.uploading} />
-        <div className="sm-actions">
-          <button type="button" className="sm-button" onClick={() => inputRef.current?.click()} disabled={send.uploading} data-sm-action="choose">{t(file ? "captures.replace" : "captures.choose")}</button>
-          {file && <button type="button" className="sm-button sm-button-quiet" onClick={remove} disabled={send.uploading} data-sm-action="remove">{t("captures.remove")}</button>}
-        </div>
-        {error && <p className="sm-text sm-form-error" role="alert" data-sm-error={error}>{t(`captures.fileError.${error}`)}</p>}
+        <CaptureSteps first="photo" current={0} />
       </div>
 
-      {file && (
-        <div className="sm-card" data-sm-file="chosen">
-          <h2 className="sm-card-title">{t("captures.chosen")}</h2>
-          {preview ? <img className="sm-receipt-preview" src={preview} alt={t("captures.previewAlt")} /> : <p className="sm-text sm-muted">{t("captures.noPreview")}</p>}
-          <p className="sm-text"><bdi dir="auto" className="sm-user-text">{file.name}</bdi> · <bdi dir="ltr">{sizeText(file.size)}</bdi></p>
+      <input ref={inputRef} id={`${ids}-file`} className="sm-sr" type="file" accept={RECEIPT_TYPES.join(",")} onChange={choose} aria-describedby={`${ids}-rules`} data-sm-input="receipt" disabled={send.uploading} tabIndex={-1} />
+      <input ref={cameraRef} className="sm-sr" type="file" accept="image/*" capture="environment" onChange={choose} aria-describedby={`${ids}-rules`} data-sm-input="receipt-camera" disabled={send.uploading} tabIndex={-1} />
+
+      {!file ? (
+        <div className="sm-capture-zone" data-sm-zone="receipt">
+          <span className="sm-capture-zone-icon" aria-hidden="true"><LuCamera /></span>
+          <div className="sm-capture-zone-actions">
+            <button type="button" className="sm-button" onClick={() => cameraRef.current?.click()} disabled={send.uploading} data-sm-action="take-photo"><LuCamera aria-hidden="true" /><span>{t("captures.takePhoto")}</span></button>
+            <button type="button" className="sm-button sm-button-quiet" onClick={() => inputRef.current?.click()} disabled={send.uploading} data-sm-action="choose"><LuImage aria-hidden="true" /><span>{t("captures.fromGallery")}</span></button>
+          </div>
+          <p id={`${ids}-rules`} className="sm-text sm-muted sm-fine">{t("captures.receiptRules")}</p>
+        </div>
+      ) : (
+        <div className="sm-card sm-capture-preview" data-sm-file="chosen">
+          <h2 className="sm-sr">{t("captures.chosen")}</h2>
+          {preview ? <img className="sm-receipt-preview" src={preview} alt={t("captures.previewAlt")} /> : <p className="sm-text sm-muted sm-capture-nopreview">{t("captures.noPreview")}</p>}
+          <p className="sm-text sm-fine"><bdi dir="auto" className="sm-user-text">{file.name}</bdi> · <bdi dir="ltr">{sizeText(file.size)}</bdi></p>
+          <div className="sm-capture-tools">
+            <button type="button" className="sm-button sm-button-quiet sm-button-small" onClick={() => inputRef.current?.click()} disabled={send.uploading} data-sm-action="choose"><LuRefreshCw aria-hidden="true" /><span>{t("captures.replace")}</span></button>
+            <button type="button" className="sm-button sm-button-quiet sm-button-small" onClick={remove} disabled={send.uploading} data-sm-action="remove"><LuTrash2 aria-hidden="true" /><span>{t("captures.remove")}</span></button>
+          </div>
+          <p id={`${ids}-rules`} className="sm-sr">{t("captures.receiptRules")}</p>
         </div>
       )}
+      {error && <p className="sm-text sm-form-error" role="alert" data-sm-error={error}>{t(`captures.fileError.${error}`)}</p>}
 
       {!open && (
         <div className="sm-card" role="note" data-sm-note="write-closed" data-sm-write="receipt.upload">
