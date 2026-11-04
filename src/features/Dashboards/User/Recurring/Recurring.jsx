@@ -7,6 +7,7 @@ import Loading from "../../../../components/Loading/Loading";
 import { getRecurringDetailsPath, getTransactionDetailsPath } from "../../../../routes/Path";
 import { ApiError } from "../api/apiClient";
 import { recurringTransactionsApi } from "../api/recurringTransactionsApi";
+import { createSubmissionAttempt } from "../FinancialOperations/transactionHelpers";
 import RecurringActionDialog from "./components/RecurringActionDialog/RecurringActionDialog";
 import RecurringFilters from "./components/RecurringFilters/RecurringFilters";
 import RecurringForm from "./components/RecurringForm/RecurringForm";
@@ -60,7 +61,7 @@ export default function Recurring() {
   const requestKey = `${filterKey}:${reloadKey}`;
   const [result, setResult] = useState({ key: null, page: null, error: null });
 
-  // { rule: null, presetType } to create, { rule } to edit.
+  // { rule: null, presetType, attempt } to create, { rule } to edit.
   const [formState, setFormState] = useState(null);
   // { action, rule }
   const [actionState, setActionState] = useState(null);
@@ -113,13 +114,22 @@ export default function Recurring() {
     if (saveRequestRef.current) return saveRequestRef.current;
 
     const ruleBeingEdited = formState?.rule;
+    const attempt = formState?.attempt;
     const saveRequest = (async () => {
       let response;
 
       try {
-        response = ruleBeingEdited
-          ? await recurringTransactionsApi.update(ruleBeingEdited.id, payload)
-          : await recurringTransactionsApi.create(payload);
+        if (ruleBeingEdited) {
+          response = await recurringTransactionsApi.update(ruleBeingEdited.id, payload);
+        } else {
+          try {
+            response = await recurringTransactionsApi.create(payload, attempt.key());
+            attempt.settle(null);
+          } catch (createError) {
+            attempt.settle(createError);
+            throw createError;
+          }
+        }
       } catch (requestError) {
         // Gone, or archived meanwhile: the list is out of date.
         if (["NOT_FOUND", "CONFLICT"].includes(requestError?.code)) reload();
@@ -181,7 +191,9 @@ export default function Recurring() {
     if (getRuleActions(rule).canEdit) setFormState({ rule });
   };
 
-  const openCreateForm = (presetType) => setFormState({ rule: null, presetType });
+  // Each opening of the create form is one submission intent with its own key.
+  const openCreateForm = (presetType) =>
+    setFormState({ rule: null, presetType, attempt: createSubmissionAttempt("recurring-create") });
 
   /* ---------- Render ---------- */
 

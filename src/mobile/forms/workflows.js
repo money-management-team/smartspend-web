@@ -318,7 +318,8 @@ export const WORKFLOWS = Object.freeze({
       { name: "name", kind: "text", required: true, max: 255 },
       { name: "type", kind: "choice", required: true, options: ["expense", "income"], optionKey: "entryType" },
       { name: "account_id", kind: "account", required: true, accounts: spendable },
-      { name: "category_id", kind: "category", required: (values) => values.type === "expense", categoryType: (values) => values.type || null, when: (values) => Boolean(values.type) },
+      // Required for income too (StoreRecurringTransactionRequest), like the full version's form.
+      { name: "category_id", kind: "category", required: true, categoryType: (values) => values.type || null, when: (values) => Boolean(values.type) },
       { name: "amount", kind: "amount", required: true, currency: currencyOfAccount("account_id") },
       { name: "frequency", kind: "choice", required: true, options: ["weekly", "monthly", "yearly"], optionKey: "frequency" },
       { name: "interval", kind: "integer", required: true, min: 1, max: 60, hint: "intervalHint" },

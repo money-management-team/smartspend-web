@@ -8,6 +8,7 @@ import { getNewSmartPlanPath, getSavingsGoalDetailsPath } from "../../../../rout
 import { ApiError } from "../api/apiClient";
 import { resolveWorkspaceId } from "../api/dashboardApi";
 import { savingsGoalsApi } from "../api/savingsGoalsApi";
+import { createSubmissionAttempt } from "../FinancialOperations/transactionHelpers";
 import GoalActionDialog from "./components/GoalActionDialog/GoalActionDialog";
 import GoalMovementForm from "./components/GoalMovementForm/GoalMovementForm";
 import SavingsGoalCard from "./components/SavingsGoalCard/SavingsGoalCard";
@@ -34,6 +35,9 @@ import "./SavingsGoals.css";
 
 const sameId = (left, right) => String(left) === String(right);
 
+// The create form's state: each opening is one submission intent with its own Idempotency-Key.
+const newGoalForm = () => ({ goal: null, attempt: createSubmissionAttempt("savings-goal-create") });
+
 /*
  * Savings goals list (GET /savings-goals, paginated, filtered by lifecycle
  * status, progress status and currency). Creating, editing, contributing and
@@ -55,7 +59,7 @@ export default function SavingsGoals({ smartSavingsEnabled = SMART_SAVINGS_ENABL
   // `?new=1` (the dashboard's "New goal" action) opens the form once; the flag
   // is then dropped so a reload doesn't reopen it.
   const [formState, setFormState] = useState(() =>
-    searchParams.has("new") ? { goal: null } : null,
+    searchParams.has("new") ? newGoalForm() : null,
   );
 
   useEffect(() => {
@@ -172,7 +176,17 @@ export default function SavingsGoals({ smartSavingsEnabled = SMART_SAVINGS_ENABL
         });
       } else {
         const workspaceId = await resolveWorkspaceId();
-        const response = await savingsGoalsApi.create({ ...values, workspace_id: workspaceId });
+        const attempt = formState.attempt;
+        let response;
+
+        try {
+          response = await savingsGoalsApi.create({ ...values, workspace_id: workspaceId }, attempt.key());
+          attempt.settle(null);
+        } catch (createError) {
+          attempt.settle(createError);
+          throw createError;
+        }
+
         const createdGoal = response?.data?.savings_goal;
 
         setNotice({
@@ -246,7 +260,7 @@ export default function SavingsGoals({ smartSavingsEnabled = SMART_SAVINGS_ENABL
 
   /* ---------- Render ---------- */
 
-  const openCreateForm = () => setFormState({ goal: null });
+  const openCreateForm = () => setFormState(newGoalForm());
 
   const openEditForm = (goal) => {
     if (getGoalActions(goal).canEdit) setFormState({ goal });

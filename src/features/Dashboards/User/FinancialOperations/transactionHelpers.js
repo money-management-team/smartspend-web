@@ -344,6 +344,24 @@ export function createIdempotentAttempt(prefix) {
   };
 }
 
+/*
+ * One Idempotency-Key per submission intent: one opening of a create form.
+ * Like the debt payment form's key (debtHelpers.createPaymentAttempt), it is
+ * NOT renewed when the details change, so a retry after an unknown outcome
+ * (timeout, network, 5xx, 409) reuses it and the backend replays the first
+ * record or refuses a different payload — never a second one. It is renewed
+ * only after a success or a definitive rejection, when nothing was created.
+ * Create one when the form opens; a new opening is a new intent.
+ */
+export function createSubmissionAttempt(prefix) {
+  const attempt = createIdempotentAttempt(prefix);
+
+  return {
+    key: () => attempt.keyFor(prefix),
+    settle: (error) => attempt.settle(error),
+  };
+}
+
 /* ---------- Errors ---------- */
 
 const collectErrorText = (error) =>

@@ -60,14 +60,17 @@ export const MOBILE_WRITES = Object.freeze({
   "account.archive": write("POST /accounts/{id}/archive", false, "none", "once-only"),
   "budget.create": write("POST /budgets", false, "none", "duplicates"),
   "budget.update": write("PATCH /budgets/{id}", false, "none", "same-result"),
-  "goal.create": write("POST /savings-goals", false, "none", "duplicates"),
+  // Key required since fix/financial-idempotency-p0 @ 6b696d72 (12644a03); a copy returns the first goal.
+  "goal.create": write("POST /savings-goals", false, "client", "key-fix-pending"),
   "goal.update": write("PATCH /savings-goals/{id}", false, "none", "same-result"),
   "goal.plannedContribution": write("POST /savings-goals/{id}/planned-contributions", false, "none", "duplicates"),
-  "recurring.create": write("POST /recurring-transactions", false, "none", "duplicates"),
+  // Key required since fix/financial-idempotency-p0 @ 6b696d72 (0d798c57); a copy returns the first rule.
+  "recurring.create": write("POST /recurring-transactions", false, "client", "key-fix-pending"),
   "recurring.update": write("PATCH /recurring-transactions/{id}", false, "none", "same-result"),
   // No key and no occurrence in the request: whether a copy skips a second occurrence is not established.
   "recurring.skipNext": write("POST /recurring-transactions/{id}/skip-next", false, "none", "unverified"),
-  "debt.create": write("POST /debts", false, "none", "duplicates"),
+  // Key required since fix/financial-idempotency-p0 @ 6b696d72 (a04c8684); a copy returns the first debt.
+  "debt.create": write("POST /debts", false, "client", "key-fix-pending"),
   "debt.update": write("PATCH /debts/{id}", false, "none", "same-result"),
   "profile.update": write("PUT /profile", false, "none", "same-result"),
   // A copy after success fails on the current password, so the answer can say "refused" for a change that happened.

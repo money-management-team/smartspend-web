@@ -76,12 +76,20 @@ export const recurringTransactionsApi = {
   get: (ruleId, options = {}) =>
     apiRequest(rulePath(ruleId), { signal: options.signal }),
 
-  // No Idempotency-Key: creating a rule moves no money.
-  create: (payload) =>
-    apiRequest("/recurring-transactions", {
+  // Creating a rule moves no money, but the rule posts every period, so the
+  // Idempotency-Key is required (StoreRecurringTransactionRequest): a retry of
+  // the same submission returns the rule it created instead of a second one.
+  create: (payload, idempotencyKey) => {
+    if (!idempotencyKey) {
+      throw new Error("POST /recurring-transactions requires an Idempotency-Key.");
+    }
+
+    return apiRequest("/recurring-transactions", {
       method: "POST",
+      headers: { "Idempotency-Key": idempotencyKey },
       body: pickPayload(payload, CREATE_FIELDS),
-    }),
+    });
+  },
 
   // Partial update of the editable fields only. A new amount applies to
   // open, unposted occurrences; posted transactions keep theirs.
