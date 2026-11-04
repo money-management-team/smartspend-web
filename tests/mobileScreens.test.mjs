@@ -82,7 +82,9 @@ describe("Home: a normal single-currency day", () => {
     assert.match(text(card("sm-home-summary")), /This month/);
     assert.match(text(card("sm-home-summary")), /Oct 1 – Oct 31/);
     assert.deepEqual(spoken(card("sm-home-summary")), ["plus 2,000.00 Israeli New Shekel", "765.50 Israeli New Shekel", "plus 1,234.50 Israeli New Shekel"]);
-    assert.match(text(card("sm-home-summary")), /Mobile shows this month\. Choosing another period isn't available yet\./);
+    // The period picker sits directly above this card (HomeControls.jsx), so the note points at it rather than denying it exists.
+    assert.match(text(card("sm-home-summary")), /Change the period with the choices above\./);
+    assert.ok(card("sm-home-summary").previousElementSibling?.matches("[data-sm-section='period']"), "the period choices are directly above the figures they change");
 
     assert.match(text(card("sm-home-accounts")), /Everyday wallet/);
     assert.equal(q("a[href='/m/accounts/1']", card("sm-home-accounts")) !== null, true);

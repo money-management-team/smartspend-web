@@ -69,6 +69,13 @@ export function formatMoment(value, locale = "en", timeZone) {
 }
 
 /** A day key ("YYYY-MM-DD") as a heading: weekday, day, month, year. The day is a label, so it is formatted in UTC and cannot shift. */
+/** "Wednesday, 4 November": a calendar day (YYYY-MM-DD) for a greeting line, without the year. */
+export function formatToday(day, locale = "en") {
+  if (typeof day !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
+
+  return new Intl.DateTimeFormat(locale, { weekday: "long", month: "long", day: "numeric", numberingSystem: "latn", timeZone: "UTC" }).format(new Date(`${day}T12:00:00Z`));
+}
+
 export function formatDayHeading(day, locale = "en") {
   if (typeof day !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
 

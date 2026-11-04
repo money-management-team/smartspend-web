@@ -146,7 +146,8 @@ describe("a production build with Mobile on (local testing mode)", () => {
     const css = (dir) => text(stylesheets(dir)[0]).replace(/@import\s+"[^"]*"[^;{}]*;/g, "");
     const offRules = topLevelRules(css(off));
     const onRules = topLevelRules(css(on));
-    const isMobile = (rule) => /\.sm-root|@keyframes sm-/.test(rule);
+    // Mobile's own font faces (src/mobile/styles/fonts.css) are Mobile-owned families with the sm- prefix.
+    const isMobile = (rule) => /\.sm-root|@keyframes sm-|^@font-face\{font-family:"?sm-/.test(rule);
     const added = onRules.filter(isMobile);
     const desktop = onRules.filter((rule) => !isMobile(rule));
 

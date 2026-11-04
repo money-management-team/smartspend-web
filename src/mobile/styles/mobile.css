@@ -21,17 +21,36 @@
   --sm-blue: #2563eb;
   --sm-cyan: #22c3ee;
 
-  --sm-bg: #f4f6fb;
+  --sm-bg: #f3f5fa;
   --sm-surface: #ffffff;
+  /* A quiet fill inside a surface: icon wells, chips, inset panels. */
+  --sm-surface-2: #eef2f9;
   --sm-text: #0b1a36;
-  --sm-muted: #4a5a78;
-  --sm-border: #d5ddec;
+  --sm-muted: #56647f;
+  --sm-border: #dfe5f0;
   --sm-focus: #1d4ed8;
-  --sm-on-bar: #ffffff;
-  --sm-nav-bg: #ffffff;
+  --sm-on-bar: #0b1a36;
+  --sm-bar-bg: rgba(243, 245, 250, 0.92);
+  --sm-nav-bg: rgba(255, 255, 255, 0.96);
   --sm-nav-active: #1d4ed8;
   --sm-backdrop: rgba(7, 20, 43, 0.55);
   --sm-neg: #b42318;
+  /* Money direction. Income is the brand blue, never green (green is only for success); expense is the text colour with its sign. */
+  --sm-in: #1d4ed8;
+  --sm-in-soft: #e6eefe;
+  --sm-out-soft: #eef1f6;
+  --sm-hero: radial-gradient(120% 140% at 100% 0%, rgba(34, 195, 238, 0.28) 0%, rgba(34, 195, 238, 0) 46%), linear-gradient(160deg, #10285a 0%, #07142b 62%);
+
+  --sm-radius-sm: 0.625rem;
+  --sm-radius-md: 0.875rem;
+  --sm-radius-lg: 1.25rem;
+  --sm-radius-xl: 1.75rem;
+  --sm-space-1: 0.25rem;
+  --sm-space-2: 0.5rem;
+  --sm-space-3: 0.75rem;
+  --sm-space-4: 1rem;
+  --sm-space-5: 1.5rem;
+  --sm-space-6: 2rem;
 
   /*
    * Depth, tinted with the navy brand colour rather than flat black (a plain
@@ -49,8 +68,10 @@
   /* A skeleton's shimmer highlight: lighter than --sm-border in this theme specifically, never assumed from it. */
   --sm-shimmer: #f3f6fc;
 
-  --sm-font-ui: "Cairo", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --sm-font-heading: "Tajawal", "Cairo", system-ui, sans-serif;
+  /* One stack for both scripts: each face's unicode-range (styles/fonts.css) picks Jakarta for Latin and figures, Plex for Arabic. */
+  --sm-font-ui: "sm-jakarta", "sm-plex-arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --sm-font-heading: "sm-jakarta", "sm-plex-arabic", system-ui, sans-serif;
+  --sm-font-figures: "sm-jakarta", system-ui, sans-serif;
 
   --sm-bar-height: 3.5rem;
   --sm-nav-height: 4rem;
@@ -64,14 +85,21 @@
 :root[data-theme="dark"] .sm-root {
   --sm-bg: #050b17;
   --sm-surface: #0d1a30;
+  --sm-surface-2: #13233f;
   --sm-text: #e8eefb;
   --sm-muted: #a3b2cf;
   --sm-border: #22324f;
   --sm-focus: #5ec8f5;
-  --sm-nav-bg: #0a1426;
+  --sm-on-bar: #e8eefb;
+  --sm-bar-bg: rgba(5, 11, 23, 0.9);
+  --sm-nav-bg: rgba(10, 20, 38, 0.96);
   --sm-nav-active: #5ec8f5;
   --sm-backdrop: rgba(0, 0, 0, 0.65);
   --sm-neg: #ff9b8f;
+  --sm-in: #7cc9ff;
+  --sm-in-soft: #142c52;
+  --sm-out-soft: #17253f;
+  --sm-hero: radial-gradient(120% 140% at 100% 0%, rgba(34, 195, 238, 0.22) 0%, rgba(34, 195, 238, 0) 46%), linear-gradient(160deg, #133066 0%, #0a1a38 62%);
 
   /* A dark surface needs more opaque, truly black depth to read against an
      already-dark background; the brand tint would simply vanish. */
@@ -120,6 +148,13 @@
   letter-spacing: normal;
 }
 
+/* Desktop's global heading rule names Tajawal; a Mobile heading always uses Mobile's own type. */
+.sm-root h1,
+.sm-root h2,
+.sm-root h3 {
+  font-family: var(--sm-font-heading);
+}
+
 .sm-root ul {
   list-style: none;
 }
@@ -166,20 +201,18 @@
   gap: 0.25rem 0.75rem;
   min-height: calc(var(--sm-bar-height) + var(--sm-safe-top));
   padding-block: var(--sm-safe-top) 0.25rem;
-  padding-inline: calc(1rem + var(--sm-safe-start)) calc(1rem + var(--sm-safe-end));
+  padding-inline: calc(1.25rem + var(--sm-safe-start)) calc(1.25rem + var(--sm-safe-end));
   color: var(--sm-on-bar);
-  background: linear-gradient(180deg, #0a1b3d 0%, var(--sm-navy) 100%);
-  box-shadow: 0 2px 10px rgba(7, 20, 43, 0.22);
-}
-
-.sm-root .sm-bar :focus-visible {
-  outline-color: var(--sm-cyan);
+  background: var(--sm-bar-bg);
+  border-block-end: 1px solid var(--sm-border);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  backdrop-filter: saturate(160%) blur(14px);
 }
 
 .sm-root .sm-bar-logo {
   flex: none;
-  width: 2rem;
-  height: 2rem;
+  width: 1.75rem;
+  height: 1.75rem;
   border-radius: 0.5rem;
   object-fit: contain;
 }
@@ -193,8 +226,9 @@
   flex: 1 1 10ch;
   min-width: min(100%, 10ch);
   font-family: var(--sm-font-heading);
-  font-size: 1.25rem;
-  font-weight: 800;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   line-height: 1.3;
   color: var(--sm-on-bar);
   overflow-wrap: break-word;
@@ -206,7 +240,7 @@
 }
 
 .sm-root .sm-bar-title:focus-visible {
-  outline: 3px solid var(--sm-cyan);
+  outline: 3px solid var(--sm-focus);
   outline-offset: 4px;
 }
 
@@ -236,8 +270,8 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding-block: 1rem;
-  padding-inline: calc(1rem + var(--sm-safe-start)) calc(1rem + var(--sm-safe-end));
+  padding-block: 1.25rem 1.5rem;
+  padding-inline: calc(1.25rem + var(--sm-safe-start)) calc(1.25rem + var(--sm-safe-end));
 }
 
 .sm-root .sm-main:focus {
@@ -246,19 +280,19 @@
 
 .sm-root .sm-page {
   display: grid;
-  gap: 1rem;
+  gap: 1.25rem;
   max-width: 40rem;
   margin-inline: auto;
 }
 
 .sm-root .sm-card {
   display: grid;
-  gap: 0.75rem;
-  padding: 1rem;
+  gap: 0.875rem;
+  padding: 1.125rem;
   border: 1px solid var(--sm-border);
-  border-radius: 1rem;
+  border-radius: var(--sm-radius-lg);
   background: var(--sm-surface);
-  box-shadow: var(--sm-shadow-sm);
+  box-shadow: var(--sm-shadow-xs);
 }
 
 /* The one card that needs the user's attention: an accent edge, not a new colour (no green/red/amber hue added). */
@@ -269,8 +303,9 @@
 
 .sm-root .sm-card-title {
   font-family: var(--sm-font-heading);
-  font-size: 1.125rem;
-  font-weight: 800;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   line-height: 1.35;
   color: var(--sm-text);
 }
@@ -414,7 +449,8 @@
   padding-inline: var(--sm-safe-start) var(--sm-safe-end);
   border-block-start: 1px solid var(--sm-border);
   background: var(--sm-nav-bg);
-  box-shadow: var(--sm-shadow-nav);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  backdrop-filter: saturate(160%) blur(14px);
 }
 
 .sm-root .sm-nav-item,
@@ -431,7 +467,7 @@
   color: var(--sm-muted);
   background: transparent;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   text-align: center;
   cursor: pointer;
   transition: color 0.15s ease;
@@ -563,6 +599,7 @@
 .sm-root .sm-money {
   display: inline-block;
   max-inline-size: 100%;
+  font-family: var(--sm-font-figures);
   font-variant-numeric: tabular-nums;
 }
 
@@ -577,7 +614,8 @@
 }
 
 .sm-root .sm-money-number {
-  font-weight: 800;
+  font-weight: 700;
+  letter-spacing: -0.01em;
   overflow-wrap: anywhere;
 }
 
@@ -591,9 +629,10 @@
 }
 
 .sm-root .sm-money-currency {
-  font-size: 0.8125em;
-  font-weight: 700;
-  opacity: 0.85;
+  font-size: 0.75em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  opacity: 0.7;
 }
 
 .sm-root .sm-money-negative {
@@ -630,20 +669,27 @@
 }
 
 .sm-root .sm-hero {
-  gap: 0.75rem;
-  border-color: var(--sm-navy);
+  gap: 1rem;
+  padding: 1.375rem 1.375rem 1.25rem;
+  border-color: transparent;
+  border-radius: var(--sm-radius-xl);
   color: #ffffff;
-  background: linear-gradient(160deg, #0d2552 0%, var(--sm-navy) 70%);
-  box-shadow: var(--sm-shadow-md);
+  background: var(--sm-hero);
+  box-shadow: 0 18px 36px -18px rgba(7, 20, 43, 0.55);
 }
 
-/* The page itself is almost this navy in the dark theme, so the balance card is a step lighter there to stay the anchor of the screen. */
+/* The page itself is almost this navy in the dark theme; --sm-hero is a step lighter there so the balance stays the anchor. */
 :root[data-theme="dark"] .sm-root .sm-hero {
   border-color: #1f3d73;
-  background: linear-gradient(160deg, #123269 0%, #0b2250 70%);
 }
 
-.sm-root .sm-hero .sm-card-title,
+.sm-root .sm-hero .sm-card-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #b9c6e2;
+}
+
 .sm-root .sm-hero .sm-money {
   color: #ffffff;
 }
@@ -663,15 +709,39 @@
 }
 
 .sm-root .sm-hero-money {
-  font-family: var(--sm-font-heading);
-  font-size: 1.75rem;
-  line-height: 1.25;
-  letter-spacing: -0.01em;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+/* The leading currency is the one figure the screen is about. */
+.sm-root .sm-balance-lead {
+  display: grid;
+  justify-content: stretch;
+  gap: 0.375rem;
+}
+
+.sm-root .sm-balance-lead .sm-hero-money {
+  justify-self: start;
+  font-size: 2.375rem;
+  line-height: 1.1;
+}
+
+.sm-root .sm-balance-lead .sm-money-run {
+  justify-content: flex-start;
+}
+
+.sm-root .sm-balance-lead .sm-money-number {
+  letter-spacing: -0.03em;
+}
+
+.sm-root .sm-balance-lead + .sm-balance-row {
+  padding-block-start: 0.875rem;
+  border-block-start: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .sm-root .sm-hero-note {
-  font-size: 0.875rem;
-  color: #c2cde4;
+  font-size: 0.8125rem;
+  color: #a9b8d8;
 }
 
 .sm-root .sm-balance-list {
@@ -1443,19 +1513,51 @@
   min-width: 0;
 }
 
-/* A filter group wraps instead of squeezing: four labels in a row do not fit at 320px or at enlarged text. */
+/*
+ * A filter group is one line of chips that scrolls sideways, each chip as wide as its own label: no label is
+ * squeezed or broken at 320px or at 2x text, and five choices no longer cost five rows of screen.
+ */
 .sm-root .sm-segment-wrap {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 7rem), 1fr));
+  display: flex;
+  gap: 0.5rem;
+  margin-inline: -0.25rem;
+  padding: 0.125rem 0.25rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
 }
 
-/* Tight padding: at 2x text on a 320px screen a word like "Archived" must fit its own button, not break inside it. */
-.sm-root .sm-segment-wrap {
-  padding: 0.125rem;
+.sm-root .sm-segment-wrap::-webkit-scrollbar {
+  display: none;
 }
 
 .sm-root .sm-segment-wrap .sm-segment-button {
-  padding-inline: 0.25rem;
-  overflow-wrap: break-word;
+  flex: none;
+  padding-inline: 1rem;
+  border: 1px solid var(--sm-border);
+  border-radius: 999px;
+  background: var(--sm-surface);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  white-space: nowrap;
+  scroll-snap-align: start;
+}
+
+.sm-root .sm-segment-wrap .sm-segment-button[aria-pressed="true"] {
+  color: #ffffff;
+  border-color: var(--sm-navy);
+  background: var(--sm-navy);
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] .sm-root .sm-segment-wrap .sm-segment-button[aria-pressed="true"] {
+  color: var(--sm-navy);
+  border-color: var(--sm-cyan);
+  background: var(--sm-cyan);
 }
 
 .sm-root .sm-plan-list {
@@ -1811,7 +1913,15 @@
 .sm-root .sm-review-effect { margin-block-start: 0.75rem; padding: 0.75rem; border-radius: 0.75rem; background: var(--sm-bg); border: 1px solid var(--sm-border); }
 .sm-root .sm-form-actions { padding-block: 0.25rem 0.75rem; }
 .sm-root .sm-form-actions .sm-button:disabled { cursor: not-allowed; }
-.sm-root .sm-add-list { display: grid; margin-block: 0.25rem 0.75rem; max-block-size: 55vh; overflow-y: auto; overscroll-behavior: contain; }
+.sm-root .sm-add-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); gap: 0.5rem; margin-block: 0.25rem 0.5rem; }
+.sm-root .sm-add-row { display: flex; align-items: center; gap: 0.625rem; min-height: 3.75rem; padding: 0.625rem 0.75rem; border: 1px solid var(--sm-border); border-radius: var(--sm-radius-md); color: var(--sm-text); background: var(--sm-surface); transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.12s ease; }
+.sm-root .sm-add-row:hover { color: var(--sm-text); border-color: var(--sm-blue); background: var(--sm-surface-2); }
+.sm-root .sm-add-row:active { transform: scale(0.98); }
+.sm-root .sm-add-row .sm-row-title { font-size: 0.9375rem; }
+.sm-root .sm-add-row .sm-row-meta { font-size: 0.8125rem; line-height: 1.35; }
+.sm-root .sm-add-row-icon { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: var(--sm-radius-sm); color: var(--sm-blue); background: var(--sm-in-soft); font-size: 1.125rem; }
+.sm-root .sm-add-note { display: flex; align-items: flex-start; gap: 0.5rem; padding: 0.75rem; border-radius: var(--sm-radius-md); color: var(--sm-muted); background: var(--sm-surface-2); font-size: 0.8125rem; line-height: 1.45; }
+.sm-root .sm-add-note svg { flex: none; margin-block-start: 0.125rem; font-size: 1rem; }
 .sm-root .sm-add-section-label { margin-block: 0.75rem 0.375rem; font-size: 0.8125rem; font-weight: 700; color: var(--sm-muted); text-transform: uppercase; letter-spacing: 0.02em; }
 .sm-root .sm-add-choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
 .sm-root .sm-add-choice { display: flex; flex-direction: column; align-items: center; gap: 0.375rem; min-height: 6.5rem; padding: 0.75rem 0.5rem; border: 1px solid var(--sm-border); border-radius: 1rem; background: var(--sm-surface); text-align: center; transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.12s ease; }
@@ -1850,11 +1960,67 @@
 .sm-root .sm-pending { padding: 0.5rem 0.75rem; border-radius: 0.5rem; border: 1px dashed var(--sm-border); }
 @media (prefers-reduced-motion: reduce) { .sm-root .sm-recording-dot { animation: none; } }
 
-/* ---------- Home: period, tools, arranging ---------- */
-.sm-root .sm-home-tools { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; }
-.sm-root .sm-home-tools .sm-button-small { min-block-size: 44px; }
-.sm-root .sm-segment-wrap { flex-wrap: wrap; }
-.sm-root .sm-segment-wrap .sm-segment-button { flex: 1 1 auto; min-block-size: 44px; }
+/* ---------- Home: greeting, entry points, period, money in and out, accounts, activity ---------- */
+.sm-root .sm-home-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; }
+.sm-root .sm-home-head .sm-greeting { display: grid; gap: 0.125rem; min-inline-size: 0; }
+.sm-root .sm-home-date { font-size: 0.8125rem; font-weight: 600; color: var(--sm-muted); }
+.sm-root .sm-home-hello { font-size: 1.375rem; font-weight: 700; letter-spacing: -0.02em; line-height: 1.25; color: var(--sm-text); overflow-wrap: anywhere; }
+
+/* Round icon actions: the label is real text, visually hidden (an icon alone is not a name). */
+.sm-root .sm-icon-actions { display: flex; flex: none; gap: 0.375rem; }
+.sm-root .sm-icon-button { display: inline-flex; align-items: center; justify-content: center; min-width: var(--sm-target); min-height: var(--sm-target); padding: 0; border: 1px solid var(--sm-border); border-radius: 999px; color: var(--sm-text); background: var(--sm-surface); font-size: 1.125rem; cursor: pointer; box-shadow: var(--sm-shadow-xs); transition: background-color 0.15s ease, transform 0.12s ease; }
+.sm-root .sm-icon-button:hover:not(:disabled) { background: var(--sm-surface-2); }
+.sm-root .sm-icon-button:active:not(:disabled) { transform: scale(0.94); }
+.sm-root .sm-icon-button[aria-pressed="true"] { color: #ffffff; border-color: var(--sm-navy); background: var(--sm-navy); }
+.sm-root .sm-icon-button:disabled { cursor: progress; opacity: 0.7; }
+.sm-root .sm-icon-spin svg { animation: sm-spin 0.9s linear infinite; }
+@keyframes sm-spin { to { transform: rotate(360deg); } }
+
+/* The three ways to record an expense, compact under the balance; their hints are for the Add sheet. */
+.sm-root .sm-home-quick { display: grid; gap: 0.625rem; }
+.sm-root .sm-home-quick .sm-add-section-label { margin: 0; }
+.sm-root .sm-home-quick .sm-add-choice { min-height: 0; padding: 0.875rem 0.375rem 0.75rem; gap: 0.5rem; border-color: transparent; box-shadow: var(--sm-shadow-xs); }
+.sm-root .sm-home-quick .sm-add-choice-icon { width: 2.5rem; height: 2.5rem; font-size: 1.25rem; box-shadow: none; }
+.sm-root .sm-home-quick .sm-add-choice-hint { display: none; }
+
+/* The period sits with the figures it changes; the chips scroll, they do not stack. */
+.sm-root .sm-home-period-block { display: grid; gap: 0.625rem; }
+.sm-root .sm-home-period { padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+/* Edge to edge: the row scrolls under the screen's own gutter instead of being clipped by it. */
+.sm-root .sm-home-period .sm-segment-wrap { margin-inline: calc(-1.25rem - var(--sm-safe-start)) calc(-1.25rem - var(--sm-safe-end)); padding-inline: calc(1.25rem + var(--sm-safe-start)) calc(1.25rem + var(--sm-safe-end)); scroll-padding-inline: 1.25rem; }
+
+.sm-root .sm-flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr)); gap: 0.625rem; margin: 0; }
+.sm-root .sm-flow-tile { display: grid; gap: 0.375rem; padding: 0.875rem; border-radius: var(--sm-radius-md); background: var(--sm-out-soft); min-inline-size: 0; }
+.sm-root .sm-flow-tile[data-sm-flow="in"] { background: var(--sm-in-soft); }
+.sm-root .sm-flow-tile dt { display: flex; align-items: center; gap: 0.375rem; margin: 0; color: var(--sm-muted); font-size: 0.8125rem; font-weight: 600; }
+.sm-root .sm-flow-tile dd { margin: 0; min-inline-size: 0; font-size: 1.0625rem; }
+.sm-root .sm-flow-tile[data-sm-flow="in"] dd .sm-money { color: var(--sm-in); }
+.sm-root .sm-flow-icon { display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; border-radius: 999px; color: var(--sm-text); background: var(--sm-surface); font-size: 0.875rem; }
+.sm-root .sm-flow-tile[data-sm-flow="in"] .sm-flow-icon { color: var(--sm-in); }
+.sm-root .sm-flow-net { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.25rem 0.75rem; padding-inline: 0.25rem; }
+.sm-root .sm-flow-net dt { margin: 0; color: var(--sm-muted); font-size: 0.875rem; font-weight: 600; }
+.sm-root .sm-flow-net dd { margin: 0; }
+
+/* Accounts on Home: a row of tiles that scrolls sideways; the full list is one tap away. */
+.sm-root .sm-tile-row { display: flex; gap: 0.625rem; margin-inline: -1.125rem; padding: 0.125rem 1.125rem 0.25rem; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scroll-padding-inline: 1.125rem; scrollbar-width: none; }
+.sm-root .sm-tile-row::-webkit-scrollbar { display: none; }
+.sm-root .sm-tile-row > li { flex: none; inline-size: min(11.5rem, 70%); scroll-snap-align: start; }
+.sm-root .sm-account-tile { display: grid; align-content: space-between; gap: 0.75rem; block-size: 100%; min-height: 8.5rem; padding: 0.875rem; border: 1px solid var(--sm-border); border-radius: var(--sm-radius-md); color: var(--sm-text); background: var(--sm-surface); transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.12s ease; }
+.sm-root a.sm-account-tile:hover { color: var(--sm-text); border-color: var(--sm-blue); }
+.sm-root a.sm-account-tile:active { transform: scale(0.98); }
+.sm-root .sm-tile-icon { display: inline-flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: var(--sm-radius-sm); color: var(--sm-blue); background: var(--sm-in-soft); font-size: 1.125rem; }
+.sm-root .sm-account-tile .sm-row-title { font-size: 0.9375rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.sm-root .sm-tile-amount { font-size: 1.0625rem; }
+
+/* A transaction row's direction mark: in is the brand blue, out is neutral; the sign is always in the text too. */
+.sm-root .sm-tx-mark { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: var(--sm-radius-md); color: var(--sm-text); background: var(--sm-out-soft); font-size: 1.125rem; }
+.sm-root .sm-tx-mark[data-sm-direction="in"] { color: var(--sm-in); background: var(--sm-in-soft); }
+.sm-root .sm-tx-list .sm-row { flex-wrap: nowrap; gap: 0.75rem; }
+.sm-root .sm-tx-list .sm-row-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.sm-root .sm-tx-list li[data-sm-type="income"] .sm-row-amount .sm-money { color: var(--sm-in); }
+.sm-root .sm-tx-list .sm-row-end { flex: none; }
+.sm-root .sm-card-link { font-size: 0.875rem; font-weight: 700; color: var(--sm-nav-active); }
+@media (prefers-reduced-motion: reduce) { .sm-root .sm-icon-spin svg { animation: none; } }
 .sm-root .sm-home-range { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.5rem; margin-block-start: 0.75rem; }
 .sm-root .sm-home-range .sm-field { flex: 1 1 9rem; min-inline-size: 0; }
 .sm-root .sm-arrange-list { list-style: none; margin: 0 0 0.75rem; padding: 0; display: grid; gap: 0.25rem; }

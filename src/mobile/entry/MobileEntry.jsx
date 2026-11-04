@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 
 import PresentationGate from "../presentation/PresentationGate.jsx";
 import { isMobilePath } from "../presentation/resolver.js";
+import "../styles/fonts.css";
 import "../styles/mobile.css";
 import MobileBoot from "./MobileBoot.jsx";
 

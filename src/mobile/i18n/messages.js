@@ -413,7 +413,7 @@ const BASE_MESSAGES = {
         month: "This month",
         range: "{{from}} – {{to}}",
         unconfirmed: "Period not confirmed",
-        note: "Mobile shows this month. Choosing another period isn't available yet.",
+        note: "Change the period with the choices above. Each currency is counted on its own.",
       },
       summary: {
         title: "Income and expenses",
@@ -421,6 +421,7 @@ const BASE_MESSAGES = {
         expense: "Expenses",
         net: "Net",
         empty: "There's nothing to summarize until you have an account.",
+        noActivity: "Nothing came in or went out in {{currency}} in this period.",
         unavailable: "This summary isn't available right now.",
       },
       accounts: {
@@ -999,7 +1000,7 @@ const BASE_MESSAGES = {
         month: "هذا الشهر",
         range: "{{from}} – {{to}}",
         unconfirmed: "الفترة غير مؤكدة",
-        note: "تعرض نسخة الجوال هذا الشهر. اختيار فترة أخرى غير متاح بعد.",
+        note: "غيّر الفترة من الخيارات أعلاه. تُحتسب كل عملة على حدة.",
       },
       summary: {
         title: "الدخل والمصروفات",
@@ -1007,6 +1008,7 @@ const BASE_MESSAGES = {
         expense: "المصروفات",
         net: "الصافي",
         empty: "لا يوجد ما يمكن تلخيصه قبل أن يكون لديك حساب.",
+        noActivity: "لم يدخل أو يخرج شيء بعملة {{currency}} في هذه الفترة.",
         unavailable: "هذا الملخص غير متاح الآن.",
       },
       accounts: {

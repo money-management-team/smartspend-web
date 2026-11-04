@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { LuCamera, LuMic, LuPencilLine } from "react-icons/lu";
+import { LuArrowDownLeft, LuArrowLeftRight, LuCamera, LuChartPie, LuHandCoins, LuInfo, LuMic, LuPencilLine, LuRepeat, LuTarget, LuWallet } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link, Outlet, useLocation } from "react-router-dom";
 
@@ -22,6 +22,8 @@ import { useCompactNav } from "./useCompactNav.js";
 
 // Proves in a built bundle that this code shipped; see tests/mobileBundle.test.mjs.
 export const MOBILE_BUILD_MARKER = "SMARTSPEND_MOBILE_S04B4";
+
+const ENTRY_ICONS = { income: LuArrowDownLeft, transfer: LuArrowLeftRight, account: LuWallet, budget: LuChartPie, goal: LuTarget, recurring: LuRepeat, debt: LuHandCoins };
 
 // The pages added in the unblocked-feature pass, by address.
 const EXTRA_TITLES = [
@@ -165,8 +167,6 @@ export default function MobileAppShell() {
           title={t("add.title")}
           returnFocusRef={addRef}
         >
-          <p className="sm-text sm-muted">{t("forms.addBody")}</p>
-
           <p className="sm-add-section-label" id="sm-add-expense-label">{t("add.expenseHeading")}</p>
           <div className="sm-add-choices" role="group" aria-labelledby="sm-add-expense-label">
             <Link className="sm-add-choice" to={newEntryPath("expense")} state={{ from: pathname }} onClick={closeOverlay} data-sm-action="add-expense-manual">
@@ -188,15 +188,20 @@ export default function MobileAppShell() {
 
           <p className="sm-add-section-label">{t("add.otherHeading")}</p>
           <nav className="sm-add-list" aria-label={t("add.otherHeading")}>
-            {NEW_ENTRY_ORDER.filter((id) => id !== "expense").map((id) => (
-              <Link key={id} className="sm-link-row" to={newEntryPath(id)} state={{ from: pathname }} onClick={closeOverlay} data-sm-action={`add-${id}`}>
-                <span className="sm-row-main">
-                  <span className="sm-row-title">{t(`forms.flows.${id}.link`)}</span>
-                  <span className="sm-row-meta">{t(`forms.flows.${id}.addHint`)}</span>
-                </span>
-              </Link>
-            ))}
+            {NEW_ENTRY_ORDER.filter((id) => id !== "expense").map((id) => {
+              const Icon = ENTRY_ICONS[id] ?? LuPencilLine;
+              return (
+                <Link key={id} className="sm-add-row" to={newEntryPath(id)} state={{ from: pathname }} onClick={closeOverlay} data-sm-action={`add-${id}`}>
+                  <span className="sm-add-row-icon" aria-hidden="true"><Icon /></span>
+                  <span className="sm-row-main">
+                    <span className="sm-row-title">{t(`forms.flows.${id}.link`)}</span>
+                    <span className="sm-row-meta">{t(`forms.flows.${id}.addHint`)}</span>
+                  </span>
+                </Link>
+              );
+            })}
           </nav>
+          <p className="sm-add-note"><LuInfo aria-hidden="true" /><span>{t("forms.addBody")}</span></p>
           <button type="button" className="sm-button sm-button-quiet" onClick={closeOverlay}>{t("add.close")}</button>
         </MobileSheet>
 

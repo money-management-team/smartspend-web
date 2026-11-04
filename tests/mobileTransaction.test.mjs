@@ -309,7 +309,8 @@ describe("getting there and back", () => {
 
   it("Home -> All activity", async () => {
     await open("/m", transactionsBackend([tx(11, { description: "Groceries" })]));
-    await click(q("a.sm-card-link"));
+    // The recent-activity card's own "View all" (the Accounts card has an "All accounts" link of the same kind).
+    await click(q("section[aria-labelledby='sm-home-recent'] a.sm-card-link"));
     await settle();
 
     assert.equal(location(), "/m/activity");

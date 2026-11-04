@@ -120,6 +120,7 @@ function buildRecent(data) {
       id: idText(raw.id),
       type,
       title: textOrNull(raw.description) ?? textOrNull(raw.category?.name),
+      category: textOrNull(raw.category?.name),
       occurredAt: typeof raw.occurred_at === "string" ? raw.occurred_at : null,
       currency,
       amount: signedAmount(type, amountIn(raw.amount, currency)),

@@ -76,7 +76,21 @@ const specifiers = (source) => {
 describe("Mobile import boundaries", () => {
   it("the Mobile tree exists and has source, styles and nothing unexpected", () => {
     assert.ok(mobileSource.length >= 15);
-    assert.deepEqual(mobileCss.map(rel), ["src/mobile/styles/mobile.css"]);
+    // fonts.css holds only the approved identity's @font-face rules (checked below); everything else is mobile.css.
+    assert.deepEqual(mobileCss.map(rel).sort(), ["src/mobile/styles/fonts.css", "src/mobile/styles/mobile.css"]);
+  });
+
+  it("fonts.css declares only the approved, locally bundled faces and nothing else", () => {
+    const fonts = readCss(readFileSync(path.join(MOBILE, "styles/fonts.css"), "utf8"));
+    assert.deepEqual(fonts.selectors, [], "no rules, only @font-face");
+    assert.ok(fonts.atRules.length >= 8 && fonts.atRules.every((rule) => rule === "@font-face"), fonts.atRules.join());
+    assert.doesNotMatch(fonts.text, /@import|!important|https?:\/\//);
+    const families = new Set([...fonts.text.matchAll(/font-family:\s*'([^']+)'/g)].map((match) => match[1]));
+    // Mobile-owned names (sm- prefix): the same bundled IBM Plex Sans Arabic / Plus Jakarta Sans files, never the landing's families redefined.
+    assert.deepEqual([...families].sort(), ["sm-jakarta", "sm-plex-arabic"]);
+    const sources = [...fonts.text.matchAll(/url\('([^']+)'\)/g)].map((match) => match[1]);
+    assert.ok(sources.length >= 8);
+    for (const source of sources) assert.match(source, /^\.\.\/\.\.\/assets\/fonts\/(ibm-plex-sans-arabic-arabic|plus-jakarta-sans-latin)-\d00-normal\.woff2$/, source);
   });
 
   it("imports only itself, the approved shared modules, and approved packages", () => {
@@ -111,7 +125,7 @@ describe("Mobile import boundaries", () => {
 
         if (specifier.endsWith(".css")) {
           const target = rel(path.resolve(path.dirname(file), specifier));
-          assert.equal(target, "src/mobile/styles/mobile.css", `${rel(file)} imports CSS outside the Mobile tree`);
+          assert.ok(["src/mobile/styles/mobile.css", "src/mobile/styles/fonts.css"].includes(target), `${rel(file)} imports CSS outside the Mobile tree`);
         }
       }
     }
