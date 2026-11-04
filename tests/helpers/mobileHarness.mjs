@@ -32,6 +32,38 @@ export const { default: MobileEntry } = await import("../../src/mobile/entry/Mob
 export const { PRESENTATION_KEY } = await import("../../src/mobile/presentation/preference.js");
 const { resetPreferenceStoresForTests } = await import("../../src/mobile/preferences/deviceStore.js");
 
+/*
+ * MobileEntry renders its screens through `lazy(() => import("../MobileApp.jsx"))`
+ * (src/mobile/entry/MobileEntry.jsx), so settle()'s first call to that loader is the
+ * same dynamic import() Node runs for any other module — it is not instant here: the
+ * first time a process resolves that whole module graph (every Mobile screen, under
+ * this harness's .jsx/.js loader hook, tests/helpers/loader.mjs) took about 3 seconds
+ * on this machine. settle() below only advances event-loop turns (flush() is a single
+ * setImmediate); 60 of those turns run out in well under 3 seconds of real transform
+ * work, so a test could reach its assertions while MobileApp.jsx was still loading and
+ * the Suspense fallback (MobileBoot, ".sm-boot") was still on screen.
+ *
+ * The fix is to pay that one-time cost here, deterministically, before any test in this
+ * file calls mountMobile(): importing the exact same specifier again afterwards (what
+ * React.lazy's loader does) resolves from Node's module cache, so the Suspense boundary
+ * clears within a couple of microtask turns and settle()'s existing budget is enough.
+ * This runs once per test FILE (module-level top-level await, like the imports above),
+ * not globally: only a test that imports this harness pays it, and nothing is preloaded
+ * for files that don't. Production is untouched — MobileEntry.jsx still calls a real
+ * lazy() import, so a Desktop build never requests this chunk.
+ */
+const { MOBILE_SMART_SAVINGS } = await import("../../src/mobile/planning/smartSavingsGate.js");
+await Promise.all([
+  import("../../src/mobile/MobileApp.jsx"),
+  // Smart Savings' own screen section is a second, independent lazy() boundary
+  // (src/mobile/planning/smartSavingsGate.js) that only exists in the build that turns
+  // the feature on (tests/mobileSavings.test.mjs's child process,
+  // SMARTSPEND_TEST_SMART_SAVINGS=true). Warm it the same way, only when it exists —
+  // calling import() on it while the flag is off would import a module the real build
+  // never includes.
+  ...(MOBILE_SMART_SAVINGS ? [import("../../src/mobile/planning/SmartPlanSection.jsx")] : []),
+]);
+
 export const USER_A = { id: 1, name: "Alex Example", timezone: "UTC" };
 export const USER_B = { id: 2, name: "Blake Example", timezone: "UTC" };
 export const TOKEN_A = "token-for-user-a";
