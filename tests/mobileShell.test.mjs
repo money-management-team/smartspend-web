@@ -42,6 +42,30 @@ const { markPresentationBusy, resetPresentationGuard, resetRedirectHistory } = a
 const { isCompactNav } = await import("../src/mobile/shell/useCompactNav.js");
 const { MOBILE_SCREENS, COMPACT_NAV_MAX_REM } = await import("../src/mobile/navigation.js");
 
+/*
+ * MobileEntry renders its screens through `lazy(() => import("../MobileApp.jsx"))`
+ * (src/mobile/entry/MobileEntry.jsx). The first time a test process resolves that
+ * whole module graph (every Mobile screen, through this harness's .jsx/.js
+ * transform loader, tests/helpers/loader.mjs) took about 3 seconds on this
+ * machine — real wall-clock work, not just microtask turns. mount()'s own wait
+ * loop below only advances up to 100 event-loop turns (flush() is one
+ * setImmediate each), which is not bounded by time, so it could run out long
+ * before that import() settles. Whichever test's mount() happens to trigger
+ * that first import then sees the Suspense fallback (MobileBoot, ".sm-boot")
+ * still on screen and fails on a null query — flaky, and always in whichever
+ * `describe` block runs first, never in the ones after (same process, same
+ * module cache, already warm by then).
+ *
+ * Paying that one-time cost here, deterministically, before any test calls
+ * mount(): importing the same specifier again afterwards (what React.lazy's
+ * loader does) resolves from Node's module cache, so the Suspense boundary
+ * clears within the existing turn budget. Local to this file only — no
+ * --import flag, no change to register.mjs — and production is untouched:
+ * MobileEntry.jsx still calls a real lazy() import, so a Desktop build never
+ * requests this chunk.
+ */
+await import("../src/mobile/MobileApp.jsx");
+
 const stub = (id, text = id) => h("div", { id }, text);
 const DESKTOP_ROUTES = [
   { path: "/dashboard", element: stub("desktop-dashboard") },
