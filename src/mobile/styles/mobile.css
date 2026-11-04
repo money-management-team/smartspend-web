@@ -33,6 +33,22 @@
   --sm-backdrop: rgba(7, 20, 43, 0.55);
   --sm-neg: #b42318;
 
+  /*
+   * Depth, tinted with the navy brand colour rather than flat black (a plain
+   * #000-at-low-opacity shadow reads as dirt, not light). Vertical offsets
+   * only: a shadow with a horizontal component would need swapping for RTL,
+   * and "the light comes from directly above" is one consistent source
+   * everywhere this is used.
+   */
+  --sm-shadow-xs: 0 1px 2px rgba(7, 20, 43, 0.07);
+  --sm-shadow-sm: 0 1px 2px rgba(7, 20, 43, 0.06), 0 6px 16px rgba(7, 20, 43, 0.08);
+  --sm-shadow-md: 0 10px 24px rgba(7, 20, 43, 0.14);
+  --sm-shadow-nav: 0 -8px 20px rgba(7, 20, 43, 0.08);
+  --sm-shadow-sheet: 0 -12px 28px rgba(7, 20, 43, 0.16);
+  --sm-shadow-glow: 0 10px 22px rgba(37, 99, 235, 0.32);
+  /* A skeleton's shimmer highlight: lighter than --sm-border in this theme specifically, never assumed from it. */
+  --sm-shimmer: #f3f6fc;
+
   --sm-font-ui: "Cairo", system-ui, -apple-system, "Segoe UI", sans-serif;
   --sm-font-heading: "Tajawal", "Cairo", system-ui, sans-serif;
 
@@ -56,6 +72,16 @@
   --sm-nav-active: #5ec8f5;
   --sm-backdrop: rgba(0, 0, 0, 0.65);
   --sm-neg: #ff9b8f;
+
+  /* A dark surface needs more opaque, truly black depth to read against an
+     already-dark background; the brand tint would simply vanish. */
+  --sm-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --sm-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 18px rgba(0, 0, 0, 0.4);
+  --sm-shadow-md: 0 10px 26px rgba(0, 0, 0, 0.5);
+  --sm-shadow-nav: 0 -8px 20px rgba(0, 0, 0, 0.35);
+  --sm-shadow-sheet: 0 -12px 30px rgba(0, 0, 0, 0.5);
+  --sm-shadow-glow: 0 10px 24px rgba(94, 200, 245, 0.28);
+  --sm-shimmer: #334868;
 }
 
 /* ---------- Frame ---------- */
@@ -142,7 +168,8 @@
   padding-block: var(--sm-safe-top) 0.25rem;
   padding-inline: calc(1rem + var(--sm-safe-start)) calc(1rem + var(--sm-safe-end));
   color: var(--sm-on-bar);
-  background: var(--sm-navy);
+  background: linear-gradient(180deg, #0a1b3d 0%, var(--sm-navy) 100%);
+  box-shadow: 0 2px 10px rgba(7, 20, 43, 0.22);
 }
 
 .sm-root .sm-bar :focus-visible {
@@ -231,6 +258,13 @@
   border: 1px solid var(--sm-border);
   border-radius: 1rem;
   background: var(--sm-surface);
+  box-shadow: var(--sm-shadow-sm);
+}
+
+/* The one card that needs the user's attention: an accent edge, not a new colour (no green/red/amber hue added). */
+.sm-root .sm-attention {
+  border-color: transparent;
+  border-inline-start: 3px solid var(--sm-cyan);
 }
 
 .sm-root .sm-card-title {
@@ -266,18 +300,36 @@
   background: var(--sm-blue);
   font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+  transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
 }
 
-.sm-root .sm-button:hover {
+.sm-root .sm-button:hover:not(:disabled):not([aria-disabled="true"]) {
   color: #ffffff;
   background: #1d4ed8;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.32);
 }
 
-.sm-root .sm-button-quiet,
-.sm-root .sm-button-quiet:hover {
+.sm-root .sm-button:active:not(:disabled):not([aria-disabled="true"]) {
+  transform: scale(0.97);
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.25);
+}
+
+.sm-root .sm-button-quiet {
   color: var(--sm-text);
   background: transparent;
   border: 1px solid var(--sm-border);
+  box-shadow: none;
+}
+
+.sm-root .sm-button-quiet:hover:not(:disabled):not([aria-disabled="true"]) {
+  color: var(--sm-text);
+  background: var(--sm-bg);
+  border-color: var(--sm-muted);
+}
+
+.sm-root .sm-button-quiet:active:not(:disabled):not([aria-disabled="true"]) {
+  background: var(--sm-bg);
 }
 
 .sm-root .sm-field {
@@ -309,11 +361,13 @@
   color: var(--sm-text);
   background: transparent;
   cursor: pointer;
+  transition: background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .sm-root .sm-segment-button[aria-pressed="true"] {
   color: #ffffff;
   background: var(--sm-blue);
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.3);
 }
 
 .sm-root .sm-fieldset {
@@ -360,6 +414,7 @@
   padding-inline: var(--sm-safe-start) var(--sm-safe-end);
   border-block-start: 1px solid var(--sm-border);
   background: var(--sm-nav-bg);
+  box-shadow: var(--sm-shadow-nav);
 }
 
 .sm-root .sm-nav-item,
@@ -379,6 +434,12 @@
   font-weight: 700;
   text-align: center;
   cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.sm-root .sm-nav-item:active,
+.sm-root .sm-add:active {
+  transform: scale(0.96);
 }
 
 .sm-root .sm-nav-item:hover {
@@ -396,7 +457,18 @@
 
 .sm-root .sm-nav-icon {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1.375rem;
+  border-radius: 999px;
+  transition: background-color 0.18s ease;
+}
+
+/* The active destination's icon sits in a soft highlight, the same idiom shell/MobileMenu.jsx's active link already uses. */
+.sm-root .sm-nav-item.sm-active .sm-nav-icon {
+  padding-block: 0.1875rem;
+  padding-inline: 0.625rem;
+  background: var(--sm-bg);
 }
 
 .sm-root .sm-nav-label,
@@ -415,6 +487,8 @@
   color: #ffffff;
   background: linear-gradient(135deg, var(--sm-blue), var(--sm-cyan));
   font-size: 1.5rem;
+  box-shadow: var(--sm-shadow-glow);
+  transition: box-shadow 0.18s ease;
 }
 
 .sm-root .sm-add {
@@ -426,6 +500,10 @@
   flex-direction: row;
   gap: 0.5rem;
   font-size: 0.875rem;
+}
+
+.sm-root .sm-nav-compact .sm-nav-item.sm-active .sm-nav-icon {
+  padding-inline: 0.5rem;
 }
 
 .sm-root .sm-nav-compact .sm-add-icon {
@@ -555,13 +633,14 @@
   gap: 0.75rem;
   border-color: var(--sm-navy);
   color: #ffffff;
-  background: var(--sm-navy);
+  background: linear-gradient(160deg, #0d2552 0%, var(--sm-navy) 70%);
+  box-shadow: var(--sm-shadow-md);
 }
 
 /* The page itself is almost this navy in the dark theme, so the balance card is a step lighter there to stay the anchor of the screen. */
 :root[data-theme="dark"] .sm-root .sm-hero {
   border-color: #1f3d73;
-  background: #0b2250;
+  background: linear-gradient(160deg, #123269 0%, #0b2250 70%);
 }
 
 .sm-root .sm-hero .sm-card-title,
@@ -587,6 +666,7 @@
   font-family: var(--sm-font-heading);
   font-size: 1.75rem;
   line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
 .sm-root .sm-hero-note {
@@ -726,11 +806,21 @@
   gap: 0.25rem 0.75rem;
   min-height: var(--sm-target);
   padding-block: 0.625rem;
+  padding-inline: 0.625rem;
+  margin-inline: -0.625rem;
+  border-radius: 0.625rem;
   color: var(--sm-text);
+  transition: background-color 0.15s ease;
 }
 
-.sm-root .sm-row:hover {
+/* Only the clickable rows (an <a>; a static row is a <div> or plain <li>) get feedback. */
+.sm-root a.sm-row:hover {
   color: var(--sm-text);
+  background: var(--sm-bg);
+}
+
+.sm-root a.sm-row:active {
+  background: var(--sm-bg);
 }
 
 .sm-root .sm-row-main {
@@ -771,12 +861,21 @@
   justify-content: space-between;
   gap: 0.75rem;
   min-height: var(--sm-target);
+  padding-inline: 0.625rem;
+  margin-inline: -0.625rem;
+  border-radius: 0.625rem;
   color: var(--sm-nav-active);
   font-weight: 700;
+  transition: background-color 0.15s ease;
 }
 
 .sm-root .sm-link-row:hover {
   color: var(--sm-nav-active);
+  background: var(--sm-bg);
+}
+
+.sm-root .sm-link-row:active {
+  background: var(--sm-bg);
 }
 
 .sm-root .sm-back {
@@ -845,8 +944,9 @@
   display: block;
   height: 4rem;
   border-radius: 1rem;
-  background: var(--sm-border);
-  animation: sm-pulse 1.2s ease-in-out infinite;
+  background: linear-gradient(100deg, var(--sm-border) 35%, var(--sm-shimmer) 50%, var(--sm-border) 65%);
+  background-size: 200% 100%;
+  animation: sm-shimmer 1.4s ease-in-out infinite;
 }
 
 .sm-root .sm-skeleton-first {
@@ -1122,6 +1222,12 @@
   background: var(--sm-bg);
   font-family: var(--sm-font-ui);
   font-size: 1rem;
+  transition: border-color 0.15s ease;
+}
+
+.sm-root .sm-select:focus-visible,
+.sm-root .sm-input:focus-visible {
+  border-color: var(--sm-focus);
 }
 
 .sm-root .sm-input[aria-invalid="true"] {
@@ -1205,13 +1311,28 @@
   width: 100%;
   max-height: 85%;
   overflow-y: auto;
-  padding-block: 1rem calc(1rem + var(--sm-safe-bottom));
+  padding-block: 1.25rem calc(1rem + var(--sm-safe-bottom));
   padding-inline: calc(1rem + var(--sm-safe-start)) calc(1rem + var(--sm-safe-end));
   border-start-start-radius: 1.25rem;
   border-start-end-radius: 1.25rem;
   color: var(--sm-text);
   background: var(--sm-surface);
+  box-shadow: var(--sm-shadow-sheet);
   animation: sm-sheet-in 0.18s ease-out;
+}
+
+/* A decorative grabber only: the sheet already closes by Escape, the backdrop and a button (MobileSheet.jsx). */
+.sm-root .sm-sheet::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0.5rem;
+  inset-inline-start: 50%;
+  width: 2.25rem;
+  height: 0.25rem;
+  margin-inline-start: -1.125rem;
+  border-radius: 999px;
+  background: var(--sm-border);
+  pointer-events: none;
 }
 
 .sm-root .sm-sheet:focus {
@@ -1239,10 +1360,15 @@
   border-radius: 0.75rem;
   color: var(--sm-text);
   font-weight: 700;
+  transition: background-color 0.15s ease;
 }
 
 .sm-root .sm-menu-link:hover {
   color: var(--sm-text);
+  background: var(--sm-bg);
+}
+
+.sm-root .sm-menu-link:active {
   background: var(--sm-bg);
 }
 
@@ -1254,6 +1380,16 @@
 @keyframes sm-pulse {
   50% {
     opacity: 0.55;
+  }
+}
+
+@keyframes sm-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
   }
 }
 
@@ -1287,6 +1423,12 @@
   .sm-root .sm-boot-spinner,
   .sm-root .sm-skeleton-line {
     animation: none;
+  }
+
+  .sm-root .sm-button:active,
+  .sm-root .sm-nav-item:active,
+  .sm-root .sm-add:active {
+    transform: none;
   }
 }
 
