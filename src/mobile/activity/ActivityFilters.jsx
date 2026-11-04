@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { LuX } from "react-icons/lu";
+import { LuSlidersHorizontal, LuX } from "react-icons/lu";
 
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { formatDay } from "../money/format.js";
@@ -155,7 +155,8 @@ export default function ActivityFilters({ open, onOpen, onClose, openerRef, filt
             onOpen();
           }}
         >
-          {active.length ? t("activity.filtersActive", { count: active.length }) : t("activity.filters")}
+          <LuSlidersHorizontal aria-hidden="true" />
+          <span>{active.length ? t("activity.filtersActive", { count: active.length }) : t("activity.filters")}</span>
         </button>
         {filters.sort !== DEFAULT_SORT && <span className="sm-chip">{t("filter.sortAsc")}</span>}
       </div>

@@ -10,6 +10,7 @@ import { formatDayHeading } from "../money/format.js";
 import { DEFAULT_SORT, filtersToSearchParams, filterSignature, hasActiveFilters, readActivityFilters } from "../models/activity.js";
 import Chevron from "../ui/Chevron.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
+import ListMeta from "../ui/ListMeta.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
 import StaleNotice from "../ui/StaleNotice.jsx";
 import ActivityFilters from "./ActivityFilters.jsx";
@@ -136,14 +137,7 @@ export default function MobileActivity() {
     <section className="sm-page" data-sm-screen="activity" data-sm-state={list.stale ? "stale" : "ready"} data-sm-stale={list.stale ? "true" : undefined} data-sm-sort={filters.sort === DEFAULT_SORT ? "newest" : "oldest"}>
       {toolbar}
 
-      <div className="sm-greeting">
-        <p className="sm-text" data-sm-count={list.items.length}>
-          {list.total != null ? t("activity.count", { shown: list.items.length, total: list.total }) : null}
-        </p>
-        <button type="button" className="sm-button sm-button-quiet sm-button-small" onClick={refresh} disabled={list.refreshing} aria-busy={list.refreshing}>
-          {t(list.refreshing ? "home.refreshing" : "home.refresh")}
-        </button>
-      </div>
+      <ListMeta shown={list.items.length} text={list.total != null ? t("activity.count", { shown: list.items.length, total: list.total }) : null} refreshing={list.refreshing} onRefresh={refresh} />
 
       {list.stale && <StaleNotice error={list.error} updatedAt={list.updatedAt} onRetry={list.reload} retrying={list.refreshing} />}
 

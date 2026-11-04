@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
+import AccountIcon from "./AccountIcon.jsx";
 import { accountDetailPath } from "../navigation.js";
 import Money from "../money/Money.jsx";
 import Chevron from "../ui/Chevron.jsx";
@@ -19,6 +20,7 @@ export default function AccountRow({ account }) {
   const linked = Boolean(account.id);
   const content = (
     <>
+      <AccountIcon account={account} row />
       <span className="sm-row-main">
         <span className="sm-row-title sm-user-text">{name}</span>
         <span className="sm-row-meta">

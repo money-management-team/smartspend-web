@@ -205,10 +205,11 @@ const entry = (type) => ({
   endpoint: `POST /transactions/${type}`,
   fullPath: () => getNewOperationPath(type),
   needs: { accounts: true, categories: true },
+  // The amount first: it is what the entry is about (the account then names its currency).
   fields: [
+    { name: "amount", kind: "amount", required: true, currency: currencyOfAccount("account_id") },
     { name: "account_id", kind: "account", required: true, accounts: spendable },
     { name: "category_id", kind: "category", required: type === "expense", categoryType: () => type },
-    { name: "amount", kind: "amount", required: true, currency: currencyOfAccount("account_id") },
     { name: "occurred_at", kind: "date", required: true },
     descriptionField,
     referenceField,

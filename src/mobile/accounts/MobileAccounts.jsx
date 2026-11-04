@@ -12,6 +12,7 @@ import { buildAccountList } from "../models/accounts.js";
 import Chevron from "../ui/Chevron.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
+import ListMeta from "../ui/ListMeta.jsx";
 import StaleNotice from "../ui/StaleNotice.jsx";
 import AccountRow from "./AccountRow.jsx";
 
@@ -69,12 +70,7 @@ export default function MobileAccounts() {
 
   return (
     <section className="sm-page" data-sm-screen="accounts" data-sm-state={accounts.stale ? "stale" : "ready"} data-sm-stale={accounts.stale ? "true" : undefined}>
-      <div className="sm-greeting">
-        <p className="sm-text" data-sm-count={list.count}>{t("accounts.count", { count: list.count })}</p>
-        <button type="button" className="sm-button sm-button-quiet sm-button-small" onClick={accounts.reload} disabled={accounts.refreshing} aria-busy={accounts.refreshing}>
-          {t(accounts.refreshing ? "home.refreshing" : "home.refresh")}
-        </button>
-      </div>
+      <ListMeta shown={list.count} text={t("accounts.count", { count: list.count })} refreshing={accounts.refreshing} onRefresh={accounts.reload} />
 
       {accounts.stale && <StaleNotice error={accounts.error} updatedAt={accounts.updatedAt} onRetry={accounts.reload} retrying={accounts.refreshing} />}
 
@@ -101,8 +97,8 @@ export default function MobileAccounts() {
         );
       })}
 
-      <div className="sm-card">
-        <p className="sm-text sm-muted">{t("accounts.readOnly")}</p>
+      <div className="sm-full-note">
+        <p className="sm-text sm-muted sm-fine">{t("accounts.readOnly")}</p>
         {fullVersion}
       </div>
     </section>

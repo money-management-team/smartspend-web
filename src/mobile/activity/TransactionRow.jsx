@@ -32,7 +32,7 @@ export default function TransactionRow({ transaction }) {
   ].filter((part, index, all) => part && part !== title && all.indexOf(part) === index);
 
   return (
-    <Link className="sm-row sm-tx" to={activityDetailPath(transaction.id)} state={{ from: `${location.pathname}${location.search}`, pages: location.state?.pages }} data-sm-tx={transaction.id} data-sm-reversed={transaction.reversed ? "true" : undefined}>
+    <Link className="sm-row sm-tx" to={activityDetailPath(transaction.id)} state={{ from: `${location.pathname}${location.search}`, pages: location.state?.pages }} data-sm-tx={transaction.id} data-sm-direction={transaction.direction ?? undefined} data-sm-reversed={transaction.reversed ? "true" : undefined}>
       <TypeIcon transaction={transaction} />
       <span className="sm-row-main">
         <span className="sm-row-title sm-user-text">{title}</span>

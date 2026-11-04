@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { LuCalendar, LuChartColumn, LuChartPie, LuHandCoins, LuRefreshCw, LuRepeat, LuTags, LuTarget } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
@@ -6,8 +7,11 @@ import { keys, loadAlerts } from "../data/loaders.js";
 import { useResource } from "../data/useResource.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { buildAlertsModel } from "../models/home.js";
-import { MOBILE_BUDGETS, MOBILE_CALENDAR, MOBILE_CATEGORIES, MOBILE_DEBTS, MOBILE_GOALS, MOBILE_RECURRING, MOBILE_REPORTS } from "../navigation.js";
+import { MOBILE_BUDGETS, MOBILE_CALENDAR, MOBILE_CATEGORIES, MOBILE_DEBTS, MOBILE_GOALS, MOBILE_PLANNING, MOBILE_RECURRING, MOBILE_REPORTS, budgetDetailPath, goalDetailPath } from "../navigation.js";
 import Chevron from "../ui/Chevron.jsx";
+import IconButton from "../ui/IconButton.jsx";
+import Progress from "./Progress.jsx";
+import { toneOf } from "./tones.js";
 import { BUDGET_LIST, GOAL_LIST, RULE_LIST, pageLoader } from "./lists.js";
 import { useCount } from "./useCount.js";
 
@@ -25,9 +29,12 @@ function useListCount(list, filters) {
   return useCount({ key, loader, build, perPage });
 }
 
-function PlanLink({ to, title, hint, chips, state }) {
+const PREVIEW = 3;
+
+function PlanLink({ to, title, hint, chips, state, icon: Icon }) {
   return (
     <Link className="sm-row sm-plan-link" to={to} data-sm-plan-link={state}>
+      {Icon && <span className="sm-plan-icon" aria-hidden="true"><Icon /></span>}
       <span className="sm-row-main">
         <span className="sm-row-title">{title}</span>
         <span className="sm-row-meta">{hint}</span>
@@ -35,6 +42,33 @@ function PlanLink({ to, title, hint, chips, state }) {
       </span>
       <Chevron />
     </Link>
+  );
+}
+
+/*
+ * A few of a list's first rows, each with the progress the backend calculated: a name and a percentage, never an
+ * amount (the overview shows no money; two budgets in two currencies are never set side by side as figures).
+ */
+function PlanPreview({ count, pathOf, spokenKey, label, untitledKey }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const rows = count.rows.filter((row) => row.id).slice(0, PREVIEW);
+  if (count.loading || count.failed || rows.length === 0) return null;
+
+  return (
+    <ul className="sm-plan-preview" aria-label={label}>
+      {rows.map((row) => (
+        <li key={row.id}>
+          <Link className="sm-plan-preview-row" to={pathOf(row.id)} state={{ from: MOBILE_PLANNING }}>
+            <span className="sm-plan-preview-name sm-user-text">{row.name ?? t(untitledKey)}</span>
+            {row.progress ? (
+              <Progress percent={row.progress.percent} tone={toneOf(row.progress.status, row.progress.statusKnown)} spoken={row.progress.percent ? t(spokenKey, { value: row.progress.percent.text }) : ""} />
+            ) : (
+              <span className="sm-text sm-muted sm-fine">{t("planning.progressUnavailable")}</span>
+            )}
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -109,11 +143,9 @@ export default function MobilePlanning() {
 
   return (
     <section className="sm-page" data-sm-screen="planning" data-sm-state={stale ? "stale" : "ready"} data-sm-stale={stale ? "true" : undefined}>
-      <div className="sm-greeting">
-        <p className="sm-text">{t("planning.overview.intro")}</p>
-        <button type="button" className="sm-button sm-button-quiet sm-button-small" onClick={refresh} disabled={refreshing} aria-busy={refreshing}>
-          {t(refreshing ? "home.refreshing" : "home.refresh")}
-        </button>
+      <div className="sm-list-meta">
+        <p className="sm-text sm-muted sm-fine">{t("planning.overview.intro")}</p>
+        <IconButton label={t(refreshing ? "home.refreshing" : "home.refresh")} icon={LuRefreshCw} spinning={refreshing} onClick={refresh} disabled={refreshing} aria-busy={refreshing} />
       </div>
 
       <AttentionCard alerts={alerts} />
@@ -124,20 +156,23 @@ export default function MobilePlanning() {
           <li>
             <PlanLink
               to={MOBILE_BUDGETS}
+              icon={LuChartPie}
               title={t("planning.overview.budgets")}
               hint={summary(budgets, t, "planning.overview.budgetsCount")}
               state={budgets.failed ? "unavailable" : budgets.loading ? "loading" : "ready"}
               chips={!exceeded.loading && !exceeded.failed && exceeded.total > 0 ? <span className="sm-chips-inline"><span className="sm-chip sm-plan-chip" data-sm-tone="bad">{t("planning.overview.exceeded", { count: exceeded.total })}</span></span> : null}
             />
+            <PlanPreview count={budgets} pathOf={budgetDetailPath} spokenKey="planning.budgets.percentSpoken" untitledKey="planning.budgets.untitled" label={t("planning.overview.budgets")} />
           </li>
           <li>
-            <PlanLink to={MOBILE_GOALS} title={t("planning.overview.goals")} hint={summary(goals, t, "planning.overview.goalsCount")} state={goals.failed ? "unavailable" : goals.loading ? "loading" : "ready"} />
+            <PlanLink to={MOBILE_GOALS} icon={LuTarget} title={t("planning.overview.goals")} hint={summary(goals, t, "planning.overview.goalsCount")} state={goals.failed ? "unavailable" : goals.loading ? "loading" : "ready"} />
+            <PlanPreview count={goals} pathOf={goalDetailPath} spokenKey="planning.goals.percentSpoken" untitledKey="planning.goals.untitled" label={t("planning.overview.goals")} />
           </li>
           <li>
-            <PlanLink to={MOBILE_RECURRING} title={t("planning.overview.recurring")} hint={summary(rules, t, "planning.overview.recurringCount")} state={rules.failed ? "unavailable" : rules.loading ? "loading" : "ready"} />
+            <PlanLink to={MOBILE_RECURRING} icon={LuRepeat} title={t("planning.overview.recurring")} hint={summary(rules, t, "planning.overview.recurringCount")} state={rules.failed ? "unavailable" : rules.loading ? "loading" : "ready"} />
           </li>
           <li>
-            <PlanLink to={MOBILE_DEBTS} title={t("planning.overview.debts")} hint={t("planning.overview.debtsHint")} state="mobile" />
+            <PlanLink to={MOBILE_DEBTS} icon={LuHandCoins} title={t("planning.overview.debts")} hint={t("planning.overview.debtsHint")} state="mobile" />
           </li>
         </ul>
       </section>
@@ -145,13 +180,15 @@ export default function MobilePlanning() {
       <section className="sm-card" aria-labelledby="sm-plan-tools">
         <h2 id="sm-plan-tools" className="sm-card-title">{t("planning.overview.tools")}</h2>
         <ul className="sm-list">
-          <li><PlanLink to={MOBILE_CALENDAR} title={t("planning.overview.calendar")} hint={t("planning.overview.calendarHint")} state="mobile" /></li>
-          <li><PlanLink to={MOBILE_CATEGORIES} title={t("planning.overview.categories")} hint={t("planning.overview.categoriesHint")} state="mobile" /></li>
-          <li><PlanLink to={MOBILE_REPORTS} title={t("planning.overview.reports")} hint={t("planning.overview.reportsHint")} state="mobile" /></li>
+          <li><PlanLink to={MOBILE_CALENDAR} icon={LuCalendar} title={t("planning.overview.calendar")} hint={t("planning.overview.calendarHint")} state="mobile" /></li>
+          <li><PlanLink to={MOBILE_CATEGORIES} icon={LuTags} title={t("planning.overview.categories")} hint={t("planning.overview.categoriesHint")} state="mobile" /></li>
+          <li><PlanLink to={MOBILE_REPORTS} icon={LuChartColumn} title={t("planning.overview.reports")} hint={t("planning.overview.reportsHint")} state="mobile" /></li>
         </ul>
       </section>
 
-      <p className="sm-text sm-muted sm-fine">{t("planning.overview.readOnly")}</p>
+      <div className="sm-full-note">
+        <p className="sm-text sm-muted sm-fine">{t("planning.overview.readOnly")}</p>
+      </div>
     </section>
   );
 }

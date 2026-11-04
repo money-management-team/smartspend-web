@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import Chevron from "../ui/Chevron.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
+import ListMeta from "../ui/ListMeta.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
 import StaleNotice from "../ui/StaleNotice.jsx";
 
@@ -64,14 +65,7 @@ export default function PagedListView({ screen, list, toolbar, filtered, onReset
     <section className="sm-page" data-sm-screen={screen} data-sm-state={list.stale ? "stale" : "ready"} data-sm-stale={list.stale ? "true" : undefined}>
       {toolbar}
 
-      <div className="sm-greeting">
-        <p className="sm-text" data-sm-count={list.items.length}>
-          {list.total != null ? t("planning.list.count", { shown: list.items.length, total: list.total }) : null}
-        </p>
-        <button type="button" className="sm-button sm-button-quiet sm-button-small" onClick={onRefresh} disabled={list.refreshing} aria-busy={list.refreshing}>
-          {t(list.refreshing ? "home.refreshing" : "home.refresh")}
-        </button>
-      </div>
+      <ListMeta shown={list.items.length} text={list.total != null ? t("planning.list.count", { shown: list.items.length, total: list.total }) : null} refreshing={list.refreshing} onRefresh={onRefresh} />
 
       {list.stale && <StaleNotice error={list.error} updatedAt={list.updatedAt} onRetry={list.reload} retrying={list.refreshing} />}
 
@@ -93,8 +87,10 @@ export default function PagedListView({ screen, list, toolbar, filtered, onReset
       )}
       {!list.canLoadMore && !list.loadingMore && !list.moreError && list.total > perPage && <p className="sm-text sm-muted sm-fine">{t("planning.list.end")}</p>}
 
-      <p className="sm-text sm-muted sm-fine">{t(`${strings}.readOnly`)}</p>
-      {fullVersion}
+      <div className="sm-full-note">
+        <p className="sm-text sm-muted sm-fine">{t(`${strings}.readOnly`)}</p>
+        {fullVersion}
+      </div>
     </section>
   );
 }

@@ -1,11 +1,13 @@
 import { useMemo, useRef, useState } from "react";
-import { LuArrowDownLeft, LuArrowUpRight, LuBanknote, LuCamera, LuEye, LuEyeOff, LuLandmark, LuMic, LuPencilLine, LuPiggyBank, LuRefreshCw, LuSlidersHorizontal, LuTarget, LuWallet } from "react-icons/lu";
+import { LuArrowDownRight, LuArrowUpRight, LuCamera, LuEye, LuEyeOff, LuMic, LuPencilLine, LuRefreshCw, LuSlidersHorizontal } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { useAuthContext } from "../../contexts/auth/useAuthContext";
 import { PATH } from "../../routes/Path.js";
+import AccountIcon from "../accounts/AccountIcon.jsx";
 import { typeKey } from "../accounts/typeKey.js";
+import TypeIcon from "../activity/TypeIcon.jsx";
 import { dashboardLoader, keys, loadAlerts, loadDashboard } from "../data/loaders.js";
 import { DASHBOARD_PERIODS } from "../data/readApi.js";
 import { newEntryPath } from "../forms/actionRoutes.js";
@@ -21,13 +23,13 @@ import Money from "../money/Money.jsx";
 import { buildAlertsModel, buildHomeModel } from "../models/home.js";
 import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_PREFIX, MOBILE_RECEIPT_NEW, MOBILE_VOICE_NEW, accountDetailPath, activityDetailPath } from "../navigation.js";
 import Chevron from "../ui/Chevron.jsx";
+import IconButton from "../ui/IconButton.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
 import StaleNotice from "../ui/StaleNotice.jsx";
 
 const ACCOUNT_PREVIEW = 4;
 const MALFORMED = Object.freeze({ code: "MALFORMED_RESPONSE" });
-const ACCOUNT_ICONS = { cash: LuBanknote, bank: LuLandmark, wallet: LuWallet, savings: LuPiggyBank, savings_goal: LuTarget };
 const isZero = (value) => typeof value === "string" && /^-?0+(\.0+)?$/.test(value);
 
 function Unavailable({ children }) {
@@ -110,11 +112,11 @@ function SummaryCard({ balances, period, locale, timeZone }) {
                 ) : (
                   <dl className="sm-flow">
                     <div className="sm-flow-tile" data-sm-flow="in">
-                      <dt><span className="sm-flow-icon" aria-hidden="true"><LuArrowDownLeft /></span>{t("home.summary.income")}</dt>
+                      <dt><span className="sm-flow-icon" aria-hidden="true"><LuArrowUpRight /></span>{t("home.summary.income")}</dt>
                       <dd><Money plus value={row.income} currency={row.currency} /></dd>
                     </div>
                     <div className="sm-flow-tile" data-sm-flow="out">
-                      <dt><span className="sm-flow-icon" aria-hidden="true"><LuArrowUpRight /></span>{t("home.summary.expense")}</dt>
+                      <dt><span className="sm-flow-icon" aria-hidden="true"><LuArrowDownRight /></span>{t("home.summary.expense")}</dt>
                       <dd><Money value={row.expense} currency={row.currency} /></dd>
                     </div>
                     <div className="sm-flow-net">
@@ -139,11 +141,10 @@ function SummaryCard({ balances, period, locale, timeZone }) {
 function AccountTile({ account }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const kind = account.isGoal ? "savings_goal" : account.type;
-  const Icon = ACCOUNT_ICONS[kind] ?? LuWallet;
   const name = account.name ?? t("accounts.untitled");
   const content = (
     <>
-      <span className="sm-tile-icon" aria-hidden="true"><Icon /></span>
+      <AccountIcon account={account} />
       <span className="sm-row-main">
         <span className="sm-row-title sm-user-text">{name}</span>
         <span className="sm-row-meta">{t(`types.${typeKey(kind)}`)}{account.archived ? ` · ${t("accounts.archived")}` : ""}</span>
@@ -207,9 +208,7 @@ function RecentCard({ section, locale, timeZone }) {
             const incoming = item.type === "income";
             const content = (
               <>
-                <span className="sm-tx-mark" data-sm-direction={incoming ? "in" : item.type === "expense" ? "out" : "other"} aria-hidden="true">
-                  {incoming ? <LuArrowDownLeft /> : <LuArrowUpRight />}
-                </span>
+                <TypeIcon transaction={{ type: item.type, direction: incoming ? "income" : item.type === "expense" ? "expense" : null }} />
                 <span className="sm-row-main">
                   <span className="sm-row-title sm-user-text">{item.title ?? t(`types.${typeKey(item.type)}`)}</span>
                   <span className="sm-row-meta">
@@ -304,16 +303,6 @@ function QuickAddExpense() {
         </Link>
       </div>
     </section>
-  );
-}
-
-/* A round icon button whose name is real text (visually hidden), so assistive technology and tests read it. */
-function IconButton({ label, icon: Icon, spinning = false, buttonRef, ...props }) {
-  return (
-    <button type="button" ref={buttonRef} className={`sm-icon-button${spinning ? " sm-icon-spin" : ""}`} {...props}>
-      <Icon aria-hidden="true" />
-      <span className="sm-sr">{label}</span>
-    </button>
   );
 }
 

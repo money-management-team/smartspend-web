@@ -1127,18 +1127,27 @@
   justify-items: start;
 }
 
+/* The one direction mark (activity/TypeIcon.jsx), on Activity and Home alike: income in brand blue, everything else neutral. */
 .sm-root .sm-tx-icon {
   display: inline-flex;
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  margin-block-start: 0.125rem;
-  border-radius: 50%;
-  color: var(--sm-nav-active);
-  background: var(--sm-bg);
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--sm-radius-md);
+  color: var(--sm-text);
+  background: var(--sm-out-soft);
   font-size: 1.125rem;
+}
+
+.sm-root .sm-tx-icon[data-sm-direction="income"] {
+  color: var(--sm-in);
+  background: var(--sm-in-soft);
+}
+
+.sm-root .sm-tx[data-sm-direction="income"] .sm-row-amount .sm-money {
+  color: var(--sm-in);
 }
 
 .sm-root .sm-hero .sm-tx-icon {
@@ -1504,9 +1513,14 @@
 
 /* ---------- Planning (S04B3, read-only) ---------- */
 
+/* Filters above a list are the list's own controls, not a separate card: no frame, just the chip rows. */
 .sm-root .sm-plan-filters {
   gap: 0.5rem;
-  padding: 0.5rem;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
 }
 
 .sm-root .sm-plan-filters .sm-field {
@@ -1593,7 +1607,50 @@
 }
 
 .sm-root .sm-plan-link {
-  align-items: flex-start;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.sm-root .sm-plan-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--sm-radius-md);
+  color: var(--sm-blue);
+  background: var(--sm-in-soft);
+  font-size: 1.125rem;
+}
+
+/* A few budgets or goals under their list's link: name and backend progress only (the overview shows no money). */
+.sm-root .sm-plan-preview {
+  display: grid;
+  gap: 0.25rem;
+  margin-block: 0 0.625rem;
+  padding-inline-start: 3.25rem;
+}
+
+.sm-root .sm-plan-preview-row {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: var(--sm-radius-sm);
+  color: var(--sm-text);
+  background: var(--sm-surface-2);
+  transition: background-color 0.15s ease;
+}
+
+.sm-root .sm-plan-preview-row:hover {
+  color: var(--sm-text);
+  background: var(--sm-in-soft);
+}
+
+.sm-root .sm-plan-preview-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .sm-root .sm-plan-link[data-sm-plan-link="unavailable"] .sm-row-meta {
@@ -1987,6 +2044,7 @@
 .sm-root .sm-home-period-block { display: grid; gap: 0.625rem; }
 .sm-root .sm-home-period { padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
 /* Edge to edge: the row scrolls under the screen's own gutter instead of being clipped by it. */
+.sm-root .sm-plan-filters .sm-segment-wrap,
 .sm-root .sm-home-period .sm-segment-wrap { margin-inline: calc(-1.25rem - var(--sm-safe-start)) calc(-1.25rem - var(--sm-safe-end)); padding-inline: calc(1.25rem + var(--sm-safe-start)) calc(1.25rem + var(--sm-safe-end)); scroll-padding-inline: 1.25rem; }
 
 .sm-root .sm-flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr)); gap: 0.625rem; margin: 0; }
@@ -2012,9 +2070,7 @@
 .sm-root .sm-account-tile .sm-row-title { font-size: 0.9375rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .sm-root .sm-tile-amount { font-size: 1.0625rem; }
 
-/* A transaction row's direction mark: in is the brand blue, out is neutral; the sign is always in the text too. */
-.sm-root .sm-tx-mark { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: var(--sm-radius-md); color: var(--sm-text); background: var(--sm-out-soft); font-size: 1.125rem; }
-.sm-root .sm-tx-mark[data-sm-direction="in"] { color: var(--sm-in); background: var(--sm-in-soft); }
+/* Recent activity on Home uses activity/TypeIcon.jsx's mark; the sign is always in the text too. */
 .sm-root .sm-tx-list .sm-row { flex-wrap: nowrap; gap: 0.75rem; }
 .sm-root .sm-tx-list .sm-row-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .sm-root .sm-tx-list li[data-sm-type="income"] .sm-row-amount .sm-money { color: var(--sm-in); }
@@ -2127,3 +2183,26 @@
 .sm-root .sm-auth-divider::before, .sm-root .sm-auth-divider::after { content: ""; flex: 1; border-block-start: 1px solid var(--sm-border); }
 /* A heading word that is longer than the line breaks only as a last resort, never inside a word that fits. */
 .sm-root.sm-auth .sm-identity-title { overflow-wrap: break-word; hyphens: manual; }
+
+/* ---------- Lists: one line of context, filters, and the full-version note ---------- */
+.sm-root .sm-list-meta { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-block: -0.5rem; }
+.sm-root .sm-list-meta .sm-icon-button { min-width: 2.75rem; min-height: 2.75rem; font-size: 1rem; box-shadow: none; }
+/* Nothing saved and nothing to save: no empty block (and no double gap) between the filters and the list. */
+.sm-root .sm-saved-views:empty { display: none; }
+.sm-root .sm-toolbar .sm-button-small { gap: 0.5rem; border-radius: 999px; background: var(--sm-surface); }
+.sm-root .sm-toolbar .sm-button-small svg { font-size: 1rem; }
+/* "Mobile shows this; change it in the full version": one quiet panel instead of a loose sentence and a loud link. */
+.sm-root .sm-full-note { display: grid; gap: 0.25rem; padding: 0.875rem 1rem; border-radius: var(--sm-radius-md); background: var(--sm-surface-2); }
+.sm-root .sm-full-note .sm-link-row { margin-inline: -0.625rem; font-size: 0.9375rem; }
+
+/* ---------- Forms: the amount leads, the note is quiet, the actions are clear ---------- */
+.sm-root .sm-draft-form [data-sm-field="amount"] .sm-amount-input { gap: 0.75rem; padding: 0.25rem 1rem; border: 1px solid var(--sm-border); border-radius: var(--sm-radius-md); background: var(--sm-surface-2); }
+.sm-root .sm-draft-form [data-sm-field="amount"] .sm-amount-input:focus-within { border-color: var(--sm-focus); box-shadow: 0 0 0 3px var(--sm-in-soft); }
+.sm-root .sm-draft-form [data-sm-field="amount"] .sm-amount-input .sm-input { min-height: 3.75rem; padding-inline: 0; border: 0; background: transparent; box-shadow: none; font-family: var(--sm-font-figures); font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; }
+.sm-root .sm-draft-form [data-sm-field="amount"] .sm-amount-input .sm-input:focus-visible { outline: none; }
+.sm-root .sm-draft-form [data-sm-field="amount"] .sm-amount-currency { font-family: var(--sm-font-figures); font-size: 1rem; font-weight: 700; color: var(--sm-muted); }
+.sm-root .sm-draft-form > .sm-closed-compact { padding: 0.75rem 1rem; border: 0; border-radius: var(--sm-radius-md); background: var(--sm-surface-2); }
+.sm-root .sm-draft-form > .sm-closed-compact .sm-text { font-size: 0.8125rem; line-height: 1.45; }
+.sm-root .sm-flow-head { background: transparent; border: 0; box-shadow: none; padding: 0; gap: 0.25rem; }
+.sm-root .sm-flow-head .sm-card-title { font-size: 1.375rem; letter-spacing: -0.02em; }
+.sm-root .sm-row-icon { flex: none; width: 2.5rem; height: 2.5rem; }
