@@ -2,11 +2,12 @@ import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router-dom";
 
+import { typeKey } from "../accounts/typeKey.js";
 import { sessionWorkspace } from "../data/readApi.js";
 import { isWriteOpen } from "../data/writeGate.js";
 import { useLeaveGuard } from "../categories/useLeaveGuard.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
-import { formatDay } from "../money/format.js";
+import { formatDay, formatMoment } from "../money/format.js";
 import Money from "../money/Money.jsx";
 import MobileSheet from "../shell/MobileSheet.jsx";
 import Chevron from "../ui/Chevron.jsx";
@@ -65,6 +66,10 @@ export default function DraftForm({ workflow, ctx, choices, backTo, recordSummar
   const dirty = isDirty(workflow, values, full);
   const sent = useWorkflowSubmit();
   const settled = ["confirmed", "unknown", "changed"].includes(sent.phase);
+  // The possible-duplicate question is open, or its own resend (Confirm) is on
+  // its way: distinct from the form's own first send, which also reports
+  // "sending" but starts with no matched transaction (useWorkflowSubmit.js).
+  const duplicatePending = sent.phase === "possibleDuplicate" || (sent.phase === "sending" && Boolean(sent.matched));
   const guard = useLeaveGuard(dirty && !settled && !sent.sending);
   const fields = visibleFields(workflow, values, full);
   const operationOpen = isWriteOpen(workflow.operation);
@@ -179,11 +184,15 @@ export default function DraftForm({ workflow, ctx, choices, backTo, recordSummar
           </div>
         )}
 
-        {operationOpen && sent.phase !== "idle" && sent.phase !== "sending" && (
+        {operationOpen && duplicatePending && (
+          <PossibleDuplicateStep outcome={sent} outcomeRef={outcomeRef} t={t} locale={locale} />
+        )}
+
+        {operationOpen && sent.phase !== "idle" && sent.phase !== "sending" && !duplicatePending && (
           <WriteOutcome outcome={sent} outcomeRef={outcomeRef} backTo={backTo} t={t} />
         )}
 
-        {!settled && (
+        {!settled && !duplicatePending && (
           <div className="sm-actions sm-form-actions">
             {operationOpen ? (
               <button type="button" className="sm-button" onClick={send} disabled={sent.sending} aria-busy={sent.sending ? "true" : undefined} data-sm-action="send" data-sm-open="true">
@@ -288,6 +297,53 @@ function WriteOutcome({ outcome, outcomeRef, backTo, t }) {
           <Chevron />
         </Link>
       )}
+    </div>
+  );
+}
+
+/*
+ * The write answered 409 possible_duplicate (data/possibleDuplicate.js):
+ * nothing was recorded, and `outcome.matched` is the transaction it
+ * resembles. Cancel sends nothing; Confirm resends the SAME submission over
+ * the SAME Idempotency-Key with confirm_possible_duplicate added
+ * (useWorkflowSubmit.js's confirmSeparate), never a write built fresh from
+ * whatever the form shows now.
+ */
+function PossibleDuplicateStep({ outcome, outcomeRef, t, locale }) {
+  const matched = outcome.matched;
+  const confirming = outcome.phase === "sending";
+  const amount = normalizeAmount(matched.amount);
+
+  const row = (name, label, value) =>
+    value ? (
+      <div className="sm-stat" data-sm-duplicate-field={name}>
+        <dt>{label}</dt>
+        <dd dir="auto">{value}</dd>
+      </div>
+    ) : null;
+
+  return (
+    <div className="sm-card" role="alertdialog" aria-labelledby="sm-possible-duplicate-title" tabIndex={-1} ref={outcomeRef} data-sm-outcome="possibleDuplicate">
+      <h2 id="sm-possible-duplicate-title" className="sm-card-title">{t("forms.possibleDuplicate.title")}</h2>
+      <p className="sm-text">{t("forms.possibleDuplicate.body")}</p>
+
+      <p className="sm-text sm-muted">{t("forms.possibleDuplicate.matchedHeading")}</p>
+      <dl className="sm-stats sm-stats-stacked">
+        {row("type", t(`types.${typeKey(matched.type)}`), amount ? <Money plain value={amount} currency={matched.currency_code} /> : null)}
+        {row("occurred_at", t("forms.fields.occurred_at"), formatMoment(matched.occurred_at, locale))}
+        {row("description", t("forms.fields.description"), matched.description)}
+        {row("reference_number", t("forms.fields.reference_number"), matched.reference_number)}
+        {row("created_at", t("forms.possibleDuplicate.recordedAt"), formatMoment(matched.created_at, locale))}
+      </dl>
+
+      <div className="sm-actions sm-form-actions">
+        <button type="button" className="sm-button" onClick={outcome.confirmSeparate} disabled={confirming} aria-busy={confirming ? "true" : undefined} data-sm-action="confirm-duplicate">
+          {confirming ? t("forms.possibleDuplicate.confirming") : t("forms.possibleDuplicate.confirm")}
+        </button>
+        <button type="button" className="sm-button sm-button-quiet" onClick={outcome.cancelPossibleDuplicate} disabled={confirming} data-sm-action="cancel-duplicate">
+          {t("forms.possibleDuplicate.cancel")}
+        </button>
+      </div>
     </div>
   );
 }

@@ -378,6 +378,32 @@ export const isAlreadyReversedError = (error) =>
   error?.code === "CONFLICT" && /revers/i.test(collectErrorText(error));
 
 /*
+ * A 409 from income, expense or correction is not always the same thing: a key
+ * still processing, a key reused with different values, an already-reversed
+ * record, and this specific, named case (smartspend-backend
+ * PossibleDuplicateTransactionException, config/finance.php
+ * manual_duplicate_guard — off by default) all answer 409. Only the backend's
+ * own machine-readable `code` on the body tells them apart; the status alone
+ * never does.
+ */
+export const isPossibleDuplicateError = (error) =>
+  error?.serverCode === "possible_duplicate";
+
+/**
+ * The transaction a possible-duplicate 409's body says this looks like
+ * (smartspend-backend bootstrap/app.php: `data.matched_transaction`), or null
+ * when the body isn't that documented shape — so a caller never shows a
+ * confirmation dialog around data it can't actually read.
+ */
+export function possibleDuplicateMatch(error) {
+  const matched = error?.payload?.data?.matched_transaction;
+  // A genuine JSON integer (TransactionController), never converted.
+  return matched && typeof matched === "object" && Number.isFinite(matched.id)
+    ? matched
+    : null;
+}
+
+/*
  * Transaction wording for codes where the generic message would mislead.
  * 422 keeps the backend's own message: it is the financial/domain reason.
  * `context` is "create", "correct" or "reverse" (409 means different things).

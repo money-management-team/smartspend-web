@@ -1191,6 +1191,15 @@
         "next": "Next page",
         "first": "Go to the first page"
       },
+      "possibleDuplicateDialog": {
+        "title": "This might be a duplicate",
+        "description": "An entry already on this account looks like the same payment. If it's a separate payment, you can record it anyway.",
+        "matchedHeading": "The entry it resembles",
+        "recordedAt": "Recorded",
+        "cancel": "Cancel",
+        "confirm": "Record it anyway",
+        "confirming": "Recording..."
+      },
       "reverseDialog": {
         "title": "Reverse “{{name}}”?",
         "description": "Reversing is not deleting. It cancels this transaction's effect on your balances.",
