@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { LuCamera, LuMic } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useParams } from "react-router-dom";
 
@@ -57,14 +58,16 @@ export default function MobileCaptures() {
       <div className="sm-card">
         <h2 className="sm-card-title">{t("captures.title")}</h2>
         <p className="sm-text sm-muted">{t("captures.intro")}</p>
-        <Link className="sm-link-row" to={MOBILE_RECEIPT_NEW} state={{ from: MOBILE_CAPTURES }} data-sm-action="new-receipt">
-          <span>{t("captures.newReceipt")}</span>
-          <Chevron />
-        </Link>
-        <Link className="sm-link-row" to={MOBILE_VOICE_NEW} state={{ from: MOBILE_CAPTURES }} data-sm-action="new-voice">
-          <span>{t("captures.newVoice")}</span>
-          <Chevron />
-        </Link>
+        <div className="sm-add-choices sm-add-choices-two" role="group" aria-label={t("captures.title")}>
+          <Link className="sm-add-choice" to={MOBILE_RECEIPT_NEW} state={{ from: MOBILE_CAPTURES }} data-sm-action="new-receipt">
+            <span className="sm-add-choice-icon" aria-hidden="true"><LuCamera /></span>
+            <span className="sm-add-choice-label">{t("captures.newReceipt")}</span>
+          </Link>
+          <Link className="sm-add-choice" to={MOBILE_VOICE_NEW} state={{ from: MOBILE_CAPTURES }} data-sm-action="new-voice">
+            <span className="sm-add-choice-icon" aria-hidden="true"><LuMic /></span>
+            <span className="sm-add-choice-label">{t("captures.newVoice")}</span>
+          </Link>
+        </div>
       </div>
 
       <section className="sm-card" aria-labelledby="sm-captures-receipts">

@@ -1915,6 +1915,14 @@
   opacity: 0.6;
 }
 
+/* An unavailable primary action is plainly unavailable, not a faded blue that looks broken; one busy mid-request keeps its colour. */
+.sm-root .sm-button:not(.sm-button-quiet):disabled:not([aria-busy="true"]) {
+  color: var(--sm-muted);
+  background: var(--sm-surface-2);
+  box-shadow: none;
+  opacity: 1;
+}
+
 .sm-root .sm-cat-lock {
   gap: 0.25rem;
   color: var(--sm-muted);
@@ -2253,3 +2261,12 @@
 @media (prefers-reduced-motion: reduce) { .sm-root .sm-voice-stage[data-sm-live="true"] .sm-orb-circle { animation: none; } }
 /* A write that Mobile does not send yet: its button is present and plainly unavailable, not a faded primary that looks broken. */
 .sm-root [data-sm-note="write-closed"] .sm-button:disabled { color: var(--sm-muted); border: 1px dashed var(--sm-border); background: var(--sm-surface-2); box-shadow: none; opacity: 1; }
+/* A link row with a title and a hint is a list row: room to breathe, and its title in the text colour (a single-label link stays a link). */
+.sm-root .sm-link-row:has(> .sm-row-main) { padding-block: 0.625rem; color: var(--sm-text); }
+.sm-root .sm-link-row:has(> .sm-row-main):hover { color: var(--sm-text); }
+.sm-root .sm-list > li > .sm-link-row:has(> .sm-row-main) { border-radius: var(--sm-radius-sm); }
+/* The month between its arrows on one row; it wraps to its own row only when enlarged text leaves less than 8ch. */
+.sm-root .sm-cal-bar { flex-wrap: wrap; padding: 0.5rem; }
+.sm-root .sm-cal-bar .sm-cal-month { order: 0; flex: 1 1 8ch; }
+.sm-root .sm-cal-bar > .sm-button { border-color: transparent; }
+.sm-root .sm-add-choices-two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
