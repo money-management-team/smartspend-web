@@ -15,6 +15,7 @@ import {
   getPrimaryAccount,
   getTransactionErrorMessage,
   isInsufficientBalanceError,
+  storageUnavailableError,
   toAmountInput,
   toDateInputValue,
   toOccurredAt,
@@ -187,6 +188,10 @@ export default function CorrectTransactionForm({ transaction, onSave, onClose })
     setHint("");
 
     try {
+      // A brand-new key that could not be written to storage must not be
+      // sent: a reload right after would leave no way to recognize a retry
+      // of this exact request, risking a second record.
+      if (!attempt.isProtected()) throw storageUnavailableError();
       await onSave(payload, idempotencyKey);
       attempt.settle(null);
     } catch (error) {

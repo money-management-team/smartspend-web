@@ -1,5 +1,9 @@
 // Test doubles for the browser globals apiClient reads. No real network.
-export function installBrowserStubs({ token = "test-token", language = "en" } = {}) {
+// `user` / `workspace` are optional (existing callers get the exact same
+// storage as before); a test that needs them scoped — anything that reads
+// getStoredAuthSession() directly, e.g. FinancialOperations/pendingWriteStorage.js —
+// passes its own.
+export function installBrowserStubs({ token = "test-token", language = "en", user = null, workspace = null } = {}) {
   const store = (initial) => {
     const map = new Map(Object.entries(initial));
     return {
@@ -9,7 +13,10 @@ export function installBrowserStubs({ token = "test-token", language = "en" } = 
       dump: () => Object.fromEntries(map),
     };
   };
-  globalThis.localStorage = store({ ACCESS_TOKEN: token, i18nextLng: language });
+  const entries = { ACCESS_TOKEN: token, i18nextLng: language };
+  if (user) entries.user = JSON.stringify(user);
+  if (workspace) entries.workspace = JSON.stringify(workspace);
+  globalThis.localStorage = store(entries);
   globalThis.sessionStorage = store({});
   return { localStorage: globalThis.localStorage, sessionStorage: globalThis.sessionStorage };
 }

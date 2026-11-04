@@ -164,7 +164,7 @@ async function openExpense(onWrite) {
 describe("a new expense, with its write opened for the test", () => {
   beforeEach(async () => {
     await resetEnvironment();
-    storeSession({ token: TOKEN_A, user: USER_A });
+    storeSession({ token: TOKEN_A, user: USER_A, workspace: { id: 1 } });
     gate.setWriteApprovalsForTests(["transaction.expense"]);
   });
 
@@ -253,7 +253,7 @@ describe("a new expense, with its write opened for the test", () => {
 describe("a reviewed receipt, with its write opened for the test", () => {
   beforeEach(async () => {
     await resetEnvironment();
-    storeSession({ token: TOKEN_A, user: USER_A });
+    storeSession({ token: TOKEN_A, user: USER_A, workspace: { id: 1 } });
     gate.setWriteApprovalsForTests(["receipt.confirm"]);
   });
 

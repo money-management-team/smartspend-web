@@ -30,6 +30,7 @@ import {
   isPositiveMoney,
   validatePaymentForm,
 } from "../../debtHelpers";
+import { storageUnavailableError } from "../../../FinancialOperations/transactionHelpers";
 
 // Same modal shell as the other dashboard dialogs; textarea and error block
 // styles come from the reverse dialog's stylesheet.
@@ -187,7 +188,7 @@ export default function DebtPaymentForm({
     const payload = buildPaymentPayload(values, { today });
     // The same key for the whole intent until it definitively succeeds or
     // fails; never a fresh one after an unknown outcome.
-    const idempotencyKey = attempt.key();
+    const idempotencyKey = attempt.key(payload);
 
     pendingRef.current = true;
     setIsSubmitting(true);
@@ -198,6 +199,10 @@ export default function DebtPaymentForm({
     let response;
 
     try {
+      // A brand-new key that could not be written to storage must not be
+      // sent: a reload right after would leave no way to recognize a retry
+      // of this exact request, risking a second payment.
+      if (!attempt.isProtected()) throw storageUnavailableError();
       response = await debtsApi.recordPayment(debt.id, payload, idempotencyKey);
       attempt.settle(null);
     } catch (error) {

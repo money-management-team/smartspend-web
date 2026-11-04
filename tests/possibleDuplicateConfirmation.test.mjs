@@ -122,7 +122,7 @@ describe("recognizing possible_duplicate (serverCode, not the 409 alone)", () =>
 
 describe("Desktop: income and expense", () => {
   let view;
-  beforeEach(() => installBrowserStubs());
+  beforeEach(() => installBrowserStubs({ user: { id: 1 }, workspace: { id: 1 } }));
   afterEach(async () => {
     await view?.unmount();
     view = null;
@@ -259,7 +259,7 @@ describe("Desktop: income and expense", () => {
 
 describe("Desktop: a correction", () => {
   let view;
-  beforeEach(() => installBrowserStubs());
+  beforeEach(() => installBrowserStubs({ user: { id: 1 }, workspace: { id: 1 } }));
   afterEach(async () => {
     await view?.unmount();
     view = null;

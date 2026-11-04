@@ -473,7 +473,14 @@ export function createPaymentAttempt(debtId) {
   const attempt = createIdempotentAttempt("debt-payment");
 
   return {
-    key: () => attempt.keyFor({ debtId: String(debtId) }),
+    // `payload` only binds the STORED entry: the in-memory comparison stays
+    // just `{ debtId }` (editing fields before a retry still reuses the same
+    // key, unchanged from before persistence existed), but the persisted
+    // hash includes the actual amount and date — otherwise a reload could
+    // hand an old payment's key to a genuinely different later payment on
+    // the same debt.
+    key: (payload) => attempt.keyFor({ debtId: String(debtId) }, { debtId: String(debtId), payload }),
+    isProtected: () => attempt.isProtected(),
     settle: (error) => attempt.settle(error),
   };
 }
@@ -530,6 +537,7 @@ const NOT_FOUND_KEYS = {
  * payment above the remaining amount, debt already paid or archived…).
  */
 export function getDebtErrorMessage(error, t, context = "load") {
+  if (error?.code === "STORAGE_UNAVAILABLE") return t("dashboard.transactions.errors.storageUnavailable");
   if (error?.code === "FORBIDDEN") {
     return t(context === "payment" ? "dashboard.debts.errors.forbiddenPayment" : "dashboard.debts.errors.forbidden");
   }

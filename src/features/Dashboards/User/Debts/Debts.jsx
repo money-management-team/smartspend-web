@@ -8,7 +8,7 @@ import { getDebtDetailsPath } from "../../../../routes/Path";
 import { ApiError } from "../api/apiClient";
 import { resolveWorkspaceId } from "../api/dashboardApi";
 import { debtsApi } from "../api/debtsApi";
-import { createSubmissionAttempt } from "../FinancialOperations/transactionHelpers";
+import { createSubmissionAttempt, storageUnavailableError } from "../FinancialOperations/transactionHelpers";
 import DebtFilters from "./components/DebtFilters/DebtFilters";
 import DebtForm from "./components/DebtForm/DebtForm";
 import DebtList from "./components/DebtList/DebtList";
@@ -131,10 +131,15 @@ export default function Debts() {
   const handleSave = async (payload) => {
     const workspaceId = await resolveWorkspaceId();
     const attempt = (createAttemptRef.current ??= createSubmissionAttempt("debt-create"));
+    const idempotencyKey = attempt.key(payload);
     let response;
 
     try {
-      response = await debtsApi.create({ ...payload, workspace_id: workspaceId }, attempt.key());
+      // A brand-new key that could not be written to storage must not be
+      // sent: a reload right after would leave no way to recognize a retry
+      // of this exact request, risking a second debt record.
+      if (!attempt.isProtected()) throw storageUnavailableError();
+      response = await debtsApi.create({ ...payload, workspace_id: workspaceId }, idempotencyKey);
       attempt.settle(null);
     } catch (requestError) {
       attempt.settle(requestError);

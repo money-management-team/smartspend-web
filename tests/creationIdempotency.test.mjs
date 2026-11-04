@@ -34,7 +34,10 @@ const KEY = "test-key-0001";
 const path = (call) => new URL(call.url, "http://localhost").pathname;
 const created = (status = 201) => ({ status, body: envelope({}) });
 
-beforeEach(() => installBrowserStubs());
+// A user and workspace in storage: FinancialOperations/pendingWriteStorage.js
+// reads getStoredAuthSession() directly (the same way the app itself does),
+// independently of whatever AuthContext value a test passes to the page.
+beforeEach(() => installBrowserStubs({ user: { id: 1 }, workspace: { id: 1 } }));
 
 /* ------------------------------------------------------------- API contract */
 
@@ -103,8 +106,19 @@ describe("createSubmissionAttempt: one key per submission intent", () => {
     assert.notEqual(attempt.key(), second);
   });
 
-  it("gives each new intent (a new opening of the form) its own key", () => {
-    assert.notEqual(createSubmissionAttempt("x-create").key(), createSubmissionAttempt("x-create").key());
+  it("gives each new intent (a new opening of the form) its own key, for a genuinely different entry", () => {
+    assert.notEqual(createSubmissionAttempt("x-create").key({ name: "A" }), createSubmissionAttempt("x-create").key({ name: "B" }));
+  });
+
+  // Phase 6D: the stored entry is bound to the actual field values (payload),
+  // never just the prefix label, so a fresh instance only ever reuses a
+  // stored key for the exact same entry — never a different, later one of
+  // the same kind that merely reloaded into no in-memory attempt either.
+  it("a fresh instance reuses the stored key only for the exact same payload", () => {
+    const payload = { name: "Trip", amount: "900" };
+    const first = createSubmissionAttempt("x-create-reload").key(payload);
+    assert.equal(createSubmissionAttempt("x-create-reload").key(payload), first, "the same entry, a fresh instance: reused");
+    assert.notEqual(createSubmissionAttempt("x-create-reload").key({ name: "Different", amount: "1" }), first, "a different entry: never reused");
   });
 });
 

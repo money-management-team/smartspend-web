@@ -70,10 +70,16 @@ export const TOKEN_A = "token-for-user-a";
 export const TOKEN_B = "token-for-user-b";
 
 /** Puts a session where the app keeps it: localStorage ("remember me") or sessionStorage (this tab only). */
-export function storeSession({ token, user, where = "local" }) {
+// `workspace` is optional: existing callers that set it themselves (many
+// tests do, directly on window.localStorage) are unaffected. A test whose
+// write goes through data/pendingWriteStorage.js (identity/guard.js's
+// readStoredIdentity() plus sessionWorkspace(), both reading storage
+// directly, the same way the app itself does) needs one or the other.
+export function storeSession({ token, user, workspace, where = "local" }) {
   const storage = where === "local" ? window.localStorage : window.sessionStorage;
   storage.setItem("ACCESS_TOKEN", token);
   storage.setItem("user", JSON.stringify(user));
+  if (workspace) storage.setItem("workspace", JSON.stringify(workspace));
 }
 
 export function clearSessionStorage() {

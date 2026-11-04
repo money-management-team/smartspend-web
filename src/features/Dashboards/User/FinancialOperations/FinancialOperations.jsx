@@ -31,6 +31,7 @@ import {
   parseTransactionPage,
   possibleDuplicateMatch,
   readFilters,
+  storageUnavailableError,
   toOccurredAt,
 } from "./transactionHelpers";
 
@@ -334,6 +335,10 @@ export default function FinancialOperations() {
     let response;
 
     try {
+      // A brand-new key that could not be written to storage must not be
+      // sent: a reload right after would leave no way to recognize a retry
+      // of this exact request, risking a second record.
+      if (!attempt.isProtected()) throw storageUnavailableError();
       response = await postOperation(operation, payload, idempotencyKey);
     } catch (error) {
       if (isPossibleDuplicateError(error)) {

@@ -77,7 +77,7 @@ describe("Mobile: the possible-duplicate step (write opened for the test only)",
 
   beforeEach(async () => {
     await resetEnvironment();
-    storeSession({ token: TOKEN_A, user: USER_A });
+    storeSession({ token: TOKEN_A, user: USER_A, workspace: { id: 1 } });
     gate.setWriteApprovalsForTests(["transaction.expense"]);
   });
 

@@ -12,6 +12,14 @@ import {
   updateStoredUser,
   updateStoredWorkspace,
 } from "../../features/Dashboards/User/api/apiClient";
+// Sign-out is the one unambiguous moment a pending financial write's stored
+// key should stop being protected for this person, on every device sharing
+// this browser profile. A workspace switch alone is not handled here — it
+// cannot be told apart from the SAME restore that already runs on every
+// reload (see FinancialOperations/pendingWriteStorage.js) — but it needs no
+// explicit clearing either: a pending entry is scoped to the workspace it
+// was written under, so a different workspace never reads or reuses it.
+import { clearPendingWritesForUser } from "../../features/Dashboards/User/FinancialOperations/pendingWriteStorage";
 import { AuthContext } from "./authContext";
 import { crossTabChange } from "./crossTabSession";
 import { createWelcomeNotice, dismissWelcomeNotice } from "./welcomeNotice";
@@ -43,6 +51,8 @@ export default function AuthProvider({ children }) {
     googleAttemptRef.current++;
     freshTokenRef.current = null;
     setWelcomeNotice(null);
+    // Read before clearAuthSession() removes it.
+    clearPendingWritesForUser(getStoredAuthSession().user?.id);
     clearAuthSession();
     setSession(emptySession);
   }, []);

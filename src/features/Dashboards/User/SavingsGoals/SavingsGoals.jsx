@@ -8,7 +8,7 @@ import { getNewSmartPlanPath, getSavingsGoalDetailsPath } from "../../../../rout
 import { ApiError } from "../api/apiClient";
 import { resolveWorkspaceId } from "../api/dashboardApi";
 import { savingsGoalsApi } from "../api/savingsGoalsApi";
-import { createSubmissionAttempt } from "../FinancialOperations/transactionHelpers";
+import { createSubmissionAttempt, storageUnavailableError } from "../FinancialOperations/transactionHelpers";
 import GoalActionDialog from "./components/GoalActionDialog/GoalActionDialog";
 import GoalMovementForm from "./components/GoalMovementForm/GoalMovementForm";
 import SavingsGoalCard from "./components/SavingsGoalCard/SavingsGoalCard";
@@ -177,10 +177,15 @@ export default function SavingsGoals({ smartSavingsEnabled = SMART_SAVINGS_ENABL
       } else {
         const workspaceId = await resolveWorkspaceId();
         const attempt = formState.attempt;
+        const idempotencyKey = attempt.key(values);
         let response;
 
         try {
-          response = await savingsGoalsApi.create({ ...values, workspace_id: workspaceId }, attempt.key());
+          // A brand-new key that could not be written to storage must not be
+          // sent: a reload right after would leave no way to recognize a
+          // retry of this exact request, risking a second goal and account.
+          if (!attempt.isProtected()) throw storageUnavailableError();
+          response = await savingsGoalsApi.create({ ...values, workspace_id: workspaceId }, idempotencyKey);
           attempt.settle(null);
         } catch (createError) {
           attempt.settle(createError);

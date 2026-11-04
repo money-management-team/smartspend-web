@@ -1233,6 +1233,7 @@
         "noChanges": "Change at least one field to correct this transaction."
       },
       "errors": {
+        "storageUnavailable": "This device can't remember that a request is in progress right now, so it can't be sent safely. Enable storage for this site (leaving private browsing can be enough) and try again.",
         "forbidden": "You don't have access to this transaction, account or category.",
         "notFound": "This transaction isn't available. It may not exist, or it isn't in your workspaces.",
         "alreadyReversed": "This transaction has already been reversed. The page shows its current state.",

@@ -390,6 +390,7 @@ export const isNoOpenOccurrenceError = (error) =>
  * paused or archived, nothing open, insufficient balance…).
  */
 export function getRecurringErrorMessage(error, t, context = "load") {
+  if (error?.code === "STORAGE_UNAVAILABLE") return t("dashboard.transactions.errors.storageUnavailable");
   if (error?.code === "FORBIDDEN") return t("dashboard.recurring.errors.forbidden");
   if (error?.code === "NOT_FOUND") return t("dashboard.recurring.errors.notFound");
 

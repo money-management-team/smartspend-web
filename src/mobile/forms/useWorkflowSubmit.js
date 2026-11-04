@@ -1,12 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { isPossibleDuplicateError, possibleDuplicateMatch } from "../data/possibleDuplicate.js";
+import { clearPendingWrite, hashFingerprint, readPendingWrite, writePendingWrite } from "../data/pendingWriteStorage.js";
 import { newWriteKey, sendWorkflowWrite } from "../data/writeApi.js";
 import { sessionWorkspace } from "../data/readApi.js";
 import { useIdentityGuard } from "../identity/guardContext.js";
 import { useResourceStore } from "../identity/storeContext.js";
 
 const IDLE = Object.freeze({ phase: "idle", code: null, error: null, data: null, matched: null });
+
+/** Thrown instead of sending when a brand-new key could not be written to storage. */
+function storageUnavailableError() {
+  return Object.assign(
+    new Error("This device can't remember that a request is in progress right now, so it can't be sent safely."),
+    { code: "STORAGE_UNAVAILABLE" },
+  );
+}
 
 /*
  * What an error means for a form's write. "rejected" only where the server
@@ -27,8 +36,13 @@ const IDLE = Object.freeze({ phase: "idle", code: null, error: null, data: null,
  * Everything else is "unknown": a timeout, the network, a 5xx, an answer that is
  * not the envelope, and any OTHER 409 (a key still processing, a key reused with
  * other values, or a record already reversed: the request alone doesn't say which).
+ *
+ * STORAGE_UNAVAILABLE (data/pendingWriteStorage.js: the key could not be
+ * written to localStorage) belongs with the refusals: nothing was sent when
+ * it fires — submit() refuses the request before it exists — so a retry is
+ * exactly as safe as a fresh start.
  */
-const REJECTED = new Set(["VALIDATION_ERROR", "FORBIDDEN", "NOT_FOUND", "RATE_LIMITED", "WRITE_CLOSED", "NO_WORKSPACE"]);
+const REJECTED = new Set(["VALIDATION_ERROR", "FORBIDDEN", "NOT_FOUND", "RATE_LIMITED", "WRITE_CLOSED", "NO_WORKSPACE", "STORAGE_UNAVAILABLE"]);
 
 export function classifyWriteOutcome(error) {
   const code = error?.code ?? error?.name ?? "UNKNOWN";
@@ -58,6 +72,15 @@ export function classifyWriteOutcome(error) {
  *     certainly-refused answer. It is not renewed when the details change, so
  *     after an unknown outcome the server either replays the first result or
  *     refuses different values; it can't record the money twice.
+ *   - That key now survives a reload too (data/pendingWriteStorage.js: a
+ *     hash of {operation, ids, input} and the key itself only, never the
+ *     input, never the bearer token). The hash is checked before the key is
+ *     ever reused, so a reload followed by a DIFFERENT entry of the same
+ *     operation never inherits an old key; it mints and persists its own,
+ *     exactly as any other change in this hook already has. A key that
+ *     cannot be written to storage is never sent at all
+ *     (storageUnavailableError(), classified as "rejected" above): a reload
+ *     right after would leave no way to recognize a retry.
  *   - A possible-duplicate 409 keeps the key too, for the same reason an
  *     unknown outcome does, but for the opposite reason: the backend's own
  *     posting transaction rolled back before anything was written, so the key
@@ -65,8 +88,9 @@ export function classifyWriteOutcome(error) {
  *     resends the SAME write this hook already holds, over that SAME key,
  *     adding only the flag the backend documents for this exact case — never
  *     a write built fresh from whatever the form shows by then.
- *   - Nothing is ever sent again by itself: no retry, no queue, no storage. The
- *     payload and the key live in this hook's memory only.
+ *   - Nothing is ever sent again by itself: no retry, no queue, no replay.
+ *     The input never leaves this hook's memory; only the key and a hash of
+ *     the input are ever written to storage.
  *   - After "unknown" this form sends nothing more: the person checks the record.
  *   - The identity guard is asserted in the turn the request leaves and again
  *     when the answer arrives; a different workspace by then is "changed".
@@ -101,6 +125,8 @@ export function useWorkflowSubmit() {
       if (outcome.kind === "identity") return;
       if (outcome.kind !== "rejected" && outcome.kind !== "possibleDuplicate" && !store.isDisposed()) store.drop(() => true);
       if (outcome.kind === "confirmed" || outcome.kind === "rejected") {
+        // Read before clearing: nothing left to protect either way.
+        if (pendingWrite.current) clearPendingWrite(pendingWrite.current.operation);
         key.current = null;
         pendingWrite.current = null;
       }
@@ -124,7 +150,21 @@ export function useWorkflowSubmit() {
         if (Object.hasOwn(write.input ?? {}, "workspace_id") && !Number.isSafeInteger(write.input.workspace_id)) {
           throw Object.assign(new Error("No workspace to record this in."), { code: "NO_WORKSPACE" });
         }
-        key.current ??= newWriteKey(write.operation);
+        if (!key.current) {
+          // The full write, not just the operation name: a stored key from
+          // an unrelated earlier entry of the same operation must never be
+          // handed to a genuinely different one just because both reload
+          // into an empty key.current.
+          const hash = hashFingerprint(JSON.stringify({ operation: write.operation, ids: write.ids, input: write.input }));
+          const stored = readPendingWrite(write.operation, hash);
+          if (stored) {
+            key.current = stored.key;
+          } else {
+            const minted = newWriteKey(write.operation);
+            if (!writePendingWrite(write.operation, minted, hash)) throw storageUnavailableError();
+            key.current = minted;
+          }
+        }
         pendingWrite.current = write;
         guard.assert();
         const response = await sendWorkflowWrite(write, key.current);

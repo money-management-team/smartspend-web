@@ -143,8 +143,12 @@ describe("the source", () => {
     assert.deepEqual(find(/indexedDB|workbox|BackgroundSync|periodicSync|\bsync\.register/i), []);
   });
 
-  it("writes to browser storage in two places: the presentation word, and Mobile's own per-identity preferences", () => {
-    assert.deepEqual(find(/\.setItem\(|\.removeItem\(|document\.cookie|(local|session)Storage\.clear\(/), ["src/mobile/preferences/deviceStore.js", "src/mobile/presentation/preference.js"]);
+  it("writes to browser storage in three places: a pending write's key, the presentation word, and Mobile's own per-identity preferences", () => {
+    assert.deepEqual(find(/\.setItem\(|\.removeItem\(|document\.cookie|(local|session)Storage\.clear\(/), [
+      "src/mobile/data/pendingWriteStorage.js",
+      "src/mobile/preferences/deviceStore.js",
+      "src/mobile/presentation/preference.js",
+    ]);
     const writes = [...code(path.join(MOBILE, "presentation/preference.js")).matchAll(/(setItem|removeItem)\(\s*([A-Za-z_]+)/g)].map((match) => match[2]);
     assert.deepEqual([...new Set(writes)], ["PRESENTATION_KEY"]);
     // The preference record: one setItem, under a key that names the person and the workspace, of a normalized record only.
@@ -154,6 +158,14 @@ describe("the source", () => {
     assert.match(prefs, /storage\.setItem\(key, JSON\.stringify\(next\)\)/);
     assert.match(prefs, /const next = normalizePreferences\(/);
     assert.doesNotMatch(prefs, /token|ACCESS_TOKEN|apiRequest|response/i);
+
+    // Phase 6D: a reload-surviving Idempotency-Key never writes the token,
+    // the write's input, or anything resembling an amount/account/category —
+    // only the key, a hash, the operation label and a timestamp.
+    const pending = code(path.join(MOBILE, "data/pendingWriteStorage.js"));
+    assert.match(pending, /smartspend:mobile:pending-write:\$\{VERSION\}:u:\$\{userId\}:w:\$\{workspaceId\}:\$\{operation\}/);
+    assert.match(pending, /JSON\.stringify\(\{ v: VERSION, key, hash, createdAt: Date\.now\(\) \}\)/);
+    assert.doesNotMatch(pending, /token|ACCESS_TOKEN|apiRequest|response|amount|account_id|category_id|description|reference_number/i);
   });
 
   it("changes the full app's preference store in one place, and only its hide-amounts choice", () => {

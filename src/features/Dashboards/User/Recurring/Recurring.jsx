@@ -7,7 +7,7 @@ import Loading from "../../../../components/Loading/Loading";
 import { getRecurringDetailsPath, getTransactionDetailsPath } from "../../../../routes/Path";
 import { ApiError } from "../api/apiClient";
 import { recurringTransactionsApi } from "../api/recurringTransactionsApi";
-import { createSubmissionAttempt } from "../FinancialOperations/transactionHelpers";
+import { createSubmissionAttempt, storageUnavailableError } from "../FinancialOperations/transactionHelpers";
 import RecurringActionDialog from "./components/RecurringActionDialog/RecurringActionDialog";
 import RecurringFilters from "./components/RecurringFilters/RecurringFilters";
 import RecurringForm from "./components/RecurringForm/RecurringForm";
@@ -122,8 +122,13 @@ export default function Recurring() {
         if (ruleBeingEdited) {
           response = await recurringTransactionsApi.update(ruleBeingEdited.id, payload);
         } else {
+          const idempotencyKey = attempt.key(payload);
           try {
-            response = await recurringTransactionsApi.create(payload, attempt.key());
+            // A brand-new key that could not be written to storage must not
+            // be sent: a reload right after would leave no way to recognize
+            // a retry of this exact request, risking a second rule.
+            if (!attempt.isProtected()) throw storageUnavailableError();
+            response = await recurringTransactionsApi.create(payload, idempotencyKey);
             attempt.settle(null);
           } catch (createError) {
             attempt.settle(createError);
