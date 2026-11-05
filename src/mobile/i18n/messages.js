@@ -17,7 +17,14 @@ const BASE_MESSAGES = {
   en: {
     skip: "Skip to content",
     loading: "Loading",
-    bar: { logo: "SmartSpend" },
+    bar: {
+      logo: "SmartSpend",
+      notifications: "Notifications",
+      display: "Language and theme",
+      displayTitle: "Display",
+      displayHint: "Choose the language and theme for this device.",
+      displayClose: "Done",
+    },
     nav: {
       label: "Main navigation",
       home: "Home",
@@ -604,7 +611,14 @@ const BASE_MESSAGES = {
   ar: {
     skip: "تخطَّ إلى المحتوى",
     loading: "جارٍ التحميل",
-    bar: { logo: "SmartSpend" },
+    bar: {
+      logo: "SmartSpend",
+      notifications: "الإشعارات",
+      display: "اللغة والسمة",
+      displayTitle: "المظهر",
+      displayHint: "اختر لغة هذا الجهاز وسمته.",
+      displayClose: "تم",
+    },
     nav: {
       label: "التنقل الرئيسي",
       home: "الرئيسية",

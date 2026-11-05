@@ -217,8 +217,9 @@ describe("Ways in", () => {
     await view.unmount();
     view = null;
     await open("/m/more", () => ({ body: { status: true, data: {} } }));
-    assert.equal(qa("a[href='/m/transfers']").length, 1);
-    assert.equal(qa("a[href='/m/notifications']").length, 1);
+    // In the page itself; the app bar's own bell (tests/mobileBarActions.test.mjs) is a second way in.
+    assert.equal(qa("a[href='/m/transfers']", q("main")).length, 1);
+    assert.equal(qa("a[href='/m/notifications']", q("main")).length, 1);
   });
 
   it("the app bar names each page", async () => {

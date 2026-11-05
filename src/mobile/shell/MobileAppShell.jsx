@@ -6,13 +6,15 @@ import { Link, Outlet, useLocation } from "react-router-dom";
 import logo from "../../assets/smart-spend-logo.png";
 import "../i18n/register.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
-import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_BUDGETS, MOBILE_CALENDAR, MOBILE_CATEGORIES, MOBILE_CATEGORY_NEW, MOBILE_DEBTS, MOBILE_EXPORTS, MOBILE_GOALS, MOBILE_IMPORTS, MOBILE_NOTIFICATIONS, MOBILE_RECEIPT_NEW, MOBILE_REPORTS, MOBILE_RECURRING, MOBILE_SCREENS, MOBILE_TRANSFERS, MOBILE_VOICE_NEW } from "../navigation.js";
+import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_AI, MOBILE_BUDGETS, MOBILE_CALENDAR, MOBILE_CATEGORIES, MOBILE_CATEGORY_NEW, MOBILE_DEBTS, MOBILE_EXPORTS, MOBILE_GOALS, MOBILE_IMPORTS, MOBILE_MORE, MOBILE_NOTIFICATIONS, MOBILE_PLANNING, MOBILE_PREFIX, MOBILE_RECEIPT_NEW, MOBILE_REPORTS, MOBILE_RECURRING, MOBILE_SCREENS, MOBILE_TRANSFERS, MOBILE_VOICE_NEW } from "../navigation.js";
 import { normalizePathname } from "../presentation/resolver.js";
 import PwaNotices from "../pwa/PwaNotices.jsx";
 import { PwaContext } from "../pwa/pwaContext.js";
 import { usePwa } from "../pwa/usePwa.js";
 import { newEntryPath, workflowAt } from "../forms/actionRoutes.js";
 import { NEW_ENTRY_ORDER, WORKFLOWS } from "../forms/workflows.js";
+import DisplayChoices from "../ui/DisplayChoices.jsx";
+import MobileBarActions from "./MobileBarActions.jsx";
 import MobileMenu from "./MobileMenu.jsx";
 import MobileNav from "./MobileNav.jsx";
 import MobileSheet from "./MobileSheet.jsx";
@@ -22,6 +24,9 @@ import { useCompactNav } from "./useCompactNav.js";
 
 // Proves in a built bundle that this code shipped; see tests/mobileBundle.test.mjs.
 export const MOBILE_BUILD_MARKER = "SMARTSPEND_MOBILE_S04B4";
+
+// The main screens carry the bar's quiet actions (notifications, display). Pages opened from them keep the bar to the title.
+const MAIN_SCREENS = new Set([MOBILE_PREFIX, MOBILE_ACTIVITY, MOBILE_ACCOUNTS, MOBILE_PLANNING, MOBILE_REPORTS, MOBILE_AI, MOBILE_MORE]);
 
 const ENTRY_ICONS = { income: LuArrowDownLeft, transfer: LuArrowLeftRight, account: LuWallet, budget: LuChartPie, goal: LuTarget, recurring: LuRepeat, debt: LuHandCoins };
 
@@ -98,11 +103,12 @@ export default function MobileAppShell() {
   const compact = useCompactNav();
   const pwa = usePwa();
 
-  const [overlay, setOverlay] = useState(null); // null | "add" | "menu"
+  const [overlay, setOverlay] = useState(null); // null | "add" | "menu" | "display"
   const [portal, setPortal] = useState(null);
   const titleRef = useRef(null);
   const addRef = useRef(null);
   const menuRef = useRef(null);
+  const displayRef = useRef(null);
   const lastPath = useRef(pathname);
 
   const closeOverlay = useCallback(() => setOverlay(null), []);
@@ -127,9 +133,11 @@ export default function MobileAppShell() {
 
   const menuOpen = overlay === "menu" && compact;
   const addOpen = overlay === "add";
+  const displayOpen = overlay === "display";
   // A sheet that a screen opened (see modalContext.js) counts too.
   const [screenModal, setScreenModal] = useState(false);
-  const modalOpen = menuOpen || addOpen || screenModal;
+  const modalOpen = menuOpen || addOpen || displayOpen || screenModal;
+  const showActions = MAIN_SCREENS.has(normalizePathname(pathname));
 
   return (
     <MobilePortalContext.Provider value={portal}>
@@ -139,6 +147,7 @@ export default function MobileAppShell() {
           <a className="sm-skip" href="#sm-main">{t("skip")}</a>
           <img className="sm-bar-logo" src={logo} alt={t("bar.logo")} width="32" height="32" />
           <h1 className="sm-bar-title" ref={titleRef} tabIndex={-1}>{t(getTitleKey(pathname))}</h1>
+          {showActions && <MobileBarActions onDisplay={() => setOverlay("display")} displayRef={displayRef} />}
         </header>
 
         <main id="sm-main" className="sm-main" inert={modalOpen}>
@@ -207,6 +216,18 @@ export default function MobileAppShell() {
         </MobileSheet>
 
         <MobileMenu open={menuOpen} onClose={closeOverlay} returnFocusRef={menuRef} />
+
+        <MobileSheet
+          open={displayOpen}
+          onClose={closeOverlay}
+          titleId="sm-display-title"
+          title={t("bar.displayTitle")}
+          returnFocusRef={displayRef}
+        >
+          <p className="sm-text sm-muted">{t("bar.displayHint")}</p>
+          <DisplayChoices />
+          <button type="button" className="sm-button sm-button-quiet" onClick={closeOverlay}>{t("bar.displayClose")}</button>
+        </MobileSheet>
       </div>
       </ShellModalContext.Provider>
     </MobilePortalContext.Provider>

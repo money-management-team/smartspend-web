@@ -3,8 +3,6 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { useAuthContext } from "../../contexts/auth/useAuthContext";
-import { useLanguageContext } from "../../contexts/language/useLanguageContext";
-import { useThemeContext } from "../../contexts/theme/useThemeContext";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { MOBILE_ACCOUNTS, MOBILE_AI, MOBILE_ATTENTION, MOBILE_CAPTURES, MOBILE_IMPORTS, MOBILE_NOTIFICATIONS, MOBILE_PROFILE, MOBILE_REPORTS, MOBILE_REVIEW, MOBILE_SEARCH, MOBILE_TEMPLATES, MOBILE_TRANSFERS, MOBILE_WHATSAPP } from "../navigation.js";
 import { PRESENTATION_PREFERENCES } from "../presentation/preference.js";
@@ -13,6 +11,7 @@ import { InstallCard } from "../pwa/PwaNotices.jsx";
 import { usePwaState } from "../pwa/pwaContext.js";
 import { PWA_BUILD } from "../pwa/worker.js";
 import Chevron from "../ui/Chevron.jsx";
+import DisplayChoices from "../ui/DisplayChoices.jsx";
 
 function MoreLink({ to, title, hint, icon: Icon }) {
   return (
@@ -35,8 +34,6 @@ function MoreLink({ to, title, hint, icon: Icon }) {
  */
 export default function MobileMore() {
   const { t } = useTranslation(MOBILE_NAMESPACE);
-  const { theme, changeTheme } = useThemeContext();
-  const { language, setLanguage } = useLanguageContext();
   const { preference, setPreference } = usePresentation();
   const pwa = usePwaState();
   const { user, workspace } = useAuthContext();
@@ -85,29 +82,7 @@ export default function MobileMore() {
       <div className="sm-card">
         <h2 className="sm-card-title">{t("more.appearance")}</h2>
 
-        <div className="sm-field" role="group" aria-labelledby="sm-theme-label">
-          <span id="sm-theme-label" className="sm-label">{t("more.theme")}</span>
-          <div className="sm-segment">
-            <button type="button" className="sm-segment-button" aria-pressed={theme === "light"} onClick={() => changeTheme("light")}>
-              {t("more.themeLight")}
-            </button>
-            <button type="button" className="sm-segment-button" aria-pressed={theme === "dark"} onClick={() => changeTheme("dark")}>
-              {t("more.themeDark")}
-            </button>
-          </div>
-        </div>
-
-        <div className="sm-field" role="group" aria-labelledby="sm-language-label">
-          <span id="sm-language-label" className="sm-label">{t("more.language")}</span>
-          <div className="sm-segment">
-            <button type="button" className="sm-segment-button" lang="en" aria-pressed={language === "en"} onClick={() => setLanguage("en")}>
-              {t("more.languageEn")}
-            </button>
-            <button type="button" className="sm-segment-button" lang="ar" aria-pressed={language === "ar"} onClick={() => setLanguage("ar")}>
-              {t("more.languageAr")}
-            </button>
-          </div>
-        </div>
+        <DisplayChoices />
       </div>
 
       <InstallCard pwa={pwa} enabled={PWA_BUILD} />

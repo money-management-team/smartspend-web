@@ -244,6 +244,51 @@
   outline-offset: 4px;
 }
 
+/*
+ * The bar's quiet actions (main screens only): notifications and the display sheet. Ghost buttons, no frame and no
+ * fill until touched, so the bar stays a title with two marks at its end rather than a toolbar. The touch target is
+ * the full 44px; the visible mark is the icon.
+ */
+.sm-root .sm-bar-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.125rem;
+  margin-inline-start: auto;
+  margin-inline-end: -0.5rem;
+}
+
+.sm-root .sm-bar-action {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--sm-target);
+  min-height: var(--sm-target);
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  color: var(--sm-muted);
+  background: transparent;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.12s ease;
+}
+
+.sm-root .sm-bar-action:hover {
+  color: var(--sm-text);
+  background: var(--sm-surface-2);
+}
+
+.sm-root .sm-bar-action:active {
+  transform: scale(0.92);
+}
+
+.sm-root .sm-bar-action:focus-visible {
+  outline: 3px solid var(--sm-focus);
+  outline-offset: -2px;
+}
+
 .sm-root .sm-skip {
   position: absolute;
   display: inline-flex;
