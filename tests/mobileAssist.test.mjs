@@ -129,6 +129,65 @@ describe("the assistant", () => {
   });
 });
 
+describe("the assistant: a conversation as a chat (real backend shapes)", () => {
+  // AiMessageResource: the time is timestamps.created_at; a failed reply has status "failed" and a safe failure message.
+  const chat = (messages, extra = {}) => (call) => (call.path === "/ai/conversations/5" ? { body: envelope({ messages: paginator(messages, { perPage: 50 }) }) } : assistBackend(extra)(call));
+  const message = (id, role, content, more = {}) => ({ id, conversation_id: 5, role, status: "completed", content, sources: [], timestamps: { created_at: "2026-10-20T10:00:00Z" }, ...more });
+
+  it("yours and the assistant's messages are bubbles with the time the backend gave, the assistant's labelled", async () => {
+    await open("/m/assistant/conversations/5", chat([message(51, "user", "Where did my money go?"), message(52, "assistant", "Mostly on food.", { timestamps: { created_at: "2026-10-20T10:00:05Z" } })]));
+    assert.ok(q("[data-sm-chat]"));
+    const [mine, theirs] = qa(".sm-turn");
+    assert.equal(mine.dataset.smRole, "user");
+    assert.equal(theirs.dataset.smRole, "assistant");
+    assert.ok(q(".sm-bubble", mine) && q(".sm-bubble", theirs));
+    assert.match(text(mine), /Where did my money go?/);
+    assert.match(text(q(".sm-bubble-time", mine)), /Oct 20, 2026/, "the time is timestamps.created_at, not a top-level created_at");
+    assert.match(text(q(".sm-bubble-head", theirs)), /Assistant.*AI-generated/);
+    assert.ok(q("[data-sm-action='continue-full']"), "a way on, in the full version");
+  });
+
+  it("a reply that failed says so with the backend's safe message; one still being prepared says that; neither shows a fake answer", async () => {
+    await open("/m/assistant/conversations/5", chat([message(51, "user", "Hi"), message(52, "assistant", "", { status: "failed", failure: { code: "ai_failed", message: "We couldn't answer that just now." } }), message(53, "user", "Again"), message(54, "assistant", "", { status: "processing" })]));
+    const [, failed, , pending] = qa(".sm-turn");
+    assert.equal(failed.dataset.smState, "failed");
+    assert.match(text(q("[data-sm-note='reply-failed']", failed)), /We couldn't answer that just now./);
+    assert.equal(q("[data-sm-action='send-message']"), null);
+    assert.equal(pending.dataset.smState, "pending");
+    assert.ok(q("[data-sm-note='reply-pending']", pending));
+    assert.equal(qa(".sm-ai-content", failed).length + qa(".sm-ai-content", pending).length, 0, "no answer text is made up");
+    assert.equal(qa("button", failed).length + qa("button", pending).length, 0, "no feedback on a reply that was not made");
+  });
+
+  it("replying and deleting stay closed: the notes say so, and nothing is sent", async () => {
+    await open("/m/assistant/conversations/5", chat([message(51, "user", "Hi"), message(52, "assistant", "Hello.")]));
+    const note = q("[data-sm-note='write-closed'][data-sm-write='ai.message']");
+    assert.match(text(note), /Replying isn't available in Mobile yet/);
+    assert.equal(qa("textarea").length, 0, "no input that looks like it would send");
+    assert.ok(api.calls.every((call) => call.method === "GET"));
+  });
+
+  it("the assistant lists conversations with the backend's message count and last activity, and offers the full version to ask in", async () => {
+    await open("/m/assistant", (call) => (call.path === "/ai/conversations" ? { body: envelope({ conversations: paginator([{ id: 5, title: "October spending", status: "active", message_count: 4, last_message_at: "2026-10-21T08:30:00Z", updated_at: "2026-10-20T10:00:00Z" }]) }) } : assistBackend()(call)));
+    const row = q("[data-sm-conversation='5']");
+    assert.match(text(row), /October spending/);
+    assert.match(text(row), /4 messages.*Oct 21, 2026/);
+    const ask = q("[data-sm-action='ask-full']");
+    assert.equal(ask.getAttribute("href"), "/dashboard/ai-assistant");
+    assert.equal(action("send-message").disabled, true);
+  });
+
+  it("the models read the real shapes and refuse nothing silently", async () => {
+    const { normalizeConversation, normalizeMessage } = await import("../src/mobile/models/assist.js");
+    assert.deepEqual(normalizeMessage(message(1, "assistant", "x", { status: "failed", failure: { message: "No." } })).state, "failed");
+    assert.equal(normalizeMessage(message(1, "assistant", "x")).createdAt, "2026-10-20T10:00:00Z");
+    assert.equal(normalizeMessage({ id: 1, role: "assistant", content: "x", created_at: "2026-10-01T00:00:00Z" }).createdAt, "2026-10-01T00:00:00Z", "the older flat shape still reads");
+    assert.equal(normalizeMessage(message(1, "system", "x")), null);
+    assert.deepEqual(normalizeConversation({ id: 3, message_count: 2, last_message_at: "2026-10-02T00:00:00Z", updated_at: "2026-10-01T00:00:00Z" }), { id: "3", title: null, updatedAt: "2026-10-02T00:00:00Z", messageCount: 2 });
+    assert.equal(normalizeConversation({ id: 3, message_count: -1 }).messageCount, null);
+  });
+});
+
 describe("receipts and voice", () => {
   it("lists both, and a capture ready for review opens its review with what SmartSpend read, never sending", async () => {
     await open("/m/captures");

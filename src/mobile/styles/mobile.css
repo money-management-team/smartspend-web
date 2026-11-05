@@ -3167,3 +3167,125 @@
 .sm-root .sm-an-foot {
   gap: 0.25rem;
 }
+
+/* =========================================================
+   Phase 6UI.5C1: the assistant's conversation and insights.
+   ========================================================= */
+
+/* ---- A conversation reads as a chat: yours at the end, the assistant's at the start ---- */
+.sm-root .sm-chat .sm-list {
+  gap: 1rem;
+}
+
+.sm-root .sm-chat .sm-list > li + li {
+  border-block-start: 0;
+}
+
+.sm-root .sm-chat .sm-ai-message,
+.sm-root .sm-chat .sm-turn {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0;
+  border: 0;
+}
+
+.sm-root .sm-turn.sm-ai-user {
+  justify-items: end;
+}
+
+.sm-root .sm-turn.sm-ai-assistant {
+  justify-items: start;
+}
+
+.sm-root .sm-bubble {
+  display: grid;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  max-inline-size: min(100%, 30rem);
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--sm-border);
+  border-radius: 1.25rem;
+  color: var(--sm-text);
+  background: var(--sm-surface);
+  box-shadow: var(--sm-shadow-xs);
+}
+
+.sm-root .sm-ai-assistant .sm-bubble {
+  max-inline-size: 100%;
+  border-end-start-radius: 0.375rem;
+}
+
+.sm-root .sm-ai-user .sm-bubble {
+  max-inline-size: 88%;
+  border-color: transparent;
+  border-end-end-radius: 0.375rem;
+  color: #ffffff;
+  background: linear-gradient(150deg, #2f6bf0, var(--sm-blue) 55%, #1d4ed8);
+  box-shadow: 0 8px 18px -10px rgba(37, 99, 235, 0.65);
+}
+
+.sm-root .sm-ai-user .sm-bubble .sm-text,
+.sm-root .sm-ai-user .sm-bubble .sm-ai-content {
+  color: #ffffff;
+}
+
+.sm-root .sm-bubble .sm-ai-content {
+  padding: 0;
+  background: transparent;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.sm-root .sm-bubble-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.5rem;
+  margin: 0;
+  color: var(--sm-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.sm-root .sm-assist-mark-small {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.sm-root .sm-bubble-time {
+  margin: 0;
+  padding-inline: 0.5rem;
+  color: var(--sm-muted);
+  font-size: 0.75rem;
+}
+
+.sm-root .sm-chat-foot {
+  gap: 0.5rem;
+}
+
+/* ---- Insights: each one a quiet panel of its own ---- */
+.sm-root [data-sm-section="insights"] .sm-list > li + li {
+  border-block-start: 0;
+  padding-block-start: 0.5rem;
+}
+
+.sm-root .sm-ai-insight {
+  align-items: flex-start;
+  padding: 0.875rem;
+  margin-inline: 0;
+  border-radius: var(--sm-radius-md);
+  background: var(--sm-surface-2);
+}
+
+.sm-root .sm-ai-insight .sm-row-title {
+  font-size: 1.0625rem;
+  line-height: 1.35;
+}
+
+.sm-root .sm-ai-insight .sm-chips-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}

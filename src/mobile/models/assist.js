@@ -51,13 +51,24 @@ const sourcesOf = (value) =>
 
 export const normalizeConversation = (raw) => {
   const id = isRecord(raw) ? idText(raw.id) : null;
-  return id ? { id, title: textOrNull(raw.title, 120), updatedAt: moment(raw.updated_at ?? raw.created_at) } : null;
+  // AiConversationResource: last_message_at is when it was last written to; message_count is only present when the backend counted.
+  return id ? { id, title: textOrNull(raw.title, 120), updatedAt: moment(raw.last_message_at ?? raw.updated_at ?? raw.created_at), messageCount: count(raw.message_count) } : null;
 };
 
 export const normalizeMessage = (raw) => {
   const id = isRecord(raw) ? idText(raw.id) : null;
   if (!id || !["user", "assistant"].includes(raw.role)) return null;
-  return { id, role: raw.role, content: textOrNull(raw.content, 8000) ?? "", sources: sourcesOf(raw.sources), createdAt: moment(raw.created_at) };
+  // AiMessageResource: the time is timestamps.created_at; status says whether the reply was made; a failed one carries a safe message.
+  const status = typeof raw.status === "string" ? raw.status.slice(0, 40) : null;
+  return {
+    id,
+    role: raw.role,
+    content: textOrNull(raw.content, 8000) ?? "",
+    sources: sourcesOf(raw.sources),
+    createdAt: moment(isRecord(raw.timestamps) ? raw.timestamps.created_at ?? raw.created_at : raw.created_at),
+    state: status === "failed" ? "failed" : status === "pending" || status === "processing" ? "pending" : "ready",
+    failure: status === "failed" && isRecord(raw.failure) ? textOrNull(raw.failure.message, 300) : null,
+  };
 };
 
 export const normalizeInsight = (raw) => {

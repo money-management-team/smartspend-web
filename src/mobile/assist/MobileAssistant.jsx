@@ -89,6 +89,10 @@ function Composer() {
         </div>
       </div>
       <p id={`${ids}-closed`} className="sm-draft-note" role="note" data-sm-note="write-closed" data-sm-write="ai.message"><LuInfo aria-hidden="true" /><span>{t("assist.sendClosed")}</span></p>
+      <Link className="sm-link-row" to={PATH.USER.AI_ASSISTANT} data-sm-action="ask-full">
+        <span>{t("assist.askFull")}</span>
+        <Chevron />
+      </Link>
       <MobileSheet open={guard.blocked} onClose={guard.stay} titleId={`${ids}-leave`} title={t("forms.discardTitle")}>
         <p className="sm-text">{t("assist.discardBody")}</p>
         <div className="sm-actions sm-leave-actions">
@@ -293,7 +297,12 @@ export default function MobileAssistant() {
               <Link className="sm-link-row" to={aiConversationPath(conversation.id)} state={{ from: MOBILE_AI }} data-sm-conversation={conversation.id}>
                 <span className="sm-row-main">
                   <span className="sm-row-title sm-user-text">{conversation.title ?? t("assist.untitledConversation")}</span>
-                  {conversation.updatedAt && <span className="sm-row-meta"><bdi>{formatMoment(conversation.updatedAt, locale)}</bdi></span>}
+                  {(conversation.messageCount !== null || conversation.updatedAt) && (
+                    <span className="sm-row-meta">
+                      {conversation.messageCount !== null && <>{t("assist.messageCount", { count: conversation.messageCount })}{conversation.updatedAt ? " · " : ""}</>}
+                      {conversation.updatedAt && <bdi>{formatMoment(conversation.updatedAt, locale)}</bdi>}
+                    </span>
+                  )}
                 </span>
                 <Chevron />
               </Link>
@@ -322,7 +331,8 @@ export default function MobileAssistant() {
 
 /* One conversation's messages, a server page at a time (oldest first, as the backend orders them). */
 export function MobileConversation() {
-  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const { t, i18n } = useTranslation(MOBILE_NAMESPACE);
+  const locale = localeOf(i18n);
   const { conversationId } = useParams();
   const valid = isAccountId(conversationId);
   const keyOf = useMemo(() => (page) => assistKeys.conversation(conversationId, page), [conversationId]);
@@ -337,28 +347,49 @@ export function MobileConversation() {
       {!valid ? (
         <ErrorPanel error={{ code: "NOT_FOUND" }} />
       ) : (
-        <div className="sm-card">
-          <PagedRead
-            name="messages"
-            keyOf={keyOf}
-            loaderOf={loaderOf}
-            build={buildMessages}
-            label={t("assist.messages")}
-            empty={t("assist.messagesEmpty")}
-            previousLabel={t("assist.earlier")}
-            nextLabel={t("assist.later")}
-            renderItem={(message) => (
-              <article className={`sm-ai-message sm-ai-${message.role}`} data-sm-role={message.role}>
-                <p className="sm-text sm-fine sm-muted">{t(`assist.role.${message.role}`)}{message.role === "assistant" && <> · <AiLabel /></>}</p>
-                <p className="sm-text sm-user-text sm-ai-content">{message.content}</p>
-                <Sources sources={message.sources} />
-                {message.role === "assistant" && <span className="sm-ai-tools"><FeedbackButton kind="message" id={message.id} /></span>}
-              </article>
-            )}
-          />
-          <p className="sm-text sm-muted sm-fine" role="note" data-sm-note="write-closed" data-sm-write="ai.message">{t("assist.replyClosed")}</p>
-          <DeleteConversation />
-        </div>
+        <>
+          <div className="sm-chat" data-sm-chat>
+            <PagedRead
+              name="messages"
+              keyOf={keyOf}
+              loaderOf={loaderOf}
+              build={buildMessages}
+              label={t("assist.messages")}
+              empty={t("assist.messagesEmpty")}
+              previousLabel={t("assist.earlier")}
+              nextLabel={t("assist.later")}
+              renderItem={(message) => (
+                <article className={`sm-ai-message sm-ai-${message.role} sm-turn`} data-sm-role={message.role} data-sm-state={message.state}>
+                  <div className="sm-bubble">
+                    {message.role === "assistant" ? (
+                      <p className="sm-bubble-head"><span className="sm-assist-mark sm-assist-mark-small" aria-hidden="true"><LuSparkles /></span><span>{t(`assist.role.${message.role}`)}</span><AiLabel /></p>
+                    ) : (
+                      <span className="sm-sr">{t(`assist.role.${message.role}`)}</span>
+                    )}
+                    {message.state === "failed" ? (
+                      <p className="sm-text sm-muted" data-sm-note="reply-failed">{message.failure ?? t("assist.replyFailed")}</p>
+                    ) : message.state === "pending" ? (
+                      <p className="sm-text sm-muted" role="status" data-sm-note="reply-pending">{t("assist.replyPending")}</p>
+                    ) : (
+                      <p className="sm-text sm-user-text sm-ai-content">{message.content}</p>
+                    )}
+                    <Sources sources={message.sources} />
+                    {message.role === "assistant" && message.state === "ready" && <span className="sm-ai-tools"><FeedbackButton kind="message" id={message.id} /></span>}
+                  </div>
+                  {message.createdAt && <p className="sm-bubble-time"><bdi>{formatMoment(message.createdAt, locale)}</bdi></p>}
+                </article>
+              )}
+            />
+          </div>
+          <div className="sm-card sm-chat-foot">
+            <p className="sm-draft-note" role="note" data-sm-note="write-closed" data-sm-write="ai.message"><LuInfo aria-hidden="true" /><span>{t("assist.replyClosed")}</span></p>
+            <Link className="sm-link-row" to={PATH.USER.AI_ASSISTANT} data-sm-action="continue-full">
+              <span>{t("assist.continueFull")}</span>
+              <Chevron />
+            </Link>
+            <DeleteConversation />
+          </div>
+        </>
       )}
     </section>
   );
