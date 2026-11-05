@@ -40,7 +40,8 @@ describe("Reports", () => {
     await open("/m/reports", () => ({ body: envelope({}) }));
     assert.equal(qa("[data-sm-report]").length, 10);
     assert.equal(qa("a[href='/m/exports']").length, 1);
-    assert.deepEqual(api.calls, []);
+    // The hub now shows the analytics (tests/mobileAnalytics.test.mjs): two documented report reads, both GET, nothing else.
+    assert.deepEqual(api.calls.map((call) => `${call.method} ${call.path}`).sort(), ["GET /reports/budgets", "GET /reports/overview"]);
   });
 
   it("a report asks for the range in the address and shows each currency on its own, never a total across them", async () => {

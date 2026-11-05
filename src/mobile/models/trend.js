@@ -37,9 +37,23 @@ const isSeriesKey = (key) => {
   return !NOT_SERIES.has(key) && !/(^|_)count$/.test(name) && !/(percentage|percent|rate)$/.test(name);
 };
 
+/*
+ * The backend's own trend shape (ReportService trendByCurrency): one row per currency with `labels` and
+ * `series: [{ name, data }]`, the data aligned with the labels. It is turned into points here so the rest of the
+ * reader sees one shape. A row that does not look like that is returned unchanged.
+ */
+function fromColumns(row) {
+  if (!isRecord(row) || !Array.isArray(row.labels) || !Array.isArray(row.series) || row.series.length === 0) return row;
+  if (!row.series.every((item) => isRecord(item) && typeof item.name === "string" && Array.isArray(item.data))) return row;
+  return {
+    currency_code: row.currency_code,
+    points: row.labels.map((label, index) => ({ label, ...Object.fromEntries(row.series.map((item) => [item.name, item.data[index]])) })),
+  };
+}
+
 function groupsOf(value) {
   if (Array.isArray(value)) {
-    const rows = value.filter(isRecord);
+    const rows = value.filter(isRecord).map(fromColumns);
     if (rows.some((row) => POINT_LIST_KEYS.some((key) => Array.isArray(row[key])))) return rows.map((row) => ({ currency: row.currency_code, points: POINT_LIST_KEYS.map((key) => row[key]).find(Array.isArray) ?? [] }));
     const byCurrency = new Map();
     for (const point of rows) {
