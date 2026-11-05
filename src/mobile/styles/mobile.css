@@ -315,7 +315,7 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding-block: 1.25rem 1.5rem;
+  padding-block: 1rem 1.75rem;
   padding-inline: calc(1.25rem + var(--sm-safe-start)) calc(1.25rem + var(--sm-safe-end));
 }
 
@@ -325,15 +325,15 @@
 
 .sm-root .sm-page {
   display: grid;
-  gap: 1.25rem;
+  gap: 1.5rem;
   max-width: 40rem;
   margin-inline: auto;
 }
 
 .sm-root .sm-card {
   display: grid;
-  gap: 0.875rem;
-  padding: 1.125rem;
+  gap: 1rem;
+  padding: 1.25rem;
   border: 1px solid var(--sm-border);
   border-radius: var(--sm-radius-lg);
   background: var(--sm-surface);
@@ -2113,7 +2113,7 @@
 .sm-root .sm-flow-net dd { margin: 0; }
 
 /* Accounts on Home: a row of tiles that scrolls sideways; the full list is one tap away. */
-.sm-root .sm-tile-row { display: flex; gap: 0.625rem; margin-inline: -1.125rem; padding: 0.125rem 1.125rem 0.25rem; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scroll-padding-inline: 1.125rem; scrollbar-width: none; }
+.sm-root .sm-tile-row { display: flex; gap: 0.625rem; margin-inline: -1.25rem; padding: 0.125rem 1.25rem 0.25rem; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; scroll-padding-inline: 1.25rem; scrollbar-width: none; }
 .sm-root .sm-tile-row::-webkit-scrollbar { display: none; }
 .sm-root .sm-tile-row > li { flex: none; inline-size: min(11.5rem, 70%); scroll-snap-align: start; }
 .sm-root .sm-account-tile { display: grid; align-content: space-between; gap: 0.75rem; block-size: 100%; min-height: 8.5rem; padding: 0.875rem; border: 1px solid var(--sm-border); border-radius: var(--sm-radius-md); color: var(--sm-text); background: var(--sm-surface); transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.12s ease; }
@@ -2315,3 +2315,111 @@
 .sm-root .sm-cal-bar .sm-cal-month { order: 0; flex: 1 1 8ch; }
 .sm-root .sm-cal-bar > .sm-button { border-color: transparent; }
 .sm-root .sm-add-choices-two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+/* =========================================================
+   Refinement pass (Phase 6UI.5A): breathing room and fewer equally loud elements.
+   The identity is unchanged (navy, blue, cyan, the same fonts and surfaces). What changes is how loud each
+   control is, how much air sits between blocks, and how scrolling rows signal that they scroll.
+   ========================================================= */
+
+/* Quiet round actions: a ghost until touched. Home's greeting, a list's refresh, and the planning overview's refresh
+   stay reachable at the full 44px but stop competing with the content (three bordered circles beside a name was the
+   loudest thing on Home). A pressed toggle (privacy) keeps its filled state so it still reads as on. */
+.sm-root .sm-home-head .sm-icon-button,
+.sm-root .sm-list-meta .sm-icon-button {
+  color: var(--sm-muted);
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.sm-root .sm-home-head .sm-icon-button:hover:not(:disabled),
+.sm-root .sm-list-meta .sm-icon-button:hover:not(:disabled) {
+  color: var(--sm-text);
+  background: var(--sm-surface-2);
+}
+
+.sm-root .sm-home-head .sm-icon-button[aria-pressed="true"] {
+  color: var(--sm-text);
+  background: var(--sm-surface-2);
+}
+
+.sm-root .sm-home-head .sm-icon-actions {
+  gap: 0;
+  margin-inline-end: -0.5rem;
+}
+
+/* Filter and period chips: unselected ones lose their outline and sit on a soft shadow, so one selected chip
+   stands out from a row of quiet ones instead of five equal outlines. */
+.sm-root .sm-segment-wrap .sm-segment-button {
+  border-color: transparent;
+  box-shadow: var(--sm-shadow-xs);
+}
+
+.sm-root .sm-segment-wrap .sm-segment-button[aria-pressed="true"] {
+  box-shadow: none;
+}
+
+/* Edge-to-edge chip rows that scroll fade at both ends. The fade is as wide as the row's own padding, so a chip
+   scrolled to either end is never covered, and one rule serves both writing directions. */
+.sm-root .sm-plan-filters .sm-segment-wrap,
+.sm-root .sm-home-period .sm-segment-wrap {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, #000 1.25rem, #000 calc(100% - 1.25rem), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, #000 1.25rem, #000 calc(100% - 1.25rem), transparent 100%);
+}
+
+/* Home: a little more air around the greeting and between the quick entries and the figures below. */
+.sm-root .sm-home-head {
+  padding-block-end: 0.25rem;
+}
+
+.sm-root .sm-home-quick {
+  gap: 0.75rem;
+}
+
+.sm-root .sm-home-quick .sm-add-section-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+/* Planning's overview: the progress of a few budgets and goals under their link reads as a line of its own, not as
+   a card inside a card inside a card. Rows keep their own height for touch, and a tap area wider than the text. */
+.sm-root .sm-plan-preview {
+  gap: 0.125rem;
+  margin-block: 0.125rem 0.5rem;
+}
+
+.sm-root .sm-plan-preview-row {
+  gap: 0.375rem;
+  padding: 0.5rem 0.5rem;
+  background: transparent;
+}
+
+.sm-root .sm-plan-preview-row:hover {
+  background: var(--sm-surface-2);
+}
+
+.sm-root .sm-plan-link {
+  padding-block: 0.75rem;
+}
+
+/* Forms: each field is its own group, with enough air between groups to tell where one ends. */
+.sm-root .sm-draft-form,
+.sm-root .sm-form-review {
+  gap: 1.125rem;
+}
+
+/* Sheets: the same rhythm as the screens. */
+.sm-root .sm-sheet {
+  gap: 1rem;
+}
+
+/* The Add sheet's "Other things to add" rows and note sit a little apart from the three main choices. */
+.sm-root .sm-add-section-label {
+  margin-block: 1rem 0.375rem;
+}
+
+/* A list's one line of context sits closer to the bar than to the first card, but not touching it. */
+.sm-root .sm-list-meta {
+  margin-block: -0.25rem;
+}
