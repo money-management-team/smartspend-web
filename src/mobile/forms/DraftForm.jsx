@@ -1,6 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router-dom";
+import { LuInfo } from "react-icons/lu";
+import { Link } from "react-router-dom";
 
 import { typeKey } from "../accounts/typeKey.js";
 import { sessionWorkspace } from "../data/readApi.js";
@@ -50,7 +51,6 @@ const MAX_FOR = (field) => (field.kind === "text" || field.kind === "textarea" ?
 export default function DraftForm({ workflow, ctx, choices, backTo, recordSummary }) {
   const { t, i18n } = useTranslation(MOBILE_NAMESPACE);
   const locale = i18n.resolvedLanguage?.startsWith("ar") ? "ar" : "en";
-  const navigate = useNavigate();
   const online = useOnline();
   const ids = useId();
   const full = useMemo(() => ({ ...ctx, accounts: choices.accounts, categories: choices.categories }), [ctx, choices.accounts, choices.categories]);
@@ -221,10 +221,6 @@ export default function DraftForm({ workflow, ctx, choices, backTo, recordSummar
 
   return (
     <form className="sm-draft-form" onSubmit={toReview} onFocusCapture={rememberFocus} noValidate data-sm-step="edit" data-sm-workflow={workflow.id}>
-      <div className="sm-closed sm-closed-compact" role="note" data-sm-note="draft-only">
-        <p className="sm-text sm-muted">{t("forms.draftOnly")}</p>
-      </div>
-
       {!online && <p className="sm-text sm-muted sm-fine" role="status" data-sm-note="offline-form">{t("forms.offline")}</p>}
       {choices.error && <ErrorPanel error={choices.error} onRetry={choices.retry} retrying={choices.retrying} compact />}
       {choices.stale && !choices.error && <StaleNotice onRetry={choices.retry} retrying={choices.retrying} />}
@@ -258,7 +254,8 @@ export default function DraftForm({ workflow, ctx, choices, backTo, recordSummar
 
       <div className="sm-actions sm-form-actions">
         <button type="submit" className="sm-button" data-sm-action="review">{t("forms.review")}</button>
-        <button type="button" className="sm-button sm-button-quiet" onClick={() => navigate(backTo)} data-sm-action="cancel">{t("forms.cancel")}</button>
+        {/* The one way out is the Back link above the form; a second Cancel would only repeat it. */}
+        <p className="sm-draft-note" role="note" data-sm-note="draft-only"><LuInfo aria-hidden="true" /><span>{t("forms.draftOnly")}</span></p>
       </div>
       {leaveSheet()}
     </form>
@@ -381,7 +378,7 @@ function Field({ field, id, label, value, values, ctx, error, onChange, display,
     control = (
       <>
         <span className="sm-amount-input">
-          <input {...common} className="sm-input" type="text" inputMode="decimal" dir="ltr" autoComplete="off" value={value ?? ""} onChange={(event) => onChange(field.name, event.target.value)} />
+          <input {...common} className="sm-input" type="text" inputMode="decimal" dir="ltr" autoComplete="off" placeholder="0.00" value={value ?? ""} onChange={(event) => onChange(field.name, event.target.value)} />
           <bdi dir="ltr" className="sm-amount-currency" aria-hidden={currency ? undefined : "true"}>{currency ?? "—"}</bdi>
         </span>
         {fill && <button type="button" className="sm-button sm-button-quiet sm-button-small" onClick={() => onChange(field.name, fill)} data-sm-action="fill">{t("forms.fillRemaining")}</button>}

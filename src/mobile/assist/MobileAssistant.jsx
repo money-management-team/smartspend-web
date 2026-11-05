@@ -1,4 +1,5 @@
 import { useId, useMemo, useState } from "react";
+import { LuArrowUp, LuInfo, LuSparkles } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 
@@ -66,22 +67,28 @@ function Composer() {
   const length = [...text].length;
 
   return (
-    <section className="sm-card" aria-labelledby={`${ids}-title`} data-sm-section="composer">
+    <section className="sm-card sm-composer" aria-labelledby={`${ids}-title`} data-sm-section="composer">
       <h2 id={`${ids}-title`} className="sm-card-title">{t("assist.askTitle")}</h2>
-      <div className="sm-chips-inline sm-prompts" role="group" aria-label={t("assist.suggestions")}>
+      <div className="sm-prompts" role="group" aria-label={t("assist.suggestions")}>
         {PROMPTS.map((prompt) => (
-          <button key={prompt} type="button" className="sm-chip sm-chip-button" onClick={() => setText(t(`assist.prompts.${prompt}`))} data-sm-prompt={prompt}>
-            {t(`assist.prompts.${prompt}`)}
+          <button key={prompt} type="button" className="sm-prompt" onClick={() => setText(t(`assist.prompts.${prompt}`))} data-sm-prompt={prompt}>
+            <LuSparkles aria-hidden="true" />
+            <span>{t(`assist.prompts.${prompt}`)}</span>
           </button>
         ))}
       </div>
-      <label className="sm-label" htmlFor={`${ids}-message`}>{t("assist.message")}</label>
-      <textarea id={`${ids}-message`} className="sm-input sm-textarea" dir="auto" rows={3} value={text} onChange={(event) => setText(event.target.value)} aria-describedby={`${ids}-count ${ids}-closed`} aria-invalid={length > MESSAGE_MAX ? "true" : undefined} />
-      <p id={`${ids}-count`} className={`sm-text sm-fine ${length > MESSAGE_MAX ? "sm-form-error" : "sm-muted"}`}>{t("assist.count", { count: length, max: MESSAGE_MAX })}</p>
-      <div className="sm-actions">
-        <button type="button" className="sm-button" disabled data-sm-action="send-message">{t("assist.send")}</button>
+      <div className="sm-composer-box">
+        <label className="sm-label sm-composer-label" htmlFor={`${ids}-message`}>{t("assist.message")}</label>
+        <textarea id={`${ids}-message`} className="sm-input sm-textarea" dir="auto" rows={3} value={text} onChange={(event) => setText(event.target.value)} aria-describedby={`${ids}-count ${ids}-closed`} aria-invalid={length > MESSAGE_MAX ? "true" : undefined} />
+        <div className="sm-composer-foot">
+          <p id={`${ids}-count`} className={`sm-text sm-fine ${length > MESSAGE_MAX ? "sm-form-error" : "sm-muted"}`}>{t("assist.count", { count: length, max: MESSAGE_MAX })}</p>
+          <button type="button" className="sm-button sm-button-small" disabled data-sm-action="send-message">
+            <LuArrowUp aria-hidden="true" />
+            <span>{t("assist.send")}</span>
+          </button>
+        </div>
       </div>
-      <p id={`${ids}-closed`} className="sm-text sm-muted sm-fine" role="note" data-sm-note="write-closed" data-sm-write="ai.message">{t("assist.sendClosed")}</p>
+      <p id={`${ids}-closed`} className="sm-draft-note" role="note" data-sm-note="write-closed" data-sm-write="ai.message"><LuInfo aria-hidden="true" /><span>{t("assist.sendClosed")}</span></p>
       <MobileSheet open={guard.blocked} onClose={guard.stay} titleId={`${ids}-leave`} title={t("forms.discardTitle")}>
         <p className="sm-text">{t("assist.discardBody")}</p>
         <div className="sm-actions sm-leave-actions">
@@ -229,8 +236,8 @@ export default function MobileAssistant() {
 
   return (
     <section className="sm-page" data-sm-screen="assistant" data-sm-state="ready" data-sm-consent={on ? "true" : "false"}>
-      <div className="sm-card">
-        <h2 className="sm-card-title">{t("assist.title")}</h2>
+      <div className="sm-card sm-assist-intro">
+        <h2 className="sm-card-title"><span className="sm-assist-mark" aria-hidden="true"><LuSparkles /></span>{t("assist.title")}</h2>
         <p className="sm-text sm-muted">{t(on ? "assist.intro" : "assist.off")}</p>
         {!on && (
           <Link className="sm-link-row" to={PATH.USER.AI_ASSISTANT}>

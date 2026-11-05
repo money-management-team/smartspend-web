@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { LuArrowLeftRight, LuBell, LuBellRing, LuCalendarCheck, LuChartColumn, LuLayoutTemplate, LuMessageCircle, LuScanLine, LuSearch, LuSparkles, LuUpload, LuWallet } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -26,6 +27,17 @@ function MoreLink({ to, title, hint, icon: Icon }) {
   );
 }
 
+/* A group of links: its label sits above one card, so four cards each with an inner title become labels over lists. */
+function MoreGroup({ title, children }) {
+  const id = useId();
+  return (
+    <section className="sm-more-group" aria-labelledby={id}>
+      <h2 id={id} className="sm-group-label">{title}</h2>
+      <div className="sm-card sm-group-card">{children}</div>
+    </section>
+  );
+}
+
 /*
  * More: Accounts and the other read-only pages (transfers, notifications, ...), the display choices that already exist elsewhere in
  * the app (theme, language) plus the presentation switch. The switch is how
@@ -51,39 +63,33 @@ export default function MobileMore() {
         <Chevron />
       </Link>
 
-      <div className="sm-card">
-        <h2 className="sm-card-title">{t("moreLinks.focus")}</h2>
+      <MoreGroup title={t("moreLinks.focus")}>
         <MoreLink to={MOBILE_ATTENTION} icon={LuBellRing} title={t("titles.attention")} hint={t("attentionCenter.moreHint")} />
         <MoreLink to={MOBILE_NOTIFICATIONS} icon={LuBell} title={t("moreLinks.notifications")} hint={t("moreLinks.notificationsHint")} />
         <MoreLink to={MOBILE_SEARCH} icon={LuSearch} title={t("moreLinks.search")} hint={t("moreLinks.searchHint")} />
-      </div>
+      </MoreGroup>
 
-      <div className="sm-card">
-        <h2 className="sm-card-title">{t("more.yourMoney")}</h2>
+      <MoreGroup title={t("more.yourMoney")}>
         <MoreLink to={MOBILE_ACCOUNTS} icon={LuWallet} title={t("more.accounts")} hint={t("more.accountsHint")} />
         <MoreLink to={MOBILE_TRANSFERS} icon={LuArrowLeftRight} title={t("moreLinks.transfers")} hint={t("moreLinks.transfersHint")} />
         <MoreLink to={MOBILE_REPORTS} icon={LuChartColumn} title={t("moreLinks.reports")} hint={t("moreLinks.reportsHint")} />
         <MoreLink to={MOBILE_IMPORTS} icon={LuUpload} title={t("moreLinks.imports")} hint={t("moreLinks.importsHint")} />
-      </div>
+      </MoreGroup>
 
-      <div className="sm-card">
-        <h2 className="sm-card-title">{t("moreLinks.capture")}</h2>
+      <MoreGroup title={t("moreLinks.capture")}>
         <MoreLink to={MOBILE_CAPTURES} icon={LuScanLine} title={t("moreLinks.captures")} hint={t("moreLinks.capturesHint")} />
         <MoreLink to={MOBILE_AI} icon={LuSparkles} title={t("moreLinks.assistant")} hint={t("moreLinks.assistantHint")} />
         <MoreLink to={MOBILE_WHATSAPP} icon={LuMessageCircle} title={t("moreLinks.whatsapp")} hint={t("moreLinks.whatsappHint")} />
-      </div>
+      </MoreGroup>
 
-      <div className="sm-card">
-        <h2 className="sm-card-title">{t("moreLinks.tools")}</h2>
+      <MoreGroup title={t("moreLinks.tools")}>
         <MoreLink to={MOBILE_REVIEW} icon={LuCalendarCheck} title={t("moreLinks.review")} hint={t("moreLinks.reviewHint")} />
         <MoreLink to={MOBILE_TEMPLATES} icon={LuLayoutTemplate} title={t("moreLinks.templates")} hint={t("moreLinks.templatesHint")} />
-      </div>
+      </MoreGroup>
 
-      <div className="sm-card">
-        <h2 className="sm-card-title">{t("more.appearance")}</h2>
-
+      <MoreGroup title={t("more.appearance")}>
         <DisplayChoices />
-      </div>
+      </MoreGroup>
 
       <InstallCard pwa={pwa} enabled={PWA_BUILD} />
 

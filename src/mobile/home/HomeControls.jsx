@@ -1,4 +1,5 @@
 import { useId, useState } from "react";
+import { LuCalendarDays, LuChevronDown } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 
 import { DASHBOARD_PERIODS } from "../data/readApi.js";
@@ -11,7 +12,8 @@ import MobileSheet from "../shell/MobileSheet.jsx";
  * Home's period: one of the periods GET /dashboard documents (docs/dashboard/api.md),
  * or a custom range of two real days in order. The figures for it are the
  * backend's; nothing is worked out here. Choosing one changes the address, so
- * Back returns to the previous period.
+ * Back returns to the previous period. One compact selector rather than a row
+ * of seven chips: a single control to scan, and nothing cut off at the edge.
  */
 export function PeriodPicker({ value, onChange }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
@@ -37,13 +39,16 @@ export function PeriodPicker({ value, onChange }) {
 
   return (
     <div className="sm-card sm-home-period" data-sm-section="period">
-      <div className="sm-segment sm-segment-wrap" role="group" aria-label={t("home.periodLabel")}>
-        {DASHBOARD_PERIODS.map((period) => (
-          <button key={period} type="button" className="sm-segment-button" aria-pressed={period === "custom" ? custom : !custom && value.period === period} onClick={() => pick(period)} data-sm-period={period}>
-            {t(`home.periods.${period}`)}
-          </button>
-        ))}
-      </div>
+      <label className="sm-period-select" data-sm-period-picker>
+        <span className="sm-sr">{t("home.periodLabel")}</span>
+        <LuCalendarDays className="sm-period-select-icon" aria-hidden="true" />
+        <select className="sm-period-select-input" value={custom ? "custom" : value.period} onChange={(event) => pick(event.target.value)}>
+          {DASHBOARD_PERIODS.map((period) => (
+            <option key={period} value={period} data-sm-period={period}>{t(`home.periods.${period}`)}</option>
+          ))}
+        </select>
+        <LuChevronDown className="sm-period-select-chevron" aria-hidden="true" />
+      </label>
       {custom && (
         <form className="sm-field-row sm-home-range" onSubmit={apply} noValidate>
           <div className="sm-field">

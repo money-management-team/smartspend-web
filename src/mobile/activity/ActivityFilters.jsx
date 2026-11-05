@@ -118,7 +118,7 @@ function FilterForm({ initial, choices, onApply, onCancel }) {
  * (and still needs Apply), Cancel closes without changing anything. There is
  * no text search because the endpoint has none.
  */
-export default function ActivityFilters({ open, onOpen, onClose, openerRef, filters, onApply, onRemove, onResetAll }) {
+export default function ActivityFilters({ open, onOpen, onClose, openerRef, filters, onApply, onRemove, onResetAll, meta = null }) {
   const { t, i18n } = useTranslation(MOBILE_NAMESPACE);
   const locale = i18n.resolvedLanguage?.startsWith("ar") ? "ar" : "en";
   const active = activeFilterKeys(filters);
@@ -159,6 +159,7 @@ export default function ActivityFilters({ open, onOpen, onClose, openerRef, filt
           <span>{active.length ? t("activity.filtersActive", { count: active.length }) : t("activity.filters")}</span>
         </button>
         {filters.sort !== DEFAULT_SORT && <span className="sm-chip">{t("filter.sortAsc")}</span>}
+        {meta}
       </div>
 
       {active.length > 0 && (

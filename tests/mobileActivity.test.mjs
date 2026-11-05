@@ -705,3 +705,13 @@ describe("Activity: after the person goes", () => {
   });
 });
 
+describe("Activity: toolbar", () => {
+  it("the filter button, the count and Refresh share one row", async () => {
+    await openActivity();
+    const toolbar = q(".sm-toolbar");
+    assert.ok(q("button[aria-haspopup='dialog']", toolbar), "the Filters button");
+    assert.match(q("[data-sm-count]", toolbar).textContent, /Showing 20 of 45/);
+    assert.ok(qa("button", toolbar).some((item) => /Refresh/.test(item.textContent)), "Refresh");
+    assert.equal(qa("[data-sm-count]").length, 1, "the count is said once");
+  });
+});

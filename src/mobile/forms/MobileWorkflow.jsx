@@ -50,14 +50,10 @@ function BackLink({ to, label }) {
   );
 }
 
+/* The page's title is the app bar's; only what the form is for is said here, as one quiet line. */
 function FlowHeader({ workflow }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
-  return (
-    <div className="sm-card sm-flow-head">
-      <h2 className="sm-card-title">{t(`forms.flows.${workflow.id}.title`)}</h2>
-      <p className="sm-text sm-muted">{t(`forms.flows.${workflow.id}.intro`)}</p>
-    </div>
-  );
+  return <p className="sm-text sm-muted sm-flow-intro">{t(`forms.flows.${workflow.id}.intro`)}</p>;
 }
 
 /* The record a change is about, as the backend sent it: what would be reversed, confirmed or archived. */

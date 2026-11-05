@@ -102,6 +102,37 @@ describe("App bar actions", () => {
     assert.equal(document.activeElement, display());
   });
 
+  it("a direct AR/EN switch shows the other language and switches at once", async () => {
+    await open("/m/activity");
+    const lang = () => q("[data-sm-action='bar-language']", bar());
+    assert.equal(q(".sm-bar-lang-mark", lang()).textContent, "ع", "in English it offers Arabic");
+    assert.equal(lang().textContent.includes("Switch to Arabic"), true, "named in words");
+    await click(lang());
+    await settle();
+    assert.equal(document.documentElement.dir, "rtl");
+    assert.equal(q(".sm-bar-lang-mark", lang()).textContent, "EN", "in Arabic it offers English");
+    assert.equal(lang().textContent.includes("التبديل إلى الإنجليزية"), true);
+    await click(lang());
+    await settle();
+    assert.equal(document.documentElement.dir, "ltr");
+    await i18n.changeLanguage("en");
+  });
+
+  it("the direct switch is left out where the bar has no room; the display sheet still has language", async () => {
+    const original = window.innerWidth;
+    Object.defineProperty(window, "innerWidth", { value: 320, configurable: true, writable: true });
+    try {
+      await open("/m");
+      assert.equal(q("[data-sm-action='bar-language']", bar()), null);
+      assert.ok(bell() && display(), "the other two actions stay");
+      await click(display());
+      await settle();
+      assert.ok(qa("button", q(".sm-sheet")).some((item) => item.textContent.trim() === "العربية"));
+    } finally {
+      Object.defineProperty(window, "innerWidth", { value: original, configurable: true, writable: true });
+    }
+  });
+
   it("the bell opens Notifications", async () => {
     await open("/m");
     await click(bell());

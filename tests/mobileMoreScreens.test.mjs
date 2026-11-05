@@ -209,6 +209,17 @@ describe("Calendar", () => {
   });
 });
 
+describe("More: grouping", () => {
+  it("links sit in labelled groups, one card each, instead of a card with a title per group", async () => {
+    await open("/m/more", { notifications: [] });
+    const groups = qa(".sm-more-group");
+    assert.deepEqual(groups.map((group) => group.querySelector(".sm-group-label").textContent), ["Today", "Your money", "Capture and assistant", "Tools", "Appearance"]);
+    assert.equal(groups.every((group) => group.getAttribute("aria-labelledby") === group.querySelector(".sm-group-label").id), true);
+    assert.equal(qa(".sm-more-group a.sm-more-link").length, 12, "every link is still there");
+    assert.ok(q(".sm-more-group .sm-segment"), "the display choices are in the Appearance group");
+  });
+});
+
 describe("Ways in", () => {
   it("Planning links to the Mobile debts and calendar; More to transfers and notifications", async () => {
     await open("/m/planning", () => ({ body: { status: true, data: { alerts: [], budgets: { data: [], total: 0, current_page: 1, last_page: 1, per_page: 20, from: null, to: null } } } }));

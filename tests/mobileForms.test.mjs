@@ -195,6 +195,19 @@ afterEach(async () => {
 });
 
 describe("a new expense", () => {
+  it("has one heading (the bar's), one way out, and its note beside the action it explains", async () => {
+    await open("/m/add/expense");
+    assert.equal(q(".sm-bar-title").textContent, "Add an expense");
+    assert.equal(qa("h2", main()).some((heading) => heading.textContent.trim() === "Add an expense"), false, "the title is not repeated in the page");
+    assert.ok(q(".sm-flow-intro"), "what the form is for, as one line");
+    assert.equal(qa("a.sm-back").length, 1, "one Back link");
+    assert.equal(action("cancel"), null, "no second way out that repeats Back");
+    const note = q("[data-sm-note='draft-only']");
+    assert.ok(note.closest(".sm-form-actions"), "the note sits with the Review button");
+    assert.match(text(note), /Draft only. Mobile doesn't send this yet, so nothing is recorded/);
+    assert.equal(action("review").disabled, false);
+  });
+
   it("offers only accounts money can move with, and only expense categories", async () => {
     await open("/m/add/expense");
     assert.equal(q("[data-sm-screen='workflow']").dataset.smWorkflow, "expense");

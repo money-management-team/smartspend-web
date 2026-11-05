@@ -90,9 +90,10 @@ export default function MobileActivity() {
     </Link>
   );
 
-  const toolbar = (
+  // The count and Refresh share the Filters button's row once there is a list to count.
+  const toolbar = (meta = null) => (
     <>
-    <ActivityFilters open={sheetOpen} onOpen={() => setSheetOpen(true)} onClose={() => setSheetOpen(false)} openerRef={openerRef} filters={filters} onApply={apply} onRemove={remove} onResetAll={() => setFilters({ ...filters, type: "", status: "", account_id: "", category_id: "", date_from: "", date_to: "" })} />
+    <ActivityFilters meta={meta} open={sheetOpen} onOpen={() => setSheetOpen(true)} onClose={() => setSheetOpen(false)} openerRef={openerRef} filters={filters} onApply={apply} onRemove={remove} onResetAll={() => setFilters({ ...filters, type: "", status: "", account_id: "", category_id: "", date_from: "", date_to: "" })} />
     <SavedViews scope="activity" params={Object.fromEntries(filtersToSearchParams(filters))} path={MOBILE_ACTIVITY} />
     </>
   );
@@ -100,7 +101,7 @@ export default function MobileActivity() {
   if (list.loading) {
     return (
       <section className="sm-page" data-sm-screen="activity" data-sm-state="loading" aria-busy="true">
-        {toolbar}
+        {toolbar()}
         <Skeleton lines={6} label={t("activity.loading")} />
       </section>
     );
@@ -109,7 +110,7 @@ export default function MobileActivity() {
   if (list.failed) {
     return (
       <section className="sm-page" data-sm-screen="activity" data-sm-state="error">
-        {toolbar}
+        {toolbar()}
         <ErrorPanel error={list.error ?? MALFORMED} onRetry={list.reload} retrying={list.refreshing} />
       </section>
     );
@@ -118,7 +119,7 @@ export default function MobileActivity() {
   if (list.items.length === 0) {
     return (
       <section className="sm-page" data-sm-screen="activity" data-sm-state={filtered ? "empty-filtered" : "empty"}>
-        {toolbar}
+        {toolbar()}
         {list.stale && <StaleNotice error={list.error} updatedAt={list.updatedAt} onRetry={list.reload} retrying={list.refreshing} />}
         <div className="sm-card">
           <h2 className="sm-card-title">{t(filtered ? "activity.emptyFiltered.title" : "activity.empty.title")}</h2>
@@ -135,9 +136,7 @@ export default function MobileActivity() {
 
   return (
     <section className="sm-page" data-sm-screen="activity" data-sm-state={list.stale ? "stale" : "ready"} data-sm-stale={list.stale ? "true" : undefined} data-sm-sort={filters.sort === DEFAULT_SORT ? "newest" : "oldest"}>
-      {toolbar}
-
-      <ListMeta shown={list.items.length} text={list.total != null ? t("activity.count", { shown: list.items.length, total: list.total }) : null} refreshing={list.refreshing} onRefresh={refresh} />
+      {toolbar(<ListMeta shown={list.items.length} text={list.total != null ? t("activity.count", { shown: list.items.length, total: list.total }) : null} refreshing={list.refreshing} onRefresh={refresh} />)}
 
       {list.stale && <StaleNotice error={list.error} updatedAt={list.updatedAt} onRetry={list.reload} retrying={list.refreshing} />}
 

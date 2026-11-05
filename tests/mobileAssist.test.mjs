@@ -89,6 +89,11 @@ describe("the assistant", () => {
     await click(q("[data-sm-prompt='budgets']"));
     assert.equal(q("[data-sm-section='composer'] textarea").value, "Which budgets am I close to?");
     const send = action("send-message");
+    assert.equal(qa(".sm-prompt", q("[data-sm-section='composer']")).length, 4, "four suggestions, as rows");
+    assert.ok(send.closest(".sm-composer-foot"), "Send sits in the composer's foot, beside the count");
+    assert.ok(q("#" + send.closest(".sm-composer-box").querySelector("textarea").id), "the field is inside the composer box");
+    assert.equal(q("[data-sm-note='write-closed'][data-sm-write='ai.message']").classList.contains("sm-draft-note"), true);
+    assert.equal(q("[data-sm-section='conversations'] .sm-row-title, [data-sm-section='conversations'] [data-sm-conversation]") !== null, true, "nothing is invented: conversations are only the backend's");
     assert.equal(send.disabled, true);
     await click(send);
     assert.ok(api.calls.every((call) => call.method === "GET"));

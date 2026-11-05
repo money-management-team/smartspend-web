@@ -42,14 +42,23 @@ afterEach(async () => {
 });
 
 describe("Home", () => {
+  it("the period is one compact selector with every documented period, not a row of chips", async () => {
+    await open("/m", healthyBackend());
+    const select = q("[data-sm-period-picker] select");
+    assert.deepEqual(qa("option", select).map((option) => option.value), ["today", "week", "month", "quarter", "year", "all", "custom"]);
+    assert.equal(select.value, "month");
+    assert.equal(q("[data-sm-period-picker]").textContent.includes("Period"), true, "it has a name for assistive technology");
+    assert.equal(qa(".sm-segment-wrap", q("[data-sm-section='period']")).length, 0, "no row of chips to scroll");
+  });
+
   it("a period changes the address and asks the dashboard for that period; a custom range sends both days", async () => {
     await open("/m", healthyBackend());
-    await click(q("[data-sm-period='week']"));
+    await change(q("[data-sm-period-picker] select"), "week");
     await settle();
     assert.equal(location(), "/m?period=week");
     assert.equal(api.calls.filter((call) => call.path === "/dashboard").at(-1).query.period, "week");
 
-    await click(q("[data-sm-period='custom']"));
+    await change(q("[data-sm-period-picker] select"), "custom");
     await change(qa("[data-sm-section='period'] input[type='date']")[0], "2026-10-01");
     await change(qa("[data-sm-section='period'] input[type='date']")[1], "2026-10-15");
     await submit(q("[data-sm-section='period'] form"));

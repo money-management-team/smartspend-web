@@ -20,6 +20,8 @@ const BASE_MESSAGES = {
     bar: {
       logo: "SmartSpend",
       notifications: "Notifications",
+      toArabic: "Switch to Arabic",
+      toEnglish: "Switch to English",
       display: "Language and theme",
       displayTitle: "Display",
       displayHint: "Choose the language and theme for this device.",
@@ -614,6 +616,8 @@ const BASE_MESSAGES = {
     bar: {
       logo: "SmartSpend",
       notifications: "الإشعارات",
+      toArabic: "التبديل إلى العربية",
+      toEnglish: "التبديل إلى الإنجليزية",
       display: "اللغة والسمة",
       displayTitle: "المظهر",
       displayHint: "اختر لغة هذا الجهاز وسمته.",
