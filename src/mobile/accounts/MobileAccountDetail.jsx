@@ -12,12 +12,14 @@ import { formatDay } from "../money/format.js";
 import Money from "../money/Money.jsx";
 import { buildAccountDetail } from "../models/accounts.js";
 import { buildMovementPage } from "../models/movements.js";
-import { MOBILE_ACCOUNTS, activityDetailPath } from "../navigation.js";
+import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, activityDetailPath } from "../navigation.js";
 import { useAuthContext } from "../../contexts/auth/useAuthContext";
 import Chevron from "../ui/Chevron.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
 import StaleNotice from "../ui/StaleNotice.jsx";
+import TypeIcon from "../activity/TypeIcon.jsx";
+import AccountIcon from "./AccountIcon.jsx";
 import { typeKey } from "./typeKey.js";
 
 const MALFORMED = Object.freeze({ code: "MALFORMED_RESPONSE" });
@@ -71,16 +73,19 @@ function MovementsPage({ account, page, last, onMore, locale, timeZone }) {
         <ul className="sm-list" data-sm-page={page} ref={listRef} tabIndex={-1} aria-label={t("movements.pageLabel", { page })}>
           {rows.map((row) => {
             const date = formatDay(row.occurredAt, locale, timeZone);
-            const kind = row.isReversal ? "reversal" : row.type === "transfer" ? (row.direction === "in" ? "transferIn" : "transferOut") : typeKey(row.type);
-            const label = row.title ?? t(`movements.kind.${kind}`, { defaultValue: t(`types.${typeKey(row.type)}`) });
+            // Only a reversal and a transfer leg have their own movement wording; every other kind is the type's own name.
+            const special = row.isReversal ? "reversal" : row.type === "transfer" ? (row.direction === "in" ? "transferIn" : "transferOut") : null;
+            const kindLabel = special ? t(`movements.kind.${special}`) : t(`types.${typeKey(row.type)}`);
+            const label = row.title ?? kindLabel;
 
             return (
               <li key={row.id} data-sm-direction={row.direction}>
-                <Link className="sm-row" to={activityDetailPath(row.id)} state={{ from: `${location.pathname}${location.search}` }}>
+                <Link className="sm-row sm-tx" to={activityDetailPath(row.id)} state={{ from: `${location.pathname}${location.search}` }} data-sm-direction={row.direction === "in" ? "income" : row.direction === "out" ? "expense" : undefined}>
+                <TypeIcon transaction={{ type: row.type, isReversal: row.isReversal, direction: row.direction === "in" ? "income" : row.direction === "out" ? "expense" : null }} />
                 <span className="sm-row-main">
                   <span className="sm-row-title sm-user-text">{label}</span>
                   <span className="sm-row-meta">
-                    {t(`movements.kind.${kind}`, { defaultValue: t(`types.${typeKey(row.type)}`) })}
+                    {kindLabel}
                     {row.counterpart ? <> · <bdi dir="auto">{row.counterpart}</bdi></> : null}
                     {date ? <> · <bdi>{date}</bdi></> : null}
                     {row.reversed ? ` · ${t("movements.reversed")}` : ""}
@@ -110,6 +115,7 @@ function MovementsPage({ account, page, last, onMore, locale, timeZone }) {
 
 function Movements({ account, locale, timeZone }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
+  const location = useLocation();
   const [pages, setPages] = useState(1);
 
   // Without a workspace or a currency the lines of a movement cannot be matched to this account.
@@ -124,7 +130,11 @@ function Movements({ account, locale, timeZone }) {
 
   return (
     <section className="sm-card" aria-labelledby="sm-movements-title">
-      <h2 id="sm-movements-title" className="sm-card-title">{t("movements.title")}</h2>
+      <div className="sm-card-head">
+        <h2 id="sm-movements-title" className="sm-card-title">{t("movements.title")}</h2>
+        {/* Activity already filters by account; this opens it for this one. A link, not a request: nothing is read until it opens. */}
+        <Link className="sm-card-link" to={`${MOBILE_ACTIVITY}?${new URLSearchParams({ account_id: account.id })}`} state={{ from: `${location.pathname}${location.search}` }} data-sm-action="account-activity">{t("accountView.allActivity")}</Link>
+      </div>
       {Array.from({ length: pages }, (_, index) => (
         <MovementsPage key={index + 1} account={account} page={index + 1} last={index + 1 === pages} onMore={() => setPages(index + 2)} locale={locale} timeZone={timeZone} />
       ))}
@@ -147,12 +157,18 @@ function Detail({ account, resource, locale, timeZone }) {
 
       {resource.stale && <StaleNotice error={resource.error} updatedAt={resource.updatedAt} onRetry={resource.reload} retrying={resource.refreshing} />}
 
-      <section className="sm-card sm-hero" aria-labelledby="sm-account-name">
-        <h2 id="sm-account-name" className="sm-card-title sm-user-text">{name}</h2>
-        <p className="sm-hero-note">
-          {t(`types.${typeKey(account.isGoal ? "savings_goal" : account.type)}`)}
-          {account.status ? ` · ${t(account.archived ? "detail.statusArchived" : "detail.statusActive")}` : ""}
-        </p>
+      <section className="sm-card sm-hero sm-detail-hero" aria-labelledby="sm-account-name">
+        <div className="sm-detail-head">
+          <AccountIcon account={account} />
+          <div className="sm-detail-id">
+            <h2 id="sm-account-name" className="sm-card-title sm-user-text">{name}</h2>
+            <p className="sm-chips-inline">
+              <span className="sm-chip">{t(`types.${typeKey(account.isGoal ? "savings_goal" : account.type)}`)}</span>
+              {account.status && <span className="sm-chip" data-sm-account-status={account.archived ? "archived" : "active"}>{t(account.archived ? "detail.statusArchived" : "detail.statusActive")}</span>}
+              {account.isDefault === true && <span className="sm-chip">{t("detail.default")}</span>}
+            </p>
+          </div>
+        </div>
         <p className="sm-balance-label">{t("detail.balance")}</p>
         <Money className="sm-hero-money" value={account.balance} currency={account.currency} />
         <p className="sm-hero-note">{t("detail.balanceNote")}</p>

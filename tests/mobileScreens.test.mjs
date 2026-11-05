@@ -589,6 +589,53 @@ describe("Account details", () => {
     assert.ok(q("a[href='/dashboard/accounts/5']", changes), "the way to do it is the full version");
   });
 
+  it("the hero names what the account is: its icon, its type, its state and whether it is the default", async () => {
+    await open("/m/accounts/5", backend({ account: { is_default: true } }));
+    const hero = q("section[aria-labelledby='sm-account-name']");
+
+    assert.ok(q(".sm-tile-icon", hero), "an icon for its kind");
+    assert.equal(qa(".sm-chip", hero).length, 3);
+    assert.equal(q("[data-sm-account-status='active']", hero).textContent, "Active");
+    assert.ok(qa(".sm-chip", hero).some((chip) => chip.textContent === "Default account"));
+    assert.deepEqual(spoken(hero), ["minus 25.50 Israeli New Shekel"], "still one figure in the hero: the confirmed balance");
+  });
+
+  it("movement kinds are looked up where they exist: no missing-translation warning for a plain expense or income", async () => {
+    const warnings = [];
+    const original = console.warn;
+    console.warn = (...args) => { warnings.push(args.map(String).join(" ")); };
+    try {
+      await open("/m/accounts/5", backend());
+      assert.equal(qa("li[data-sm-direction]", q("section[aria-labelledby='sm-movements-title']")).length, 2);
+      assert.deepEqual(warnings.filter((line) => /Missing translation/i.test(line)), []);
+    } finally {
+      console.warn = original;
+    }
+  });
+
+  it("an archived account says so in its hero", async () => {
+    await open("/m/accounts/5", backend({ account: { status: "archived", archived_at: "2026-06-01T00:00:00Z" } }));
+    assert.equal(q("[data-sm-account-status='archived']").textContent, "Archived");
+  });
+
+  it("'All activity' opens Activity for this account, and asks for nothing until it does", async () => {
+    await open("/m/accounts/5", backend());
+    const link = q("[data-sm-action='account-activity']");
+
+    assert.equal(link.getAttribute("href"), "/m/activity?account_id=5");
+    assert.equal(link.textContent, "All activity");
+    assert.deepEqual(api.summary().sort(), ["GET /accounts/5", "GET /transactions"], "a link is not a request");
+  });
+
+  it("movements carry the direction as an icon and in the amount, and still link to the transaction", async () => {
+    await open("/m/accounts/5", backend());
+    const rows = qa("a.sm-tx", q("section[aria-labelledby='sm-movements-title']"));
+
+    assert.deepEqual(rows.map((row) => row.dataset.smDirection), ["expense", "income"]);
+    assert.equal(rows.every((row) => q(".sm-tx-icon", row) !== null), true);
+    assert.equal(rows[0].getAttribute("href"), "/m/activity/1");
+  });
+
   it("never leaks one account's figures into another's page while it loads", async () => {
     let release;
     await open("/m/accounts/5", backend());

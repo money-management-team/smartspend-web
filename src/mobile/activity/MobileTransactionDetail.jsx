@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { LuArrowRightLeft, LuCircleHelp, LuClock, LuPencilLine, LuUndo2 } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useParams } from "react-router-dom";
 import DraftLinks from "../forms/DraftLinks.jsx";
@@ -13,7 +14,7 @@ import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { formatMoment } from "../money/format.js";
 import Money from "../money/Money.jsx";
 import { buildTransactionDetail } from "../models/activity.js";
-import { MOBILE_ACTIVITY, accountDetailPath, activityDetailPath, backPathFrom, backStateFrom } from "../navigation.js";
+import { MOBILE_ACTIVITY, accountDetailPath, activityDetailPath, backPathFrom, backStateFrom, transferDetailPath } from "../navigation.js";
 import Chevron from "../ui/Chevron.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
@@ -34,6 +35,16 @@ function Fact({ label, children }) {
   );
 }
 
+/* One line about a transaction's situation: what it reverses, replaces or is part of. A note, never a button. */
+function NoteRow({ icon: Icon, note, children }) {
+  return (
+    <p className="sm-tx-note" role="note" data-sm-note={note}>
+      <Icon aria-hidden="true" />
+      <span>{children}</span>
+    </p>
+  );
+}
+
 function Detail({ transaction, resource, backTo, backState, locale, timeZone }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const location = useLocation();
@@ -48,6 +59,9 @@ function Detail({ transaction, resource, backTo, backState, locale, timeZone }) 
   const title = transaction.title ?? kind;
   const knownStatus = transaction.statusKnown;
   const notPosted = transaction.status && transaction.status !== "posted" && !transaction.reversed && knownStatus;
+  const accountNames = transaction.accounts.map((account) => account.name).filter(Boolean);
+  const hasRecord = Boolean(moment(transaction.postedAt) || transaction.source || transaction.creatorName || transaction.transferId || transaction.reversalOfId || (transaction.relatedId && !transaction.isReversal));
+  const hasNotes = Boolean(transaction.reversed || transaction.isReversal || (transaction.relatedId && !transaction.isReversal) || (transaction.isTransfer && !transaction.isReversal) || notPosted || !knownStatus);
 
   return (
     <section className="sm-page" data-sm-screen="transaction" data-sm-transaction={transaction.id} data-sm-status={transaction.status ?? "none"} data-sm-state={resource.stale ? "stale" : "ready"} data-sm-stale={resource.stale ? "true" : undefined}>
@@ -58,7 +72,7 @@ function Detail({ transaction, resource, backTo, backState, locale, timeZone }) 
 
       {resource.stale && <StaleNotice error={resource.error} updatedAt={resource.updatedAt} onRetry={resource.reload} retrying={resource.refreshing} />}
 
-      <section className="sm-card sm-hero" aria-labelledby="sm-tx-title">
+      <section className="sm-card sm-hero sm-detail-hero" aria-labelledby="sm-tx-title">
         <div className="sm-tx-head">
           <TypeIcon transaction={transaction} />
           <h2 id="sm-tx-title" className="sm-card-title sm-user-text">{title}</h2>
@@ -74,38 +88,30 @@ function Detail({ transaction, resource, backTo, backState, locale, timeZone }) 
           <Money className="sm-hero-money" plus={transaction.direction === "income"} value={transaction.amount} currency={transaction.currency} />
           {transaction.reversed && <span className="sm-sr"> {t("status.reversed")}</span>}
         </span>
-        {transaction.occurredAt && moment(transaction.occurredAt) && <p className="sm-hero-note">{moment(transaction.occurredAt)}</p>}
+        {(moment(transaction.occurredAt) || accountNames.length > 0) && (
+          <p className="sm-hero-note">
+            {moment(transaction.occurredAt)}
+            {moment(transaction.occurredAt) && accountNames.length > 0 ? " · " : ""}
+            {/* Each name is its own isolate and the arrow sits in the page's own direction, so it points from the source to the destination in either language. */}
+            {accountNames.map((name, index) => (
+              <span key={`${name}:${index}`}>
+                {index > 0 ? (locale === "ar" ? " ← " : " → ") : ""}
+                <bdi dir="auto">{name}</bdi>
+              </span>
+            ))}
+          </p>
+        )}
       </section>
 
-      {transaction.reversed && (
-        <div className="sm-card" role="note" data-sm-note="reversed">
-          <p className="sm-text">{t("tx.reversedNote")}</p>
-        </div>
-      )}
-      {transaction.isReversal && (
-        <div className="sm-card" role="note" data-sm-note="reversal">
-          <p className="sm-text">{t("tx.reversalNote")} {transaction.reversalOfId && link(transaction.reversalOfId)}</p>
-        </div>
-      )}
-      {transaction.relatedId && !transaction.isReversal && (
-        <div className="sm-card" role="note" data-sm-note="correction">
-          <p className="sm-text">{t("tx.correctionNote")} {link(transaction.relatedId)}</p>
-        </div>
-      )}
-      {transaction.isTransfer && !transaction.isReversal && (
-        <div className="sm-card" role="note" data-sm-note="transfer">
-          <p className="sm-text">{t("tx.transferNote")}</p>
-        </div>
-      )}
-      {notPosted && (
-        <div className="sm-card" role="note" data-sm-note="not-posted">
-          <p className="sm-text">{t("tx.notPostedNote")}</p>
-        </div>
-      )}
-      {!knownStatus && (
-        <div className="sm-card" role="note" data-sm-note="unknown-status">
-          <p className="sm-text">{t("tx.unknownStatusNote")}</p>
-        </div>
+      {hasNotes && (
+        <section className="sm-card sm-tx-notes" aria-label={t("txView.notes")}>
+          {transaction.reversed && <NoteRow icon={LuUndo2} note="reversed">{t("tx.reversedNote")}</NoteRow>}
+          {transaction.isReversal && <NoteRow icon={LuUndo2} note="reversal">{t("tx.reversalNote")} {transaction.reversalOfId && link(transaction.reversalOfId)}</NoteRow>}
+          {transaction.relatedId && !transaction.isReversal && <NoteRow icon={LuPencilLine} note="correction">{t("tx.correctionNote")} {link(transaction.relatedId)}</NoteRow>}
+          {transaction.isTransfer && !transaction.isReversal && <NoteRow icon={LuArrowRightLeft} note="transfer">{t("tx.transferNote")}</NoteRow>}
+          {notPosted && <NoteRow icon={LuClock} note="not-posted">{t("tx.notPostedNote")}</NoteRow>}
+          {!knownStatus && <NoteRow icon={LuCircleHelp} note="unknown-status">{t("tx.unknownStatusNote")}</NoteRow>}
+        </section>
       )}
 
       <section className="sm-card" aria-labelledby="sm-tx-facts">
@@ -131,15 +137,30 @@ function Detail({ transaction, resource, backTo, backState, locale, timeZone }) 
           {transaction.description && <Fact label={t("tx.description")}><bdi className="sm-user-text">{transaction.description}</bdi></Fact>}
           {transaction.referenceNumber && <Fact label={t("tx.reference")}><bdi dir="ltr">{transaction.referenceNumber}</bdi></Fact>}
           {moment(transaction.occurredAt) && <Fact label={t("tx.date")}><bdi>{moment(transaction.occurredAt)}</bdi></Fact>}
-          {moment(transaction.postedAt) && <Fact label={t("tx.posted")}><bdi>{moment(transaction.postedAt)}</bdi></Fact>}
-          {transaction.source && <Fact label={t("tx.source")}>{transaction.source.replace(/_/g, " ")}</Fact>}
-          {transaction.creatorName && <Fact label={t("tx.creator")}><bdi className="sm-user-text">{transaction.creatorName}</bdi></Fact>}
           {moment(transaction.reversedAt) && <Fact label={t("tx.reversedAt")}><bdi>{moment(transaction.reversedAt)}</bdi></Fact>}
           {transaction.reversalReason && <Fact label={t("tx.reversalReason")}><bdi className="sm-user-text">{transaction.reversalReason}</bdi></Fact>}
-          {transaction.transferId && <Fact label={t("tx.transfer")}><bdi dir="ltr">#{transaction.transferId}</bdi></Fact>}
-          {transaction.reversalOfId && <Fact label={t("tx.reversalOf")}>{link(transaction.reversalOfId)}</Fact>}
-          {transaction.relatedId && !transaction.isReversal && <Fact label={t("tx.replaces")}>{link(transaction.relatedId)}</Fact>}
         </dl>
+        {hasRecord && (
+          <details className="sm-more-details" data-sm-section="record">
+            <summary>{t("txView.more")}</summary>
+            <dl className="sm-stats sm-stats-stacked">
+              {moment(transaction.postedAt) && <Fact label={t("tx.posted")}><bdi>{moment(transaction.postedAt)}</bdi></Fact>}
+              {transaction.source && <Fact label={t("tx.source")}>{transaction.source.replace(/_/g, " ")}</Fact>}
+              {transaction.creatorName && <Fact label={t("tx.creator")}><bdi className="sm-user-text">{transaction.creatorName}</bdi></Fact>}
+              {transaction.transferId && (
+                <Fact label={t("tx.transfer")}>
+                  {isAccountId(transaction.transferId) ? (
+                    <Link className="sm-note-link" to={transferDetailPath(transaction.transferId)} state={{ from: `${location.pathname}${location.search}` }}><bdi dir="ltr">#{transaction.transferId}</bdi></Link>
+                  ) : (
+                    <bdi dir="ltr">#{transaction.transferId}</bdi>
+                  )}
+                </Fact>
+              )}
+              {transaction.reversalOfId && <Fact label={t("tx.reversalOf")}>{link(transaction.reversalOfId)}</Fact>}
+              {transaction.relatedId && !transaction.isReversal && <Fact label={t("tx.replaces")}>{link(transaction.relatedId)}</Fact>}
+            </dl>
+          </details>
+        )}
       </section>
 
       {transaction.entries.length > 0 && (
@@ -150,7 +171,13 @@ function Detail({ transaction, resource, backTo, backState, locale, timeZone }) 
             {transaction.entries.map((entry) => (
               <li key={entry.key} className="sm-row sm-row-static" data-sm-entry={entry.key}>
                 <span className="sm-row-main">
-                  <span className="sm-row-title sm-user-text">{entry.accountName ?? (entry.accountId ? t("filter.accountId", { id: entry.accountId }) : "—")}</span>
+                  <span className="sm-row-title sm-user-text">
+                    {isAccountId(entry.accountId) ? (
+                      <Link to={accountDetailPath(entry.accountId)} state={{ from: `${location.pathname}${location.search}` }}>{entry.accountName ?? t("filter.accountId", { id: entry.accountId })}</Link>
+                    ) : (
+                      entry.accountName ?? (entry.accountId ? t("filter.accountId", { id: entry.accountId }) : "—")
+                    )}
+                  </span>
                   <span className="sm-row-meta">{entry.role ? (ROLES.includes(entry.role) ? t(`tx.role.${entry.role}`) : entry.role.replace(/_/g, " ")) : "—"}</span>
                 </span>
                 <span className="sm-row-amount">

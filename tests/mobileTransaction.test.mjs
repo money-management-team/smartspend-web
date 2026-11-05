@@ -417,3 +417,81 @@ describe("canonical routing", () => {
     assert.ok(text(q("section[aria-labelledby='sm-tx-facts']")).includes(long));
   });
 });
+
+describe("a transaction's page: composition", () => {
+  const hero = () => q("section[aria-labelledby='sm-tx-title']");
+  const facts = () => q("section[aria-labelledby='sm-tx-facts']");
+
+  it("its situation is one card of notes, not a card for each", async () => {
+    await open("/m/activity/6");
+    assert.equal(qa(".sm-tx-notes").length, 1);
+    assert.ok(q("[data-sm-note='reversed']", q(".sm-tx-notes")));
+    await view.unmount();
+    api.restore();
+    await open("/m/activity/7");
+    assert.ok(q("a[href='/m/activity/6']", q(".sm-tx-notes [data-sm-note='reversal']")), "the note still links to what it reverses");
+  });
+
+  it("a plain transaction has no notes card at all", async () => {
+    await open("/m/activity/5");
+    assert.equal(qa(".sm-tx-notes").length, 0);
+  });
+
+  it("the hero says which accounts it touched, with the arrow pointing the way the language reads", async () => {
+    await open("/m/activity/9");
+    assert.match(text(hero()), /Everyday wallet → Savings jar/);
+    await view.unmount();
+    api.restore();
+    await resetEnvironment("ar");
+    storeSession({ token: TOKEN_A, user: USER_A });
+    await open("/m/activity/9");
+    assert.match(text(hero()), /Everyday wallet ← Savings jar/);
+    await i18n.changeLanguage("en");
+  });
+
+  it("the record's own metadata waits behind 'More about this record'; what matters stays in view", async () => {
+    await open("/m/activity/5");
+    const more = q("details[data-sm-section='record']", facts());
+    assert.ok(more);
+    assert.equal(more.open, false, "closed until asked for");
+    assert.equal(q("summary", more).textContent, "More about this record");
+    assert.match(text(more), /Source.*manual/);
+    assert.match(text(more), /Created by.*Alex Example/);
+    assert.match(text(more), /Posted/);
+    const shown = qa("dl", facts()).find((list) => !more.contains(list));
+    assert.match(text(shown), /Category.*Food/);
+    assert.match(text(shown), /Description.*Groceries/);
+    assert.match(text(shown), /Reference.*RCPT-77/);
+    assert.equal(qa("button", q("main")).length, 0, "a disclosure is not a button");
+  });
+
+  it("a reversed transaction keeps when and why in plain view", async () => {
+    await open("/m/activity/6");
+    const more = q("details[data-sm-section='record']");
+    const shown = qa("dl", facts()).find((list) => !more?.contains(list));
+    assert.match(text(shown), /Reversed on.*Nov 2, 2026/);
+    assert.match(text(shown), /Reason.*Entered twice/);
+  });
+
+  it("a transfer leg links to its Mobile page, and its ledger lines link their accounts", async () => {
+    await open("/m/activity/9");
+    assert.equal(q("a[href='/m/transfers/3']", facts()).textContent, "#3");
+    const entries = q("section[aria-labelledby='sm-tx-entries']");
+    assert.ok(q("a[href='/m/accounts/1']", entries));
+    assert.ok(q("a[href='/m/accounts/2']", entries));
+    assert.equal(qa("[data-sm-entry]", entries).length, 2, "the lines are still the backend's, unchanged");
+  });
+
+  it("the contextual actions are unchanged: Correct and Reverse only for a posted, plain income or expense", async () => {
+    await open("/m/activity/5");
+    assert.equal(q("[data-sm-draft-links]").dataset.smDraftLinks, "transaction-correct transaction-reverse");
+    await view.unmount();
+    api.restore();
+    await open("/m/activity/9");
+    assert.equal(q("[data-sm-draft-links]"), null, "a transfer leg is managed as a whole in the full version");
+    await view.unmount();
+    api.restore();
+    await open("/m/activity/6");
+    assert.equal(q("[data-sm-draft-links]"), null, "a reversed transaction cannot be changed");
+  });
+});
