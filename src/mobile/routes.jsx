@@ -20,6 +20,7 @@ import MobileProfile, { MobileProfileForm } from "./settings/MobileProfile.jsx";
 import MobileReview from "./tools/MobileReview.jsx";
 import MobileSearch from "./tools/MobileSearch.jsx";
 import MobileTemplates from "./tools/MobileTemplates.jsx";
+import MobileGettingStarted from "./guide/MobileGettingStarted.jsx";
 import MobileWhatsApp, { MobileWhatsAppDraft, MobileWhatsAppDrafts } from "./whatsapp/MobileWhatsApp.jsx";
 import IdentityBoundary from "./identity/IdentityBoundary.jsx";
 import { MOBILE_ENTER, MOBILE_PREFIX, MOBILE_REGISTER, MOBILE_SIGNIN } from "./navigation.js";
@@ -133,6 +134,7 @@ export const mobileRoutes = [
       { path: "search", element: <MobileSearch /> },
       { path: "review", element: <MobileReview /> },
       { path: "templates", element: <MobileTemplates /> },
+      { path: "getting-started", element: <MobileGettingStarted /> },
       { path: "more", element: <MobileMore /> },
       { path: "*", element: <MobileNotAvailable /> },
     ],

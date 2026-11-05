@@ -151,6 +151,8 @@ describe("the assistant: a conversation as a chat (real backend shapes)", () => 
     await open("/m/assistant/conversations/5", chat([message(51, "user", "Hi"), message(52, "assistant", "", { status: "failed", failure: { code: "ai_failed", message: "We couldn't answer that just now." } }), message(53, "user", "Again"), message(54, "assistant", "", { status: "processing" })]));
     const [, failed, , pending] = qa(".sm-turn");
     assert.equal(failed.dataset.smState, "failed");
+    assert.equal(q("[data-sm-ai='generated']", failed), null, "nothing was generated, so it is not labelled as generated");
+    assert.equal(q("[data-sm-ai='generated']", pending), null);
     assert.match(text(q("[data-sm-note='reply-failed']", failed)), /We couldn't answer that just now./);
     assert.equal(q("[data-sm-action='send-message']"), null);
     assert.equal(pending.dataset.smState, "pending");

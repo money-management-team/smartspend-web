@@ -48,6 +48,7 @@ const EXTRA_TITLES = [
   [/^\/m\/search$/, "titles.search"],
   [/^\/m\/review$/, "titles.review"],
   [/^\/m\/templates$/, "titles.templates"],
+  [/^\/m\/getting-started$/, "titles.gettingStarted"],
   [/^\/m\/imports\/new$/, "importNew.title"],
 ];
 

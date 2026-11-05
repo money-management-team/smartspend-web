@@ -215,7 +215,8 @@ describe("More: grouping", () => {
     const groups = qa(".sm-more-group");
     assert.deepEqual(groups.map((group) => group.querySelector(".sm-group-label").textContent), ["Today", "Your money", "Capture and assistant", "Tools", "Appearance"]);
     assert.equal(groups.every((group) => group.getAttribute("aria-labelledby") === group.querySelector(".sm-group-label").id), true);
-    assert.equal(qa(".sm-more-group a.sm-more-link").length, 12, "every link is still there");
+    assert.equal(qa(".sm-more-group a.sm-more-link").length, 13, "every link is still there, and Getting started is the first");
+    assert.equal(q(".sm-more-group a.sm-more-link").getAttribute("href"), "/m/getting-started");
     assert.ok(q(".sm-more-group .sm-segment"), "the display choices are in the Appearance group");
   });
 });

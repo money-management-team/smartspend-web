@@ -1,11 +1,11 @@
 import { useId } from "react";
-import { LuArrowLeftRight, LuBell, LuBellRing, LuCalendarCheck, LuChartColumn, LuLayoutTemplate, LuMessageCircle, LuScanLine, LuSearch, LuSparkles, LuUpload, LuWallet } from "react-icons/lu";
+import { LuArrowLeftRight, LuBell, LuBellRing, LuCalendarCheck, LuChartColumn, LuCompass, LuLayoutTemplate, LuMessageCircle, LuScanLine, LuSearch, LuSparkles, LuUpload, LuWallet } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { useAuthContext } from "../../contexts/auth/useAuthContext";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
-import { MOBILE_ACCOUNTS, MOBILE_AI, MOBILE_ATTENTION, MOBILE_CAPTURES, MOBILE_IMPORTS, MOBILE_NOTIFICATIONS, MOBILE_PROFILE, MOBILE_REPORTS, MOBILE_REVIEW, MOBILE_SEARCH, MOBILE_TEMPLATES, MOBILE_TRANSFERS, MOBILE_WHATSAPP } from "../navigation.js";
+import { MOBILE_ACCOUNTS, MOBILE_AI, MOBILE_ATTENTION, MOBILE_CAPTURES, MOBILE_GETTING_STARTED, MOBILE_IMPORTS, MOBILE_NOTIFICATIONS, MOBILE_PROFILE, MOBILE_REPORTS, MOBILE_REVIEW, MOBILE_SEARCH, MOBILE_TEMPLATES, MOBILE_TRANSFERS, MOBILE_WHATSAPP } from "../navigation.js";
 import { PRESENTATION_PREFERENCES } from "../presentation/preference.js";
 import { usePresentation } from "../presentation/usePresentation.js";
 import { InstallCard } from "../pwa/PwaNotices.jsx";
@@ -64,6 +64,7 @@ export default function MobileMore() {
       </Link>
 
       <MoreGroup title={t("moreLinks.focus")}>
+        <MoreLink to={MOBILE_GETTING_STARTED} icon={LuCompass} title={t("titles.gettingStarted")} hint={t("guide.moreHint")} />
         <MoreLink to={MOBILE_ATTENTION} icon={LuBellRing} title={t("titles.attention")} hint={t("attentionCenter.moreHint")} />
         <MoreLink to={MOBILE_NOTIFICATIONS} icon={LuBell} title={t("moreLinks.notifications")} hint={t("moreLinks.notificationsHint")} />
         <MoreLink to={MOBILE_SEARCH} icon={LuSearch} title={t("moreLinks.search")} hint={t("moreLinks.searchHint")} />

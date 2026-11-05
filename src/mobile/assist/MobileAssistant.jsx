@@ -362,7 +362,7 @@ export function MobileConversation() {
                 <article className={`sm-ai-message sm-ai-${message.role} sm-turn`} data-sm-role={message.role} data-sm-state={message.state}>
                   <div className="sm-bubble">
                     {message.role === "assistant" ? (
-                      <p className="sm-bubble-head"><span className="sm-assist-mark sm-assist-mark-small" aria-hidden="true"><LuSparkles /></span><span>{t(`assist.role.${message.role}`)}</span><AiLabel /></p>
+                      <p className="sm-bubble-head"><span className="sm-assist-mark sm-assist-mark-small" aria-hidden="true"><LuSparkles /></span><span>{t(`assist.role.${message.role}`)}</span>{message.state === "ready" && <AiLabel />}</p>
                     ) : (
                       <span className="sm-sr">{t(`assist.role.${message.role}`)}</span>
                     )}

@@ -3132,10 +3132,12 @@
 
 .sm-root .sm-an-report {
   display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  min-height: 3.5rem;
-  padding: 0.5rem 0.75rem;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 5rem;
+  padding: 0.75rem;
   border: 1px solid var(--sm-border);
   border-radius: var(--sm-radius-md);
   color: var(--sm-text);
@@ -3161,7 +3163,7 @@
   font-size: 0.875rem;
   font-weight: 700;
   line-height: 1.3;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .sm-root .sm-an-foot {
@@ -3288,4 +3290,137 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.375rem;
+}
+
+/* =========================================================
+   Phase 6UI.5C1: Getting started.
+   ========================================================= */
+
+.sm-root .sm-guide-hero {
+  gap: 0.75rem;
+}
+
+.sm-root .sm-guide-hero .sm-card-head {
+  flex-wrap: nowrap;
+}
+
+.sm-root .sm-guide-hero .sm-icon-button {
+  color: #c2cde4;
+  border-color: transparent;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+.sm-root .sm-guide-lead {
+  margin: 0;
+  color: #ffffff;
+  font-family: var(--sm-font-heading);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.sm-root .sm-guide-hero .sm-progress-track {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.sm-root .sm-guide-hero .sm-progress-text {
+  color: #ffffff;
+}
+
+.sm-root .sm-guide-steps {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sm-root .sm-guide-step {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 0.875rem;
+}
+
+.sm-root .sm-guide-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
+  border-radius: 999px;
+  color: var(--sm-muted);
+  background: var(--sm-surface-2);
+  font-family: var(--sm-font-figures);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.sm-root .sm-guide-badge[data-sm-badge="done"] {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--sm-blue), var(--sm-cyan));
+  box-shadow: var(--sm-shadow-glow);
+  font-size: 1.125rem;
+}
+
+.sm-root .sm-guide-badge[data-sm-badge="unknown"] {
+  border: 1px dashed var(--sm-muted);
+  background: transparent;
+  font-size: 1.125rem;
+}
+
+.sm-root .sm-guide-body {
+  display: grid;
+  gap: 0.5rem;
+  min-inline-size: 0;
+}
+
+.sm-root .sm-guide-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+}
+
+.sm-root .sm-guide-head .sm-row-title {
+  margin: 0;
+  font-size: 1.0625rem;
+}
+
+.sm-root .sm-guide-chip[data-sm-chip="done"] {
+  color: var(--sm-nav-active);
+  border-color: var(--sm-nav-active);
+}
+
+.sm-root .sm-guide-chip[data-sm-chip="unknown"] {
+  border-style: dashed;
+  color: var(--sm-muted);
+}
+
+.sm-root .sm-guide-cta {
+  justify-self: start;
+}
+
+.sm-root .sm-guide-link {
+  margin-inline: 0;
+  padding-inline: 0;
+  color: var(--sm-nav-active);
+  font-weight: 700;
+}
+
+.sm-root .sm-guide-explore {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.5rem), 1fr));
+}
+
+.sm-root .sm-guide-explore .sm-an-report {
+  align-items: center;
+  gap: 0.375rem;
+  text-align: center;
+}
+
+.sm-root .sm-guide-step .sm-text {
+  font-size: 0.9375rem;
 }
