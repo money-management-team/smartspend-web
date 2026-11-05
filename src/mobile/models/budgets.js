@@ -106,6 +106,7 @@ export function normalizeBudget(raw) {
     name: textOrNull(raw.name, 150),
     scope,
     categoryName: textOrNull(category?.name, 80),
+    categoryId: idText(category?.id ?? raw.category_id),
     currency,
     limit: amountIn(raw.amount_limit, currency),
     periodStart: dateOnlyOrNull(raw.period_start),

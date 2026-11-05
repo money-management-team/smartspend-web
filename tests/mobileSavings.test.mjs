@@ -61,7 +61,7 @@ if (!ON) {
 
       assert.equal(q("[data-sm-section='smart-plan']"), null);
       assert.doesNotMatch(text(q("main")), /Smart Savings|planned contribution/i);
-      assert.deepEqual(api.summary(), ["GET /savings-goals/1"]);
+      assert.deepEqual(api.summary(), ["GET /savings-goals/1", "GET /savings-goals/1/activity"]); // the goal and its movement history; never a plan
     });
 
     it("the flag-on tests run in a child process with the flag on, and pass", () => {
@@ -113,7 +113,7 @@ if (!ON) {
       assert.match(text(section), /Balanced/);
       assert.match(text(section), /Per installment\s*250\.00ILS/);
       assert.deepEqual(qa("[data-sm-list='installments'] [data-sm-installment]", section).map((row) => row.dataset.smInstallment), ["900", "901"], "only open (planned) installments can be reviewed");
-      assert.deepEqual(api.summary(), ["GET /savings-goals/1", "GET /savings-goals/1/plan"]);
+      assert.deepEqual(api.summary(), ["GET /savings-goals/1", "GET /savings-goals/1/activity", "GET /savings-goals/1/plan"]);
     });
 
     it("confirm review: reads the preview first, shows the backend's amount and accounts, and its last button never sends", async () => {
@@ -234,7 +234,7 @@ if (!ON) {
       await open("/m/planning/goals/1", { goals: [goal(1, { status: "archived", archived_at: "2026-09-01T00:00:00Z" })], plans: { 1: activePlan(1) } });
 
       assert.equal(q("[data-sm-section='smart-plan']"), null);
-      assert.deepEqual(api.summary(), ["GET /savings-goals/1"]);
+      assert.deepEqual(api.summary(), ["GET /savings-goals/1", "GET /savings-goals/1/activity"]); // the goal and its movement history; never a plan
     });
   });
 }

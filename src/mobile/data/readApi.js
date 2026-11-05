@@ -14,6 +14,7 @@ import { reportsApi } from "../../features/Dashboards/User/api/reportsApi.js";
 import { savingsGoalsApi } from "../../features/Dashboards/User/api/savingsGoalsApi.js";
 import { transactionsApi } from "../../features/Dashboards/User/api/transactionsApi.js";
 import { transfersApi } from "../../features/Dashboards/User/api/transfersApi.js";
+import { GOAL_MOVEMENTS_PER_PAGE } from "../models/goalMovementTabs.js";
 
 /*
  * Every request Mobile makes, in one file, and every one of them a GET.
@@ -103,6 +104,19 @@ export const readBudget = (budgetId, signal) => budgetsApi.get(budgetId, { signa
 export const readGoals = (query, signal) => savingsGoalsApi.list(query, { signal });
 
 export const readGoal = (goalId, signal) => savingsGoalsApi.get(goalId, { signal });
+
+/*
+ * A goal's money movements, newest first as the backend orders them (GoalMovementResource):
+ *   GET /savings-goals/{id}/activity                  every movement (data.activity)
+ *   GET /savings-goals/{id}/contributions             contributions only (data.contributions)
+ *   GET /savings-goals/{id}/activity?type=withdrawal  withdrawals only (data.activity)
+ * Each row is a posted transfer. These are reads: the movements themselves are made in the full version.
+ */
+export function readGoalMovements(goalId, tab, page, signal) {
+  const query = { per_page: GOAL_MOVEMENTS_PER_PAGE, ...(page > 1 ? { page } : {}) };
+  if (tab === "contribution") return savingsGoalsApi.listContributions(goalId, query, { signal });
+  return savingsGoalsApi.listActivity(goalId, tab === "withdrawal" ? { ...query, type: "withdrawal" } : query, { signal });
+}
 
 export const readRules = (query, signal) => recurringTransactionsApi.list(query, { signal });
 

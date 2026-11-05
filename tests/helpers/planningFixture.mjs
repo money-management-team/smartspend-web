@@ -117,9 +117,10 @@ const pageOf = (call, rows, key) => ({ body: envelope({ [key]: paginator(rows, {
 
 /**
  * @param {{ budgets?: object[], goals?: object[], rules?: object[], alerts?: object[], plans?: Record<string, object | null> }} data
+ * `movements` maps a goal id to its GoalMovementResource rows (newest first): GET /savings-goals/{id}/activity[?type=] and /contributions.
  * `plans` maps a goal id to the body of GET /savings-goals/{id}/plan (absent or null: 404, a goal with no plan).
  */
-export function planningBackend({ budgets = [], goals = [], rules = [], alerts = [], plans = {} } = {}) {
+export function planningBackend({ budgets = [], goals = [], rules = [], alerts = [], plans = {}, movements = {} } = {}) {
   return (call) => {
     const q = call.query;
     const one = /^\/(budgets|savings-goals|recurring-transactions)\/(\d+)$/.exec(call.path);
@@ -137,6 +138,12 @@ export function planningBackend({ budgets = [], goals = [], rules = [], alerts =
       return pageOf(call, rules.filter((row) => (!q.status || row.status === q.status) && (!q.type || row.type === q.type)), "recurring_transactions");
     }
 
+    const trail = /^\/savings-goals\/(\d+)\/(activity|contributions)$/.exec(call.path);
+    if (trail) {
+      const rows = (movements[trail[1]] ?? []).filter((row) => (trail[2] === "contributions" ? row.type === "contribution" : !q.type || row.type === q.type));
+      return pageOf(call, rows, trail[2]);
+    }
+
     const plan = /^\/savings-goals\/(\d+)\/plan$/.exec(call.path);
     if (plan) return plans[plan[1]] ? { body: envelope(plans[plan[1]]) } : failure(404, "No active plan");
 
@@ -150,6 +157,22 @@ export function planningBackend({ budgets = [], goals = [], rules = [], alerts =
     return failure(404, "Not found");
   };
 }
+
+export const movement = (id, goalId, over = {}) => ({
+  id,
+  savings_goal_id: goalId,
+  type: "contribution",
+  amount: "250.0000",
+  currency_code: "ILS",
+  transfer_id: 700 + id,
+  transfer_status: "posted",
+  is_reversed: false,
+  from_account: { id: 1, name: "Everyday wallet", type: "cash" },
+  to_account: { id: 5, name: `Goal ${goalId} jar`, type: "savings" },
+  occurred_at: "2026-10-20T09:00:00Z",
+  created_at: "2026-10-20T09:00:00Z",
+  ...over,
+});
 
 export const activePlan = (goalId, over = {}) => ({
   savings_goal: { id: goalId },

@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import DraftLinks from "../forms/DraftLinks.jsx";
 
 import { getBudgetDetailsPath } from "../../routes/Path.js";
@@ -8,7 +8,7 @@ import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { formatDay } from "../money/format.js";
 import Money from "../money/Money.jsx";
 import { buildBudgetDetail } from "../models/budgets.js";
-import { MOBILE_BUDGETS } from "../navigation.js";
+import { MOBILE_ACTIVITY, MOBILE_BUDGETS } from "../navigation.js";
 import Chevron from "../ui/Chevron.jsx";
 import PlanChip from "./PlanChip.jsx";
 import Progress from "./Progress.jsx";
@@ -26,8 +26,20 @@ function Fact({ label, children }) {
   );
 }
 
+const STATUS_HINTS = ["safe", "warning", "near_limit", "exceeded"];
+
+// The expenses of this budget's period, in Activity (which filters by type, dates and category): a link, not a read.
+function expensesPathOf(budget) {
+  if (!budget.periodStart || !budget.periodEnd) return null;
+  const params = new URLSearchParams({ type: "expense", date_from: budget.periodStart, date_to: budget.periodEnd });
+  if (budget.scope === "category" && budget.categoryId) params.set("category_id", budget.categoryId);
+  return `${MOBILE_ACTIVITY}?${params}`;
+}
+
 function Detail({ budget, locale }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
+  const location = useLocation();
+  const expensesPath = expensesPathOf(budget);
   const progress = budget.progress;
   const start = formatDay(budget.periodStart, locale);
   const end = formatDay(budget.periodEnd, locale);
@@ -35,7 +47,7 @@ function Detail({ budget, locale }) {
 
   return (
     <>
-      <section className="sm-card sm-hero" aria-labelledby="sm-budget-title">
+      <section className="sm-card sm-hero sm-detail-hero" aria-labelledby="sm-budget-title">
         <h2 id="sm-budget-title" className="sm-card-title sm-user-text">{budget.name ?? t("planning.budgets.untitled")}</h2>
         <p className="sm-chips-inline">
           <span className="sm-chip"><bdi>{scope}</bdi></span>
@@ -43,6 +55,9 @@ function Detail({ budget, locale }) {
         </p>
         <p className="sm-balance-label">{t("planning.budgets.limit")}</p>
         <Money className="sm-hero-money" value={budget.limit} currency={budget.currency} />
+        {/* The bar belongs with the limit it measures; the sentence is Desktop's own reading of the backend's status word. */}
+        {progress && <Progress percent={progress.percent} tone={toneOf(progress.status, progress.statusKnown)} spoken={progress.percent ? t("planning.budgets.percentSpoken", { value: progress.percent.text }) : ""} />}
+        {progress?.statusKnown && STATUS_HINTS.includes(progress.status) && <p className="sm-hero-note" data-sm-hint={progress.status}>{t(`budgetView.hint.${progress.status}`)}</p>}
         {start && end && <p className="sm-hero-note"><bdi>{t("planning.range", { from: start, to: end })}</bdi></p>}
       </section>
 
@@ -50,7 +65,6 @@ function Detail({ budget, locale }) {
         <h2 id="sm-budget-progress" className="sm-card-title">{t("planning.budgets.progress")}</h2>
         {progress ? (
           <>
-            <Progress percent={progress.percent} tone={toneOf(progress.status, progress.statusKnown)} spoken={progress.percent ? t("planning.budgets.percentSpoken", { value: progress.percent.text }) : ""} />
             <dl className="sm-stats sm-stats-stacked">
               <Fact label={t("planning.budgets.spent")}><Money plain value={progress.spent} currency={budget.currency} /></Fact>
               <Fact label={t("planning.budgets.remaining")}><Money value={progress.remaining} currency={budget.currency} /></Fact>
@@ -62,6 +76,15 @@ function Detail({ budget, locale }) {
           </>
         ) : (
           <p className="sm-text sm-muted" data-sm-progress="unavailable">{t(budget.archived ? "planning.budgets.progressArchived" : "planning.progressUnavailable")}</p>
+        )}
+        {expensesPath && (
+          <Link className="sm-link-row" to={expensesPath} state={{ from: `${location.pathname}${location.search}` }} data-sm-action="budget-expenses">
+            <span className="sm-row-main">
+              <span className="sm-row-title">{t("budgetView.expenses")}</span>
+              <span className="sm-row-meta">{t(budget.scope === "category" && budget.categoryId ? "budgetView.expensesHintCategory" : "budgetView.expensesHintAll")}</span>
+            </span>
+            <Chevron />
+          </Link>
         )}
       </section>
 

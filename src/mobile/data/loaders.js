@@ -1,4 +1,4 @@
-import { readAccount, readAccountMovements, readAccounts, readAlerts, readBudget, readBudgets, readCalendarMonth, readCategories, readCategory, readCategoryList, readDashboard, readDebt, readDebtPayments, readDebts, readExports, readGoal, readGoals, readImport, readImports, readNotifications, readReport, readUnreadCount, readRule, readRules, readTransaction, readTransactions, readTransfer, readTransfers } from "./readApi.js";
+import { readAccount, readAccountMovements, readAccounts, readAlerts, readBudget, readBudgets, readCalendarMonth, readCategories, readCategory, readCategoryList, readDashboard, readDebt, readDebtPayments, readDebts, readExports, readGoal, readGoalMovements, readGoals, readImport, readImports, readNotifications, readReport, readUnreadCount, readRule, readRules, readTransaction, readTransactions, readTransfer, readTransfers } from "./readApi.js";
 
 /*
  * What each store entry loads: the response's `data`, as the backend sent it.
@@ -27,6 +27,8 @@ export const activityLoader = (query) => (signal) => readTransactions(query, sig
 // Planning lists are returned whole (the envelope), like Activity: the paginator numbers live beside `data`.
 export const budgetsLoader = (query) => (signal) => readBudgets(query, signal);
 export const goalsLoader = (query) => (signal) => readGoals(query, signal);
+// A page of a goal's movements is returned whole (the envelope), like the other paged reads.
+export const goalMovementsLoader = (goalId, tab, page) => (signal) => readGoalMovements(goalId, tab, page, signal);
 export const rulesLoader = (query) => (signal) => readRules(query, signal);
 
 export const budgetLoader = (budgetId) => async (signal) => (await readBudget(budgetId, signal)).data;
@@ -70,6 +72,7 @@ export const keys = {
   budget: (id) => `budget:${id}`,
   goals: (signature, page) => `goals:${signature}:${page}`,
   goal: (id) => `goal:${id}`,
+  goalMovements: (id, tab, page) => `goalMovements:${id}:${tab}:${page}`,
   goalPlan: (id) => `goalPlan:${id}`,
   rules: (signature, page) => `rules:${signature}:${page}`,
   rule: (id) => `rule:${id}`,

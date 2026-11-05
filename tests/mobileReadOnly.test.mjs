@@ -187,7 +187,7 @@ describe("the facade", () => {
   it("exports reads only", async () => {
     const readApi = await import("../src/mobile/data/readApi.js");
 
-    assert.deepEqual(Object.keys(readApi).sort(), ["ACTIVITY_PER_PAGE", "BUDGETS_PER_PAGE", "DASHBOARD_PERIOD", "DASHBOARD_PERIODS", "DEBTS_PER_PAGE", "EXPORTS_PER_PAGE", "GOALS_PER_PAGE", "IMPORTS_PER_PAGE", "MOVEMENTS_PER_PAGE", "NOTIFICATIONS_PER_PAGE", "PAYMENTS_PER_PAGE", "RULES_PER_PAGE", "TRANSFERS_PER_PAGE", "isAccountId", "planningWorkspaceId", "readAccount", "readAccountMovements", "readAccounts", "readAlerts", "readBudget", "readBudgets", "readCalendarMonth", "readCategories", "readCategory", "readCategoryList", "readDashboard", "readDebt", "readDebtPayments", "readDebts", "readExportFile", "readExports", "readGoal", "readGoals", "readImport", "readImports", "readNotifications", "readReport", "readRule", "readRules", "readTransaction", "readTransactions", "readTransfer", "readTransfers", "readUnreadCount", "sessionWorkspace"]);
+    assert.deepEqual(Object.keys(readApi).sort(), ["ACTIVITY_PER_PAGE", "BUDGETS_PER_PAGE", "DASHBOARD_PERIOD", "DASHBOARD_PERIODS", "DEBTS_PER_PAGE", "EXPORTS_PER_PAGE", "GOALS_PER_PAGE", "IMPORTS_PER_PAGE", "MOVEMENTS_PER_PAGE", "NOTIFICATIONS_PER_PAGE", "PAYMENTS_PER_PAGE", "RULES_PER_PAGE", "TRANSFERS_PER_PAGE", "isAccountId", "planningWorkspaceId", "readAccount", "readAccountMovements", "readAccounts", "readAlerts", "readBudget", "readBudgets", "readCalendarMonth", "readCategories", "readCategory", "readCategoryList", "readDashboard", "readDebt", "readDebtPayments", "readDebts", "readExportFile", "readExports", "readGoal", "readGoalMovements", "readGoals", "readImport", "readImports", "readNotifications", "readReport", "readRule", "readRules", "readTransaction", "readTransactions", "readTransfer", "readTransfers", "readUnreadCount", "sessionWorkspace"]);
     const plan = await import("../src/mobile/data/readPlanApi.js");
     assert.deepEqual(Object.keys(plan).sort(), ["readConfirmationPreview", "readGoalPlan", "readPlanOptions"]);
     const planUses = [...code(path.join(MOBILE, "data/readPlanApi.js")).matchAll(/savingsPlansApi\.(\w+)\(/g)].map((match) => match[1]).sort();
@@ -210,8 +210,14 @@ describe("the facade", () => {
       await readApi.readAccounts(controller.signal);
       await readApi.readAccount("12", controller.signal);
       await readApi.readAccountMovements("12", 2, controller.signal);
+      await readApi.readGoalMovements("7", "all", 1, controller.signal);
+      await readApi.readGoalMovements("7", "withdrawal", 2, controller.signal);
+      await readApi.readGoalMovements("7", "contribution", 1, controller.signal);
 
-      assert.deepEqual(api.summary(), ["GET /dashboard", "GET /financial-alerts", "GET /accounts", "GET /accounts/12", "GET /transactions"]);
+      assert.deepEqual(api.summary(), ["GET /dashboard", "GET /financial-alerts", "GET /accounts", "GET /accounts/12", "GET /transactions", "GET /savings-goals/7/activity", "GET /savings-goals/7/activity", "GET /savings-goals/7/contributions"]);
+      assert.deepEqual(api.calls[5].query, { per_page: "10" });
+      assert.deepEqual(api.calls[6].query, { per_page: "10", page: "2", type: "withdrawal" });
+      assert.deepEqual(api.calls[7].query, { per_page: "10" });
       assert.deepEqual(api.calls[0].query, { period: "month" });
       assert.deepEqual(api.calls[4].query, { account_id: "12", page: "2", per_page: "20", sort_by: "occurred_at", sort_dir: "desc" });
       assert.deepEqual(api.violations, []);

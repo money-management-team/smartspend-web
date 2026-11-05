@@ -3660,3 +3660,115 @@
   justify-content: flex-end;
   gap: 0.25rem 0.75rem;
 }
+
+/* =========================================================
+   Phase 6UI.5C4: budgets and savings goals.
+   ========================================================= */
+
+/* ---- The bar sits on the navy hero, so its track and fill are drawn for that ground ---- */
+.sm-root .sm-detail-hero .sm-progress {
+  margin-block: 0.5rem 0.25rem;
+}
+
+.sm-root .sm-detail-hero .sm-progress-track {
+  block-size: 0.625rem;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.sm-root .sm-detail-hero .sm-progress-fill,
+:root[data-theme="dark"] .sm-root .sm-detail-hero .sm-progress-fill {
+  background: var(--sm-cyan);
+}
+
+.sm-root .sm-detail-hero .sm-progress[data-sm-tone="warn"] .sm-progress-fill,
+:root[data-theme="dark"] .sm-root .sm-detail-hero .sm-progress[data-sm-tone="warn"] .sm-progress-fill {
+  background: #f0b840;
+}
+
+.sm-root .sm-detail-hero .sm-progress[data-sm-tone="bad"] .sm-progress-fill,
+:root[data-theme="dark"] .sm-root .sm-detail-hero .sm-progress[data-sm-tone="bad"] .sm-progress-fill {
+  background: #ff8a8a;
+}
+
+.sm-root .sm-detail-hero .sm-progress[data-sm-tone="neutral"] .sm-progress-fill {
+  background: #b9c6e2;
+}
+
+.sm-root .sm-detail-hero .sm-progress-text {
+  color: #ffffff;
+}
+
+.sm-root .sm-detail-hero .sm-hero-note {
+  color: #d5deef;
+  line-height: 1.4;
+}
+
+/* ---- Tabs: links that look like a segmented control; the current one is marked by aria-current ---- */
+.sm-root .sm-tabs {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: 1px solid var(--sm-border);
+  border-radius: var(--sm-radius-md);
+  background: var(--sm-surface-2, var(--sm-bg));
+}
+
+.sm-root .sm-tab {
+  flex: 1 1 0;
+  min-inline-size: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--sm-target);
+  padding-inline: 0.5rem;
+  border-radius: calc(var(--sm-radius-md) - 0.25rem);
+  color: var(--sm-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.sm-root .sm-tab[aria-current="true"] {
+  color: #ffffff;
+  background: var(--sm-navy);
+  font-weight: 700;
+}
+
+:root[data-theme="dark"] .sm-root .sm-tab[aria-current="true"] {
+  color: var(--sm-navy);
+  background: var(--sm-cyan);
+}
+
+.sm-root .sm-tab:focus-visible {
+  outline: 2px solid var(--sm-nav-active);
+  outline-offset: 2px;
+}
+
+/* ---- Movement rows: a reversed one is struck through and carries its chip ---- */
+.sm-root [data-sm-section="goal-movements"] .sm-tabs {
+  margin-block: 0.25rem 0.5rem;
+}
+
+.sm-root [data-sm-movement][data-sm-reversed="true"] .sm-tx-icon {
+  opacity: 0.6;
+}
+
+/* A movement's meta line is "from → to · date": cut at two lines it loses the date, so it may take what it needs. */
+.sm-root [data-sm-section="goal-movements"] .sm-tx .sm-row-meta {
+  display: block;
+  overflow: visible;
+  overflow-wrap: break-word;
+}
+
+.sm-root [data-sm-section="goal-movements"] .sm-movement-date {
+  font-size: 0.8125rem;
+}
+
+.sm-root .sm-tab {
+  padding-inline: 0.25rem;
+  font-size: 0.8125rem;
+  overflow-wrap: normal;
+}

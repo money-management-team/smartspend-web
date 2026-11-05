@@ -100,6 +100,7 @@ export function normalizeGoal(raw) {
     achievedAt: dateOnlyOrNull(raw.achieved_at),
     notes: textOrNull(raw.notes, 1000),
     accountName: textOrNull(raw.account?.name, 80),
+    accountId: idText(raw.account?.id),
     progress: buildProgress(raw.progress, id, currency),
   };
 }
