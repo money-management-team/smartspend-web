@@ -1,4 +1,5 @@
-import { useContext, useId, useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
+import { LuBell, LuInfo, LuKeyRound, LuLifeBuoy, LuLock, LuMail, LuMessageCircle, LuShieldCheck, LuUserPen } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
 
@@ -15,10 +16,14 @@ import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { buildNotificationPreferences } from "../models/assist.js";
 import { textOrNull } from "../models/values.js";
 import { formatMoment } from "../money/format.js";
-import { MOBILE_MORE, MOBILE_PASSWORD, MOBILE_PROFILE, MOBILE_PROFILE_EDIT, backPathFrom } from "../navigation.js";
+import { useMoneyHidden, useMoneyHiddenToggle } from "../money/privacyContext.js";
+import { MOBILE_NOTIFICATIONS, MOBILE_PASSWORD, MOBILE_PROFILE, MOBILE_PROFILE_EDIT, MOBILE_WHATSAPP, backPathFrom } from "../navigation.js";
 import Chevron from "../ui/Chevron.jsx";
+import DisplayChoices from "../ui/DisplayChoices.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
+import LabelledGroup, { GroupLink } from "../ui/LabelledGroup.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
+import { emailState } from "./emailState.js";
 
 const localeOf = (i18n) => (i18n.resolvedLanguage?.startsWith("ar") ? "ar" : "en");
 
@@ -31,37 +36,54 @@ const personOf = (user) => ({ id: String(user?.id ?? ""), name: textOrNull(user?
  * new verification email is a write, so it is offered in the full version.
  * Outside that provider (it is always there in the app) the status is unknown.
  */
-function EmailStatus() {
+function EmailStatus({ verification, state }) {
   const { t, i18n } = useTranslation(MOBILE_NAMESPACE);
-  const verification = useContext(EmailVerificationContext);
   const status = verification?.status ?? null;
-  const state = !verification ? "unknown" : verification.loading ? "loading" : verification.error ? "error" : status?.verified === true ? "verified" : status?.verified === false ? "unverified" : "unknown";
 
   return (
-    <section className="sm-card" aria-labelledby="sm-email-status" data-sm-section="email" data-sm-email={state}>
-      <h2 id="sm-email-status" className="sm-card-title">{t("profile.emailTitle")}</h2>
-      <p className="sm-text">{t(`profile.email.${state}`)}</p>
+    <div className="sm-setting" data-sm-section="email" data-sm-email={state}>
+      <h3 className="sm-row-title">{t("profile.emailTitle")}</h3>
+      <p className="sm-text sm-muted">{t(`profile.email.${state}`)}</p>
       {state === "verified" && status?.verifiedAt && <p className="sm-text sm-muted sm-fine"><bdi>{formatMoment(status.verifiedAt, localeOf(i18n))}</bdi></p>}
       {verification && state !== "loading" && (
-        <button type="button" className="sm-button sm-button-quiet" onClick={() => verification.refresh?.()} data-sm-action="check-email">{t("profile.checkAgain")}</button>
+        <button type="button" className="sm-button sm-button-quiet sm-button-small sm-setting-action" onClick={() => verification.refresh?.()} data-sm-action="check-email">{t("profile.checkAgain")}</button>
       )}
       {state === "unverified" && (
         <>
-          <p className="sm-text sm-muted sm-fine" role="note" data-sm-note="write-closed" data-sm-write="email.resend">{t("profile.resendClosed")}</p>
-          <Link className="sm-link-row" to={getSettingsTabPath("profile")}>
+          <p className="sm-draft-note" role="note" data-sm-note="write-closed" data-sm-write="email.resend"><LuInfo aria-hidden="true" /><span>{t("profile.resendClosed")}</span></p>
+          <Link className="sm-link-row sm-setting-link" to={getSettingsTabPath("profile")}>
             <span>{t("profile.resendFull")}</span>
             <Chevron />
           </Link>
         </>
       )}
-    </section>
+    </div>
+  );
+}
+
+/* "Hide amounts": the full version's own device preference, shown here too. Nothing leaves this device. */
+function PrivacySetting() {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const hidden = useMoneyHidden();
+  const setHidden = useMoneyHiddenToggle();
+  if (!setHidden) return null;
+
+  return (
+    <div className="sm-setting" data-sm-section="privacy">
+      <label className="sm-choice">
+        <input type="checkbox" checked={hidden === true} onChange={(event) => setHidden(event.target.checked)} data-sm-pref="hide-amounts" />
+        <span className="sm-setting-choice">
+          <span className="sm-row-title">{t("settings.hideAmounts")}</span>
+          <span className="sm-row-meta">{t("settings.hideAmountsHint")}</span>
+        </span>
+      </label>
+    </div>
   );
 }
 
 /* The one notification preference there is (savings installment reminders): shown, changeable here, saved in the full version. */
 function NotificationPreferences() {
   const { t } = useTranslation(MOBILE_NAMESPACE);
-  const ids = useId();
   const resource = useResource(assistKeys.notificationPreferences, loadNotificationPreferences);
   const prefs = useMemo(() => {
     if (resource.data === undefined) return null;
@@ -75,15 +97,14 @@ function NotificationPreferences() {
   const shown = draft ?? prefs?.reminders ?? false;
 
   return (
-    <section className="sm-card" aria-labelledby={`${ids}-title`} data-sm-section="notification-preferences">
-      <h2 id={`${ids}-title`} className="sm-card-title">{t("profile.notificationsTitle")}</h2>
+    <div className="sm-setting" data-sm-section="notification-preferences">
       {resource.loading ? (
         <Skeleton lines={2} label={t("profile.loadingPreferences")} />
       ) : resource.status === "error" || !prefs ? (
         <ErrorPanel error={resource.error ?? { code: "MALFORMED_RESPONSE" }} onRetry={resource.reload} retrying={resource.refreshing} compact />
       ) : (
         <>
-          <label className="sm-choice sm-cat-choice">
+          <label className="sm-choice">
             <input type="checkbox" checked={shown === true} disabled={prefs.reminders === null} onChange={(event) => setDraft(event.target.checked)} data-sm-pref="savings_installment_reminders" />
             <span>{t("profile.reminders")}</span>
           </label>
@@ -98,61 +119,92 @@ function NotificationPreferences() {
               </div>
             </div>
           )}
-          <Link className="sm-link-row" to={getSettingsTabPath("preferences")}>
+          <Link className="sm-link-row sm-setting-link" to={getSettingsTabPath("preferences")}>
             <span>{t("profile.prefsFull")}</span>
             <Chevron />
           </Link>
         </>
       )}
-    </section>
+    </div>
   );
 }
 
 /*
- * Profile and settings on Mobile. Who is signed in and in which workspace (from
- * the shared session, read only), the email status, links to the profile and
- * password forms (filled in and reviewed here; saved in the full version), the
- * notification preference, appearance (on More) and help.
+ * Profile and settings on Mobile, in groups: who is signed in (with the email's status), the account, security,
+ * preferences, notifications, and help. Everything that is read comes from the shared session or an existing GET.
+ * The profile and password forms can be filled in and reviewed but are saved in the full version, signing out is not
+ * offered here, and each of those says so. Language and theme are the same controls as More and the app bar.
  */
 export default function MobileProfile() {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const { user, workspace } = useAuthContext();
+  const verification = useContext(EmailVerificationContext);
+  const state = emailState(verification);
   const person = personOf(user);
   const workspaceName = textOrNull(workspace?.name, 120);
+  const initial = person.name ? [...person.name][0].toLocaleUpperCase() : "·";
+  const timezone = textOrNull(workspace?.timezone ?? user?.timezone, 64);
 
   return (
     <section className="sm-page" data-sm-screen="profile">
-      <section className="sm-card" aria-labelledby="sm-profile-who">
-        <h2 id="sm-profile-who" className="sm-card-title">{t("profile.who")}</h2>
-        <dl className="sm-stats sm-stats-stacked">
-          <div className="sm-stat"><dt>{t("forms.fields.name")}</dt><dd><bdi dir="auto" className="sm-user-text">{person.name || t("forms.notSet")}</bdi></dd></div>
-          <div className="sm-stat"><dt>{t("forms.fields.email")}</dt><dd><bdi dir="ltr">{person.email || t("forms.notSet")}</bdi></dd></div>
-          <div className="sm-stat"><dt>{t("forms.fields.phone")}</dt><dd><bdi dir="ltr">{person.phone || t("forms.notSet")}</bdi></dd></div>
-        </dl>
-        <Link className="sm-link-row" to={MOBILE_PROFILE_EDIT} state={{ from: MOBILE_PROFILE }} data-sm-action="profile-edit"><span>{t("forms.flows.profile-edit.link")}</span><Chevron /></Link>
-        <Link className="sm-link-row" to={MOBILE_PASSWORD} state={{ from: MOBILE_PROFILE }} data-sm-action="password-change"><span>{t("forms.flows.password-change.link")}</span><Chevron /></Link>
+      <section className="sm-card sm-identity" aria-labelledby="sm-profile-who" data-sm-section="identity">
+        <span className="sm-avatar sm-avatar-large" aria-hidden="true">{initial}</span>
+        <div className="sm-identity-main">
+          <h2 id="sm-profile-who" className="sm-identity-name sm-user-text"><span className="sm-sr">{t("profile.who")}: </span>{person.name || t("forms.notSet")}</h2>
+          <p className="sm-row-meta sm-identity-email"><bdi dir="ltr">{person.email || t("forms.notSet")}</bdi></p>
+          <span className="sm-chip sm-identity-chip" data-sm-chip={state}>{t(`settings.chip.${state}`)}</span>
+        </div>
       </section>
 
-      <section className="sm-card" aria-labelledby="sm-profile-workspace" data-sm-section="workspace">
-        <h2 id="sm-profile-workspace" className="sm-card-title">{t("profile.workspace")}</h2>
-        <dl className="sm-stats sm-stats-stacked">
-          {workspaceName && <div className="sm-stat"><dt>{t("forms.fields.name")}</dt><dd><bdi dir="auto" className="sm-user-text">{workspaceName}</bdi></dd></div>}
-          {workspace?.base_currency_code && <div className="sm-stat"><dt>{t("profile.baseCurrency")}</dt><dd><bdi dir="ltr">{workspace.base_currency_code}</bdi></dd></div>}
-          {workspace?.timezone && <div className="sm-stat"><dt>{t("profile.timezone")}</dt><dd><bdi dir="ltr">{workspace.timezone}</bdi></dd></div>}
-        </dl>
-      </section>
+      <LabelledGroup title={t("settings.groups.account")} data-sm-group="account">
+        <div className="sm-setting" data-sm-section="workspace">
+          <dl className="sm-stats sm-stats-stacked">
+            <div className="sm-stat"><dt>{t("forms.fields.phone")}</dt><dd><bdi dir="ltr">{person.phone || t("forms.notSet")}</bdi></dd></div>
+            {workspaceName && <div className="sm-stat"><dt>{t("profile.workspace")}</dt><dd><bdi dir="auto" className="sm-user-text">{workspaceName}</bdi></dd></div>}
+            {workspace?.base_currency_code && <div className="sm-stat"><dt>{t("profile.baseCurrency")}</dt><dd><bdi dir="ltr">{workspace.base_currency_code}</bdi></dd></div>}
+          </dl>
+        </div>
+        <GroupLink to={MOBILE_PROFILE_EDIT} state={{ from: MOBILE_PROFILE }} icon={LuUserPen} title={t("settings.editProfile")} hint={t("settings.editProfileHint")} data-sm-action="profile-edit" />
+      </LabelledGroup>
 
-      <EmailStatus />
-      <NotificationPreferences />
+      <LabelledGroup title={t("settings.groups.security")} data-sm-group="security">
+        <GroupLink to={MOBILE_PASSWORD} state={{ from: MOBILE_PROFILE }} icon={LuKeyRound} title={t("settings.changePassword")} hint={t("settings.changePasswordHint")} data-sm-action="password-change" />
+        <EmailStatus verification={verification} state={state} />
+        <GroupLink to={getSettingsTabPath("security")} icon={LuShieldCheck} title={t("settings.securityFull")} hint={t("settings.securityFullHint")} />
+        <div className="sm-setting" data-sm-section="session">
+          <p className="sm-draft-note" role="note" data-sm-note="password-note"><LuInfo aria-hidden="true" /><span>{t("settings.passwordNote")}</span></p>
+          <p className="sm-draft-note" role="note" data-sm-note="sign-out-closed" data-sm-write="auth.logout"><LuInfo aria-hidden="true" /><span>{t("settings.signOutNote")}</span></p>
+        </div>
+      </LabelledGroup>
 
-      <section className="sm-card" aria-labelledby="sm-profile-more">
-        <h2 id="sm-profile-more" className="sm-card-title">{t("profile.moreTitle")}</h2>
-        <Link className="sm-link-row" to={MOBILE_MORE}><span>{t("profile.appearance")}</span><Chevron /></Link>
-        <Link className="sm-link-row" to={getSettingsTabPath("security")}><span>{t("profile.security")}</span><Chevron /></Link>
-        <Link className="sm-link-row" to={PATH.PUBLIC.SUPPORT}><span>{t("profile.help")}</span><Chevron /></Link>
-        <Link className="sm-link-row" to={PATH.PUBLIC.CONTACT}><span>{t("profile.contact")}</span><Chevron /></Link>
-        <Link className="sm-link-row" to={PATH.PUBLIC.SECURITY}><span>{t("profile.privacy")}</span><Chevron /></Link>
-      </section>
+      <LabelledGroup title={t("settings.groups.preferences")} data-sm-group="preferences">
+        <div className="sm-setting" data-sm-section="display">
+          <DisplayChoices />
+          <p className="sm-draft-note" role="note" data-sm-note="device-only"><LuInfo aria-hidden="true" /><span>{t("settings.deviceNote")}</span></p>
+        </div>
+        <PrivacySetting />
+        <div className="sm-setting" data-sm-section="timezone">
+          <dl className="sm-stats sm-stats-stacked">
+            <div className="sm-stat"><dt>{t("profile.timezone")}</dt><dd><bdi dir="ltr">{timezone ?? t("forms.notSet")}</bdi></dd></div>
+          </dl>
+          <Link className="sm-link-row sm-setting-link" to={getSettingsTabPath("preferences")}>
+            <span>{t("settings.timezoneFull")}</span>
+            <Chevron />
+          </Link>
+        </div>
+      </LabelledGroup>
+
+      <LabelledGroup title={t("settings.groups.notifications")} data-sm-group="notifications">
+        <NotificationPreferences />
+        <GroupLink to={MOBILE_NOTIFICATIONS} icon={LuBell} title={t("settings.inbox")} hint={t("settings.inboxHint")} />
+        <GroupLink to={MOBILE_WHATSAPP} icon={LuMessageCircle} title={t("settings.whatsapp")} hint={t("settings.whatsappHint")} />
+      </LabelledGroup>
+
+      <LabelledGroup title={t("settings.groups.help")} data-sm-group="help">
+        <GroupLink to={PATH.PUBLIC.SUPPORT} icon={LuLifeBuoy} title={t("settings.help")} />
+        <GroupLink to={PATH.PUBLIC.CONTACT} icon={LuMail} title={t("settings.contact")} />
+        <GroupLink to={PATH.PUBLIC.SECURITY} icon={LuLock} title={t("settings.privacy")} />
+      </LabelledGroup>
     </section>
   );
 }
@@ -173,10 +225,8 @@ export function MobileProfileForm({ workflowId }) {
         <Chevron back />
         <span>{t("forms.back")}</span>
       </Link>
-      <div className="sm-card sm-flow-head">
-        <h2 className="sm-card-title">{t(`forms.flows.${workflow.id}.title`)}</h2>
-        <p className="sm-text sm-muted">{t(`forms.flows.${workflow.id}.intro`)}</p>
-      </div>
+      {/* The page's title is the app bar's; only what the form is for is said here. */}
+      <p className="sm-text sm-muted sm-flow-intro">{t(`forms.flows.${workflow.id}.intro`)}</p>
       <FormWithChoices key={`${workflow.id}:${record.id}`} workflow={workflow} ctx={ctx} backTo={backTo} />
     </section>
   );

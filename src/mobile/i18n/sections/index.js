@@ -6,6 +6,7 @@ import { forms } from "./forms.js";
 import { guide } from "./guide.js";
 import { pwa } from "./pwa.js";
 import { reportsImports } from "./reportsImports.js";
+import { settings } from "./settings.js";
 import { tools } from "./tools.js";
 import { writes } from "./writes.js";
 
@@ -14,7 +15,7 @@ import { writes } from "./writes.js";
  * feature, each `{ en: { section: … }, ar: { section: … } }`. Sections must not
  * clash with each other or with messages.js (except `titles`, which is merged).
  */
-const FEATURES = [writes, debtsTransfers, reportsImports, pwa, forms, assist, tools, auth, analytics, guide];
+const FEATURES = [writes, debtsTransfers, reportsImports, pwa, forms, assist, tools, auth, analytics, guide, settings];
 
 const join = (language) =>
   FEATURES.reduce((all, feature) => ({ ...all, ...feature[language], titles: { ...all.titles, ...feature[language].titles } }), { titles: {} });

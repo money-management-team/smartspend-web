@@ -1,4 +1,3 @@
-import { useId } from "react";
 import { LuArrowLeftRight, LuBell, LuBellRing, LuCalendarCheck, LuChartColumn, LuCompass, LuLayoutTemplate, LuMessageCircle, LuScanLine, LuSearch, LuSparkles, LuUpload, LuWallet } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -13,30 +12,7 @@ import { usePwaState } from "../pwa/pwaContext.js";
 import { PWA_BUILD } from "../pwa/worker.js";
 import Chevron from "../ui/Chevron.jsx";
 import DisplayChoices from "../ui/DisplayChoices.jsx";
-
-function MoreLink({ to, title, hint, icon: Icon }) {
-  return (
-    <Link className="sm-link-row sm-more-link" to={to}>
-      {Icon && <span className="sm-tile-icon sm-row-icon" aria-hidden="true"><Icon /></span>}
-      <span className="sm-row-main">
-        <span className="sm-row-title">{title}</span>
-        <span className="sm-row-meta">{hint}</span>
-      </span>
-      <Chevron />
-    </Link>
-  );
-}
-
-/* A group of links: its label sits above one card, so four cards each with an inner title become labels over lists. */
-function MoreGroup({ title, children }) {
-  const id = useId();
-  return (
-    <section className="sm-more-group" aria-labelledby={id}>
-      <h2 id={id} className="sm-group-label">{title}</h2>
-      <div className="sm-card sm-group-card">{children}</div>
-    </section>
-  );
-}
+import LabelledGroup, { GroupLink } from "../ui/LabelledGroup.jsx";
 
 /*
  * More: Accounts and the other read-only pages (transfers, notifications, ...), the display choices that already exist elsewhere in
@@ -63,34 +39,34 @@ export default function MobileMore() {
         <Chevron />
       </Link>
 
-      <MoreGroup title={t("moreLinks.focus")}>
-        <MoreLink to={MOBILE_GETTING_STARTED} icon={LuCompass} title={t("titles.gettingStarted")} hint={t("guide.moreHint")} />
-        <MoreLink to={MOBILE_ATTENTION} icon={LuBellRing} title={t("titles.attention")} hint={t("attentionCenter.moreHint")} />
-        <MoreLink to={MOBILE_NOTIFICATIONS} icon={LuBell} title={t("moreLinks.notifications")} hint={t("moreLinks.notificationsHint")} />
-        <MoreLink to={MOBILE_SEARCH} icon={LuSearch} title={t("moreLinks.search")} hint={t("moreLinks.searchHint")} />
-      </MoreGroup>
+      <LabelledGroup title={t("moreLinks.focus")}>
+        <GroupLink to={MOBILE_GETTING_STARTED} icon={LuCompass} title={t("titles.gettingStarted")} hint={t("guide.moreHint")} />
+        <GroupLink to={MOBILE_ATTENTION} icon={LuBellRing} title={t("titles.attention")} hint={t("attentionCenter.moreHint")} />
+        <GroupLink to={MOBILE_NOTIFICATIONS} icon={LuBell} title={t("moreLinks.notifications")} hint={t("moreLinks.notificationsHint")} />
+        <GroupLink to={MOBILE_SEARCH} icon={LuSearch} title={t("moreLinks.search")} hint={t("moreLinks.searchHint")} />
+      </LabelledGroup>
 
-      <MoreGroup title={t("more.yourMoney")}>
-        <MoreLink to={MOBILE_ACCOUNTS} icon={LuWallet} title={t("more.accounts")} hint={t("more.accountsHint")} />
-        <MoreLink to={MOBILE_TRANSFERS} icon={LuArrowLeftRight} title={t("moreLinks.transfers")} hint={t("moreLinks.transfersHint")} />
-        <MoreLink to={MOBILE_REPORTS} icon={LuChartColumn} title={t("moreLinks.reports")} hint={t("moreLinks.reportsHint")} />
-        <MoreLink to={MOBILE_IMPORTS} icon={LuUpload} title={t("moreLinks.imports")} hint={t("moreLinks.importsHint")} />
-      </MoreGroup>
+      <LabelledGroup title={t("more.yourMoney")}>
+        <GroupLink to={MOBILE_ACCOUNTS} icon={LuWallet} title={t("more.accounts")} hint={t("more.accountsHint")} />
+        <GroupLink to={MOBILE_TRANSFERS} icon={LuArrowLeftRight} title={t("moreLinks.transfers")} hint={t("moreLinks.transfersHint")} />
+        <GroupLink to={MOBILE_REPORTS} icon={LuChartColumn} title={t("moreLinks.reports")} hint={t("moreLinks.reportsHint")} />
+        <GroupLink to={MOBILE_IMPORTS} icon={LuUpload} title={t("moreLinks.imports")} hint={t("moreLinks.importsHint")} />
+      </LabelledGroup>
 
-      <MoreGroup title={t("moreLinks.capture")}>
-        <MoreLink to={MOBILE_CAPTURES} icon={LuScanLine} title={t("moreLinks.captures")} hint={t("moreLinks.capturesHint")} />
-        <MoreLink to={MOBILE_AI} icon={LuSparkles} title={t("moreLinks.assistant")} hint={t("moreLinks.assistantHint")} />
-        <MoreLink to={MOBILE_WHATSAPP} icon={LuMessageCircle} title={t("moreLinks.whatsapp")} hint={t("moreLinks.whatsappHint")} />
-      </MoreGroup>
+      <LabelledGroup title={t("moreLinks.capture")}>
+        <GroupLink to={MOBILE_CAPTURES} icon={LuScanLine} title={t("moreLinks.captures")} hint={t("moreLinks.capturesHint")} />
+        <GroupLink to={MOBILE_AI} icon={LuSparkles} title={t("moreLinks.assistant")} hint={t("moreLinks.assistantHint")} />
+        <GroupLink to={MOBILE_WHATSAPP} icon={LuMessageCircle} title={t("moreLinks.whatsapp")} hint={t("moreLinks.whatsappHint")} />
+      </LabelledGroup>
 
-      <MoreGroup title={t("moreLinks.tools")}>
-        <MoreLink to={MOBILE_REVIEW} icon={LuCalendarCheck} title={t("moreLinks.review")} hint={t("moreLinks.reviewHint")} />
-        <MoreLink to={MOBILE_TEMPLATES} icon={LuLayoutTemplate} title={t("moreLinks.templates")} hint={t("moreLinks.templatesHint")} />
-      </MoreGroup>
+      <LabelledGroup title={t("moreLinks.tools")}>
+        <GroupLink to={MOBILE_REVIEW} icon={LuCalendarCheck} title={t("moreLinks.review")} hint={t("moreLinks.reviewHint")} />
+        <GroupLink to={MOBILE_TEMPLATES} icon={LuLayoutTemplate} title={t("moreLinks.templates")} hint={t("moreLinks.templatesHint")} />
+      </LabelledGroup>
 
-      <MoreGroup title={t("more.appearance")}>
+      <LabelledGroup title={t("more.appearance")}>
         <DisplayChoices />
-      </MoreGroup>
+      </LabelledGroup>
 
       <InstallCard pwa={pwa} enabled={PWA_BUILD} />
 

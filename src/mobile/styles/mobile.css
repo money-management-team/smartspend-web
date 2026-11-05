@@ -3424,3 +3424,112 @@
 .sm-root .sm-guide-step .sm-text {
   font-size: 0.9375rem;
 }
+
+/* =========================================================
+   Phase 6UI.5C2: Profile and settings.
+   ========================================================= */
+
+/* ---- Identity: who is signed in, and whether their email is verified ---- */
+.sm-root .sm-identity {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+}
+
+.sm-root .sm-avatar-large {
+  width: 3.75rem;
+  height: 3.75rem;
+  font-size: 1.5rem;
+  box-shadow: var(--sm-shadow-glow);
+}
+
+.sm-root .sm-identity-main {
+  display: grid;
+  justify-items: start;
+  gap: 0.25rem;
+  min-inline-size: 0;
+}
+
+.sm-root .sm-identity-name {
+  margin: 0;
+  font-family: var(--sm-font-heading);
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.sm-root .sm-identity-email {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.sm-root .sm-identity-chip {
+  margin-block-start: 0.25rem;
+}
+
+.sm-root .sm-identity-chip[data-sm-chip="verified"] {
+  color: var(--sm-nav-active);
+  border-color: var(--sm-nav-active);
+}
+
+.sm-root .sm-identity-chip[data-sm-chip="unverified"],
+.sm-root .sm-identity-chip[data-sm-chip="error"],
+.sm-root .sm-identity-chip[data-sm-chip="unknown"] {
+  border-style: dashed;
+  color: var(--sm-muted);
+}
+
+/* ---- A setting that is not a link: a value, a choice, a status. Same card, same hairlines as the link rows ---- */
+.sm-root .sm-setting {
+  display: grid;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  padding-block: 0.875rem;
+}
+
+.sm-root .sm-group-card > .sm-setting + .sm-setting,
+.sm-root .sm-group-card > .sm-setting + .sm-more-link,
+.sm-root .sm-group-card > .sm-more-link + .sm-setting {
+  border-block-start: 1px solid var(--sm-border);
+}
+
+.sm-root .sm-setting .sm-field + .sm-field {
+  margin-block-start: 0.5rem;
+}
+
+.sm-root .sm-setting-action {
+  justify-self: start;
+}
+
+.sm-root .sm-setting-link {
+  margin-inline: 0;
+  padding-inline: 0;
+  color: var(--sm-nav-active);
+  font-weight: 700;
+}
+
+.sm-root .sm-setting .sm-choice {
+  align-items: flex-start;
+}
+
+.sm-root .sm-setting-choice {
+  display: grid;
+  gap: 0.125rem;
+}
+
+.sm-root .sm-setting .sm-stats {
+  margin: 0;
+}
+
+/* A row inside a group card is a straight band between hairlines, not a rounded tile: a rounded row bends the divider above it. */
+.sm-root .sm-group-card > .sm-more-link {
+  border-radius: 0;
+}
+
+/* The note under a form's Review button spans the whole actions row (a two-column grid: it was left in the first column, at half width). */
+.sm-root .sm-form-actions > .sm-draft-note {
+  grid-column: 1 / -1;
+}
