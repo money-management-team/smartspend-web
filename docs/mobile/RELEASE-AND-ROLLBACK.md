@@ -6,8 +6,35 @@
 - A production build with it on also needs the release approval in the build environment (`scripts/mobileBuildFlag.mjs`). An invalid value means off.
 - A flag-off build contains no Mobile module (`scripts/mobileEntryPlugin.mjs`; `tests/mobileBundle.test.mjs`, `tests/mobileFlagOff.test.mjs`).
 - Every Mobile write is closed in source (`data/writeGate.js`), whatever the flag.
-- Nothing has been pushed, merged or deployed. The branch is local `integration/mobile`.
+- **Branch:** `integration/mobile` is backed up on `origin` (at `c7c4319` when this was written, 2026-11-13). It is **not merged** into `development` (which is an ancestor of the branch; the branch is 55 commits ahead) and **nothing from it is deployed**. Only a push to `development` deploys.
 - Branch guards that live only on this unmerged branch do not protect production today.
+- **Production workflow (`deploy-hostinger.yml`):** pins `VITE_MOBILE_ENABLED` off and fails if it is not; pins Smart Savings **on** with its approval (released 2026-10-24, `docs/savings-goals/smart-plans.md`). It runs lint and a build, no tests.
+- **CI (`ci.yml`):** lint and `npm test` on pull requests and on `integration/**` pushes. No secrets, no deployment. It was added after the last full local run on Windows and **has not yet run on GitHub's Linux runner**; treat its first result as the first Linux evidence for the suite. It is deliberately not a step of the deploy workflow, so a test failure cannot block an unrelated production release.
+- **Last local verification (Windows, Node, `c7c4319`, 2026-11-13):** `npm test` 1,951 / 1,951 (339 suites), `npm run lint` clean. The suite includes the flag-off, flag-on and PWA bundle builds (`mobileBundle.test.mjs`).
+
+## Known release blockers
+
+Mobile is **not ready for production**. Open items, by who can close them. None of them is a Frontend code defect, and none was changed by this documentation phase.
+
+**Backend (outside this repository; not verified here):**
+1. **Atomic idempotency completion (P0).** In `IdempotencyService::run()` the money is committed and the key is completed in a separate transaction. If completion fails, the client sees an error although the money moved, the key stays `processing` (a repeat gets 409), and a repeat after the 24-hour expiry can post the money again. It was reproduced on SQLite and MySQL (`SMARTSPEND-CURRENT-STATUS-AND-REMAINING-WORK.md` §8.1). It affects income, expense, correction, debt payment, import confirm and reverse and Smart Savings, and **Desktop in production too**, if production runs `fd87531`. A fix exists on the backend branch `fix/financial-idempotency-p0` (reviewed at `c18d4ea`, later `6b696d72`); it is **unmerged and undeployed**, and the production commit and database engine are unconfirmed. Until it is merged, deployed and confirmed, expense, income, correction and debt-payment writes (`key-fix-pending` in `WRITE-INTEGRATION.md`) must stay closed. Stuck-`processing` key recovery and the expiry policy are acknowledged by the backend team as open.
+2. The other backend items in `WRITE-INTEGRATION.md` "Remaining backend API blockers" (creates with no duplicate protection, `skip-next`, password change, reversal 409 codes, import batches).
+
+**Environment and validation (no staging or device evidence exists):**
+3. **No staging environment.** Every Mobile read was run only against a local Laravel on fictional data. Nothing, including category writes, was run against staging.
+4. **No real-device testing:** no iOS or Android, no installed-PWA run, no camera or microphone capture, no screen reader (VoiceOver, TalkBack). Browser checks used headless Chrome.
+5. **Google sign-in is untested for real.** It is covered only by mocks; the Google client ID must allow the origin that serves `/m/signin`.
+
+**Product and approvals:**
+6. No release approval (`SMARTSPEND_MOBILE_RELEASE_APPROVED`), no per-write opening approval, Decision B (`funding-preview`) and the WhatsApp consent wording are pending.
+
+**Known frontend limits (not blockers, tracked for a later phase):**
+- The PWA is never built for production, so no user can install Mobile yet.
+- The worker scope is `/m/`; a page opened at `/m` (no trailing slash) is not controlled by it, so there is no offline page or caching there (the manifest `start_url` is `/m/`).
+- Offline, a screen that was never opened or prefetched shows the "download failed" state with a Reload button; only the prefetched screens (Activity, Planning, More, Accounts, a transaction) work offline.
+- Receipt pickers accept HEIC while the backend accepts only jpeg, png and webp.
+- Mobile sends `id_workspace` to `/financial-alerts`, as the full version's API module documents; the backend request class was read as `workspace_id`, so confirm on staging.
+- The icon set has one 256 px icon; `index.html` has no theme-color or apple-touch-icon; no CSP or Permissions-Policy is defined in the repository.
 
 ## Before a controlled rollout
 

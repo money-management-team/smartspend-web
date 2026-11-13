@@ -16,13 +16,17 @@ npm run lint      # ESLint over the whole repo
 npx eslint src/path/to/File.jsx   # lint a single file
 ```
 
-`npm test` runs the Node built-in runner over `tests/**/*.test.mjs` (API adapters and contracts, with `fetch` mocked; no framework dependency). UI tests render the real components in jsdom. See `docs/whatsapp/testing.md`.
+`npm test` runs the Node built-in runner over `tests/**/*.test.mjs` (API adapters and contracts, with `fetch` mocked; no framework dependency). UI tests render the real components in jsdom. A few suites (`mobileBundle`, `mobileSavings`, the build-flag suites) run `vite build` themselves, so the whole run takes about a minute and a half. See `docs/whatsapp/testing.md`.
+
+CI: `.github/workflows/deploy-hostinger.yml` runs lint and a production build, then deploys, and only for `development`. `.github/workflows/ci.yml` runs lint and `npm test` on pull requests and on `integration/**` pushes; it has no secrets and never deploys. See `docs/mobile/RELEASE-AND-ROLLBACK.md`.
 
 Environment variables (`.env`):
 - `VITE_API_BASE_URL`: the backend URL. If unset, `apiClient` falls back to `/api`. The tracked `.env` sets it to `/api`; production gets its own value from the Hostinger workflow.
 - Local dev is fail-closed: the Vite dev server forwards `/api` to `http://127.0.0.1:8000` unless `SMARTSPEND_DEV_API_ORIGIN` says otherwise, and a remote origin (or an absolute remote `VITE_API_BASE_URL`) additionally needs `SMARTSPEND_ALLOW_REMOTE_API=true`. See `docs/dev-environment/local-api-target.md`. Never point a dev session at staging or production by editing the tracked `.env`.
 - `VITE_GOOGLE_CLIENT_ID`: the Google Identity Services client ID, read in `src/features/Auth/components/AuthSocial/googleIdentity.js`. If unset, the Google sign-in button is disabled and a warning is logged in dev.
-- `VITE_SMART_SAVINGS_ENABLED`: the Smart Savings release gate, off unless it is exactly `"true"`. Set it only in `.env.local`. A production build with it on fails unless `SMARTSPEND_SMART_SAVINGS_RELEASE_APPROVED=true` is set in the shell (`scripts/smartSavingsBuildFlag.mjs`), and the Hostinger workflow pins it off. See `docs/savings-goals/smart-plans.md`.
+- `VITE_SMART_SAVINGS_ENABLED`: the Smart Savings release gate, off unless it is exactly `"true"`. Set it only in `.env.local`. A production build with it on fails unless `SMARTSPEND_SMART_SAVINGS_RELEASE_APPROVED=true` is set in the shell (`scripts/smartSavingsBuildFlag.mjs`). Smart Savings has been released since the approval of 2026-10-24, so the Hostinger workflow pins it **on** (with the approval) and its validation step fails if it is not. See `docs/savings-goals/smart-plans.md`.
+- `VITE_MOBILE_ENABLED`: the Mobile experience gate (`/m/*`), off unless it is exactly `"true"`. The Hostinger workflow pins it **off** and fails if a tracked env file sets it; a production-mode build with it on is refused unless `SMARTSPEND_MOBILE_RELEASE_APPROVED=true` is in the shell (`scripts/mobileBuildFlag.mjs`). Build Mobile locally with `--mode preview`. See "Mobile experience" below.
+- `VITE_MOBILE_PWA` / `SMARTSPEND_MOBILE_PWA_RETIRE`: Mobile PWA build switches for local and staging builds only; a production-mode build refuses both (`scripts/mobilePwa.mjs`, `docs/mobile/PWA-AND-DEVICE-QA.md`).
 
 ESLint uses the flat config with `eslint-plugin-react-hooks` v7 (recommended), which includes the stricter React Compiler–style rules, plus `react-refresh`.
 
@@ -53,6 +57,13 @@ ESLint uses the flat config with `eslint-plugin-react-hooks` v7 (recommended), w
 - **Workspaces**: create calls require `workspace_id`. Get it from `resolveWorkspaceId()` in `api/dashboardApi.js`, which reads the `/dashboard` scope and caches the workspace in storage.
 - **Idempotency**: money-moving writes (`POST /transfers`, `POST /transactions/income|expense`, `PATCH /transactions/{id}`) must send an `Idempotency-Key` header. Build keys with `createIdempotencyKey()`, or with `createIdempotentAttempt()` in `FinancialOperations/transactionHelpers.js`, which keeps one key per logical operation so a retry can't move the money twice. Exception: `POST /recurring-transactions/{id}/confirm-next` also moves money but sends no key, because the backend derives it from the occurrence (see `docs/recurring-transactions/confirm-and-skip.md`).
 - For errors when creating, correcting, or reversing a transaction, use `getTransactionErrorMessage(error, t, context)` from `transactionHelpers.js`. `context` is `"create"`, `"correct"`, or `"reverse"`. It gives 403, 404, and 409 wording specific to transactions (idempotency conflict vs. already reversed), keeps the backend's domain message on a 422 (e.g. insufficient balance), and falls back to `getApiErrorMessage`.
+
+### Mobile experience (`/m/*`, not released)
+- A separate presentation of the same app, in `src/mobile/`, mounted under `/m/*` only when `VITE_MOBILE_ENABLED=true`. A flag-off build contains no Mobile module, string, style or font (`scripts/mobileEntryPlugin.mjs`, `tests/mobileBundle.test.mjs`), and `/m/*` then reaches the catch-all NotFound. It lives on the unmerged `integration/mobile` branch (on `origin`, not merged into `development`) and is not part of any release.
+- **Every Mobile write is closed.** `src/mobile/data/writeGate.js` holds the registry (`MOBILE_WRITES`) and a private `APPROVED = Object.freeze([])`; every sender in `data/writeApi.js` calls `assertWriteOpen` first. Never add an operation to `APPROVED` without a recorded per-write approval and staging evidence (`docs/mobile/SECURITY-AND-FINANCIAL-GATES.md`, `docs/mobile/WRITE-INTEGRATION.md`).
+- Reads go through `data/readApi.js`, `readAssistApi.js` and `readPlanApi.js` (GET only; guarded by `tests/mobileReadOnly.test.mjs`). Screens are lazy-loaded except Home (`lazyScreens.js`). Sign-in, session and sign-out reuse the shared `AuthProvider` (`docs/mobile/SIGN-OUT-AND-SESSION.md`).
+- The optional PWA is local and staging only: worker scope `/m/`, hashed `/assets/*` cached, never `/api`, update only when the user taps Reload.
+- Release state, open blockers and the rollback are in `docs/mobile/RELEASE-AND-ROLLBACK.md`; the index of feature docs is `docs/mobile/`.
 
 ### Auth
 - `contexts/auth/authProvider.jsx` owns the session; consume it with `useAuthContext()`.

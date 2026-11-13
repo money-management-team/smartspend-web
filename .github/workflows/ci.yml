@@ -1,0 +1,47 @@
+name: CI
+
+# Checks only: lint and the test suite. This workflow has no secrets, no
+# deployment step and no repository variables, so a failure here can never
+# block or alter a release. The only workflow that deploys is
+# deploy-hostinger.yml (production, `development` only).
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "integration/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: smartspend-frontend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      # Some suites run `vite build` themselves (flag-off / flag-on bundles),
+      # so this step takes about a minute and a half.
+      - name: Test
+        run: npm test

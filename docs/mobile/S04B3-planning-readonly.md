@@ -47,7 +47,7 @@ Taken from the repo's own documentation ([../budgets/api.md](../budgets/api.md),
 | 10 | Recurring occurrences | `GET …/{id}/occurrences` (optional) | **not used** |
 | 11 | Smart Savings plan | `GET /savings-goals/{id}/plan` → `savings_goal`, `balance`, `savings_plan` (with `next_installment`), `plan_health`; **404 = no active plan** | only with the flag on (§8) |
 | 12 | Summaries and counts | there is no budget, goal or rule summary endpoint in the wrappers. `debtsApi.summary` exists but Debts are not a Mobile screen | the overview's counts are the paginators' own `total` |
-| 13 | Feature flags | `VITE_SMART_SAVINGS_ENABLED` (exactly `"true"`; production workflow pins it off) | same rule (§8) |
+| 13 | Feature flags | `VITE_SMART_SAVINGS_ENABLED` (exactly `"true"`; the production workflow has pinned it on since the 2026-10-24 release; see `docs/savings-goals/smart-plans.md`) | same rule (§8) |
 | 14 | Errors | 401, 403, 404, 409, 422, 429, 5xx → `ApiError` codes | same kinds as the other Mobile screens |
 
 **Not offered because the contract has none (or it is not needed read-only):** budget/goal/rule search, a total across currencies, "due this week" or "overdue" for rules (it would need computed dates or the occurrences read), a goals `before_due` filter (Desktop does not expose it either: its value format is undocumented), movement history of a goal (`/contributions`, `/activity`: left to the full version), installments, plan options, funding legs.
