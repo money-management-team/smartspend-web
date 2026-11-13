@@ -18,7 +18,7 @@ Desktop Settings (`Settings/Settings.jsx`) has four tabs.
 | Preferences: display (hide amounts) | device preference (Experience store) | The same preference as Home's eye, as a switch here. Nothing leaves the device. |
 | Savings reminders | `GET/PUT /notifications/preferences` | The preference is shown and can be flipped as a draft; saving is closed (existing behaviour, kept). |
 | Integrations: WhatsApp | WhatsApp integration endpoints | Its Mobile screen (`/m/whatsapp`) is linked. |
-| Sign out | `POST /logout` | **Not offered.** It is a write that is not in the gate, so the page says it is not available in Mobile yet. |
+| Sign out | `POST /logout` | ~~Not offered~~ **Offered since [SIGN-OUT-AND-SESSION.md](SIGN-OUT-AND-SESSION.md)**: the app's own `logout()`, outside the financial write gate (it moves no money). |
 
 ## What the screen is
 
@@ -26,7 +26,7 @@ Desktop Settings (`Settings/Settings.jsx`) has four tabs.
 
 1. **Identity**: avatar, name, email and the email's state as a chip (verified, not verified, checking, not checked, unknown). "Verified" is shown only when the backend said yes.
 2. **Account**: phone, workspace, main currency; Edit your profile.
-3. **Security**: Change your password; the email status with Check again; Security and sessions in the full version; what a password change does and that signing out is not available here.
+3. **Security**: Change your password; the email status with Check again; Security and sessions in the full version; what a password change does and (since the sign-out phase) a Session group with a real Sign out button.
 4. **Preferences**: Language and Theme (the shared `DisplayChoices`, with the note that they apply on this device); Hide amounts; the time zone with a link to change it in the full version.
 5. **Notifications**: the savings-reminder preference (draft, not saved), the notification inbox, WhatsApp.
 6. **Help and privacy**: support, contact, privacy and security.
@@ -46,4 +46,4 @@ The profile and password pages no longer repeat their title under the app bar.
 
 ## Still not possible on Mobile
 
-Saving a profile, changing a password, saving a notification preference or the time zone or the account language, resending the verification email, and signing out. Each is a write; none is approved. They are linked to the full version, and the Sign out gap needs an explicit decision (it would need its own entry in the write gate).
+Saving a profile, changing a password, saving a notification preference or the time zone or the account language, resending the verification email. Each is a write; none is approved. They are linked to the full version. (Signing out was in this list; it is now offered, see [SIGN-OUT-AND-SESSION.md](SIGN-OUT-AND-SESSION.md).)

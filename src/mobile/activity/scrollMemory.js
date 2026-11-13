@@ -11,3 +11,6 @@ export const rememberScroll = (signature, top) => {
 };
 
 export const recallScroll = (signature) => offsets.get(signature) ?? 0;
+
+/** Forgets every remembered position: a list scrolled by one person is not where the next one starts. */
+export const clearScrollMemory = () => offsets.clear();

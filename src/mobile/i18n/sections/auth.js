@@ -19,6 +19,11 @@ export const auth = {
       noAccount: "New to SmartSpend?",
       haveAccount: "Already have an account?",
       fullVersion: "Use the full version instead",
+      signedOut: {
+        confirmed: "You have been signed out.",
+        ended: "You have been signed out. SmartSpend says the session had already ended.",
+        unconfirmed: "You have been signed out on this device, but SmartSpend did not confirm that it ended your session on its server. If this device is shared, sign in again and sign out while you are connected.",
+      },
       signin: { title: "Sign in to SmartSpend", heading: "Sign in", intro: "Sign in to SmartSpend to see your money on your phone.", submit: "Sign in", busy: "Signing in…", link: "Sign in", wrong: "That email or phone number and password don't match an account.", invalid: "Check the details and try again." },
       register: {
         title: "Create your account", intro: "It takes a minute.", link: "Create an account", name: "Your name", confirmation: "Confirm the password",
@@ -46,6 +51,11 @@ export const auth = {
       noAccount: "جديد على SmartSpend؟",
       haveAccount: "لديك حساب بالفعل؟",
       fullVersion: "استخدم النسخة الكاملة بدلًا من ذلك",
+      signedOut: {
+        confirmed: "تم تسجيل خروجك.",
+        ended: "تم تسجيل خروجك. يقول SmartSpend إن الجلسة كانت قد انتهت أصلًا.",
+        unconfirmed: "تم تسجيل خروجك على هذا الجهاز، لكن SmartSpend لم يؤكد أنه أنهى جلستك على خادمه. إذا كان الجهاز مشتركًا، فسجّل الدخول مرة أخرى ثم سجّل الخروج وأنت متصل.",
+      },
       signin: { title: "تسجيل الدخول إلى SmartSpend", heading: "تسجيل الدخول", intro: "سجّل الدخول إلى SmartSpend لترى أموالك على هاتفك.", submit: "تسجيل الدخول", busy: "جارٍ تسجيل الدخول…", link: "تسجيل الدخول", wrong: "البريد الإلكتروني أو رقم الهاتف وكلمة المرور لا يطابقان أي حساب.", invalid: "تحقّق من التفاصيل وحاول مرة أخرى." },
       register: {
         title: "أنشئ حسابك", intro: "يستغرق ذلك دقيقة.", link: "إنشاء حساب", name: "اسمك", confirmation: "تأكيد كلمة المرور",

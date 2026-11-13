@@ -2,6 +2,8 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useAuthContext } from "../../contexts/auth/useAuthContext";
+import { clearScrollMemory } from "../activity/scrollMemory.js";
+import { clearSignOutNotice } from "../auth/signOutNotice.js";
 import { createResourceStore } from "../data/resourceStore.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { MoneyPrivacyProvider } from "../money/MoneyPrivacy.jsx";
@@ -59,8 +61,16 @@ function IdentityScope({ identity, children }) {
     };
   }, [guard]);
 
-  // Leaving Mobile (or signing out) drops the data too.
-  useEffect(() => () => store.clear(), [store]);
+  // Someone is signed in inside Mobile: a sign-out notice from before is over.
+  useEffect(() => {
+    clearSignOutNotice();
+  }, []);
+
+  // Leaving Mobile (or signing out) drops the data too, and the scroll positions remembered for this person's lists.
+  useEffect(() => () => {
+    store.clear();
+    clearScrollMemory();
+  }, [store]);
 
   if (!status.ok) return <IdentityChanged reason={status.reason} />;
 

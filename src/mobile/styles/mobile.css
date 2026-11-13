@@ -3995,3 +3995,25 @@
   color: #ffb4a8;
   font-weight: 600;
 }
+
+/* ---- Sign out ---- */
+.sm-root .sm-signout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-block-size: var(--sm-target);
+  inline-size: 100%;
+}
+
+.sm-root .sm-signout svg {
+  flex: none;
+}
+
+.sm-root .sm-signed-out {
+  margin-block: 0.25rem;
+}
+
+.sm-root .sm-signed-out-warn {
+  border-color: var(--sm-warn, #b7791f);
+}

@@ -1,5 +1,5 @@
 import { useContext, useMemo, useState } from "react";
-import { LuBell, LuInfo, LuKeyRound, LuLifeBuoy, LuLock, LuMail, LuMessageCircle, LuShieldCheck, LuUserPen } from "react-icons/lu";
+import { LuBell, LuInfo, LuKeyRound, LuLifeBuoy, LuLock, LuLogOut, LuMail, LuMessageCircle, LuShieldCheck, LuUserPen } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation } from "react-router-dom";
 
@@ -12,6 +12,7 @@ import { useResource } from "../data/useResource.js";
 import { FormWithChoices } from "../forms/MobileWorkflow.jsx";
 import { todayIn } from "../forms/validation.js";
 import { WORKFLOWS } from "../forms/workflows.js";
+import useSignOut from "../auth/useSignOut.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { buildNotificationPreferences } from "../models/assist.js";
 import { textOrNull } from "../models/values.js";
@@ -130,10 +131,33 @@ function NotificationPreferences() {
 }
 
 /*
+ * Sign out, last on the page. One real button that ends this session through the app's own sign-out (auth/useSignOut.js):
+ * it says what it does, is disabled and busy while the request is on its way, and its progress is announced. What
+ * happened is said on the sign-in page it leads to.
+ */
+function SignOut() {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const { signOut, busy } = useSignOut();
+
+  return (
+    <LabelledGroup title={t("settings.groups.session")} data-sm-group="session">
+      <div className="sm-setting" data-sm-section="sign-out">
+        <p className="sm-text sm-muted">{t("settings.signOutHint")}</p>
+        <button type="button" className="sm-button sm-button-quiet sm-signout" onClick={signOut} disabled={busy} aria-busy={busy || undefined} data-sm-action="sign-out">
+          <LuLogOut aria-hidden="true" />
+          <span>{t(busy ? "settings.signingOut" : "settings.signOut")}</span>
+        </button>
+        <p className="sm-sr" role="status" aria-live="polite">{busy ? t("settings.signingOutStatus") : ""}</p>
+      </div>
+    </LabelledGroup>
+  );
+}
+
+/*
  * Profile and settings on Mobile, in groups: who is signed in (with the email's status), the account, security,
  * preferences, notifications, and help. Everything that is read comes from the shared session or an existing GET.
- * The profile and password forms can be filled in and reviewed but are saved in the full version, signing out is not
- * offered here, and each of those says so. Language and theme are the same controls as More and the app bar.
+ * The profile and password forms can be filled in and reviewed but are saved in the full version, and they say so.
+ * Signing out is real: it is the app's own sign-out, last on the page. Language and theme are the same controls as More and the app bar.
  */
 export default function MobileProfile() {
   const { t } = useTranslation(MOBILE_NAMESPACE);
@@ -173,7 +197,6 @@ export default function MobileProfile() {
         <GroupLink to={getSettingsTabPath("security")} icon={LuShieldCheck} title={t("settings.securityFull")} hint={t("settings.securityFullHint")} />
         <div className="sm-setting" data-sm-section="session">
           <p className="sm-draft-note" role="note" data-sm-note="password-note"><LuInfo aria-hidden="true" /><span>{t("settings.passwordNote")}</span></p>
-          <p className="sm-draft-note" role="note" data-sm-note="sign-out-closed" data-sm-write="auth.logout"><LuInfo aria-hidden="true" /><span>{t("settings.signOutNote")}</span></p>
         </div>
       </LabelledGroup>
 
@@ -205,6 +228,8 @@ export default function MobileProfile() {
         <GroupLink to={PATH.PUBLIC.CONTACT} icon={LuMail} title={t("settings.contact")} />
         <GroupLink to={PATH.PUBLIC.SECURITY} icon={LuLock} title={t("settings.privacy")} />
       </LabelledGroup>
+
+      <SignOut />
     </section>
   );
 }

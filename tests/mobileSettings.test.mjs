@@ -58,10 +58,10 @@ afterEach(async () => {
 });
 
 describe("Profile and settings", () => {
-  it("is five labelled groups under who is signed in", async () => {
+  it("is six labelled groups under who is signed in, the session last", async () => {
     await open();
     assert.equal(q(".sm-bar-title").textContent, "Profile and settings");
-    assert.deepEqual(qa(".sm-more-group").map((item) => item.querySelector(".sm-group-label").textContent), ["Account", "Security", "Preferences", "Notifications", "Help and privacy"]);
+    assert.deepEqual(qa(".sm-more-group").map((item) => item.querySelector(".sm-group-label").textContent), ["Account", "Security", "Preferences", "Notifications", "Help and privacy", "Session"]);
     assert.equal(qa(".sm-more-group").every((item) => item.getAttribute("aria-labelledby") === item.querySelector(".sm-group-label").id), true);
     const who = section("identity");
     assert.match(text(who), /Signed in as: Alex Example/);
@@ -94,10 +94,9 @@ describe("Profile and settings", () => {
     assert.ok(section("email"));
     assert.equal(q("a[href='" + getSettingsTabPath("security") + "']", security) !== null, true);
     assert.match(text(q("[data-sm-note='password-note']", security)), /signs you out on your other devices/);
-    const signOut = q("[data-sm-note='sign-out-closed']", security);
-    assert.equal(signOut.dataset.smWrite, "auth.logout");
-    assert.match(text(signOut), /Signing out isn't available in Mobile yet/);
-    assert.equal(qa("button", q("main")).some((button) => /sign out|log out/i.test(button.textContent)), false, "no sign-out control that does nothing");
+    // Signing out is real now (tests/mobileSignOut.test.mjs): one button in its own Session group, not a closed note.
+    assert.equal(q("[data-sm-note='sign-out-closed']", security), null);
+    assert.equal(qa("button", q("[data-sm-group='session']", q("main"))).filter((button) => /sign out/i.test(button.textContent)).length, 1);
   });
 
   it("preferences reuse the shared language and theme controls, and say they apply on this device", async () => {
@@ -113,7 +112,7 @@ describe("Profile and settings", () => {
     await click(choice("العربية"));
     await settle();
     assert.equal(document.documentElement.dir, "rtl");
-    assert.deepEqual(qa(".sm-group-label").map((label) => label.textContent), ["الحساب", "الأمان", "التفضيلات", "الإشعارات", "المساعدة والخصوصية"]);
+    assert.deepEqual(qa(".sm-group-label").map((label) => label.textContent), ["الحساب", "الأمان", "التفضيلات", "الإشعارات", "المساعدة والخصوصية", "الجلسة"]);
     await i18n.changeLanguage("en");
   });
 

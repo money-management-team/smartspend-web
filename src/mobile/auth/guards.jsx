@@ -2,8 +2,9 @@ import { Navigate, useLocation } from "react-router-dom";
 
 import { useAuthContext } from "../../contexts/auth/useAuthContext";
 import { toReturnPath } from "../../routes/postAuthRedirect.js";
-import { MOBILE_SIGNIN } from "../navigation.js";
+import { MOBILE_PREFIX, MOBILE_SIGNIN } from "../navigation.js";
 import { mobileDestination } from "./destination.js";
+import { getSignOutNotice } from "./signOutNotice.js";
 import Skeleton from "../ui/Skeleton.jsx";
 
 /*
@@ -28,6 +29,7 @@ export function MobileGuestOnly({ children }) {
   const location = useLocation();
 
   if (initializing) return <div className="sm-root sm-standalone"><Skeleton lines={3} /></div>;
-  if (isAuthenticated) return <Navigate to={mobileDestination(location.state)} replace />;
+  // Right after a sign-out on this device, whoever signs in starts at Home, not at the page the previous person left.
+  if (isAuthenticated) return <Navigate to={getSignOutNotice() ? MOBILE_PREFIX : mobileDestination(location.state)} replace />;
   return children;
 }

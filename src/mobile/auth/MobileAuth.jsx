@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
@@ -9,11 +9,12 @@ import { errorKind } from "../data/errorKind.js";
 import { textError } from "../forms/validation.js";
 import "../i18n/register.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
-import { MOBILE_PROFILE, MOBILE_REGISTER, MOBILE_SIGNIN } from "../navigation.js";
+import { MOBILE_PREFIX, MOBILE_PROFILE, MOBILE_REGISTER, MOBILE_SIGNIN } from "../navigation.js";
 import { usePresentation } from "../presentation/usePresentation.js";
 import { useOnline } from "../ui/useOnline.js";
 import { mobileDestination } from "./destination.js";
 import GoogleSignIn from "./GoogleSignIn.jsx";
+import { getSignOutNotice, subscribeSignOutNotice } from "./signOutNotice.js";
 
 const PASSWORD_MIN = 8;
 const firstOf = (value) => (Array.isArray(value) ? value.find((item) => typeof item === "string") : typeof value === "string" ? value : null)?.slice(0, 300) ?? null;
@@ -93,6 +94,9 @@ export function MobileSignIn() {
   const navigate = useNavigate();
   const location = useLocation();
   const online = useOnline();
+  // What the last sign-out said happened (auth/useSignOut.js), if one just happened on this device.
+  const signedOut = useSyncExternalStore(subscribeSignOutNotice, getSignOutNotice, getSignOutNotice);
+  const unconfirmed = signedOut === "unconfirmed";
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(true);
@@ -102,7 +106,8 @@ export function MobileSignIn() {
   const [submit, busy] = useSubmit(async () => {
     try {
       await login({ identifier: identifier.trim(), password }, { remember });
-      navigate(mobileDestination(location.state), { replace: true });
+      // Right after a sign-out, nobody is sent back to the page the previous person left: Home.
+      navigate(signedOut ? MOBILE_PREFIX : mobileDestination(location.state), { replace: true });
     } catch (error) {
       setErrors(error?.code === "VALIDATION_ERROR" ? { identifier: firstOf(error.errors?.identifier), password: firstOf(error.errors?.password) } : {});
       setGeneral(failureText(error, t, online, "signin"));
@@ -123,6 +128,11 @@ export function MobileSignIn() {
 
   return (
     <AuthFrame screen="signin" title={t("auth.signin.heading")}>
+      {signedOut && (
+        <div className={unconfirmed ? "sm-card sm-signed-out sm-signed-out-warn" : "sm-card sm-signed-out"} role="status" data-sm-signed-out={signedOut}>
+          <p className="sm-text">{t(`auth.signedOut.${signedOut}`)}</p>
+        </div>
+      )}
       <p className="sm-text sm-muted">{t("auth.signin.intro")}</p>
       <form className="sm-auth-form" onSubmit={onSubmit} noValidate aria-busy={busy} data-sm-form="signin">
         {general && <div className="sm-error sm-error-compact" role="alert" tabIndex={-1} ref={alertRef} data-sm-auth-error>{general}</div>}
