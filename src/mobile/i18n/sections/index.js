@@ -9,6 +9,7 @@ import { guide } from "./guide.js";
 import { planningDetails } from "./planningDetails.js";
 import { pwa } from "./pwa.js";
 import { reportsImports } from "./reportsImports.js";
+import { screenBoundary } from "./screenBoundary.js";
 import { settings } from "./settings.js";
 import { tools } from "./tools.js";
 import { whatsappView } from "./whatsappView.js";
@@ -19,7 +20,7 @@ import { writes } from "./writes.js";
  * feature, each `{ en: { section: … }, ar: { section: … } }`. Sections must not
  * clash with each other or with messages.js (except `titles`, which is merged).
  */
-const FEATURES = [writes, debtsTransfers, reportsImports, pwa, forms, assist, tools, auth, analytics, guide, settings, details, planningDetails, exportsImportsView, whatsappView];
+const FEATURES = [writes, debtsTransfers, reportsImports, pwa, forms, assist, tools, auth, analytics, guide, settings, details, planningDetails, exportsImportsView, whatsappView, screenBoundary];
 
 const join = (language) =>
   FEATURES.reduce((all, feature) => ({ ...all, ...feature[language], titles: { ...all.titles, ...feature[language].titles } }), { titles: {} });

@@ -136,6 +136,47 @@ describe("a production build with Mobile on (local testing mode)", () => {
     assert.ok(statSync(entryOf(on)).size - statSync(entryOf(off)).size < 12_000, "the Mobile code in the entry (presentation gate and boot state) stays small");
   });
 
+  // What Mobile Home needs: the entry chunk's static closure plus the Mobile chunk's (dynamic imports, the lazy screens, are not followed).
+  function homeClosure(dir) {
+    const all = new Map(files(dir).filter((file) => file.endsWith(".js")).map((file) => [path.basename(file), file]));
+    const staticImports = (name) => [...text(all.get(name)).matchAll(/(?:from|import)\s*["']\.\/([^"']+\.js)["']/g)].map((match) => match[1]).filter((dep) => all.has(dep));
+    const closure = (root) => {
+      const seen = new Set([root]);
+      const queue = [root];
+      while (queue.length) for (const dep of staticImports(queue.pop())) if (!seen.has(dep)) { seen.add(dep); queue.push(dep); }
+      return seen;
+    };
+    const entry = path.basename(entryOf(dir));
+    const mobile = path.basename(files(dir).find((file) => /MobileApp-[^\/]+\.js$/.test(file)));
+    return { names: new Set([...closure(entry), ...closure(mobile)]), entry: closure(entry), all };
+  }
+
+  it("keeps the screens out of what Home loads: only the shell, Home and the shared code are in the Mobile chunk's closure; the rest are on-demand chunks", () => {
+    const { names, entry, all } = homeClosure(on);
+    const mobileAdded = [...names].filter((name) => !entry.has(name)).reduce((sum, name) => sum + statSync(all.get(name)).size, 0);
+
+    // Before the screens were lazy this was about 717 kB; a budget with a little room, so a screen imported statically again fails here.
+    assert.ok(mobileAdded < 400_000, `Mobile adds ${mobileAdded} bytes of JavaScript to the entry's closure`);
+    assert.ok(statSync(files(on).find((file) => /MobileApp-[^\/]+\.js$/.test(file))).size < 120_000, "the Mobile chunk itself holds only the shell, Home and the route table");
+
+    // Code that only a screen has (class names its markup uses) is in an on-demand chunk and not in Home's closure.
+    for (const needle of ["sm-cat-form", "sm-import-row", "sm-occurrence", "sm-debt-currency", "sm-payment-note"]) {
+      assert.ok([...names].every((name) => !text(all.get(name)).includes(needle)), `Home's closure contains "${needle}"`);
+      assert.ok([...all.keys()].some((name) => !names.has(name) && text(all.get(name)).includes(needle)), `no on-demand chunk holds "${needle}"`);
+    }
+
+    const screens = [...all.keys()].filter((name) => /^Mobile[A-Z][A-Za-z]+-/.test(name) && !/^Mobile(App|NotAvailable|Sheet)-/.test(name)); // the shell, and the tiny catch-all page, are eager on purpose
+    assert.ok(screens.length >= 30, `${screens.length} on-demand screen chunks`);
+    for (const name of screens) assert.ok(!names.has(name), `${name} is loaded with Home`);
+  });
+
+  it("loads the screens on demand from the Mobile chunk's own route table, and never from the entry or the HTML", () => {
+    const route = text(files(on).find((file) => /MobileApp-[^\/]+\.js$/.test(file)));
+    for (const screen of ["MobileActivity", "MobileAccounts", "MobileProfile", "MobileReports", "MobileWhatsApp"]) assert.match(route, new RegExp(`${screen}-[A-Za-z0-9_-]{8}\.js`), `${screen} is requested on demand`);
+    assert.doesNotMatch(text(entryOf(on)), /MobileActivity-|MobileReports-/);
+    assert.doesNotMatch(text(path.join(on, "index.html")), /MobileActivity|MobileReports/);
+  });
+
   it("never references the Mobile chunk from the HTML, so a Desktop page does not request it", () => {
     assert.doesNotMatch(text(path.join(on, "index.html")), /MobileApp/);
     assert.match(text(entryOf(on)), /MobileApp-[A-Za-z0-9_-]{8}\.js/, "the entry loads it on demand");
@@ -201,7 +242,11 @@ describe("Smart Savings in the Mobile bundle", () => {
     assert.equal(mobile.length, 1);
     assert.ok(!text(mobile[0]).includes("This goal has no Smart Savings plan"));
     assert.ok(!text(entryOf(onWithPlans)).includes("This goal has no Smart Savings plan"));
-    assert.match(text(mobile[0]), /SmartPlanSection-[A-Za-z0-9_-]{8}\.js/, "the goal's page loads it on demand");
+    // The goal's page is itself a lazy screen now (src/mobile/lazyScreens.js), so the on-demand request lives in its chunk.
+    const goalPage = files(onWithPlans).filter((file) => /MobileGoalDetail-[^\/]+\.js$/.test(file));
+    assert.equal(goalPage.length, 1);
+    assert.match(text(goalPage[0]), /SmartPlanSection-[A-Za-z0-9_-]{8}\.js/, "the goal's page loads it on demand");
+    assert.doesNotMatch(text(mobile[0]), /SmartPlanSection-[A-Za-z0-9_-]{8}\.js/, "and the Mobile chunk itself does not");
   });
 });
 

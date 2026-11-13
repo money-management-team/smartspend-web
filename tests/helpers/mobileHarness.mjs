@@ -53,8 +53,12 @@ const { resetPreferenceStoresForTests } = await import("../../src/mobile/prefere
  * lazy() import, so a Desktop build never requests this chunk.
  */
 const { MOBILE_SMART_SAVINGS } = await import("../../src/mobile/planning/smartSavingsGate.js");
+const { SCREEN_LOADERS } = await import("../../src/mobile/lazyScreens.js");
 await Promise.all([
   import("../../src/mobile/MobileApp.jsx"),
+  // The screens are lazy (src/mobile/lazyScreens.js): each is its own module graph, and the first import of each pays the
+  // same one-time transform cost the single chunk used to, so they are warmed here too (the same specifiers React.lazy calls).
+  ...Object.values(SCREEN_LOADERS).map((load) => load()),
   // Smart Savings' own screen section is a second, independent lazy() boundary
   // (src/mobile/planning/smartSavingsGate.js) that only exists in the build that turns
   // the feature on (tests/mobileSavings.test.mjs's child process,

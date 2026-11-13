@@ -65,6 +65,8 @@ const { MOBILE_SCREENS, COMPACT_NAV_MAX_REM } = await import("../src/mobile/navi
  * requests this chunk.
  */
 await import("../src/mobile/MobileApp.jsx");
+// The screens are lazy now (src/mobile/lazyScreens.js): warm them the same way.
+await Promise.all(Object.values((await import("../src/mobile/lazyScreens.js")).SCREEN_LOADERS).map((load) => load()));
 
 const stub = (id, text = id) => h("div", { id }, text);
 const DESKTOP_ROUTES = [

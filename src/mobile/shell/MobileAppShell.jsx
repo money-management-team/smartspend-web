@@ -13,11 +13,13 @@ import { PwaContext } from "../pwa/pwaContext.js";
 import { usePwa } from "../pwa/usePwa.js";
 import { newEntryPath, workflowAt } from "../forms/actionRoutes.js";
 import { NEW_ENTRY_ORDER, WORKFLOWS } from "../forms/workflows.js";
+import { prefetchLikelyScreens } from "../lazyScreens.js";
 import DisplayChoices from "../ui/DisplayChoices.jsx";
 import MobileBarActions from "./MobileBarActions.jsx";
 import MobileMenu from "./MobileMenu.jsx";
 import MobileNav from "./MobileNav.jsx";
 import MobileSheet from "./MobileSheet.jsx";
+import ScreenBoundary from "./ScreenBoundary.jsx";
 import { ShellModalContext } from "./modalContext.js";
 import { MobilePortalContext } from "./portalContext.js";
 import { useCompactNav } from "./useCompactNav.js";
@@ -105,6 +107,9 @@ export default function MobileAppShell() {
   const compact = useCompactNav();
   const pwa = usePwa();
 
+  // Once the shell is up and the browser is idle, fetch the screens a person most likely opens next (lazyScreens.js).
+  useEffect(() => prefetchLikelyScreens(), []);
+
   const [overlay, setOverlay] = useState(null); // null | "add" | "menu" | "display"
   const [portal, setPortal] = useState(null);
   const titleRef = useRef(null);
@@ -155,7 +160,9 @@ export default function MobileAppShell() {
         <main id="sm-main" className="sm-main" inert={modalOpen}>
           <PwaNotices pwa={pwa} />
           <PwaContext.Provider value={pwa}>
-            <Outlet />
+            <ScreenBoundary>
+              <Outlet />
+            </ScreenBoundary>
           </PwaContext.Provider>
         </main>
 

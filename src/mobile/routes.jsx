@@ -1,52 +1,20 @@
 import { RequireAuth } from "../routes/RouteGuards";
-import MobileAccountDetail from "./accounts/MobileAccountDetail.jsx";
-import MobileActivity from "./activity/MobileActivity.jsx";
-import MobileTransactionDetail from "./activity/MobileTransactionDetail.jsx";
-import MobileAccounts from "./accounts/MobileAccounts.jsx";
-import MobileCategories from "./categories/MobileCategories.jsx";
-import MobileCategoryDetail from "./categories/MobileCategoryDetail.jsx";
-import { MobileCategoryCreate, MobileCategoryEdit } from "./categories/MobileCategoryForm.jsx";
 import { RECORD_ACTIONS } from "./forms/actionRoutes.js";
-import { MobileNewEntry, MobileRecordAction } from "./forms/MobileWorkflow.jsx";
-import MobileAssistant, { MobileConversation } from "./assist/MobileAssistant.jsx";
-import MobileCaptures, { MobileCaptureDetail } from "./assist/MobileCaptures.jsx";
-import MobileAttention from "./assist/MobileAttention.jsx";
-import MobileReceiptNew from "./assist/MobileReceiptNew.jsx";
-import MobileVoiceNew from "./assist/MobileVoiceNew.jsx";
 import { MobileGuestOnly, MobileRequireAuth } from "./auth/guards.jsx";
-import { MobileRegister, MobileSignIn } from "./auth/MobileAuth.jsx";
 import MobileHome from "./home/MobileHome.jsx";
-import MobileProfile, { MobileProfileForm } from "./settings/MobileProfile.jsx";
-import MobileReview from "./tools/MobileReview.jsx";
-import MobileSearch from "./tools/MobileSearch.jsx";
-import MobileTemplates from "./tools/MobileTemplates.jsx";
-import MobileGettingStarted from "./guide/MobileGettingStarted.jsx";
-import MobileWhatsApp, { MobileWhatsAppDraft, MobileWhatsAppDrafts } from "./whatsapp/MobileWhatsApp.jsx";
 import IdentityBoundary from "./identity/IdentityBoundary.jsx";
+import {
+  MobileAccountDetail, MobileAccounts, MobileActivity, MobileAssistant, MobileAttention, MobileBudgetDetail, MobileBudgets, MobileCalendar, MobileCaptureDetail,
+  MobileCaptures, MobileCategories, MobileCategoryCreate, MobileCategoryDetail, MobileCategoryEdit, MobileConversation, MobileDebtDetail, MobileDebts, MobileEnter,
+  MobileExportDetail, MobileExports, MobileGettingStarted, MobileGoalDetail, MobileGoals, MobileImportDetail, MobileImportNew, MobileImports, MobileMore,
+  MobileNewEntry, MobileNotifications, MobilePlanning, MobileProfile, MobileProfileForm, MobileReceiptNew, MobileRecordAction, MobileRecurring, MobileRecurringDetail,
+  MobileRegister, MobileReport, MobileReports, MobileReview, MobileSearch, MobileSignIn, MobileTemplates, MobileTransactionDetail, MobileTransferDetail,
+  MobileTransfers, MobileVoiceNew, MobileWhatsApp, MobileWhatsAppDraft, MobileWhatsAppDrafts,
+} from "./lazyScreens.js";
 import { MOBILE_ENTER, MOBILE_PREFIX, MOBILE_REGISTER, MOBILE_SIGNIN } from "./navigation.js";
-import MobileEnter from "./screens/MobileEnter.jsx";
-import MobileMore from "./screens/MobileMore.jsx";
 import MobileNotAvailable from "./screens/MobileNotAvailable.jsx";
-import MobileBudgetDetail from "./planning/MobileBudgetDetail.jsx";
-import MobileBudgets from "./planning/MobileBudgets.jsx";
-import MobileGoalDetail from "./planning/MobileGoalDetail.jsx";
-import MobileGoals from "./planning/MobileGoals.jsx";
-import MobilePlanning from "./planning/MobilePlanning.jsx";
-import MobileRecurring from "./planning/MobileRecurring.jsx";
-import MobileRecurringDetail from "./planning/MobileRecurringDetail.jsx";
 import MobileAppShell from "./shell/MobileAppShell.jsx";
-import MobileCalendar from "./calendar/MobileCalendar.jsx";
-import MobileDebtDetail from "./debts/MobileDebtDetail.jsx";
-import MobileDebts from "./debts/MobileDebts.jsx";
-import MobileImportNew from "./imports/MobileImportNew.jsx";
-import MobileImports, { MobileImportDetail } from "./imports/MobileImports.jsx";
-import MobileNotifications from "./notifications/MobileNotifications.jsx";
-import MobileExports from "./reports/MobileExports.jsx";
-import MobileExportDetail from "./reports/MobileExportDetail.jsx";
-import MobileReport from "./reports/MobileReport.jsx";
-import MobileReports from "./reports/MobileReports.jsx";
-import MobileTransferDetail from "./transfers/MobileTransferDetail.jsx";
-import MobileTransfers from "./transfers/MobileTransfers.jsx";
+import ScreenBoundary from "./shell/ScreenBoundary.jsx";
 
 /*
  * The Mobile route tree. It uses the app's own RequireAuth, so a signed-out
@@ -71,13 +39,15 @@ export const mobileRoutes = [
     path: MOBILE_ENTER,
     element: (
       <RequireAuth>
-        <MobileEnter />
+        <ScreenBoundary standalone>
+          <MobileEnter />
+        </ScreenBoundary>
       </RequireAuth>
     ),
   },
-  { path: MOBILE_SIGNIN, element: <MobileGuestOnly><MobileSignIn /></MobileGuestOnly> },
+  { path: MOBILE_SIGNIN, element: <MobileGuestOnly><ScreenBoundary standalone><MobileSignIn /></ScreenBoundary></MobileGuestOnly> },
   // Registration applies the guest rule itself, so a registration that succeeds can go on to Profile (verification).
-  { path: MOBILE_REGISTER, element: <MobileRegister /> },
+  { path: MOBILE_REGISTER, element: <ScreenBoundary standalone><MobileRegister /></ScreenBoundary> },
   {
     path: MOBILE_PREFIX,
     element: (
