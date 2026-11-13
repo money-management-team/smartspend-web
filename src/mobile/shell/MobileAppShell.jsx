@@ -50,6 +50,7 @@ const EXTRA_TITLES = [
   [/^\/m\/templates$/, "titles.templates"],
   [/^\/m\/getting-started$/, "titles.gettingStarted"],
   [/^\/m\/imports\/new$/, "importNew.title"],
+  [/^\/m\/exports\/[^/]+$/, "titles.exportOne"],
 ];
 
 function getTitleKey(pathname) {

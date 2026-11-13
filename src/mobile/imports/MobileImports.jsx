@@ -13,11 +13,20 @@ import PagedListView from "../planning/PagedListView.jsx";
 import RecordScreen from "../planning/RecordScreen.jsx";
 import { useListScreen } from "../planning/useListScreen.js";
 import Chevron from "../ui/Chevron.jsx";
+import { fileSizeText } from "../ui/fileSize.js";
 import StateChip, { Fact } from "../ui/StateChip.jsx";
 import WriteClosedNotice from "../ui/WriteClosedNotice.jsx";
+import ImportRows from "./ImportRows.jsx";
 
 const IMPORT_TONES = { uploaded: "neutral", mapping_required: "warn", validating: "warn", ready_for_review: "warn", partially_valid: "warn", confirmed: "warn", processing: "warn", completed: "good", failed: "bad", cancelled: "neutral", reversed: "neutral" };
-const COUNT_KEYS = ["total", "valid", "invalid", "duplicate", "ignored", "imported"];
+const COUNT_KEYS = ["total", "valid", "invalid", "duplicate", "ignored", "imported", "failed"];
+const STAGE_TONES = { pending: "warn", processing: "warn", done: "good", failed: "bad" };
+
+/* Whether an import is waiting for the person or being worked on by SmartSpend (the two stages worth a chip of their own); the status chip already says the rest. */
+function StageChip({ item }) {
+  if (!item.statusKnown || (item.stage !== "pending" && item.stage !== "processing")) return null;
+  return <StateChip state={item.stage} known labels="importView.stage" tones={STAGE_TONES} />;
+}
 
 function ImportRow({ item, from, pages, locale }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
@@ -28,7 +37,11 @@ function ImportRow({ item, from, pages, locale }) {
       <span className="sm-row-main">
         <span className="sm-row-title sm-user-text"><bdi>{item.fileName ?? t("imports.unnamed")}</bdi></span>
         {when && <span className="sm-row-meta"><bdi>{when}</bdi></span>}
-        <span className="sm-chips-inline"><StateChip state={item.status} known={item.statusKnown} labels="imports.status" tones={IMPORT_TONES} /></span>
+        <span className="sm-chips-inline">
+          <StateChip state={item.status} known={item.statusKnown} labels="imports.status" tones={IMPORT_TONES} />
+          <StageChip item={item} />
+        </span>
+        {item.counts?.total != null && <span className="sm-row-meta">{t("imports.count.total")} <bdi dir="ltr">{item.counts.total}</bdi>{item.counts.imported ? <> · {t("imports.count.imported")} <bdi dir="ltr">{item.counts.imported}</bdi></> : null}</span>}
       </span>
       <Chevron />
     </Link>
@@ -76,29 +89,63 @@ export default function MobileImports() {
   );
 }
 
-function ImportDetail({ item, locale }) {
+function ImportDetail({ item, locale, refresh }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
+  const moment = (value) => formatMoment(value, locale);
+  const size = fileSizeText(item.fileSize, t, "importView", locale);
+  const hint = item.statusKnown ? item.status : null;
+  const timeline = [
+    ["uploaded", item.createdAt],
+    ["mapped", item.mappedAt],
+    ["checked", item.validatedAt],
+    ["confirmed", item.confirmedAt],
+    ["finished", item.completedAt],
+    ["cancelled", item.cancelledAt],
+    ["reversed", item.reversedAt],
+  ].filter(([, value]) => moment(value));
 
   return (
     <>
-      <section className="sm-card sm-hero" aria-labelledby="sm-import-title">
+      <section className="sm-card sm-hero" aria-labelledby="sm-import-title" data-sm-stage={item.stage ?? "unknown"}>
         <h2 id="sm-import-title" className="sm-card-title sm-user-text"><bdi>{item.fileName ?? t("imports.unnamed")}</bdi></h2>
-        <p className="sm-chips-inline"><StateChip state={item.status} known={item.statusKnown} labels="imports.status" tones={IMPORT_TONES} /></p>
-        {item.inProgress && <p className="sm-text" role="status" data-sm-import-progress="true">{t("imports.inProgress")}</p>}
-        {item.status === "completed" && <p className="sm-text">{t("imports.completedBody")}</p>}
-        {item.failureReason && <p className="sm-text sm-form-error" role="alert"><bdi className="sm-user-text">{item.failureReason}</bdi></p>}
+        <p className="sm-chips-inline">
+          <StateChip state={item.status} known={item.statusKnown} labels="imports.status" tones={IMPORT_TONES} />
+          <StageChip item={item} />
+        </p>
+        {hint && <p className="sm-hero-note sm-hero-sentence" role={item.inProgress ? "status" : undefined} data-sm-hint={hint} data-sm-import-progress={item.inProgress ? "true" : undefined}>{t(`importView.hint.${hint}`)}</p>}
+        {!hint && item.inProgress && <p className="sm-hero-note sm-hero-sentence" role="status" data-sm-import-progress="true">{t("imports.inProgress")}</p>}
+        {item.failureReason && <p className="sm-hero-note sm-hero-sentence sm-hero-failure" role="alert"><bdi className="sm-user-text">{item.failureReason}</bdi></p>}
+        {item.stage === "processing" && (
+          <button type="button" className="sm-button sm-button-quiet sm-button-small" onClick={refresh.reload} disabled={refresh.refreshing} aria-busy={refresh.refreshing || undefined} data-sm-action="check-again">
+            {refresh.refreshing ? t("importView.checking") : t("importView.checkAgain")}
+          </button>
+        )}
       </section>
 
       <section className="sm-card" aria-labelledby="sm-import-facts">
         <h2 id="sm-import-facts" className="sm-card-title">{t("imports.details")}</h2>
         <dl className="sm-stats sm-stats-stacked">
           {item.accountName && <Fact label={t("imports.account")}><bdi className="sm-user-text">{item.accountName}</bdi></Fact>}
-          {formatMoment(item.createdAt, locale) && <Fact label={t("imports.uploaded")}><bdi>{formatMoment(item.createdAt, locale)}</bdi></Fact>}
-          {formatMoment(item.completedAt, locale) && <Fact label={t("imports.finished")}><bdi>{formatMoment(item.completedAt, locale)}</bdi></Fact>}
+          {item.fileType && <Fact label={t("importView.fileType")}><bdi dir="ltr">{item.fileType.toUpperCase()}</bdi></Fact>}
+          {size && <Fact label={t("importView.fileSize")}><bdi>{size}</bdi></Fact>}
+          {item.fileAvailable !== null && <Fact label={t("importView.original")}>{t(item.fileAvailable ? "importView.kept" : "importView.removed")}</Fact>}
           {item.counts && COUNT_KEYS.map((key) => (item.counts[key] !== null ? <Fact key={key} label={t(`imports.count.${key}`)}><bdi dir="ltr">{item.counts[key]}</bdi></Fact> : null))}
         </dl>
         {!item.counts && <p className="sm-text sm-muted">{t("imports.noCounts")}</p>}
       </section>
+
+      {timeline.length > 0 && (
+        <section className="sm-card" aria-labelledby="sm-import-timeline" data-sm-section="import-timeline">
+          <h2 id="sm-import-timeline" className="sm-card-title">{t("importView.timeline")}</h2>
+          <dl className="sm-stats sm-stats-stacked">
+            {timeline.map(([key, value]) => (
+              <Fact key={key} label={key === "uploaded" ? t("imports.uploaded") : key === "finished" ? t("imports.finished") : t(`importView.${key}`)}><bdi>{moment(value)}</bdi></Fact>
+            ))}
+          </dl>
+        </section>
+      )}
+
+      <ImportRows item={item} locale={locale} />
 
       <section className="sm-card" aria-labelledby="sm-import-changes">
         <h2 id="sm-import-changes" className="sm-card-title">{t("planning.changesTitle")}</h2>
@@ -112,11 +159,11 @@ function ImportDetail({ item, locale }) {
   );
 }
 
-/* One import, read-only (GET /imports/{id}). Its status is re-read on Refresh; nothing is polled or confirmed from here. */
+/* One import, read-only (GET /imports/{id}). "Check again" re-reads it while SmartSpend is working on it; nothing is polled or confirmed from here. */
 export function MobileImportDetail() {
   const { importId } = useParams();
   const { i18n } = useTranslation(MOBILE_NAMESPACE);
   const locale = i18n.resolvedLanguage?.startsWith("ar") ? "ar" : "en";
 
-  return <RecordScreen screen="import-detail" recordId={importId} keyOf={keys.statementImport} loaderOf={importLoader} build={buildImportDetail} backFallback={MOBILE_IMPORTS} strings="imports" render={(item) => <ImportDetail item={item} locale={locale} />} />;
+  return <RecordScreen screen="import-detail" recordId={importId} keyOf={keys.statementImport} loaderOf={importLoader} build={buildImportDetail} backFallback={MOBILE_IMPORTS} strings="imports" render={(item, refresh) => <ImportDetail item={item} locale={locale} refresh={refresh} />} />;
 }

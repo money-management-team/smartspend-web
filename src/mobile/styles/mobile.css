@@ -3931,3 +3931,67 @@
   text-align: start;
   font-size: 0.875rem;
 }
+
+/* ---- Exports and imports in detail ---- */
+.sm-root .sm-export-reason {
+  display: block;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.sm-root .sm-import-errors {
+  display: grid;
+  gap: 0.125rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sm-root .sm-import-errors li {
+  overflow-wrap: anywhere;
+}
+
+/* Rows in these cards are plain lines; their links read as one left-aligned line of text. */
+.sm-root [data-sm-section="import-rows"] .sm-row {
+  border-radius: 0;
+}
+
+.sm-root [data-sm-section="import-rows"] .sm-row-meta,
+.sm-root [data-sm-export] .sm-row-meta {
+  display: block;
+}
+
+.sm-root [data-sm-section="import-rows"] .sm-note-link,
+.sm-root .sm-export-row .sm-note-link {
+  justify-content: flex-start;
+  min-inline-size: 0;
+  padding-inline: 0;
+  text-align: start;
+  font-size: 0.875rem;
+}
+
+.sm-root [data-sm-section="import-rows"] .sm-row-end {
+  flex: 0 1 auto;
+  align-self: flex-start;
+  max-inline-size: 100%;
+}
+
+.sm-root [data-sm-screen="export-detail"] .sm-hero .sm-button,
+.sm-root [data-sm-screen="import-detail"] .sm-hero .sm-button {
+  justify-self: start;
+  margin-block-start: 0.5rem;
+}
+
+/* A sentence on a dark detail card: readable (not the small muted note), and a failure reason is set apart. */
+.sm-root .sm-hero .sm-hero-sentence {
+  margin: 0;
+  color: #e6ecf8;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.sm-root .sm-hero .sm-hero-failure {
+  color: #ffb4a8;
+  font-weight: 600;
+}

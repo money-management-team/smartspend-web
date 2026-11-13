@@ -106,7 +106,7 @@ export const reportsImports = {
       uploaded: "Uploaded",
       finished: "Finished",
       noCounts: "Row counts aren't available.",
-      count: { total: "Rows", valid: "Valid", invalid: "Invalid", duplicate: "Possible duplicates", ignored: "Ignored", imported: "Imported" },
+      count: { total: "Rows", valid: "Valid", invalid: "Invalid", duplicate: "Possible duplicates", ignored: "Ignored", imported: "Imported", failed: "Failed" },
     },
   },
   ar: {
@@ -190,7 +190,7 @@ export const reportsImports = {
       uploaded: "تاريخ الرفع",
       finished: "تاريخ الانتهاء",
       noCounts: "أعداد الصفوف غير متاحة.",
-      count: { total: "الصفوف", valid: "صالحة", invalid: "غير صالحة", duplicate: "مكررة محتملة", ignored: "متجاهلة", imported: "مستوردة" },
+      count: { total: "الصفوف", valid: "صالحة", invalid: "غير صالحة", duplicate: "مكررة محتملة", ignored: "متجاهلة", imported: "مستوردة", failed: "فاشلة" },
     },
   },
 };

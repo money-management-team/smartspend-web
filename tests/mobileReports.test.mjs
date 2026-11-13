@@ -96,7 +96,7 @@ describe("Export history", () => {
     await open("/m/exports", () => ({ body: envelope({ report_exports: paginator([exp(1), exp(2, { status: "queued", download_available: false }), exp(3, { download_available: false })]) }) }));
     assert.equal(q("[data-sm-export='1']").dataset.smDownloadable, "true");
     assert.equal(qa("button", q("[data-sm-export='2']")).length, 0);
-    assert.match(text(q("[data-sm-export='2']")), /Not ready yet/);
+    assert.match(text(q("[data-sm-export='2']")), /no file yet/i);
     assert.equal(qa("button", q("[data-sm-export='3']")).length, 0, "completed without the flag: no download");
   });
 

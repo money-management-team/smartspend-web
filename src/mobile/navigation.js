@@ -51,6 +51,7 @@ export const MOBILE_NOTIFICATIONS = `${MOBILE_PREFIX}/notifications`;
 export const MOBILE_REPORTS = `${MOBILE_PREFIX}/reports`;
 export const reportPath = (type) => `${MOBILE_REPORTS}/${encodeURIComponent(type)}`;
 export const MOBILE_EXPORTS = `${MOBILE_PREFIX}/exports`;
+export const exportDetailPath = (exportId) => `${MOBILE_EXPORTS}/${encodeURIComponent(exportId)}`;
 export const MOBILE_IMPORTS = `${MOBILE_PREFIX}/imports`;
 export const importDetailPath = (importId) => `${MOBILE_IMPORTS}/${encodeURIComponent(importId)}`;
 export const MOBILE_AI = `${MOBILE_PREFIX}/assistant`;

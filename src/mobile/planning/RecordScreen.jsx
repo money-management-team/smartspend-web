@@ -25,7 +25,8 @@ const NOT_FOUND = Object.freeze({ code: "NOT_FOUND" });
  * - a record the person may not see and one that does not exist are reported in
  *   the same words (hideExistence), so the page never says which;
  * - loading, error with Retry, and "stale" (an earlier read, marked as such) are
- *   drawn here, and `render` only ever sees a good record.
+ *   drawn here, and `render` only ever sees a good record (and, as a second
+ *   argument, `{ reload, refreshing }` for a page that offers "Check again").
  */
 export default function RecordScreen({ screen, recordId, keyOf, loaderOf, build, backFallback, strings, render }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
@@ -73,7 +74,7 @@ export default function RecordScreen({ screen, recordId, keyOf, loaderOf, build,
     <section className="sm-page" data-sm-screen={screen} data-sm-record={record.id} data-sm-state={resource.stale ? "stale" : "ready"} data-sm-stale={resource.stale ? "true" : undefined}>
       {back}
       {resource.stale && <StaleNotice error={resource.error} updatedAt={resource.updatedAt} onRetry={resource.reload} retrying={resource.refreshing} />}
-      {render(record)}
+      {render(record, { reload: resource.reload, refreshing: resource.refreshing })}
     </section>
   );
 }

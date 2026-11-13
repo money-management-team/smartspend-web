@@ -42,6 +42,7 @@ import MobileImportNew from "./imports/MobileImportNew.jsx";
 import MobileImports, { MobileImportDetail } from "./imports/MobileImports.jsx";
 import MobileNotifications from "./notifications/MobileNotifications.jsx";
 import MobileExports from "./reports/MobileExports.jsx";
+import MobileExportDetail from "./reports/MobileExportDetail.jsx";
 import MobileReport from "./reports/MobileReport.jsx";
 import MobileReports from "./reports/MobileReports.jsx";
 import MobileTransferDetail from "./transfers/MobileTransferDetail.jsx";
@@ -112,6 +113,7 @@ export const mobileRoutes = [
       { path: "reports", element: <MobileReports /> },
       { path: "reports/:reportType", element: <MobileReport /> },
       { path: "exports", element: <MobileExports /> },
+      { path: "exports/:exportId", element: <MobileExportDetail /> },
       { path: "imports", element: <MobileImports /> },
       { path: "imports/new", element: <MobileImportNew /> },
       { path: "imports/:importId", element: <MobileImportDetail /> },

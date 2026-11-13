@@ -15,6 +15,7 @@ import { savingsGoalsApi } from "../../features/Dashboards/User/api/savingsGoals
 import { transactionsApi } from "../../features/Dashboards/User/api/transactionsApi.js";
 import { transfersApi } from "../../features/Dashboards/User/api/transfersApi.js";
 import { GOAL_MOVEMENTS_PER_PAGE } from "../models/goalMovementTabs.js";
+import { IMPORT_ROWS_PER_PAGE } from "../models/importRowTabs.js";
 import { OCCURRENCES_PER_PAGE } from "../models/occurrenceTabs.js";
 
 /*
@@ -211,9 +212,11 @@ export const readReport = (type, query, signal) => {
 /*
  * The export history and statement imports, read-only:
  *   GET /report-exports?status=          a page of exports (data.report_exports)
+ *   GET /report-exports/{id}             one export (data is the export): status, stage times, file size, failure message
  *   GET /report-exports/{id}/download    the file, only when the export says download_available
  *   GET /imports?status=                 a page of imports (data.imports)
- *   GET /imports/{id}                    one import with its status and row counts
+ *   GET /imports/{id}                    one import with its status, row counts and stage times
+ *   GET /imports/{id}/preview?status=    a page of the rows of an import (data.rows), each with its own status and validation errors
  * Queueing, cancelling or revoking an export, and uploading, mapping,
  * validating, confirming, cancelling or reversing an import, are writes and are
  * not named here.
@@ -223,8 +226,14 @@ export const IMPORTS_PER_PAGE = 20;
 
 export const readExports = (query, signal) => reportExportsApi.list(query, { signal });
 
+export const readExport = (exportId, signal) => reportExportsApi.get(exportId, { signal });
+
 export const readExportFile = (exportId, signal) => reportExportsApi.download(exportId, { signal });
 
 export const readImports = (query, signal) => importsApi.list(query, { signal });
 
 export const readImport = (importId, signal) => importsApi.get(importId, { signal });
+
+// The rows of an import, a page at a time, optionally narrowed to one row status. A read: nothing is fixed, ignored or confirmed from here.
+export const readImportRows = (importId, status, page, signal) =>
+  importsApi.preview(importId, { per_page: IMPORT_ROWS_PER_PAGE, ...(status ? { status } : {}), ...(page > 1 ? { page } : {}) }, { signal });

@@ -1,4 +1,4 @@
-import { readAccount, readAccountMovements, readAccounts, readAlerts, readBudget, readBudgets, readCalendarMonth, readCategories, readCategory, readCategoryList, readDashboard, readDebt, readDebtPayments, readDebtSummary, readDebts, readExports, readGoal, readGoalMovements, readGoals, readImport, readImports, readNotifications, readReport, readUnreadCount, readRule, readRuleOccurrences, readRules, readTransaction, readTransactions, readTransfer, readTransfers } from "./readApi.js";
+import { readAccount, readAccountMovements, readAccounts, readAlerts, readBudget, readBudgets, readCalendarMonth, readCategories, readCategory, readCategoryList, readDashboard, readDebt, readDebtPayments, readDebtSummary, readDebts, readExport, readExports, readGoal, readGoalMovements, readGoals, readImport, readImportRows, readImports, readNotifications, readReport, readUnreadCount, readRule, readRuleOccurrences, readRules, readTransaction, readTransactions, readTransfer, readTransfers } from "./readApi.js";
 
 /*
  * What each store entry loads: the response's `data`, as the backend sent it.
@@ -55,12 +55,17 @@ export const reportLoader = (type, query) => async (signal) => (await readReport
 
 export const exportsLoader = (query) => (signal) => readExports(query, signal);
 export const importsLoader = (query) => (signal) => readImports(query, signal);
+export const exportLoader = (exportId) => async (signal) => (await readExport(exportId, signal)).data;
+// A page of the rows of an import is returned whole (the envelope), like the other paged reads.
+export const importRowsLoader = (importId, status, page) => (signal) => readImportRows(importId, status, page, signal);
 export const importLoader = (importId) => async (signal) => (await readImport(importId, signal)).data;
 
 export const keys = {
   exports: (signature, page) => `exports:${signature}:${page}`,
   imports: (signature, page) => `imports:${signature}:${page}`,
   statementImport: (id) => `import:${id}`,
+  importRows: (id, status, page) => `importRows:${id}:${status || "all"}:${page}`,
+  exportOne: (id) => `export:${id}`,
   report: (type, from, to, page) => `report:${type}:${from}:${to}:${page}`,
   debts: (signature, page) => `debts:${signature}:${page}`,
   debt: (id) => `debt:${id}`,
