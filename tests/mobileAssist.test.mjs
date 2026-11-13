@@ -21,7 +21,7 @@ after(() => dom.window.close());
 
 const settings = (over = {}) => ({ settings: { consent: { active: true }, insights_enabled: true, forecast_enabled: true, retention_days: 90, preferred_language: "en", ...over } });
 const capture = (id, over = {}) => ({ id, status: "ready_for_review", source_type: "receipt", review_version: 2, review_values: { account_id: 1, category_id: 4, merchant_name: "Corner café", amount: "25.5000", currency_code: "ILS", transaction_date: "2026-10-27", description: "Lunch" }, created_at: "2026-10-27T12:00:00Z", ...over });
-const draft = (id, over = {}) => ({ id, status: "ready_for_review", review_version: 3, can_edit: true, can_confirm: true, can_discard: true, review_values: { account_id: 1, category_id: 4, amount: "18.0000", description: "Taxi", transaction_date: "2026-10-28", transaction_time: "09:15" }, confirmation: { ready: true, issues: [] }, account: { id: 1, name: "Everyday wallet", currency_code: "ILS" }, created_at: "2026-10-28T09:16:00Z", ...over });
+const draft = (id, over = {}) => ({ id, status: "ready_for_review", review_version: 3, can_edit: true, can_confirm: true, can_discard: true, review_values: { account_id: 1, category_id: 4, amount: "18.0000", description: "Taxi", transaction_date: "2026-10-28", transaction_time: "09:15" }, confirmation: { ready: true, issues: [] }, account: { id: 1, name: "Everyday wallet", currency_code: "ILS" }, timestamps: { created_at: "2026-10-28T09:16:00Z", expires_at: "2099-11-04T09:16:00Z" }, ...over });
 const quotas = { quotas: { voice: { limit: 10, used: 3, remaining: 7, reset_at: "2026-10-30T00:00:00Z" }, receipt: { limit: 10, used: 10, remaining: 0, reset_at: "2026-10-30T00:00:00Z" } } };
 
 function assistBackend({ ai = settings(), whatsapp = { enabled: true, state: "linked", capabilities: { can_link: true, can_manage_link: true, can_review_drafts: true }, integration: { phone_last_digits: "4321", linked_at: "2026-09-01T10:00:00Z" } }, drafts = [draft(8), draft(9, { status: "expired" })], captures = [capture(3), capture(6, { status: "processing", review_version: 0 })], prefs = { preferences: { savings_installment_reminders: true }, channels: ["in_app"], savings_installment_reminders_available: true } } = {}) {
@@ -41,7 +41,9 @@ function assistBackend({ ai = settings(), whatsapp = { enabled: true, state: "li
     if (p === "/ai/voice-expense-captures") return { body: envelope({ captures: paginator([capture(4, { source_type: "voice" })]), voice_quota: quotas.quotas.voice }) };
     if (p === "/ai/voice-expense-captures/4") return { body: envelope({ capture: capture(4, { source_type: "voice", transcript: "Twenty five shekels for lunch" }) }) };
     if (p === "/integrations/whatsapp") return { body: envelope(whatsapp) };
-    if (p === "/integrations/whatsapp/expense-drafts") return { body: envelope({ drafts: paginator(call.query.status ? drafts.filter((row) => row.status === call.query.status) : drafts) }) };
+    if (p === "/integrations/whatsapp/expense-drafts/summary") return { body: envelope({ pending_review_count: drafts.filter((row) => row.status === "ready_for_review").length }) };
+    // The real list answers ready_for_review when no status is given: there is no "all".
+    if (p === "/integrations/whatsapp/expense-drafts") return { body: envelope({ drafts: paginator(drafts.filter((row) => row.status === (call.query.status ?? "ready_for_review"))) }) };
     if (/^\/integrations\/whatsapp\/expense-drafts\/\d+$/.test(p)) {
       const found = drafts.find((row) => p.endsWith(`/${row.id}`));
       return found ? { body: envelope({ draft: found }) } : failure(404);
@@ -376,7 +378,8 @@ describe("WhatsApp", () => {
 
   it("drafts: filtered by status in the address; an expired draft can't be reviewed; a ready one opens its review", async () => {
     await open("/m/whatsapp/drafts");
-    assert.equal(qa("[data-sm-draft]").length, 2);
+    assert.equal(qa("[data-sm-draft]").length, 1, "the list opens on the drafts waiting for review, as the backend lists them");
+    assert.deepEqual(api.calls.filter((call) => call.path.endsWith("/expense-drafts")).map((call) => call.query.status), ["ready_for_review"]);
     await click(qa("button").find((button) => button.textContent.trim() === "Expired"));
     await settle();
     assert.equal(location(), "/m/whatsapp/drafts?status=expired");

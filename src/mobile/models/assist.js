@@ -166,8 +166,24 @@ export function buildCaptureDetail(data, requestedId, source) {
 
 /* ---------- WhatsApp ---------- */
 
+/*
+ * WhatsApp, as the backend's contract has it (GET /integrations/whatsapp, the draft reads):
+ *
+ * - `state` is disabled | not_linked | linked, decided by the backend from its own setting and the person's link; Mobile
+ *   never infers one. `integration` (when there is a link row) carries the link's own `status` (pending | active |
+ *   revoked), the last digits of the number, the language replies use and the default account.
+ * - `public_number` is SmartSpend's own number as international digits, null when the feature is off.
+ * - A draft (GET .../expense-drafts and .../{id}) has `status` collecting | ready_for_review | confirmed | discarded |
+ *   expired, its `review_values`, `confirmation` ({ ready, issues: [{ field, code, message }] }), `timestamps`, its
+ *   account (with `current_balance`) and category, `confirmed_transaction_id` once recorded, and `can_*` flags.
+ * - Without a `status` the list answers ready_for_review only: there is no "all", so every list asks for one status.
+ * - There is no endpoint that lists WhatsApp messages and none that reports usage limits, so Mobile shows neither.
+ */
 export const WHATSAPP_STATES = Object.freeze(["disabled", "not_linked", "linked"]);
+export const LINK_STATUSES = Object.freeze(["pending", "active", "revoked"]);
 export const DRAFT_STATUSES = Object.freeze(["collecting", "ready_for_review", "confirmed", "discarded", "expired"]);
+// The status a draft list shows when none is chosen, as the backend does.
+export const DEFAULT_DRAFT_STATUS = "ready_for_review";
 
 export function buildWhatsApp(data) {
   if (!isRecord(data) || typeof data.enabled !== "boolean" || !WHATSAPP_STATES.includes(data.state) || !isRecord(data.capabilities)) throw invalid();
@@ -181,14 +197,32 @@ export function buildWhatsApp(data) {
     phoneLastDigits: typeof integration?.phone_last_digits === "string" && /^\d{2,4}$/.test(integration.phone_last_digits) ? integration.phone_last_digits : null,
     linkedAt: moment(integration?.linked_at),
     language: word(integration?.language ?? integration?.preferred_language),
+    // The link's own status; a word the contract does not list is shown as sent, never mapped to a known one.
+    linkStatus: word(integration?.status),
+    linkStatusKnown: LINK_STATUSES.includes(integration?.status),
+    revokedAt: moment(integration?.revoked_at),
+    defaultAccountId: idText(integration?.default_account?.id ?? integration?.default_account_id),
+    defaultAccountName: textOrNull(integration?.default_account?.name, 80),
+    // SmartSpend's number as digits for a chat link; anything else is not offered.
+    publicNumber: typeof data.public_number === "string" && /^\d{8,15}$/.test(data.public_number) ? data.public_number : null,
   };
+}
+
+/** GET /integrations/whatsapp/expense-drafts/summary: the backend's own count of drafts waiting for review. */
+export function buildDraftSummary(data) {
+  const value = isRecord(data) ? data.pending_review_count : null;
+  if (!Number.isSafeInteger(value) || value < 0) throw invalid();
+  return { pending: value };
 }
 
 export function normalizeDraft(raw) {
   const id = isRecord(raw) ? idText(raw.id) : null;
   if (!id || !DRAFT_STATUSES.includes(raw.status) || !Number.isSafeInteger(raw.review_version) || !isRecord(raw.review_values)) return null;
   const values = raw.review_values;
-  const issues = Array.isArray(raw.confirmation?.issues) ? raw.confirmation.issues.filter(isRecord).map((issue) => word(issue.code)).filter(Boolean) : [];
+  const issueRows = Array.isArray(raw.confirmation?.issues) ? raw.confirmation.issues.filter(isRecord).slice(0, 12) : [];
+  const issues = issueRows.map((issue) => word(issue.code)).filter(Boolean);
+  const stamps = isRecord(raw.timestamps) ? raw.timestamps : {};
+  const accountCurrency = isCurrencyCode(raw.account?.currency_code) ? raw.account.currency_code : null;
   return {
     id,
     status: raw.status,
@@ -201,14 +235,27 @@ export function normalizeDraft(raw) {
       transaction_date: dateOnlyOrNull(values.transaction_date) ?? "",
       transaction_time: typeof values.transaction_time === "string" && /^\d{2}:\d{2}/.test(values.transaction_time) ? values.transaction_time.slice(0, 5) : "",
     },
-    currency: isCurrencyCode(raw.account?.currency_code) ? raw.account.currency_code : isCurrencyCode(values.currency_code) ? values.currency_code : null,
+    currency: accountCurrency ?? (isCurrencyCode(values.currency_code) ? values.currency_code : null),
+    accountId: idText(raw.account?.id ?? values.account_id),
     accountName: textOrNull(raw.account?.name, 80),
+    // The account's own balance as the backend reports it, in the account's currency (shown next to the draft, never added to it).
+    accountBalance: accountCurrency ? money(raw.account?.current_balance) : null,
+    categoryName: textOrNull(raw.category?.name, 80),
+    timezone: textOrNull(values.workspace_timezone, 64),
     ready: raw.confirmation?.ready === true,
     issues,
+    issueDetails: issueRows.map((issue) => ({ field: word(issue.field), code: word(issue.code), message: textOrNull(issue.message, 300) })),
     canEdit: raw.can_edit === true,
-    expiresAt: moment(raw.expires_at),
-    createdAt: moment(raw.created_at),
-    message: textOrNull(raw.source_text ?? raw.message_text, 1000),
+    canConfirm: raw.can_confirm === true,
+    canDiscard: raw.can_discard === true,
+    confirmedTransactionId: idText(raw.confirmed_transaction_id),
+    // Every moment the backend sends, from `timestamps`.
+    createdAt: moment(stamps.created_at),
+    readyAt: moment(stamps.ready_for_review_at),
+    expiresAt: moment(stamps.expires_at),
+    confirmedAt: moment(stamps.confirmed_at),
+    discardedAt: moment(stamps.discarded_at),
+    expiredAt: moment(stamps.expired_at),
   };
 }
 

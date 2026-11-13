@@ -18,7 +18,7 @@ const pageFrom = (value) => (/^[1-9]\d{0,3}$/.test(value ?? "") ? parseInt(value
  *
  * `keyOf(page)`, `loaderOf(page)` and `build(data)` must be stable.
  */
-export default function PagedRead({ name, keyOf, loaderOf, build, renderItem, empty, label, param = "page", enabled = true, previousLabel, nextLabel }) {
+export default function PagedRead({ name, keyOf, loaderOf, build, renderItem, empty, label, param = "page", enabled = true, previousLabel, nextLabel, header }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const [params, setParams] = useSearchParams();
   const page = pageFrom(params.get(param));
@@ -48,6 +48,7 @@ export default function PagedRead({ name, keyOf, loaderOf, build, renderItem, em
   return (
     <div className="sm-paged" data-sm-list={name} data-sm-page={result.page}>
       {resource.stale && <StaleNotice error={resource.error} updatedAt={resource.updatedAt} onRetry={resource.reload} retrying={resource.refreshing} />}
+      {header?.(result)}
       {result.items.length === 0 ? (
         <p className="sm-text sm-muted" data-sm-empty={name}>{empty}</p>
       ) : (

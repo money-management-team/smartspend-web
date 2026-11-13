@@ -37,7 +37,10 @@ export const readReceiptsToReview = (signal) => aiExpenseCapturesApi.list({ stat
 export const readVoiceToReview = (signal) => aiVoiceExpenseCapturesApi.list({ status: "ready_for_review", page: 1, per_page: ASSIST_PER_PAGE, sort_dir: "desc" }, { signal });
 
 export const readWhatsApp = (signal) => whatsappApi.getIntegration({ signal });
-export const readWhatsAppDrafts = (status, page, signal) => whatsappApi.listDrafts({ status: status || undefined, page, per_page: ASSIST_PER_PAGE }, { signal });
+// The backend's own count of drafts waiting for review (GET .../expense-drafts/summary); never worked out from a page of the list.
+export const readWhatsAppDraftSummary = (signal) => whatsappApi.getDraftSummary({ signal });
+// A status is always named: the backend lists ready_for_review when none is given, and has no "all".
+export const readWhatsAppDrafts = (status, page, signal) => whatsappApi.listDrafts({ status: status || "ready_for_review", page, per_page: ASSIST_PER_PAGE }, { signal });
 export const readWhatsAppDraft = (draftId, signal) => whatsappApi.getDraft(draftId, { signal });
 
 export const readNotificationPreferences = (signal) => notificationsApi.getPreferences({ signal });
