@@ -2,6 +2,8 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { PATH } from "../../routes/Path.js";
+import { debtSummaryLoader, keys } from "../data/loaders.js";
+import { useResource } from "../data/useResource.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { formatDay } from "../money/format.js";
 import Money from "../money/Money.jsx";
@@ -14,6 +16,7 @@ import { useListScreen } from "../planning/useListScreen.js";
 import Chevron from "../ui/Chevron.jsx";
 import StateChip from "../ui/StateChip.jsx";
 import { DEBT_TONES } from "./debtTones.js";
+import DebtSummary from "./DebtSummary.jsx";
 
 
 function DebtRow({ debt, from, pages, locale }) {
@@ -39,17 +42,20 @@ function DebtRow({ debt, from, pages, locale }) {
 }
 
 /*
- * Debts, read-only: GET /debts a page at a time, by direction and status. The
- * amounts and the status (including "overdue") are the backend's; nothing is
- * added up across currencies, and recording a payment is not offered here.
+ * Debts, read-only: where you stand (GET /debts/summary, per currency), then
+ * GET /debts a page at a time, by direction and status. The amounts and the
+ * status (including "overdue") are the backend's; nothing is added up across
+ * currencies, and recording a payment is not offered here.
  */
 export default function MobileDebts() {
   const { t, i18n } = useTranslation(MOBILE_NAMESPACE);
   const screen = useListScreen(DEBT_LIST);
   const locale = i18n.resolvedLanguage?.startsWith("ar") ? "ar" : "en";
   const { filters, setFilters } = screen;
+  // The summary covers every open debt, whatever the filters say, so it is read once and sits above them.
+  const summary = useResource(keys.debtSummary, debtSummaryLoader);
 
-  const toolbar = (
+  const filterCard = (
     <div className="sm-card sm-plan-filters">
       <FilterTabs
         tight
@@ -67,6 +73,13 @@ export default function MobileDebts() {
     </div>
   );
 
+  const toolbar = (
+    <>
+      <DebtSummary resource={summary} />
+      {filterCard}
+    </>
+  );
+
   return (
     <PagedListView
       screen="debts"
@@ -78,7 +91,7 @@ export default function MobileDebts() {
       pages={screen.pages}
       perPage={DEBT_LIST.perPage}
       onLoadMore={screen.loadMore}
-      onRefresh={screen.refresh}
+      onRefresh={() => { screen.refresh(); summary.reload(); }}
       fullPath={PATH.USER.DEBTS}
       renderRow={(debt) => <DebtRow debt={debt} from={screen.here} pages={screen.pages} locale={locale} />}
     />

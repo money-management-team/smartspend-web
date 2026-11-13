@@ -1,22 +1,26 @@
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { actionPath } from "../forms/actionRoutes.js";
 import DraftLinks from "../forms/DraftLinks.jsx";
 
+import { useAuthContext } from "../../contexts/auth/useAuthContext";
 import { getDebtDetailsPath } from "../../routes/Path.js";
 import { debtLoader, keys, paymentsLoader } from "../data/loaders.js";
-import { PAYMENTS_PER_PAGE } from "../data/readApi.js";
+import { PAYMENTS_PER_PAGE, isAccountId } from "../data/readApi.js";
 import { useResource } from "../data/useResource.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { formatDay } from "../money/format.js";
 import Money from "../money/Money.jsx";
 import { buildDebtDetail, buildPaymentsPage } from "../models/debts.js";
-import { MOBILE_DEBTS, activityDetailPath } from "../navigation.js";
+import { MOBILE_DEBTS, accountDetailPath, activityDetailPath } from "../navigation.js";
 import RecordScreen from "../planning/RecordScreen.jsx";
 import Chevron from "../ui/Chevron.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
+import PageLinks from "../ui/PageLinks.jsx";
+import { readPageParam, withParam } from "../ui/pageParam.js";
 import Skeleton from "../ui/Skeleton.jsx";
+import StaleNotice from "../ui/StaleNotice.jsx";
 import StateChip, { Fact } from "../ui/StateChip.jsx";
 import WriteClosedNotice from "../ui/WriteClosedNotice.jsx";
 import { DEBT_TONES, PAYMENT_TONES } from "./debtTones.js";
@@ -24,64 +28,123 @@ import { DEBT_TONES, PAYMENT_TONES } from "./debtTones.js";
 const MALFORMED = Object.freeze({ code: "MALFORMED_RESPONSE" });
 
 /*
- * The latest payments of a debt (GET /debts/{id}/payments, the first page).
- * A reversed payment stays listed and says so; the full history is in the full version.
+ * A debt's payments, read-only (GET /debts/{id}/payments): the whole history a page at a time, newest first as the
+ * backend orders it. The page lives in the address (`?pp=`), so Back and a shared link show the same slice. A reversed
+ * payment stays listed, struck through and marked, with the day it was reversed and a link to the reversal. Amounts are
+ * the backend's, in the debt's currency; a payment in another currency makes the history unavailable, never mixed in.
  */
-function Payments({ debt, locale }) {
+function Payments({ debt, locale, timeZone }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
-  const loader = useMemo(() => paymentsLoader(debt.id, 1), [debt.id]);
-  const resource = useResource(keys.payments(debt.id, 1), loader);
-  const page = useMemo(() => {
+  const location = useLocation();
+  const page = readPageParam(new URLSearchParams(location.search), "pp");
+  const loader = useMemo(() => paymentsLoader(debt.id, page), [debt.id, page]);
+  const resource = useResource(keys.payments(debt.id, page), loader);
+  const built = useMemo(() => {
     if (resource.data === undefined) return null;
     try {
-      return buildPaymentsPage(resource.data, { page: 1, perPage: PAYMENTS_PER_PAGE }, debt.id, debt.currency);
+      return buildPaymentsPage(resource.data, { page, perPage: PAYMENTS_PER_PAGE }, debt.id, debt.currency);
     } catch {
       return null;
     }
-  }, [resource.data, debt.id, debt.currency]);
+  }, [resource.data, page, debt.id, debt.currency]);
+
+  const here = `${location.pathname}${location.search}`;
+  const linkState = { from: here };
 
   let body;
   if (resource.loading) body = <Skeleton lines={2} label={t("debts.payments.loading")} />;
-  else if (!page) body = <ErrorPanel error={resource.error ?? MALFORMED} onRetry={resource.reload} retrying={resource.refreshing} />;
-  else if (page.rows.length === 0) body = <p className="sm-text sm-muted" data-sm-payments="none">{t("debts.payments.none")}</p>;
+  else if (!built) body = <ErrorPanel error={resource.error ?? MALFORMED} onRetry={resource.reload} retrying={resource.refreshing} compact />;
+  else if (built.rows.length === 0 && built.total > 0) {
+    // An address that asks for a page past the end: the payments exist, so say so and lead back to the newest.
+    body = <Link className="sm-card-link" to={withParam(location, "pp", null)} replace state={location.state} data-sm-payments="past-end">{t("debtView.payments.newer")}</Link>;
+  } else if (built.rows.length === 0) body = <p className="sm-text sm-muted" data-sm-payments="none">{t("debts.payments.none")}</p>;
   else {
     body = (
       <>
-        <ul className="sm-list" data-sm-payments={page.rows.length}>
-          {page.rows.map((payment) => (
-            <li key={payment.id} className="sm-row" data-sm-payment={payment.id} data-sm-status={payment.status ?? "none"}>
-              <span className="sm-row-main">
-                <span className="sm-row-title"><Money plain value={payment.amount} currency={payment.currency} /></span>
-                <span className="sm-row-meta">
-                  {formatDay(payment.paidAt, locale) && <bdi>{formatDay(payment.paidAt, locale)}</bdi>}
-                  {payment.account?.name && <> · <bdi className="sm-user-text">{payment.account.name}</bdi></>}
+        {resource.stale && <StaleNotice error={resource.error} updatedAt={resource.updatedAt} onRetry={resource.reload} retrying={resource.refreshing} />}
+        <p className="sm-text sm-muted sm-fine" data-sm-payments-total={built.total}>{t("debtView.payments.total", { n: built.total })}</p>
+        <ul className="sm-list" data-sm-payments={built.rows.length} data-sm-page={built.page}>
+          {built.rows.map((payment) => {
+            const paid = formatDay(payment.paidAt, locale);
+            const reversedDay = formatDay(payment.reversedAt, locale, timeZone);
+
+            return (
+              <li key={payment.id} className="sm-row" data-sm-payment={payment.id} data-sm-status={payment.status ?? "none"} data-sm-reversed={payment.reversed ? "true" : undefined}>
+                <span className="sm-row-main">
+                  <span className="sm-row-title">
+                    <span className={payment.reversed ? "sm-struck" : undefined}><Money plain value={payment.amount} currency={payment.currency} /></span>
+                    {payment.reversed && <span className="sm-sr"> {t("debts.paymentStatus.reversed")}</span>}
+                  </span>
+                  <span className="sm-row-meta">
+                    {paid && <bdi>{paid}</bdi>}
+                    {payment.account?.name && (
+                      <>
+                        {paid && " · "}
+                        {isAccountId(payment.account.id) ? (
+                          <Link to={accountDetailPath(payment.account.id)} state={linkState}><bdi className="sm-user-text">{payment.account.name}</bdi></Link>
+                        ) : (
+                          <bdi className="sm-user-text">{payment.account.name}</bdi>
+                        )}
+                      </>
+                    )}
+                  </span>
+                  <span className="sm-chips-inline"><StateChip state={payment.status} known={payment.statusKnown} labels="debts.paymentStatus" tones={PAYMENT_TONES} /></span>
+                  {payment.reversed && reversedDay && <span className="sm-row-meta">{t("debtView.payments.reversedOn")} <bdi>{reversedDay}</bdi></span>}
+                  {payment.notes && <span className="sm-text sm-user-text sm-fine sm-payment-note">{payment.notes}</span>}
+                  {!payment.reversed && debt.lifecycle !== "archived" && <Link className="sm-note-link" to={actionPath("debt-payment-reverse", { debtId: debt.id, paymentId: payment.id })} data-sm-action="debt-payment-reverse">{t("forms.flows.debt-payment-reverse.link")}</Link>}
+                  {payment.transactionId && (
+                    <Link className="sm-note-link" to={activityDetailPath(payment.transactionId)} state={linkState} data-sm-link="payment-movement">{t("debts.payments.movement")}</Link>
+                  )}
+                  {payment.reversalTransactionId && (
+                    <Link className="sm-note-link" to={activityDetailPath(payment.reversalTransactionId)} state={linkState} data-sm-link="payment-reversal">{t("debtView.payments.reversal")}</Link>
+                  )}
                 </span>
-                <span className="sm-chips-inline"><StateChip state={payment.status} known={payment.statusKnown} labels="debts.paymentStatus" tones={PAYMENT_TONES} /></span>
-                {!payment.reversed && debt.lifecycle !== "archived" && <Link className="sm-note-link" to={actionPath("debt-payment-reverse", { debtId: debt.id, paymentId: payment.id })} data-sm-action="debt-payment-reverse">{t("forms.flows.debt-payment-reverse.link")}</Link>}
-                {payment.transactionId && (
-                  <Link className="sm-note-link" to={activityDetailPath(payment.transactionId)}>{t("debts.payments.movement")}</Link>
-                )}
-              </span>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
-        {page.total > page.rows.length && <p className="sm-text sm-muted sm-fine">{t("debts.payments.more", { shown: page.rows.length, total: page.total })}</p>}
+        <PageLinks
+          label={t("debts.payments.title")}
+          name="payments"
+          current={built.page}
+          lastPage={built.lastPage}
+          hrefFor={(next) => withParam(location, "pp", next > 1 ? next : null)}
+          state={location.state}
+          newer={t("debtView.payments.newer")}
+          older={t("debtView.payments.older")}
+          pageText={t("debtView.payments.page", { page: built.page, pages: built.lastPage })}
+        />
       </>
     );
   }
 
   return (
-    <section className="sm-card" aria-labelledby="sm-debt-payments">
+    <section className="sm-card" aria-labelledby="sm-debt-payments" data-sm-section="debt-payments">
       <h2 id="sm-debt-payments" className="sm-card-title">{t("debts.payments.title")}</h2>
+      <p className="sm-text sm-muted sm-fine">{t("debtView.payments.hint")}</p>
       {body}
     </section>
   );
 }
 
-function Detail({ debt, locale }) {
+/* The due date in words, from the backend's own day count: days left, due today, or days past. Nothing is worked out from dates. */
+function Countdown({ debt, t }) {
+  if (debt.daysUntilDue === null || debt.status === "paid" || debt.status === "archived") return null;
+
+  const days = debt.daysUntilDue;
+
+  return (
+    <Fact label={t(days >= 0 ? "debtView.daysUntil" : "debtView.daysOverdue")}>
+      {days === 0 ? t("debtView.dueToday") : <bdi dir="ltr">{Math.abs(days)}</bdi>}
+    </Fact>
+  );
+}
+
+function Detail({ debt, locale, timeZone }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const direction = debt.direction ? t(`debts.direction.${debt.direction}`) : t("debts.direction.unknown");
   const day = (value) => formatDay(value, locale);
+  const noteKey = debt.lifecycle === "archived" ? "archived" : debt.status === "paid" ? "paid" : debt.overdue === true || debt.status === "overdue" ? "overdue" : null;
 
   return (
     <>
@@ -97,6 +160,12 @@ function Detail({ debt, locale }) {
         <p className="sm-text sm-muted sm-fine">{t("debts.backendFigures")}</p>
       </section>
 
+      {noteKey && (
+        <div className="sm-card" role="note" data-sm-note={`debt-${noteKey}`}>
+          <p className="sm-text">{t(`debtView.note.${noteKey}`)}</p>
+        </div>
+      )}
+
       <section className="sm-card" aria-labelledby="sm-debt-facts">
         <h2 id="sm-debt-facts" className="sm-card-title">{t("debts.details")}</h2>
         <dl className="sm-stats sm-stats-stacked">
@@ -104,12 +173,13 @@ function Detail({ debt, locale }) {
           {debt.currency && <Fact label={t("debts.currency")}><bdi dir="ltr">{debt.currency}</bdi></Fact>}
           {day(debt.issuedAt) && <Fact label={t("debts.issued")}><bdi>{day(debt.issuedAt)}</bdi></Fact>}
           <Fact label={t("debts.due")}>{day(debt.dueDate) ? <bdi>{day(debt.dueDate)}</bdi> : t("debts.noDue")}</Fact>
-          {debt.daysUntilDue !== null && debt.status !== "paid" && debt.status !== "archived" && <Fact label={t("debts.daysUntilDue")}><bdi dir="ltr">{debt.daysUntilDue}</bdi></Fact>}
+          <Countdown debt={debt} t={t} />
           {debt.lifecycle && debt.lifecycle !== debt.status && <Fact label={t("debts.lifecycle")}><StateChip state={debt.lifecycle} known={debt.lifecycleKnown} labels="debts.status" tones={DEBT_TONES} /></Fact>}
           {debt.paymentsCount !== null && <Fact label={t("debts.paymentsCount")}><bdi dir="ltr">{debt.paymentsCount}</bdi></Fact>}
           <Fact label={t("debts.opening")}>
             {debt.openingTransactionId ? <Link to={activityDetailPath(debt.openingTransactionId)}>{t("debts.openingMoved")}</Link> : debt.hasMovement === false ? t("debts.recordOnly") : t("debts.notStated")}
           </Fact>
+          {debt.owner && <Fact label={t("debtView.owner")}><bdi className="sm-user-text">{debt.owner}</bdi></Fact>}
           {day(debt.settledAt) && <Fact label={t("debts.settled")}><bdi>{day(debt.settledAt)}</bdi></Fact>}
           {day(debt.archivedAt) && <Fact label={t("debts.archived")}><bdi>{day(debt.archivedAt)}</bdi></Fact>}
         </dl>
@@ -122,7 +192,7 @@ function Detail({ debt, locale }) {
         </section>
       )}
 
-      <Payments debt={debt} locale={locale} />
+      <Payments debt={debt} locale={locale} timeZone={timeZone} />
 
       <section className="sm-card" aria-labelledby="sm-debt-changes">
         <h2 id="sm-debt-changes" className="sm-card-title">{t("planning.changesTitle")}</h2>
@@ -141,7 +211,9 @@ function Detail({ debt, locale }) {
 export default function MobileDebtDetail() {
   const { debtId } = useParams();
   const { i18n } = useTranslation(MOBILE_NAMESPACE);
+  const { user, workspace } = useAuthContext();
   const locale = i18n.resolvedLanguage?.startsWith("ar") ? "ar" : "en";
+  const timeZone = user?.timezone ?? workspace?.timezone;
 
-  return <RecordScreen screen="debt" recordId={debtId} keyOf={keys.debt} loaderOf={debtLoader} build={buildDebtDetail} backFallback={MOBILE_DEBTS} strings="debts" render={(debt) => <Detail debt={debt} locale={locale} />} />;
+  return <RecordScreen screen="debt" recordId={debtId} keyOf={keys.debt} loaderOf={debtLoader} build={buildDebtDetail} backFallback={MOBILE_DEBTS} strings="debts" render={(debt) => <Detail debt={debt} locale={locale} timeZone={timeZone} />} />;
 }

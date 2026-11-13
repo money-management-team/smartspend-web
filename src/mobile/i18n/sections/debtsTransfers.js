@@ -59,11 +59,10 @@ export const debtsTransfers = {
       settled: "Settled",
       archived: "Archived",
       payments: {
-        title: "Latest payments",
+        title: "Payments",
         loading: "Loading payments",
         none: "No payments yet.",
         movement: "See the movement",
-        more: "Showing the latest {{shown}} of {{total}}. The full history is in the full version.",
       },
     },
     transfers: {
@@ -183,11 +182,10 @@ export const debtsTransfers = {
       settled: "تاريخ التسوية",
       archived: "تاريخ الأرشفة",
       payments: {
-        title: "أحدث الدفعات",
+        title: "الدفعات",
         loading: "جارٍ تحميل الدفعات",
         none: "لا توجد دفعات بعد.",
         movement: "عرض الحركة",
-        more: "تُعرض أحدث {{shown}} من {{total}}. السجل الكامل في النسخة الكاملة.",
       },
     },
     transfers: {

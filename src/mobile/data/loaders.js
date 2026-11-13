@@ -1,4 +1,4 @@
-import { readAccount, readAccountMovements, readAccounts, readAlerts, readBudget, readBudgets, readCalendarMonth, readCategories, readCategory, readCategoryList, readDashboard, readDebt, readDebtPayments, readDebts, readExports, readGoal, readGoalMovements, readGoals, readImport, readImports, readNotifications, readReport, readUnreadCount, readRule, readRules, readTransaction, readTransactions, readTransfer, readTransfers } from "./readApi.js";
+import { readAccount, readAccountMovements, readAccounts, readAlerts, readBudget, readBudgets, readCalendarMonth, readCategories, readCategory, readCategoryList, readDashboard, readDebt, readDebtPayments, readDebtSummary, readDebts, readExports, readGoal, readGoalMovements, readGoals, readImport, readImports, readNotifications, readReport, readUnreadCount, readRule, readRuleOccurrences, readRules, readTransaction, readTransactions, readTransfer, readTransfers } from "./readApi.js";
 
 /*
  * What each store entry loads: the response's `data`, as the backend sent it.
@@ -30,6 +30,8 @@ export const goalsLoader = (query) => (signal) => readGoals(query, signal);
 // A page of a goal's movements is returned whole (the envelope), like the other paged reads.
 export const goalMovementsLoader = (goalId, tab, page) => (signal) => readGoalMovements(goalId, tab, page, signal);
 export const rulesLoader = (query) => (signal) => readRules(query, signal);
+// A page of a rule's occurrences is returned whole (the envelope), like the other paged reads.
+export const occurrencesLoader = (ruleId, status, page) => (signal) => readRuleOccurrences(ruleId, status, page, signal);
 
 export const budgetLoader = (budgetId) => async (signal) => (await readBudget(budgetId, signal)).data;
 export const goalLoader = (goalId) => async (signal) => (await readGoal(goalId, signal)).data;
@@ -41,6 +43,7 @@ export const categoryLoader = (categoryId) => async (signal) => (await readCateg
 // Debts, transfers and notifications are pages (the envelope); one debt or transfer is its `data`.
 export const debtsLoader = (query) => (signal) => readDebts(query, signal);
 export const debtLoader = (debtId) => async (signal) => (await readDebt(debtId, signal)).data;
+export const debtSummaryLoader = async (signal) => (await readDebtSummary(signal)).data;
 export const paymentsLoader = (debtId, page) => (signal) => readDebtPayments(debtId, page, signal);
 export const transfersLoader = (query) => (signal) => readTransfers(query, signal);
 export const transferLoader = (transferId) => async (signal) => (await readTransfer(transferId, signal)).data;
@@ -61,6 +64,7 @@ export const keys = {
   report: (type, from, to, page) => `report:${type}:${from}:${to}:${page}`,
   debts: (signature, page) => `debts:${signature}:${page}`,
   debt: (id) => `debt:${id}`,
+  debtSummary: "debtSummary",
   payments: (id, page) => `payments:${id}:${page}`,
   transfers: (signature, page) => `transfers:${signature}:${page}`,
   transfer: (id) => `transfer:${id}`,
@@ -76,6 +80,7 @@ export const keys = {
   goalPlan: (id) => `goalPlan:${id}`,
   rules: (signature, page) => `rules:${signature}:${page}`,
   rule: (id) => `rule:${id}`,
+  occurrences: (id, status, page) => `occurrences:${id}:${status || "all"}:${page}`,
   categories: "categories",
   transaction: (id) => `transaction:${id}`,
   activity: (signature, page) => `activity:${signature}:${page}`,

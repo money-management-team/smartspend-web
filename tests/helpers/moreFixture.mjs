@@ -39,9 +39,26 @@ export const payment = (id, debtId, over = {}) => ({
   status: "posted",
   is_reversed: false,
   transaction_id: 30 + id,
+  reversal_transaction_id: null,
   account: { id: 1, name: "Cash", type: "cash", currency_code: "ILS" },
+  notes: null,
+  reversed_at: null,
   ...over,
 });
+
+const side = (over = {}) => ({ original_amount: "0.0000", paid_amount: "0.0000", remaining_amount: "0.0000", debts_count: 0, overdue_count: 0, ...over });
+
+/** One bucket of GET /debts/summary's by_currency, in the backend's shape. */
+export const summaryRow = (currency, over = {}) => ({
+  currency_code: currency,
+  payable: side(),
+  receivable: side(),
+  active_debts_count: 0,
+  overdue_debts_count: 0,
+  net_position: "0.0000",
+  ...over,
+});
+export { side as summarySide };
 
 export const transfer = (id, over = {}) => ({
   id,
@@ -80,7 +97,7 @@ export const event = (id, date, over = {}) => ({ id: `debt_due:${id}`, type: "de
 // The notifications endpoint documents its paginator without from/to.
 const withoutRange = ({ from, to, ...rest }) => (void from, void to, rest);
 
-export function moreBackend({ debts = [], payments = {}, transfers = [], notifications = [], events = null } = {}) {
+export function moreBackend({ debts = [], payments = {}, transfers = [], notifications = [], events = null, summary = null } = {}) {
   return (call) => {
     const q = call.query;
     const page = { page: Number(q.page ?? 1), perPage: Number(q.per_page ?? 20) };
@@ -89,6 +106,8 @@ export function moreBackend({ debts = [], payments = {}, transfers = [], notific
       const rows = debts.filter((row) => (!q.direction || row.direction === q.direction) && (!q.status || row.effective_status === q.status || row.status === q.status));
       return { body: envelope({ debts: paginator(rows, page) }) };
     }
+    // GET /debts/summary: open debts per currency (absent here means the backend does not answer it).
+    if (call.path === "/debts/summary") return summary ? { body: envelope({ summary: { by_currency: summary } }) } : failure(404, "Not found");
     const debtPayments = /^\/debts\/(\d+)\/payments$/.exec(call.path);
     if (debtPayments) return { body: envelope({ payments: paginator(payments[debtPayments[1]] ?? [], page) }) };
     const oneDebt = /^\/debts\/(\d+)$/.exec(call.path);

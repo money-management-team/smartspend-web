@@ -118,9 +118,10 @@ const pageOf = (call, rows, key) => ({ body: envelope({ [key]: paginator(rows, {
 /**
  * @param {{ budgets?: object[], goals?: object[], rules?: object[], alerts?: object[], plans?: Record<string, object | null> }} data
  * `movements` maps a goal id to its GoalMovementResource rows (newest first): GET /savings-goals/{id}/activity[?type=] and /contributions.
+ * `occurrences` maps a rule id to its occurrence rows (newest due date first): GET /recurring-transactions/{id}/occurrences[?occurrence_status=].
  * `plans` maps a goal id to the body of GET /savings-goals/{id}/plan (absent or null: 404, a goal with no plan).
  */
-export function planningBackend({ budgets = [], goals = [], rules = [], alerts = [], plans = {}, movements = {} } = {}) {
+export function planningBackend({ budgets = [], goals = [], rules = [], alerts = [], plans = {}, movements = {}, occurrences = {} } = {}) {
   return (call) => {
     const q = call.query;
     const one = /^\/(budgets|savings-goals|recurring-transactions)\/(\d+)$/.exec(call.path);
@@ -136,6 +137,12 @@ export function planningBackend({ budgets = [], goals = [], rules = [], alerts =
 
     if (call.path === "/recurring-transactions") {
       return pageOf(call, rules.filter((row) => (!q.status || row.status === q.status) && (!q.type || row.type === q.type)), "recurring_transactions");
+    }
+
+    const history = /^\/recurring-transactions\/(\d+)\/occurrences$/.exec(call.path);
+    if (history) {
+      if (!rules.some((row) => String(row.id) === history[1])) return failure(404, "Not found");
+      return pageOf(call, (occurrences[history[1]] ?? []).filter((row) => !q.occurrence_status || row.status === q.occurrence_status), "occurrences");
     }
 
     const trail = /^\/savings-goals\/(\d+)\/(activity|contributions)$/.exec(call.path);
@@ -171,6 +178,25 @@ export const movement = (id, goalId, over = {}) => ({
   to_account: { id: 5, name: `Goal ${goalId} jar`, type: "savings" },
   occurred_at: "2026-10-20T09:00:00Z",
   created_at: "2026-10-20T09:00:00Z",
+  ...over,
+});
+
+/** One occurrence in the backend's RecurringOccurrenceResource shape. */
+export const occurrence = (id, ruleId, over = {}) => ({
+  id,
+  recurring_transaction_id: ruleId,
+  due_date: "2026-11-01",
+  status: "scheduled",
+  is_open: true,
+  is_overdue: false,
+  amount: "120.0000",
+  currency_code: "ILS",
+  transaction_id: null,
+  idempotency_key: `recurring:${ruleId}:2026-11-01`,
+  failure_reason: null,
+  attempts: 0,
+  processed_at: null,
+  created_at: "2026-10-01T06:00:00Z",
   ...over,
 });
 

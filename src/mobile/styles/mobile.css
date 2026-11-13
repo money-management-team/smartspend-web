@@ -3772,3 +3772,162 @@
   font-size: 0.8125rem;
   overflow-wrap: normal;
 }
+
+/* ---- Phase 6UI.5C5: debts and recurring rules ---- */
+
+/* Where you stand: one block per currency, never merged. */
+.sm-root [data-sm-section="debt-summary"] {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.sm-root .sm-debt-currency {
+  display: grid;
+  gap: 0.625rem;
+  min-inline-size: 0;
+  padding-block-start: 0.75rem;
+  border-block-start: 1px solid var(--sm-border);
+}
+
+.sm-root .sm-debt-currency-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 0.75rem;
+  margin: 0;
+  font-family: var(--sm-font-heading);
+  font-size: 1rem;
+}
+
+.sm-root .sm-debt-currency-code {
+  letter-spacing: 0.04em;
+}
+
+.sm-root .sm-debt-sides {
+  display: grid;
+  gap: 0;
+  margin: 0;
+}
+
+/* Label on one side, the figure on the other: compact at every width, and it wraps rather than clips. */
+.sm-root .sm-debt-side {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.125rem 0.75rem;
+  min-inline-size: 0;
+  padding-block: 0.5rem;
+  border-block-end: 1px solid var(--sm-border);
+}
+
+.sm-root .sm-debt-side dt {
+  color: var(--sm-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.sm-root .sm-debt-side dd {
+  display: grid;
+  justify-items: end;
+  gap: 0.125rem;
+  margin: 0;
+  min-inline-size: 0;
+  margin-inline-start: auto;
+  text-align: end;
+}
+
+.sm-root .sm-debt-side-money {
+  font-family: var(--sm-font-heading);
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.sm-root .sm-debt-side-meta {
+  color: var(--sm-muted);
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+
+.sm-root .sm-debt-net {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.125rem 0.75rem;
+  min-inline-size: 0;
+}
+
+.sm-root .sm-debt-net-label {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.sm-root .sm-debt-net-money {
+  font-family: var(--sm-font-heading);
+  font-weight: 700;
+}
+
+.sm-root .sm-debt-net .sm-text {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+/* Two tabs rows rather than a clipped strip: seven statuses do not fit one line on a narrow screen. */
+.sm-root .sm-tabs.sm-tabs-wrap {
+  flex-wrap: wrap;
+  margin-block: 0.25rem 0.5rem;
+}
+
+.sm-root .sm-tabs.sm-tabs-wrap .sm-tab {
+  flex: 1 1 auto;
+  min-inline-size: 4.25rem;
+}
+
+/* Payment and occurrence rows: notes and reasons wrap in full instead of being cut. */
+.sm-root .sm-payment-note,
+.sm-root .sm-occurrence-reason {
+  display: block;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.sm-root [data-sm-payment][data-sm-reversed="true"] .sm-row-meta,
+.sm-root [data-sm-occurrence] .sm-row-meta {
+  display: block;
+}
+
+.sm-root .sm-occurrence .sm-row-end {
+  flex: 0 1 auto;
+  align-self: flex-start;
+  max-inline-size: 100%;
+}
+
+/* The overdue chip sits next to the status chip and wraps with it. */
+.sm-root [data-sm-section="rule-next"] .sm-stat dd .sm-chip,
+.sm-root [data-sm-section="rule-next"] .sm-stat dd .sm-plan-chip {
+  vertical-align: middle;
+}
+
+/* Rows inside these cards are plain lines, and their links read as one left-aligned line of text. */
+.sm-root [data-sm-section="rule-occurrences"] .sm-row,
+.sm-root [data-sm-section="debt-payments"] .sm-row {
+  border-radius: 0;
+}
+
+.sm-root [data-sm-section="rule-occurrences"] .sm-note-link,
+.sm-root [data-sm-section="debt-payments"] .sm-note-link {
+  justify-content: flex-start;
+  min-inline-size: 0;
+  padding-inline: 0;
+  text-align: start;
+  font-size: 0.875rem;
+}
+
+.sm-root .sm-debt-currency .sm-note-link {
+  justify-content: flex-start;
+  min-inline-size: 0;
+  padding-inline: 0;
+  text-align: start;
+  font-size: 0.875rem;
+}

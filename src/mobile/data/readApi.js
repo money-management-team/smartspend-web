@@ -15,6 +15,7 @@ import { savingsGoalsApi } from "../../features/Dashboards/User/api/savingsGoals
 import { transactionsApi } from "../../features/Dashboards/User/api/transactionsApi.js";
 import { transfersApi } from "../../features/Dashboards/User/api/transfersApi.js";
 import { GOAL_MOVEMENTS_PER_PAGE } from "../models/goalMovementTabs.js";
+import { OCCURRENCES_PER_PAGE } from "../models/occurrenceTabs.js";
 
 /*
  * Every request Mobile makes, in one file, and every one of them a GET.
@@ -89,6 +90,7 @@ export const readCategories = (signal) => categoriesApi.list({ workspace_id: wor
  *   GET /savings-goals/{id}                     one goal with its `progress`
  *   GET /recurring-transactions?status=&type=   a page of rules
  *   GET /recurring-transactions/{id}            one rule with its `schedule`
+ *   GET /recurring-transactions/{id}/occurrences  a page of the rule's occurrences (data.occurrences), newest due date first
  *
  * The Smart Savings plan read (GET /savings-goals/{id}/plan) is NOT here: it is
  * in data/readPlanApi.js, which only a build with Smart Savings on includes.
@@ -122,6 +124,10 @@ export const readRules = (query, signal) => recurringTransactionsApi.list(query,
 
 export const readRule = (ruleId, signal) => recurringTransactionsApi.get(ruleId, { signal });
 
+// A rule's history of due dates (scheduled, due, posted, skipped, failed, cancelled), optionally narrowed to one status. Reads only: nothing is confirmed or skipped from here.
+export const readRuleOccurrences = (ruleId, status, page, signal) =>
+  recurringTransactionsApi.listOccurrences(ruleId, { per_page: OCCURRENCES_PER_PAGE, ...(status ? { occurrence_status: status } : {}), ...(page > 1 ? { page } : {}) }, { signal });
+
 /** The session's workspace for a list query or a category's creation (read from storage, never written). */
 export const planningWorkspaceId = workspaceId;
 
@@ -145,6 +151,7 @@ export const sessionWorkspace = () => getStoredWorkspace();
  *   GET /debts?direction=&status=           a page of debts (data.debts), each with the backend's amounts and status
  *   GET /debts/{id}                         one debt (data.debt)
  *   GET /debts/{id}/payments                a page of its payments (data.payments), reversed ones included
+ *   GET /debts/summary?workspace_id=        open debts per currency (data.summary.by_currency), never added across currencies
  *   GET /transfers?status=                  a page of transfers (data.transfers); no workspace filter exists
  *   GET /transfers/{id}                     one transfer with its transactions and ledger entries
  *   GET /notifications?status=              a page of the person's inbox (data.notifications); no workspace
@@ -161,6 +168,9 @@ export const NOTIFICATIONS_PER_PAGE = 20;
 export const readDebts = (query, signal) => debtsApi.list(query, { signal });
 
 export const readDebt = (debtId, signal) => debtsApi.get(debtId, { signal });
+
+// The summary is for the whole workspace, not for the filtered list (the same workspace_id the list sends).
+export const readDebtSummary = (signal) => debtsApi.summary({ workspace_id: workspaceId() }, { signal });
 
 export const readDebtPayments = (debtId, page, signal) => debtsApi.listPayments(debtId, { per_page: PAYMENTS_PER_PAGE, page }, { signal });
 

@@ -1,4 +1,4 @@
-import { isCurrencyCode } from "../money/decimal.js";
+import { isCurrencyCode, parseDecimal } from "../money/decimal.js";
 import { buildPlanningPage, readState } from "./planning.js";
 import { amountIn, countOrNull, dateOnlyOrNull, flagOrNull, idText, isRecord, textOrNull } from "./values.js";
 
@@ -16,8 +16,13 @@ import { amountIn, countOrNull, dateOnlyOrNull, flagOrNull, idText, isRecord, te
  *   days_until_due and payments_count. All of them are the backend's: Mobile
  *   never subtracts paid from original, and never decides a debt is overdue
  *   or settled from the dates.
- * - GET /debts/{id}/payments: a paginator at data.payments. A reversed payment
- *   stays in the list with status "reversed".
+ * - GET /debts/{id}/payments: a paginator at data.payments, newest first. A
+ *   reversed payment stays in the list with status "reversed", and says when
+ *   and by which transaction it was reversed.
+ * - GET /debts/summary (workspace_id): data.summary.by_currency, one bucket per
+ *   currency with a payable and a receivable side and a net_position. Open
+ *   debts only (active and partly paid); currencies are never added together,
+ *   and every figure is the backend's.
  */
 
 export const DEBT_DIRECTIONS = ["payable", "receivable"];
@@ -85,6 +90,7 @@ export function normalizeDebt(raw) {
     hasMovement: flagOrNull(raw.has_movement),
     openingTransactionId: idText(raw.opening_transaction_id),
     notes: textOrNull(raw.notes, 1000),
+    owner: textOrNull(isRecord(raw.owner) ? raw.owner.name : null, 80),
   };
 }
 
@@ -117,11 +123,72 @@ export function normalizePayment(raw, debtId, currency) {
     status: state.word,
     statusKnown: state.known,
     reversed: flagOrNull(raw.is_reversed) === true || state.word === "reversed",
-    reversedAt: dateOnlyOrNull(raw.reversed_at),
+    // A moment (the backend's timestamp), kept whole so the day is shown in the person's own time zone.
+    reversedAt: typeof raw.reversed_at === "string" && raw.reversed_at ? raw.reversed_at : null,
     account,
     transactionId: idText(raw.transaction_id),
+    reversalTransactionId: idText(raw.reversal_transaction_id),
     notes: textOrNull(raw.notes, 1000),
   };
 }
 
 export const buildPaymentsPage = (response, expected, debtId, currency) => buildPlanningPage(response, expected, "payments", (raw) => normalizePayment(raw, debtId, currency));
+
+/* ---------- The summary ---------- */
+
+const invalidSummary = () => Object.assign(new Error("Debt summary could not be validated."), { code: "MALFORMED_RESPONSE" });
+
+function readSide(raw, currency) {
+  if (!isRecord(raw)) throw invalidSummary();
+
+  const side = {
+    original: amountIn(raw.original_amount, currency),
+    paid: amountIn(raw.paid_amount, currency),
+    remaining: amountIn(raw.remaining_amount, currency),
+    count: countOrNull(raw.debts_count),
+    overdue: countOrNull(raw.overdue_count),
+  };
+  // A side whose figures are not valid decimals would show "—" under a heading that promises a total: refuse it whole.
+  if (side.original === null || side.paid === null || side.remaining === null) throw invalidSummary();
+
+  return side;
+}
+
+/**
+ * GET /debts/summary's `data`: one entry per currency, as the backend grouped them.
+ *
+ * Refused whole when a bucket has no valid currency, a currency appears twice, a
+ * side is missing or carries an amount that is not a decimal, or the net position
+ * is not one. Nothing is added, subtracted or converted here: the net position,
+ * the open-debt count and the overdue count are the backend's own.
+ *
+ * @returns {Array<{ currency: string, payable: object, receivable: object, net: string, netSign: "positive" | "negative" | "zero", openCount: number | null, overdueCount: number | null }>}
+ */
+export function buildDebtSummary(data) {
+  const rows = isRecord(data) && isRecord(data.summary) ? data.summary.by_currency : null;
+  if (!Array.isArray(rows) || rows.length > 40) throw invalidSummary();
+
+  const seen = new Set();
+
+  return rows.map((raw) => {
+    if (!isRecord(raw) || !isCurrencyCode(raw.currency_code) || seen.has(raw.currency_code)) throw invalidSummary();
+    seen.add(raw.currency_code);
+
+    const currency = raw.currency_code;
+    const net = amountIn(raw.net_position, currency);
+    if (net === null) throw invalidSummary();
+
+    const parsed = parseDecimal(net);
+    const zero = /^0$/.test(parsed.integer) && /^0*$/.test(parsed.fraction);
+
+    return {
+      currency,
+      payable: readSide(raw.payable, currency),
+      receivable: readSide(raw.receivable, currency),
+      net,
+      netSign: zero ? "zero" : parsed.negative ? "negative" : "positive",
+      openCount: countOrNull(raw.active_debts_count),
+      overdueCount: countOrNull(raw.overdue_debts_count),
+    };
+  });
+}

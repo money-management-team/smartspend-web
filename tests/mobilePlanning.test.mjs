@@ -434,7 +434,8 @@ describe("Recurring rules", () => {
     assert.match(text(page), /Confirming the next payment moves money/);
     assert.equal(link("Open this rule in the full version").getAttribute("href"), "/dashboard/recurring/1");
     assert.equal(qa("button, input, form", q("main")).length, 0);
-    assert.equal(api.calls.some((call) => /occurrences|confirm|skip|pause|resume/.test(call.path)), false);
+    // The rule's occurrence history is a read (GET .../occurrences); confirming, skipping, pausing and resuming are not requested.
+    assert.equal(api.calls.some((call) => /confirm|skip|pause|resume/.test(call.path)), false);
   });
 
   it("a response for another rule is refused", async () => {
