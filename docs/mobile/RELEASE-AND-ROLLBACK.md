@@ -30,11 +30,10 @@ Mobile is **not ready for production**. Open items, by who can close them. None 
 
 **Known frontend limits (not blockers, tracked for a later phase):**
 - The PWA is never built for production, so no user can install Mobile yet.
-- The worker scope is `/m/`; a page opened at `/m` (no trailing slash) is not controlled by it, so there is no offline page or caching there (the manifest `start_url` is `/m/`).
 - Offline, a screen that was never opened or prefetched shows the "download failed" state with a Reload button; only the prefetched screens (Activity, Planning, More, Accounts, a transaction) work offline.
-- Receipt pickers accept HEIC while the backend accepts only jpeg, png and webp.
-- Mobile sends `id_workspace` to `/financial-alerts`, as the full version's API module documents; the backend request class was read as `workspace_id`, so confirm on staging.
-- The icon set has one 256 px icon; `index.html` has no theme-color or apple-touch-icon; no CSP or Permissions-Policy is defined in the repository.
+- A HEIC/HEIF receipt is refused in the picker (it is never uploaded), because the backend accepts only jpeg, png and webp. A HEIC photo renamed to `.jpg` is not detected on the device; the backend's file guard still refuses it.
+- Mobile now sends `workspace_id` to `/financial-alerts`: `FinancialAlertController` (`fix/financial-idempotency-p0 @ 6b696d72`) reads `workspace_id`, and `id_workspace` appears nowhere in the backend. The **full version's** dashboard alerts card (`FinancialAlerts.jsx`, `financialAlertsApi.js`) still sends `id_workspace`, so it gets the alerts of every workspace the user manages; it was not changed here.
+- The PWA icons (192, 512, maskable 512, Apple touch 180), the theme colour and `viewport-fit` exist in PWA builds only, which are never built for production. No CSP or Permissions-Policy is defined in the repository.
 
 ## Before a controlled rollout
 
@@ -56,7 +55,7 @@ Mobile is **not ready for production**. Open items, by who can close them. None 
 - **Mobile:** rebuild with `VITE_MOBILE_ENABLED` unset. Every `/m/*` URL then reaches the app's NotFound through the catch-all route, and canonical `/dashboard/*` URLs are untouched. Deep links to `/m/*` do not break the app.
 - **The PWA has never been built for production:** a production-mode build refuses it (`scripts/mobilePwa.mjs`).
   - If a staging origin ever ran the PWA build, the next non-PWA build removes the `/m/` worker and its caches on the first Mobile page load. This was tested in Chrome; see PWA-AND-DEVICE-QA.md.
-  - On such an origin, `/m/sw.js` must then not be served as a real file from an old deploy.
+  - On such an origin, `/smartspend-mobile-sw.js` (and `/m/sw.js` from the first builds) must then not be served as a real file from an old deploy.
   - **Flag-off rollback (resolved for staging):** a flag-off build has no Mobile code, so it cannot remove that worker itself. Build it with `SMARTSPEND_MOBILE_PWA_RETIRE=true` (build shell only; refused in production mode). That adds one static file, `m/sw.js`, a retire worker that deletes the `sm-pwa-*` caches and unregisters itself, and changes nothing else in the output. Verified in Chrome on the final source: the worker and its cache were gone on the first Mobile visit after the switch, and a control run without the option kept them (PWA-AND-DEVICE-QA.md). Serve it as JavaScript with `no-cache`, and keep it deployed until visitors have returned. Not yet verified on a real staging host or a device.
 - **Mobile sign-in** (`9586419`) is Mobile-only: reverting it sends signed-out Mobile visitors to the full version's sign-in again, as before. The AuthProvider is not changed by it.
 - **Google sign-in on Mobile** (`39db937`) imports two of the full version's plain-JS modules (`useGoogleSignIn.js`, `googleIdentity.js`); nothing in them changed. Reverting it restores the link to the full version's sign-in page. Before release, the Google client ID must allow the origin that serves `/m/signin` (handoff §6).

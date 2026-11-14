@@ -4,6 +4,8 @@
 
 Every write Mobile has code for is listed in `MOBILE_WRITES`. A write may be sent only if its name is in `APPROVED`, which is an empty frozen array. No environment variable, storage key, URL parameter or global can open a write. Opening one is a visible source change, and the commit must cite the server-side evidence from section 3.
 
+The test runner's own switch (`setWriteApprovalsForTests`, and `setVoiceRecorderForTests` for the voice recorder) is not an exception to that: both act only when `import.meta.env.MODE` is `"test"`, which only `tests/helpers/loader.mjs` sets. In any Vite build that value is a literal (`production`, `preview`, `staging`, `development`), so the override is never read, the setters throw, and the built gate is `APPROVED.includes(operation)` with nothing before it. `tests/mobileWriteGate.test.mjs` compiles the gate under each of those modes, and `tests/mobileBundle.test.mjs` checks the built output.
+
 | Write | Endpoint | Server dedup | State |
 |---|---|---|---|
 | `category.create` | `POST /categories` | unverified | **closed** |

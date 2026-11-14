@@ -77,7 +77,7 @@ All through `src/mobile/data/readApi.js`, the only Mobile file that imports the 
 | Screen | Request |
 |---|---|
 | Home | `GET /dashboard?period=month[&workspace_id]` |
-| Home | `GET /financial-alerts[?id_workspace]` (note the name; alerts do not take `workspace_id`) |
+| Home | `GET /financial-alerts[?workspace_id]` (the backend's controller reads `workspace_id`; an earlier version of Mobile sent `id_workspace`, which it ignores) |
 | Accounts | `GET /accounts[?workspace_id]` |
 | Account | `GET /accounts/{id}` |
 | Account | `GET /transactions?account_id={id}&page=n&per_page=20&sort_by=occurred_at&sort_dir=desc` |
