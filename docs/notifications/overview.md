@@ -9,7 +9,7 @@ Notifications are **persistent, user-specific records**: each belongs to one use
 | Endpoint | `GET /notifications` (+ unread-count, read, read-all) | `GET /financial-alerts` |
 | Stored | Yes, one row per notification | No, calculated on each request from current budgets |
 | Read state | Yes | No |
-| Scope | The signed-in **user** (no `workspace_id`) | A workspace (`id_workspace`) |
+| Scope | The signed-in **user** (no `workspace_id`) | A workspace (`workspace_id`) |
 | Module | `api/notificationsApi.js` | `api/financialAlertsApi.js` |
 | UI | Notifications tab (`NotificationInbox`) | Financial alerts tab (`FinancialAlerts`, `full` variant) and the dashboard's compact card |
 

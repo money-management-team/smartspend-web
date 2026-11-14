@@ -8,8 +8,9 @@ import { apiRequest } from "./apiClient";
  * budgets: they are not stored, have no read/unread state and are not the
  * persistent Notifications feature.
  *
- * The workspace filter is `id_workspace` (NOT `workspace_id`, unlike most
- * endpoints); it is omitted when unknown.
+ * The workspace filter is `workspace_id`, as FinancialAlertController reads it
+ * (fix/financial-idempotency-p0 @ 6b696d72). `id_workspace` is not a parameter
+ * of this endpoint: the backend ignores it. Omit the filter when it is unknown.
  */
 export const financialAlertsApi = {
   list: (query = {}, options = {}) =>

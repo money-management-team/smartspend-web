@@ -40,4 +40,4 @@ Handled by `getApiErrorMessage` with a "Try again" button: network, timeout, 403
 
 ## `GET /financial-alerts`
 
-See [financial-alerts.md](financial-alerts.md). Note the workspace param is **`id_workspace`**, not `workspace_id`.
+See [financial-alerts.md](financial-alerts.md). The workspace param is **`workspace_id`** (an earlier version sent `id_workspace`, which the backend ignores).

@@ -10,7 +10,8 @@
 - Branch guards that live only on this unmerged branch do not protect production today.
 - **Production workflow (`deploy-hostinger.yml`):** pins `VITE_MOBILE_ENABLED` off and fails if it is not; pins Smart Savings **on** with its approval (released 2026-10-24, `docs/savings-goals/smart-plans.md`). It runs lint and a build, no tests.
 - **CI (`ci.yml`):** lint and `npm test` on pull requests and on `integration/**` pushes. No secrets, no deployment. It was added after the last full local run on Windows and **has not yet run on GitHub's Linux runner**; treat its first result as the first Linux evidence for the suite. It is deliberately not a step of the deploy workflow, so a test failure cannot block an unrelated production release.
-- **Last local verification (Windows, Node, `c7c4319`, 2026-11-13):** `npm test` 1,951 / 1,951 (339 suites), `npm run lint` clean. The suite includes the flag-off, flag-on and PWA bundle builds (`mobileBundle.test.mjs`).
+- **Last local verification (Windows, Node, 2026-11-14, on top of `b1996e2`):** `npm test` 1,968 / 1,968 (342 suites), `npm run lint` clean. The suite includes the flag-off, flag-on and PWA bundle builds (`mobileBundle.test.mjs`). A flag-off production-mode build has no Mobile chunk; a production-mode build that asks for the PWA warns and emits no worker; `APPROVED` is still `Object.freeze([])`.
+- **PWA readiness (local and staging only, never production):** the worker covers `/m` and `/m/` (script `/smartspend-mobile-sw.js`, scope `/m`), with 192/512/maskable/Apple icons, theme colour and `viewport-fit`. In headless Chrome: installability errors none, offline reload of `/m` and `/m/` shows the offline page, update waits for the Reload tap, rollback with the retire worker leaves nothing behind (30 of 30 checks; `PWA-AND-DEVICE-QA.md`). Real devices, the real host and screen readers remain unverified.
 
 ## Known release blockers
 
@@ -32,7 +33,7 @@ Mobile is **not ready for production**. Open items, by who can close them. None 
 - The PWA is never built for production, so no user can install Mobile yet.
 - Offline, a screen that was never opened or prefetched shows the "download failed" state with a Reload button; only the prefetched screens (Activity, Planning, More, Accounts, a transaction) work offline.
 - A HEIC/HEIF receipt is refused in the picker (it is never uploaded), because the backend accepts only jpeg, png and webp. A HEIC photo renamed to `.jpg` is not detected on the device; the backend's file guard still refuses it.
-- Mobile now sends `workspace_id` to `/financial-alerts`: `FinancialAlertController` (`fix/financial-idempotency-p0 @ 6b696d72`) reads `workspace_id`, and `id_workspace` appears nowhere in the backend. The **full version's** dashboard alerts card (`FinancialAlerts.jsx`, `financialAlertsApi.js`) still sends `id_workspace`, so it gets the alerts of every workspace the user manages; it was not changed here.
+- Mobile now sends `workspace_id` to `/financial-alerts`: `FinancialAlertController` (`fix/financial-idempotency-p0 @ 6b696d72`) reads `workspace_id`, and `id_workspace` appears nowhere in the backend. The full version's dashboard alerts card (`FinancialAlerts.jsx`) had the same mismatch and now sends `workspace_id` too (regression test `tests/financialAlerts.test.mjs`); it no longer returns the alerts of every workspace the user manages.
 - The PWA icons (192, 512, maskable 512, Apple touch 180), the theme colour and `viewport-fit` exist in PWA builds only, which are never built for production. No CSP or Permissions-Policy is defined in the repository.
 
 ## Before a controlled rollout
