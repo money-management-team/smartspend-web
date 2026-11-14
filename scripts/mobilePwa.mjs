@@ -8,12 +8,19 @@
  *                     says, and warns. There is no approval switch; shipping it
  *                     to production needs a change to this file.
  *
- * When on, the build emits two files and nothing else:
- *   m/sw.js                 the worker; scope /m/, so it never controls a Desktop,
- *                           sign-in, signed-link or legal page
- *   m/manifest.webmanifest  start_url /m/ (inside the scope; /m itself is not), scope /m/, standalone, navy theme
+ * When on, the build emits these files and nothing else:
+ *   smartspend-mobile-sw.js the worker; scope /m, so it controls /m and /m/... (a Desktop,
+ *                           sign-in, signed-link or legal page is outside it)
+ *   m/manifest.webmanifest  start_url /m/, scope /m, standalone, navy theme
+ *   m/icon-192.png, m/icon-512.png, m/icon-maskable-512.png, m/apple-touch-icon.png
  * and the virtual module "virtual:smartspend-mobile-pwa" says MOBILE_PWA = true.
- * When off, that module says false, neither file exists, and the Mobile code
+ *
+ * Why the worker is not at /m/sw.js: a worker can only control the directory its script
+ * is in or below, so /m/sw.js (scope /m/) never controlled /m itself, and an offline reload
+ * of /m got the browser's error page. A script at the root may register the narrower scope
+ * /m with no help from the host (no Service-Worker-Allowed header). /m/sw.js is still emitted
+ * in a retire build, for an origin that ran an earlier PWA build (see below).
+ * When off, that module says false, none of these files exists, and the Mobile code
  * that runs instead removes a worker an earlier build may have left (rollback).
  *
  * The worker never touches /api, a non-GET request or another origin; it caches
@@ -26,8 +33,11 @@ export const PWA_FLAG = "VITE_MOBILE_PWA";
 // Rollback of a staging origin that once ran the PWA build (see resolvePwaRetire).
 export const PWA_RETIRE_FLAG = "SMARTSPEND_MOBILE_PWA_RETIRE";
 export const PWA_ENTRY_ID = "virtual:smartspend-mobile-pwa";
-export const PWA_SCOPE = "/m/";
-export const PWA_SW_PATH = "/m/sw.js";
+export const PWA_SCOPE = "/m";
+export const PWA_SW_PATH = "/smartspend-mobile-sw.js";
+// Where the first PWA builds put the worker (scope /m/); only a retire build still emits something there.
+export const PWA_LEGACY_SW_PATH = "/m/sw.js";
+export const PWA_LEGACY_SCOPE = "/m/";
 export const PWA_CACHE_PREFIX = "sm-pwa-";
 
 /** @returns {{ enabled: boolean, refusedInProduction: boolean }} */
@@ -42,9 +52,10 @@ export function resolveMobilePwa({ mobileEnabled, command, mode, env }) {
  * The retire worker, for rolling a staging origin back from a PWA build to any
  * non-PWA build, flag-off included. A flag-off build has no Mobile code, so it
  * cannot unregister the worker an earlier build installed; but the browser
- * itself re-fetches /m/sw.js whenever an in-scope page opens. With
- * SMARTSPEND_MOBILE_PWA_RETIRE=true the build emits, as a static file and
- * nothing else, a worker at that address that deletes the sm-pwa-* caches,
+ * itself re-fetches the worker whenever an in-scope page opens. With
+ * SMARTSPEND_MOBILE_PWA_RETIRE=true the build emits, as static files and
+ * nothing else, a worker at both addresses a PWA build has used
+ * (/smartspend-mobile-sw.js, and /m/sw.js of the first builds) that deletes the sm-pwa-* caches,
  * unregisters itself and reloads the Mobile pages it controlled. The JS and CSS
  * bundles are not touched (tests/mobilePwa.test.mjs compares them).
  *
@@ -77,21 +88,32 @@ self.addEventListener("activate", (event) => {
 }
 
 export function pwaEntrySource(enabled, version) {
-  return `export const MOBILE_PWA = ${enabled ? "true" : "false"};\nexport const PWA_VERSION = ${JSON.stringify(enabled ? version : "")};\nexport const PWA_SW_PATH = ${JSON.stringify(PWA_SW_PATH)};\nexport const PWA_SCOPE = ${JSON.stringify(PWA_SCOPE)};\nexport const PWA_CACHE_PREFIX = ${JSON.stringify(PWA_CACHE_PREFIX)};\n`;
+  return `export const MOBILE_PWA = ${enabled ? "true" : "false"};\nexport const PWA_VERSION = ${JSON.stringify(enabled ? version : "")};\nexport const PWA_SW_PATH = ${JSON.stringify(PWA_SW_PATH)};\nexport const PWA_SCOPE = ${JSON.stringify(PWA_SCOPE)};\nexport const PWA_LEGACY_SCOPE = ${JSON.stringify(PWA_LEGACY_SCOPE)};\nexport const PWA_CACHE_PREFIX = ${JSON.stringify(PWA_CACHE_PREFIX)};\n`;
 }
+
+export const PWA_THEME_COLOR = "#07142B";
+/** The installation icons, committed in src/mobile/pwa/icons (scripts/generateMobileIcons.ps1 makes them). */
+export const PWA_ICONS = Object.freeze([
+  { file: "icon-192.png", sizes: "192x192", purpose: "any" },
+  { file: "icon-512.png", sizes: "512x512", purpose: "any" },
+  { file: "icon-maskable-512.png", sizes: "512x512", purpose: "maskable" },
+]);
+export const PWA_APPLE_TOUCH_ICON = "apple-touch-icon.png";
 
 export function pwaManifest() {
   return {
     name: "SmartSpend",
     short_name: "SmartSpend",
+    description: "Your money in SmartSpend, made for the phone.",
     id: "/m",
     start_url: "/m/",
     scope: PWA_SCOPE,
     display: "standalone",
     orientation: "portrait",
-    theme_color: "#07142B",
+    theme_color: PWA_THEME_COLOR,
     background_color: "#F4F6FB",
-    icons: [{ src: "/m/icon-256.png", sizes: "256x256", type: "image/png", purpose: "any" }],
+    categories: ["finance"],
+    icons: PWA_ICONS.map(({ file, sizes, purpose }) => ({ src: `/m/${file}`, sizes, type: "image/png", purpose })),
   };
 }
 
@@ -104,7 +126,7 @@ const OFFLINE_PAGE = `<!doctype html><html lang="en"><head><meta charset="utf-8"
  * uses `self`, `caches`, `fetch`, `Response`, `URL`.
  */
 export function swSource(version) {
-  return `/* SmartSpend Mobile service worker ${version}. Scope /m/. Caches only hashed /assets/*; never /api. */
+  return `/* SmartSpend Mobile service worker ${version}. Scope /m. Caches only hashed /assets/*; never /api. */
 const VERSION = ${JSON.stringify(version)};
 const CACHE = ${JSON.stringify(PWA_CACHE_PREFIX)} + VERSION;
 const OFFLINE = ${JSON.stringify(OFFLINE_PAGE)};
@@ -134,7 +156,7 @@ self.addEventListener("fetch", (event) => {
   if (url.pathname === "/api" || url.pathname.startsWith("/api/")) return;
 
   if (request.mode === "navigate") {
-    if (!url.pathname.startsWith("/m")) return;
+    if (url.pathname !== "/m" && !url.pathname.startsWith("/m/")) return;
     event.respondWith(fetch(request).catch(() => new Response(OFFLINE, { status: 503, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } })));
     return;
   }

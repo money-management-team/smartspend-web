@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
+import { JSDOM } from "jsdom";
 
-import { PWA_CACHE_PREFIX, pwaEntrySource, pwaManifest, resolveMobilePwa, resolvePwaRetire, retireSwSource, swSource } from "../scripts/mobilePwa.mjs";
+import { PWA_CACHE_PREFIX, PWA_ICONS, PWA_LEGACY_SW_PATH, PWA_SCOPE, PWA_SW_PATH, pwaEntrySource, pwaManifest, resolveMobilePwa, resolvePwaRetire, retireSwSource, swSource } from "../scripts/mobilePwa.mjs";
 import { mobileEntryPlugin } from "../scripts/mobileEntryPlugin.mjs";
 
-const { registerWorker, removeWorker, syncPwa } = await import("../src/mobile/pwa/worker.js");
+const { registerWorker, releaseHead, removeWorker, syncPwa } = await import("../src/mobile/pwa/worker.js");
 
 /*
  * The Mobile PWA: when it may exist (never in a production build), what its
@@ -34,17 +36,46 @@ describe("when the PWA may exist", () => {
     };
     assert.deepEqual(emitted(true, false), []);
     assert.deepEqual(emitted(false, true), [], "Mobile off: no PWA even if asked");
-    assert.deepEqual(emitted(true, true), ["m/sw.js", "m/manifest.webmanifest", "m/icon-256.png"]);
+    assert.deepEqual(emitted(true, true), ["smartspend-mobile-sw.js", "m/manifest.webmanifest", "m/icon-192.png", "m/icon-512.png", "m/icon-maskable-512.png", "m/apple-touch-icon.png"]);
     const plugin = mobileEntryPlugin(true, { pwa: false });
     assert.match(plugin.load(plugin.resolveId("virtual:smartspend-mobile-pwa")), /MOBILE_PWA = false/);
   });
 
-  it("the manifest is scoped to Mobile and starts there", () => {
+  it("the worker lives at the root so its scope can be /m, which covers /m and /m/...", () => {
+    assert.equal(PWA_SW_PATH, "/smartspend-mobile-sw.js");
+    assert.equal(PWA_SCOPE, "/m");
+    // A worker may only control its own directory or below: /m/sw.js could not have had scope /m.
+    assert.ok(!PWA_SW_PATH.startsWith("/m/"));
+    assert.equal(PWA_LEGACY_SW_PATH, "/m/sw.js");
+    assert.match(pwaEntrySource(true, "v"), /PWA_SW_PATH = "\/smartspend-mobile-sw\.js"[\s\S]*PWA_SCOPE = "\/m";[\s\S]*PWA_LEGACY_SCOPE = "\/m\/"/);
+  });
+
+  it("the manifest is scoped to Mobile, starts there and is installable: 192 and 512 icons, a separate maskable one, theme colour", () => {
     const manifest = pwaManifest();
-    assert.equal(manifest.start_url, "/m/", "inside the scope: /m itself is not under /m/");
-    assert.equal(manifest.scope, "/m/");
+    assert.equal(manifest.start_url, "/m/");
+    assert.ok(manifest.start_url.startsWith(manifest.scope), "start_url is inside the scope");
+    assert.equal(manifest.scope, "/m");
+    assert.equal(manifest.id, "/m");
     assert.equal(manifest.display, "standalone");
     assert.equal(manifest.theme_color, "#07142B");
+    assert.ok(manifest.name && manifest.short_name);
+    assert.deepEqual(manifest.icons.map((icon) => [icon.src, icon.sizes, icon.type, icon.purpose]), [
+      ["/m/icon-192.png", "192x192", "image/png", "any"],
+      ["/m/icon-512.png", "512x512", "image/png", "any"],
+      ["/m/icon-maskable-512.png", "512x512", "image/png", "maskable"],
+    ]);
+    for (const icon of manifest.icons) assert.ok(icon.src.startsWith("/m/"), "served from the Mobile folder");
+    assert.ok(manifest.icons.every((icon) => !icon.purpose.includes(" ")), "any and maskable are never combined in one icon");
+  });
+
+  it("the committed icon files are real PNGs of the sizes the manifest and Apple's touch icon declare", () => {
+    const size = (file) => {
+      const png = readFileSync(new URL(`../src/mobile/pwa/icons/${file}`, import.meta.url));
+      assert.equal(png.subarray(1, 4).toString(), "PNG", file);
+      return `${png.readUInt32BE(16)}x${png.readUInt32BE(20)}`;
+    };
+    for (const icon of PWA_ICONS) assert.equal(size(icon.file), icon.sizes, icon.file);
+    assert.equal(size("apple-touch-icon.png"), "180x180");
   });
 });
 
@@ -93,6 +124,27 @@ function runWorker() {
 }
 
 describe("the service worker", () => {
+  it("controls /m and /m/ alike, and anything under /m/, but not a sibling path that merely starts with m", async () => {
+    const worker = runWorker();
+    for (const url of ["https://app.test/m", "https://app.test/m/", "https://app.test/m/activity", "https://app.test/m/?x=1"]) {
+      const response = await worker.fire({ url, mode: "navigate" });
+      assert.equal(response.status, 200, url);
+    }
+    for (const url of ["https://app.test/mobile", "https://app.test/mx", "https://app.test/market"]) assert.equal(await worker.fire({ url, mode: "navigate" }), null, url);
+  });
+
+  it("an offline reload of /m or /m/ shows the offline page (not the browser's error), with no data and nothing cached", async () => {
+    const worker = runWorker();
+    worker.setOnline(false);
+    for (const url of ["https://app.test/m", "https://app.test/m/"]) {
+      const response = await worker.fire({ url, mode: "navigate" });
+      assert.equal(response.status, 503, url);
+      assert.match(await response.text(), /You're offline[\s\S]*أنت غير متصل/);
+      assert.equal(response.headers.get("cache-control"), "no-store");
+    }
+    assert.equal(worker.stores.has(`${PWA_CACHE_PREFIX}v1`), false, "nothing was written to this build's cache");
+  });
+
   it("never touches the API, a write, another origin, or a page outside Mobile", async () => {
     const worker = runWorker();
     assert.equal(await worker.fire({ url: "https://app.test/api/accounts" }), null);
@@ -157,36 +209,59 @@ describe("registration and rollback in the page", () => {
     };
   };
   const fakeCaches = (names) => ({ names: new Set(names), keys: async function () { return [...this.names]; }, delete: async function (name) { return this.names.delete(name); } });
-  const doc = () => {
-    const head = { children: [], append(node) { this.children.push(node); } };
-    head.insertAdjacentHTML = (where, html) => head.children.push(html);
-    return { head, querySelector: () => null };
-  };
 
-  it("a build without the PWA removes a Mobile worker and its caches, and nothing else", async () => {
-    const browser = fakeNavigator(["https://app.test/m/", "https://app.test/"]);
+  it("a build without the PWA removes a Mobile worker (either scope) and its caches, and nothing else", async () => {
+    const browser = fakeNavigator(["https://app.test/m/", "https://app.test/m", "https://app.test/"]);
     const cacheStorage = fakeCaches(["sm-pwa-abc", "other"]);
     const result = await removeWorker({ nav: browser.nav, cacheStorage });
-    assert.deepEqual(result, { state: "off", removed: 1 });
-    assert.deepEqual(browser.removed, ["https://app.test/m/"]);
+    assert.deepEqual(result, { state: "off", removed: 2 });
+    assert.deepEqual(browser.removed, ["https://app.test/m/", "https://app.test/m"]);
     assert.deepEqual([...cacheStorage.names], ["other"]);
     assert.deepEqual(browser.registered, []);
   });
 
-  it("a PWA build registers /m/sw.js with scope /m/ and adds the manifest link", async () => {
+  it("a PWA build registers the worker with scope /m and adds the installation metadata", async () => {
     const browser = fakeNavigator([]);
-    const page = doc();
+    const page = new JSDOM('<!doctype html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"></head><body></body>').window.document;
     const result = await registerWorker({ nav: browser.nav, doc: page });
     assert.equal(result.state, "on");
-    assert.deepEqual(browser.registered, [["/m/sw.js", { scope: "/m/", updateViaCache: "none" }]]);
-    assert.match(page.head.children[0], /rel="manifest" href="\/m\/manifest\.webmanifest"/);
+    assert.deepEqual(browser.registered, [["/smartspend-mobile-sw.js", { scope: "/m", updateViaCache: "none" }]]);
+    assert.equal(page.querySelector('link[rel="manifest"]').getAttribute("href"), "/m/manifest.webmanifest");
+    assert.equal(page.querySelector('meta[name="theme-color"]').getAttribute("content"), "#07142B");
+    assert.equal(page.querySelector('link[rel="apple-touch-icon"]').getAttribute("href"), "/m/apple-touch-icon.png");
+    assert.equal(page.querySelector('meta[name="apple-mobile-web-app-capable"]').getAttribute("content"), "yes");
+    assert.equal(page.querySelector('meta[name="viewport"]').getAttribute("content"), "width=device-width, initial-scale=1.0, viewport-fit=cover");
+    assert.equal(page.querySelectorAll('link[rel="manifest"]').length, 1);
+    await registerWorker({ nav: browser.nav, doc: page });
+    assert.equal(page.querySelectorAll("[data-sm-pwa]").length, 6, "a second call adds nothing");
+    assert.equal(page.querySelector('meta[name="viewport"]').getAttribute("content").match(/viewport-fit/g).length, 1);
+  });
+
+  it("leaving Mobile takes the metadata back out and restores the viewport, so a Desktop page never carries it", async () => {
+    const page = new JSDOM('<!doctype html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>x</title></head><body></body>').window.document;
+    await registerWorker({ nav: fakeNavigator([]).nav, doc: page });
+    releaseHead(page);
+    assert.equal(page.querySelectorAll("[data-sm-pwa]").length, 0);
+    assert.equal(page.querySelector('link[rel="manifest"]'), null);
+    assert.equal(page.querySelector('meta[name="viewport"]').getAttribute("content"), "width=device-width, initial-scale=1.0");
+    assert.equal(page.querySelector("[data-sm-pwa-viewport]"), null);
+    assert.equal(page.querySelector("title").textContent, "x");
+    releaseHead(page);
+    releaseHead(undefined);
+  });
+
+  it("a PWA build first unregisters the first builds' /m/ registration, so the old worker can't stay the more specific scope", async () => {
+    const browser = fakeNavigator(["https://app.test/m/", "https://app.test/"]);
+    await registerWorker({ nav: browser.nav, doc: new JSDOM("<!doctype html><head></head>").window.document });
+    assert.deepEqual(browser.removed, ["https://app.test/m/"]);
+    assert.equal(browser.registered.length, 1);
   });
 
   it("no service worker support: nothing happens; a failure is reported, not thrown", async () => {
     assert.deepEqual(await registerWorker({ nav: {} }), { state: "unsupported" });
     assert.deepEqual(await removeWorker({ nav: {} }), { state: "unsupported" });
     const broken = { serviceWorker: { register: async () => { throw new Error("SecurityError"); } } };
-    assert.deepEqual(await registerWorker({ nav: broken, doc: doc() }), { state: "failed" });
+    assert.deepEqual(await registerWorker({ nav: broken, doc: new JSDOM("<!doctype html><head></head>").window.document }), { state: "failed" });
   });
 
   it("in the shipped test build the module says off", async () => {
@@ -216,8 +291,10 @@ describe("retiring the PWA from a staging origin (the rollback a flag-off build 
       return files;
     };
     const off = emitted(false, { retire: true });
-    assert.deepEqual(off.map(([name]) => name), ["m/sw.js"]);
-    assert.equal(off[0][1], retireSwSource());
+    // The current worker's address, and the first builds' one (a staging origin may still hold either).
+    assert.deepEqual(off.map(([name]) => name), ["smartspend-mobile-sw.js", "m/sw.js"]);
+    assert.deepEqual(off.map(([name]) => `/${name}`), [PWA_SW_PATH, PWA_LEGACY_SW_PATH]);
+    for (const [, source] of off) assert.equal(source, retireSwSource());
     assert.deepEqual(emitted(false, {}), [], "without the option a flag-off build emits nothing, as before");
   });
 

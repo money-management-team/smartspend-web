@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { activateWaiting, hasController, syncPwa, watchController } from "./worker.js";
+import { PWA_BUILD, activateWaiting, hasController, releaseHead, syncPwa, watchController } from "./worker.js";
 
 /*
  * The PWA state the Mobile shell shows: whether the device is offline, whether an
@@ -59,6 +59,7 @@ export function usePwa() {
     return () => {
       alive = false;
       unwatch();
+      if (PWA_BUILD) releaseHead();
     };
   }, []);
 

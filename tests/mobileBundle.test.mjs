@@ -78,12 +78,15 @@ function topLevelRules(css) {
 let off;
 let on;
 let onWithPlans;
+let pwa;
 
 before(() => {
   off = build("off", {});
   on = build("on", { VITE_MOBILE_ENABLED: "true" }, ["--mode", "preview"]);
   // Mobile on AND Smart Savings on, in a local preview build (the production workflow pins Smart Savings off).
   onWithPlans = build("on-plans", { VITE_MOBILE_ENABLED: "true", VITE_SMART_SAVINGS_ENABLED: "true" }, ["--mode", "preview"]);
+  // Mobile on AND the PWA asked for, in a local preview build (a production-mode build refuses the PWA: tests/mobilePwa.test.mjs).
+  pwa = build("pwa", { VITE_MOBILE_ENABLED: "true", VITE_MOBILE_PWA: "true" }, ["--mode", "preview"]);
 });
 
 after(() => {
@@ -223,13 +226,35 @@ describe("the Mobile PWA in the bundle", () => {
   it("a build with Mobile on but no PWA has no worker file, no manifest and no registration code; only the clean-up path", () => {
     assert.equal(files(on).some((file) => /[\\/]m[\\/](sw\.js|manifest\.webmanifest)$/.test(file)), false);
     const js = assets(on).filter((file) => file.endsWith(".js")).map(text).join(" ");
-    for (const needle of ["m/sw.js", "updateViaCache", "manifest.webmanifest"]) assert.ok(!js.includes(needle), `found ${needle}`);
+    for (const needle of ["m/sw.js", "smartspend-mobile-sw.js", "updateViaCache", "manifest.webmanifest", "apple-touch-icon", "apple-mobile-web-app"]) assert.ok(!js.includes(needle), `found ${needle}`);
     assert.ok(js.includes("sm-pwa-"), "the clean-up of an earlier worker's caches is there");
+    assert.equal(files(on).some((file) => /smartspend-mobile-sw.js$|apple-touch-icon|icon-(192|512|maskable)/.test(file)), false, "no worker, icon or touch-icon file");
   });
 
   it("the flag-off build has nothing of the PWA at all", () => {
     const js = assets(off).map(text).join(" ");
-    for (const needle of ["m/sw.js", "sm-pwa-", "getRegistrations"]) assert.ok(!js.includes(needle), `found ${needle}`);
+    for (const needle of ["m/sw.js", "smartspend-mobile-sw.js", "sm-pwa-", "getRegistrations", "apple-touch-icon"]) assert.ok(!js.includes(needle), `found ${needle}`);
+    assert.equal(files(off).some((file) => /smartspend-mobile-sw.js$|[\/]m[\/]/.test(file)), false, "no worker or Mobile file");
+  });
+
+  it("a local PWA build emits the worker at the root (scope /m), the manifest and every icon, and puts none of it in the HTML or the entry", () => {
+    const rel = (file) => path.relative(pwa, file).split(path.sep).join("/");
+    const emitted = files(pwa).map(rel);
+    for (const file of ["smartspend-mobile-sw.js", "m/manifest.webmanifest", "m/icon-192.png", "m/icon-512.png", "m/icon-maskable-512.png", "m/apple-touch-icon.png"]) assert.ok(emitted.includes(file), `missing ${file}`);
+    assert.ok(!emitted.includes("m/sw.js"), "no worker under /m/ (it could not control /m itself)");
+
+    const manifest = JSON.parse(text(path.join(pwa, "m/manifest.webmanifest")));
+    assert.equal(manifest.scope, "/m");
+    for (const icon of manifest.icons) assert.ok(emitted.includes(icon.src.slice(1)), `manifest icon ${icon.src} is emitted`);
+
+    // The metadata is added by the Mobile page at run time, so a Desktop page and the shared index.html carry none.
+    const html = text(path.join(pwa, "index.html"));
+    assert.doesNotMatch(html, /manifest|theme-color|apple-touch-icon|viewport-fit/);
+    assert.ok(!text(entryOf(pwa)).includes("manifest.webmanifest"));
+    // The registration code is in the Mobile part of the build, never in the entry.
+    const holders = files(pwa).filter((file) => file.endsWith(".js") && text(file).includes("/smartspend-mobile-sw.js") && text(file).includes("viewport-fit=cover"));
+    assert.equal(holders.length, 1, "one chunk holds the registration code");
+    assert.notEqual(holders[0], entryOf(pwa));
   });
 });
 

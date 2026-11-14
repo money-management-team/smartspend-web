@@ -20,7 +20,7 @@ const STUBBED = /\.(css|png|jpe?g|svg|webp|woff2?|ttf)$/i;
 const MOBILE_ENTRY = "virtual:smartspend-mobile";
 // The Mobile PWA module (scripts/mobilePwa.mjs): off in tests, as in every build but a local/staging one.
 const MOBILE_PWA = "virtual:smartspend-mobile-pwa";
-const MOBILE_PWA_SOURCE = 'export const MOBILE_PWA = false; export const PWA_VERSION = ""; export const PWA_SW_PATH = "/m/sw.js"; export const PWA_SCOPE = "/m/"; export const PWA_CACHE_PREFIX = "sm-pwa-";';
+const MOBILE_PWA_SOURCE = 'export const MOBILE_PWA = false; export const PWA_VERSION = ""; export const PWA_SW_PATH = "/smartspend-mobile-sw.js"; export const PWA_SCOPE = "/m"; export const PWA_LEGACY_SCOPE = "/m/"; export const PWA_CACHE_PREFIX = "sm-pwa-";';
 
 /*
  * Windows drive letters: started from a working directory spelled "f:\..." (Git
