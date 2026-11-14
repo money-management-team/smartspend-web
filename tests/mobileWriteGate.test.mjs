@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { transformWithOxc } from "vite";
 import { after, afterEach, beforeEach, describe, it } from "node:test";
 
 import { CATEGORY_WRITES, installFakeApi } from "./helpers/mobileApi.mjs";
@@ -61,13 +62,41 @@ describe("the gate", () => {
   it("has no switch outside its source: no environment, storage, address or global is read", () => {
     const source = readFileSync(new URL("../src/mobile/data/writeGate.js", import.meta.url), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
     assert.match(source, /const APPROVED = Object\.freeze\(\[\]\);/, "APPROVED is empty: opening a write is a visible change to this line");
-    assert.doesNotMatch(source, /import\.meta|process\.env|localStorage|sessionStorage|location|window|globalThis|document/);
+    // The one build constant it may read: whether this is the test runner (see the test-switch tests below).
+    const withoutTestMode = source.replace('const TESTING = import.meta.env.MODE === "test";', "");
+    assert.equal(source.match(/import\.meta/g).length, 1, "a single import.meta read");
+    assert.doesNotMatch(withoutTestMode, /import\.meta|process\.env|localStorage|sessionStorage|location|window|globalThis|document/);
   });
 
   it("the test switch cannot open an unknown write", () => {
     gate.setWriteApprovalsForTests(["transaction.unknown"]);
     assert.equal(gate.isWriteOpen("transaction.unknown"), false);
     gate.setWriteApprovalsForTests(null);
+  });
+
+  /*
+   * The test switch exists only under the test runner. The module is compiled here with the build
+   * mode a real build reports ("production", "preview", "staging"); there the switch throws and
+   * can't open anything.
+   */
+  for (const mode of ["production", "preview", "staging", "development"]) {
+    it(`in a "${mode}" build the test switch throws and every write stays closed`, async () => {
+      const file = new URL("../src/mobile/data/writeGate.js", import.meta.url);
+      const { code } = await transformWithOxc(readFileSync(file, "utf8"), "writeGate.js", { lang: "js", define: { "import.meta.env": `({ MODE: "${mode}" })` } });
+      const built = await import(`data:text/javascript;base64,${Buffer.from(code).toString("base64")}`);
+      assert.throws(() => built.setWriteApprovalsForTests(Object.keys(built.MOBILE_WRITES)), /SMARTSPEND_TEST_ONLY_WRITE_GATE/);
+      assert.throws(() => built.setWriteApprovalsForTests(null), /SMARTSPEND_TEST_ONLY_WRITE_GATE/);
+      for (const operation of Object.keys(built.MOBILE_WRITES)) assert.equal(built.isWriteOpen(operation), false, operation);
+      assert.throws(() => built.assertWriteOpen("transaction.expense"), { code: "WRITE_CLOSED" });
+    });
+  }
+
+  it("under the test runner the switch works, and going back to null closes everything again", () => {
+    gate.setWriteApprovalsForTests(["category.create"]);
+    assert.equal(gate.isWriteOpen("category.create"), true);
+    assert.equal(gate.isWriteOpen("category.update"), false);
+    gate.setWriteApprovalsForTests(null);
+    assert.equal(gate.isWriteOpen("category.create"), false);
   });
 });
 

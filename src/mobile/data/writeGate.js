@@ -90,10 +90,18 @@ export const MOBILE_WRITES = Object.freeze({
 
 const APPROVED = Object.freeze([]);
 
+/*
+ * Test-only override. `import.meta.env.MODE` is a literal in every Vite build ("production",
+ * "preview", "staging"...), so outside the test runner (tests/helpers/loader.mjs sets "test")
+ * TESTING is the constant false: the override is never read, setWriteApprovalsForTests() throws
+ * if something calls it, and the bundler drops both. tests/mobileBundle.test.mjs checks the built
+ * output for this.
+ */
+const TESTING = import.meta.env.MODE === "test";
 let testOverride = null;
 
 /** Whether this write may be sent. Unknown names are closed. */
-export const isWriteOpen = (operation) => Object.hasOwn(MOBILE_WRITES, operation) && (testOverride ?? APPROVED).includes(operation);
+export const isWriteOpen = (operation) => Object.hasOwn(MOBILE_WRITES, operation) && (TESTING && testOverride ? testOverride : APPROVED).includes(operation);
 
 /** Thrown by the write facade instead of sending: nothing left the browser. */
 export class WriteClosedError extends Error {
@@ -111,5 +119,6 @@ export function assertWriteOpen(operation) {
 
 /** Tests only: open these writes (an array of names), or `null` to go back to APPROVED. */
 export function setWriteApprovalsForTests(operations) {
+  if (!TESTING) throw new Error("SMARTSPEND_TEST_ONLY_WRITE_GATE: write approvals can only be overridden by the test runner.");
   testOverride = operations === null ? null : Object.freeze([...operations]);
 }

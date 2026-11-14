@@ -205,6 +205,20 @@ describe("a production build with Mobile on (local testing mode)", () => {
   });
 });
 
+describe("test-only helpers in the Mobile bundle", () => {
+  it("a Mobile build carries no test switch: the write gate reads only its frozen, empty APPROVED list", () => {
+    const js = assets(on).filter((file) => file.endsWith(".js"));
+    const all = js.map(text).join(" ");
+    for (const needle of ["SMARTSPEND_TEST_ONLY", "setWriteApprovalsForTests", "setVoiceRecorderForTests", "resetPreferenceStoresForTests"]) assert.ok(!all.includes(needle), `found ${needle}`);
+
+    const gateChunks = js.filter((file) => text(file).includes("Mobile does not send"));
+    assert.equal(gateChunks.length, 1, "the write gate is in one chunk");
+    const gate = text(gateChunks[0]);
+    // `A=Object.freeze([]),isWriteOpen=op=>Object.hasOwn(WRITES,op)&&A.includes(op)`: no mutable override is consulted.
+    assert.match(gate, /(\w+)=Object\.freeze\(\[\]\),\w+=\w+=>Object\.hasOwn\(\w+,\w+\)&&\1\.includes\(\w+\)/, "isWriteOpen reads the frozen empty list and nothing else");
+  });
+});
+
 describe("the Mobile PWA in the bundle", () => {
   it("a build with Mobile on but no PWA has no worker file, no manifest and no registration code; only the clean-up path", () => {
     assert.equal(files(on).some((file) => /[\\/]m[\\/](sw\.js|manifest\.webmanifest)$/.test(file)), false);
