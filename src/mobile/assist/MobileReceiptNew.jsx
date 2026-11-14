@@ -47,8 +47,8 @@ export default function MobileReceiptNew() {
   const send = useCaptureUpload("receipt.upload");
   const outcomeRef = useRef(null);
   const guard = useLeaveGuard(file !== null && send.phase !== "confirmed");
-  // A local address for the chosen photo (HEIC is not shown by most browsers), released when the file changes or the page closes.
-  const preview = useMemo(() => (file && file.type.startsWith("image/") && file.type !== "image/heic" ? localUrl(file) : null), [file]);
+  // A local address for the chosen photo (a HEIC photo never gets here: receiptFileError refuses it), released when the file changes or the page closes.
+  const preview = useMemo(() => (file && file.type.startsWith("image/") ? localUrl(file) : null), [file]);
   useEffect(() => () => releaseUrl(preview), [preview]);
 
   useEffect(() => {
@@ -97,7 +97,7 @@ export default function MobileReceiptNew() {
       </div>
 
       <input ref={inputRef} id={`${ids}-file`} className="sm-sr" type="file" accept={RECEIPT_TYPES.join(",")} onChange={choose} aria-describedby={`${ids}-rules`} data-sm-input="receipt" disabled={send.uploading} tabIndex={-1} />
-      <input ref={cameraRef} className="sm-sr" type="file" accept="image/*" capture="environment" onChange={choose} aria-describedby={`${ids}-rules`} data-sm-input="receipt-camera" disabled={send.uploading} tabIndex={-1} />
+      <input ref={cameraRef} className="sm-sr" type="file" accept={RECEIPT_TYPES.join(",")} capture="environment" onChange={choose} aria-describedby={`${ids}-rules`} data-sm-input="receipt-camera" disabled={send.uploading} tabIndex={-1} />
 
       {!file ? (
         <div className="sm-capture-zone" data-sm-zone="receipt">

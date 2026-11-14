@@ -219,14 +219,26 @@ describe("receipts and voice", () => {
   });
 
   it("the receipt and voice limits are the full version's", () => {
-    assert.deepEqual([...rules.RECEIPT_TYPES], CAPTURE_UPLOAD_TYPES);
+    // The backend (AiCaptureFileGuard @ 6b696d72) takes jpeg, png and webp only; the full version's picker also lists HEIC, which Mobile refuses before sending.
+    assert.deepEqual([...rules.RECEIPT_TYPES], CAPTURE_UPLOAD_TYPES.filter((type) => type !== "image/heic"));
+    assert.deepEqual([...rules.RECEIPT_TYPES], ["image/jpeg", "image/png", "image/webp"]);
     assert.equal(rules.RECEIPT_MAX_BYTES, CAPTURE_UPLOAD_MAX_BYTES);
     assert.equal(rules.VOICE_MAX_SECONDS, VOICE_RECORDING_POLICY.maxDurationSeconds);
     assert.equal(rules.VOICE_MIN_MS, VOICE_RECORDING_POLICY.minDurationMs);
     assert.equal(rules.VOICE_MAX_BYTES, VOICE_RECORDING_POLICY.maxBytes);
     assert.equal(rules.receiptFileError({ size: 0, type: "image/png" }), "empty");
     assert.equal(rules.receiptFileError({ size: 10, type: "application/pdf", name: "a.pdf" }), "type");
-    assert.equal(rules.receiptFileError({ size: 10, type: "", name: "IMG_1.HEIC" }), null, "a HEIC sent with no type is judged by its extension");
+    assert.equal(rules.receiptFileError({ size: 10, type: "", name: "IMG_1.jpg" }), null, "a file with no type is judged by its extension");
+    for (const file of [
+      { size: 10, type: "image/heic", name: "IMG_1.heic" },
+      { size: 10, type: "image/heif", name: "IMG_1.heif" },
+      { size: 10, type: "image/heic-sequence", name: "burst" },
+      { size: 10, type: "", name: "IMG_1.HEIC" },
+      { size: 10, type: "application/octet-stream", name: "IMG_1.HeIf" },
+      { size: 10, type: "image/jpeg", name: "renamed.heic" },
+    ]) assert.equal(rules.receiptFileError(file), "heic", JSON.stringify(file));
+    assert.equal(rules.receiptFileError({ size: 10, type: "image/PNG", name: "a.png" }), null);
+    assert.equal(rules.receiptFileError({ size: 10, type: "", name: "scan" }), "type");
     assert.equal(rules.receiptFileError({ size: rules.RECEIPT_MAX_BYTES + 1, type: "image/jpeg" }), "size");
   });
 
@@ -239,6 +251,15 @@ describe("receipts and voice", () => {
     });
     await pick(new window.File([new Uint8Array(rules.RECEIPT_MAX_BYTES + 1)], "big.jpg", { type: "image/jpeg" }));
     assert.equal(q("[data-sm-error]").dataset.smError, "size");
+    // HEIC: refused before anything is held or sent, in words, and the pickers don't offer it.
+    assert.doesNotMatch(input.getAttribute("accept"), /hei/i);
+    assert.doesNotMatch(q("[data-sm-input='receipt-camera']").getAttribute("accept"), /hei|[*]/);
+    await pick(new window.File([new Uint8Array(2048)], "IMG_0001.HEIC", { type: "image/heic" }));
+    assert.equal(q("[data-sm-error]").dataset.smError, "heic");
+    assert.match(text(q("[data-sm-error]")), /HEIC photos aren't supported/);
+    assert.equal(q("[data-sm-screen='receipt-new']").dataset.smState, "rejected");
+    assert.equal(q("[data-sm-file='chosen']"), null, "the HEIC file is not kept");
+    assert.equal(action("upload").disabled, true);
     await pick(new window.File([new Uint8Array(2048)], "receipt.png", { type: "image/png" }));
     assert.equal(q("[data-sm-screen='receipt-new']").dataset.smState, "chosen");
     assert.match(text(q("[data-sm-file='chosen']")), /receipt\.png/);
