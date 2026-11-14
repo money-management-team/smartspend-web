@@ -51,13 +51,13 @@ describe("Home: what it reads", () => {
     assert.ok(api.calls.every((call) => call.auth === `Bearer ${TOKEN_A}`));
   });
 
-  it("sends the session's workspace to both endpoints, under the name each one expects", async () => {
+  it("sends the session's workspace to both endpoints as workspace_id (what the backend's controllers read; id_workspace is ignored)", async () => {
     window.localStorage.setItem("workspace", JSON.stringify({ id: 7 }));
     await open("/m");
 
     assert.equal(api.calls.find((call) => call.path === "/dashboard").query.workspace_id, "7");
-    assert.equal(api.calls.find((call) => call.path === "/financial-alerts").query.id_workspace, "7");
-    assert.equal(api.calls.find((call) => call.path === "/financial-alerts").query.workspace_id, undefined);
+    assert.equal(api.calls.find((call) => call.path === "/financial-alerts").query.workspace_id, "7");
+    assert.equal(api.calls.find((call) => call.path === "/financial-alerts").query.id_workspace, undefined);
   });
 
   it("never writes the workspace back to storage, unlike the Desktop dashboard", async () => {

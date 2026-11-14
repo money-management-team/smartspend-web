@@ -58,8 +58,9 @@ export const DASHBOARD_PERIODS = Object.freeze(["today", "week", "month", "quart
 export const readDashboard = (signal, { period = DASHBOARD_PERIOD, from, to } = {}) =>
   dashboardApi.get({ period, ...(period === "custom" ? { date_from: from, date_to: to } : {}), workspace_id: workspaceId() }, { signal });
 
-// Note the filter's name: financial alerts take `id_workspace`, not `workspace_id`.
-export const readAlerts = (signal) => financialAlertsApi.list({ id_workspace: workspaceId() }, { signal });
+// FinancialAlertController reads `workspace_id` (fix/financial-idempotency-p0 @ 6b696d72) and ignores
+// `id_workspace`, which would silently return the alerts of every workspace the user manages.
+export const readAlerts = (signal) => financialAlertsApi.list({ workspace_id: workspaceId() }, { signal });
 
 export const readAccounts = (signal) => accountsApi.list({ id_workspace: workspaceId() }, { signal });
 
