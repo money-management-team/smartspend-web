@@ -5,6 +5,10 @@ import useGoogleSignIn from "../../features/Auth/components/AuthSocial/useGoogle
 import { getGoogleButtonOptions, loadGoogleIdentity, setGoogleCredentialHandler } from "../../features/Auth/components/AuthSocial/googleIdentity.js";
 import { useThemeContext } from "../../contexts/theme/useThemeContext";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
+import { MOBILE_PREFIX } from "../navigation.js";
+import { claimMobile } from "./claimMobile.js";
+import { mobileDestination } from "./destination.js";
+import { getSignOutNotice } from "./signOutNotice.js";
 
 const SHARED_IDENTITY = Object.freeze({ load: loadGoogleIdentity, subscribe: setGoogleCredentialHandler });
 
@@ -42,7 +46,21 @@ export default function GoogleSignIn({ remember, identity = SHARED_IDENTITY, dis
   const slotRef = useRef(null);
   const [status, setStatus] = useState("loading"); // loading | ready | unavailable
   const [error, setError] = useState("");
-  const google = useGoogleSignIn({ remember, onError: setError });
+  const release = useRef(null);
+  const google = useGoogleSignIn({
+    remember,
+    onError: setError,
+    // Mobile's own destination (a safe remembered /m page, else Mobile Home), and the choice of Mobile stored before
+    // the session exists and undone if the sign-in fails (claimMobile.js).
+    destination: (state) => (getSignOutNotice() ? MOBILE_PREFIX : mobileDestination(state)),
+    onAttempt: () => {
+      release.current = claimMobile();
+    },
+    onFailure: () => {
+      release.current?.();
+      release.current = null;
+    },
+  });
   const onCredential = useEffectEvent((token) => (disabled ? undefined : google.handleCredential(token)));
   const consentRef = useRef(null);
   const language = t("auth.googleLocale");

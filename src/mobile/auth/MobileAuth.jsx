@@ -12,6 +12,7 @@ import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { MOBILE_PREFIX, MOBILE_PROFILE, MOBILE_REGISTER, MOBILE_SIGNIN } from "../navigation.js";
 import { usePresentation } from "../presentation/usePresentation.js";
 import { useOnline } from "../ui/useOnline.js";
+import { claimMobile } from "./claimMobile.js";
 import { mobileDestination } from "./destination.js";
 import GoogleSignIn from "./GoogleSignIn.jsx";
 import { getSignOutNotice, subscribeSignOutNotice } from "./signOutNotice.js";
@@ -104,11 +105,14 @@ export function MobileSignIn() {
   const [general, setGeneral] = useState("");
   const alertRef = useRef(null);
   const [submit, busy] = useSubmit(async () => {
+    // Signing in here is the choice of Mobile; undone below if the sign-in fails (see claimMobile.js).
+    const release = claimMobile();
     try {
       await login({ identifier: identifier.trim(), password }, { remember });
       // Right after a sign-out, nobody is sent back to the page the previous person left: Home.
       navigate(signedOut ? MOBILE_PREFIX : mobileDestination(location.state), { replace: true });
     } catch (error) {
+      release();
       setErrors(error?.code === "VALIDATION_ERROR" ? { identifier: firstOf(error.errors?.identifier), password: firstOf(error.errors?.password) } : {});
       setGeneral(failureText(error, t, online, "signin"));
     }
