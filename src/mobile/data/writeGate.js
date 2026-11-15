@@ -24,13 +24,29 @@
  *   key          "client": an Idempotency-Key per logical submission;
  *                "derived": the backend derives it (the occurrence); "none"
  *   serverDedup  what the backend source shows about a duplicate of this request
- *                (develop @ fd87531, fix/financial-idempotency-p0 @ c18d4ea;
- *                docs/mobile/BACKEND-VERIFICATION-RESULTS.md):
- *     "unique-index"     a database unique rule refuses the copy (422)
+ *                (develop @ fd87531, fix/financial-idempotency-p0 @ c18d4ea, and its local,
+ *                unpushed tip 6b696d72 where cited; docs/mobile/BACKEND-VERIFICATION-RESULTS.md):
+ *     "unique-index"     a database unique rule refuses the copy, so no second record is
+ *                        created. This is NOT idempotency: the copy is refused, not replayed,
+ *                        so after a lost answer the refusal can come for a write that happened.
+ *                        The category form drops its cached reads after such a 422, so the
+ *                        list shows the category if the first copy made it
+ *                        (categories/useCategoryMutation.js). forms/useWorkflowSubmit.js does
+ *                        not: it reports a 422 as refused and keeps its cached reads. On
+ *                        develop @ fd87531 a copy that races the first one can be answered 500.
  *     "key-atomic"       the key is completed in the same transaction as the money
  *     "key-fix-pending"  atomic only on the unmerged, undeployed fix branch
  *     "once-only"        row lock + "already done" check (a copy gets 409/422)
  *     "same-result"      a copy writes the same values again
+ *     "next-open"        the request names no occurrence: the backend acts on the rule's next
+ *                        open occurrence when the request arrives, and posting or skipping one
+ *                        immediately creates the next. A copy therefore acts on the FOLLOWING
+ *                        occurrence (RecurringTransactionController confirmNext/skipNext and
+ *                        nextOpenOccurrence, PostOccurrenceAction has no due-date check,
+ *                        RecurringScheduleService::advance -> materialise; develop @ fd87531 and
+ *                        fix/financial-idempotency-p0 @ 6b696d72). NEVER_APPROVABLE: such a write
+ *                        stays closed even if it is listed in APPROVED, until the backend takes
+ *                        the occurrence in the request and the classification is changed.
  *     "duplicates"       nothing stops a copy: it creates a second record
  *     "unverified"       not established from the source
  */
@@ -50,7 +66,9 @@ export const MOBILE_WRITES = Object.freeze({
   "goal.withdrawal": write("POST /savings-goals/{id}/withdrawals", true, "client", "key-atomic"),
   "debt.payment": write("POST /debts/{id}/payments", true, "client", "key-fix-pending"),
   "debt.paymentReverse": write("POST /debt-payments/{id}/reverse", true, "none", "once-only"),
-  "recurring.confirmNext": write("POST /recurring-transactions/{id}/confirm-next", true, "derived", "key-atomic"),
+  // The derived key is the occurrence's, and the occurrence is chosen when the request arrives:
+  // a copy is a different occurrence with a different key, and posts the next period's money.
+  "recurring.confirmNext": write("POST /recurring-transactions/{id}/confirm-next", true, "derived", "next-open"),
   "receipt.confirm": write("POST /ai/expense-captures/{id}/confirm", true, "client", "key-atomic"),
   "voice.confirm": write("POST /ai/voice-expense-captures/{id}/confirm", true, "client", "key-atomic"),
   // Neither upload moves money or creates a transaction: it only stores the file and queues AI
@@ -65,10 +83,15 @@ export const MOBILE_WRITES = Object.freeze({
   "voice.upload": write("POST /ai/voice-expense-captures", false, "client", "key-atomic"),
   "whatsapp.confirm": write("POST /integrations/whatsapp/expense-drafts/{id}/confirm", true, "client", "key-atomic"),
 
-  "account.create": write("POST /accounts", false, "none", "duplicates"),
+  // Unique (workspace_id, name) on accounts: a copy is refused with 422 on `name` (StoreAccountRequest);
+  // a racing copy is stopped by the index (500 on develop @ fd87531, 422 on 6b696d72 @ 296602e0). No key.
+  "account.create": write("POST /accounts", false, "none", "unique-index"),
   "account.update": write("PATCH /accounts/{id}", false, "none", "same-result"),
   "account.archive": write("POST /accounts/{id}/archive", false, "none", "once-only"),
-  "budget.create": write("POST /budgets", false, "none", "duplicates"),
+  // Unique active_uniqueness_key (workspace, owner, scope, period, currency while active): a copy is
+  // refused with 422 (StoreBudgetRequest); a racing copy is stopped by the index (500 on develop
+  // @ fd87531, 409 DuplicateBudgetException on 6b696d72 @ 296602e0). No key.
+  "budget.create": write("POST /budgets", false, "none", "unique-index"),
   "budget.update": write("PATCH /budgets/{id}", false, "none", "same-result"),
   // Key required since fix/financial-idempotency-p0 @ 6b696d72 (12644a03); a copy returns the first goal.
   "goal.create": write("POST /savings-goals", false, "client", "key-fix-pending"),
@@ -77,8 +100,8 @@ export const MOBILE_WRITES = Object.freeze({
   // Key required since fix/financial-idempotency-p0 @ 6b696d72 (0d798c57); a copy returns the first rule.
   "recurring.create": write("POST /recurring-transactions", false, "client", "key-fix-pending"),
   "recurring.update": write("PATCH /recurring-transactions/{id}", false, "none", "same-result"),
-  // No key and no occurrence in the request: whether a copy skips a second occurrence is not established.
-  "recurring.skipNext": write("POST /recurring-transactions/{id}/skip-next", false, "none", "unverified"),
+  // No key and no occurrence in the request: a copy skips the following occurrence too.
+  "recurring.skipNext": write("POST /recurring-transactions/{id}/skip-next", false, "none", "next-open"),
   // Key required since fix/financial-idempotency-p0 @ 6b696d72 (a04c8684); a copy returns the first debt.
   "debt.create": write("POST /debts", false, "client", "key-fix-pending"),
   "debt.update": write("PATCH /debts/{id}", false, "none", "same-result"),
@@ -100,8 +123,17 @@ const APPROVED = Object.freeze([]);
 const TESTING = import.meta.env.MODE === "test";
 let testOverride = null;
 
-/** Whether this write may be sent. Unknown names are closed. */
-export const isWriteOpen = (operation) => Object.hasOwn(MOBILE_WRITES, operation) && (TESTING && testOverride ? testOverride : APPROVED).includes(operation);
+/*
+ * Classifications no approval can open: a write with one of these stays closed even if it is
+ * listed in APPROVED (or in the test switch). Opening one needs the backend fixed first and
+ * its classification changed above, in a reviewed commit.
+ */
+export const NEVER_APPROVABLE = Object.freeze(["next-open"]);
+
+const approvable = (operation) => !NEVER_APPROVABLE.includes(MOBILE_WRITES[operation].serverDedup);
+
+/** Whether this write may be sent. Unknown names and never-approvable writes are closed. */
+export const isWriteOpen = (operation) => Object.hasOwn(MOBILE_WRITES, operation) && approvable(operation) && (TESTING && testOverride ? testOverride : APPROVED).includes(operation);
 
 /** Thrown by the write facade instead of sending: nothing left the browser. */
 export class WriteClosedError extends Error {

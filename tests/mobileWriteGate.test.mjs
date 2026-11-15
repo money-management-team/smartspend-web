@@ -47,7 +47,7 @@ describe("the gate", () => {
     // receipt.upload / voice.upload have no forms/workflows.js entry: assist/MobileReceiptNew.jsx and
     // MobileVoiceNew.jsx send them directly (assist/useCaptureUpload.js), never through DraftForm's review step.
     assert.deepEqual(Object.keys(gate.MOBILE_WRITES).sort(), ["category.create", "category.update", "receipt.upload", "voice.upload", ...formWrites].sort());
-    const DEDUP = ["unique-index", "key-atomic", "key-fix-pending", "once-only", "same-result", "duplicates", "unverified"];
+    const DEDUP = ["unique-index", "key-atomic", "key-fix-pending", "once-only", "same-result", "next-open", "duplicates", "unverified"];
     for (const [operation, write] of Object.entries(gate.MOBILE_WRITES)) {
       assert.equal(gate.isWriteOpen(operation), false, operation);
       assert.ok(DEDUP.includes(write.serverDedup), operation);
@@ -97,6 +97,115 @@ describe("the gate", () => {
     assert.equal(gate.isWriteOpen("category.update"), false);
     gate.setWriteApprovalsForTests(null);
     assert.equal(gate.isWriteOpen("category.create"), false);
+  });
+});
+
+/*
+ * What the backend source shows about a duplicate of each write (data/writeGate.js header,
+ * docs/mobile/WRITE-INTEGRATION.md "Backend status per write"). A change here is a change to a
+ * safety claim: it must come with its backend evidence.
+ */
+const EXPECTED_DEDUP = {
+  "category.create": "unique-index",
+  "category.update": "unique-index",
+  "transaction.expense": "key-fix-pending",
+  "transaction.income": "key-fix-pending",
+  "transaction.correct": "key-fix-pending",
+  "transaction.reverse": "once-only",
+  "transfer.create": "key-atomic",
+  "transfer.reverse": "once-only",
+  "goal.contribution": "key-atomic",
+  "goal.withdrawal": "key-atomic",
+  "debt.payment": "key-fix-pending",
+  "debt.paymentReverse": "once-only",
+  "recurring.confirmNext": "next-open",
+  "receipt.confirm": "key-atomic",
+  "voice.confirm": "key-atomic",
+  "receipt.upload": "key-atomic",
+  "voice.upload": "key-atomic",
+  "whatsapp.confirm": "key-atomic",
+  "account.create": "unique-index",
+  "account.update": "same-result",
+  "account.archive": "once-only",
+  "budget.create": "unique-index",
+  "budget.update": "same-result",
+  "goal.create": "key-fix-pending",
+  "goal.update": "same-result",
+  "goal.plannedContribution": "duplicates",
+  "recurring.create": "key-fix-pending",
+  "recurring.update": "same-result",
+  "recurring.skipNext": "next-open",
+  "debt.create": "key-fix-pending",
+  "debt.update": "same-result",
+  "profile.update": "same-result",
+  "profile.password": "unverified",
+  "export.create": "duplicates",
+};
+
+const NEXT_OPEN = ["recurring.confirmNext", "recurring.skipNext"];
+const GATE_FILE = new URL("../src/mobile/data/writeGate.js", import.meta.url);
+const EMPTY_APPROVED = "const APPROVED = Object.freeze([]);";
+
+/** The shipped gate compiled as a real build would compile it, with APPROVED replaced by `approved`. */
+async function buildGateWith(approved, mode = "production") {
+  const source = readFileSync(GATE_FILE, "utf8");
+  assert.ok(source.includes(EMPTY_APPROVED), "the shipped APPROVED line is present");
+  const changed = source.replace(EMPTY_APPROVED, `const APPROVED = Object.freeze(${JSON.stringify(approved)});`);
+  const { code } = await transformWithOxc(changed, "writeGate.js", { lang: "js", define: { "import.meta.env": `({ MODE: "${mode}" })` } });
+  return import(`data:text/javascript;base64,${Buffer.from(code).toString("base64")}`);
+}
+
+describe("the safety classification", () => {
+  it("records what the backend shows for every write", () => {
+    const actual = Object.fromEntries(Object.entries(gate.MOBILE_WRITES).map(([operation, write]) => [operation, write.serverDedup]));
+    assert.deepEqual(actual, EXPECTED_DEDUP);
+  });
+
+  it("classes recurring confirm-next and skip-next as next-open, and next-open as never approvable", () => {
+    assert.deepEqual(gate.NEVER_APPROVABLE, ["next-open"]);
+    assert.ok(Object.isFrozen(gate.NEVER_APPROVABLE));
+    const nextOpen = Object.entries(gate.MOBILE_WRITES).filter(([, write]) => write.serverDedup === "next-open").map(([operation]) => operation);
+    assert.deepEqual(nextOpen.sort(), [...NEXT_OPEN].sort());
+    assert.equal(gate.MOBILE_WRITES["recurring.confirmNext"].moves, true, "confirm-next moves money");
+  });
+
+  it("the shipped APPROVED names no never-approvable write", () => {
+    const source = readFileSync(GATE_FILE, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+    const literal = source.match(/const APPROVED = Object\.freeze\(\[([^\]]*)\]\);/);
+    assert.ok(literal, "APPROVED is a literal list");
+    const approved = [...literal[1].matchAll(/["']([^"']+)["']/g)].map((match) => match[1]);
+    for (const operation of approved) {
+      assert.ok(!gate.NEVER_APPROVABLE.includes(gate.MOBILE_WRITES[operation]?.serverDedup), `${operation} is never approvable and must not be in APPROVED`);
+    }
+  });
+
+  it("a next-open write listed in APPROVED stays closed in a real build, while an ordinary one opens", async () => {
+    const built = await buildGateWith([...NEXT_OPEN, "category.create"]);
+    assert.equal(built.isWriteOpen("category.create"), true, "the replaced APPROVED took effect");
+    for (const operation of NEXT_OPEN) {
+      assert.equal(built.isWriteOpen(operation), false, operation);
+      assert.throws(() => built.assertWriteOpen(operation), { code: "WRITE_CLOSED" });
+    }
+  });
+
+  it("the test switch can't open a next-open write either, and nothing is sent", () => {
+    api = installFakeApi(() => ({ body: { status: true, data: {} } }));
+    gate.setWriteApprovalsForTests([...NEXT_OPEN, "category.create"]);
+    assert.equal(gate.isWriteOpen("category.create"), true);
+    for (const operation of NEXT_OPEN) {
+      assert.equal(gate.isWriteOpen(operation), false, operation);
+      assert.throws(() => writeApi.sendWorkflowWrite({ operation, ids: { ruleId: "5" }, input: {} }), (error) => error.name === "WriteClosedError" && error.operation === operation);
+    }
+    gate.setWriteApprovalsForTests(null);
+    assert.deepEqual(api.calls, []);
+  });
+
+  it("account and budget creates are unique-index, not keyed, and closed", () => {
+    for (const operation of ["account.create", "budget.create"]) {
+      assert.equal(gate.MOBILE_WRITES[operation].serverDedup, "unique-index", operation);
+      assert.equal(gate.MOBILE_WRITES[operation].key, "none", `${operation} takes no Idempotency-Key: a copy is refused, not replayed`);
+      assert.equal(gate.isWriteOpen(operation), false, operation);
+    }
   });
 });
 

@@ -21,11 +21,12 @@ import ScreenBoundary from "./shell/ScreenBoundary.jsx";
  * visitor is sent to sign-in and returns here afterwards, exactly as on
  * Desktop. Everything inside the shell sits in the identity boundary, which
  * owns the in-memory data and takes the screen down if the signed-in identity
- * stops being consistent. Nothing here writes: every screen only reads (see
- * data/readApi.js). The category form (data/writeApi.js) is the only code that
- * could send a write, and the write gate keeps it closed (data/writeGate.js).
- * The other forms (forms/, at /m/add/... and the record actions in
- * forms/actionRoutes.js) end at a review and have no code that sends.
+ * stops being consistent. Nothing here writes: the screens read through
+ * data/readApi.js (and the assist and plan read facades). Every write Mobile has
+ * code for (the category form, the forms under forms/ at /m/add/... and the
+ * record actions in forms/actionRoutes.js, and the receipt and voice uploads)
+ * goes through data/writeApi.js, which asks the write gate first; the gate keeps
+ * every one of them closed (data/writeGate.js, APPROVED is empty).
  *
  * /m/enter is outside the shell on purpose (it is the way in, not a screen of
  * the app) but behind the app's own sign-in guard (a visitor who chose the full

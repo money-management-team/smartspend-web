@@ -6,15 +6,16 @@ import { amountError, compareAmounts, dateError, integerError, normalizeAmount, 
 /*
  * Every Mobile form for a change the full version can make, described as data.
  *
- * A form here can be filled in, checked and reviewed, and that is where it ends:
- * NONE of them is sent. No file in Mobile has code that sends any of these
- * requests (tests/mobileReadOnly.test.mjs and tests/mobileForms.test.mjs check
- * the source), and the review step shows why and links to the full version. Each
- * entry names the request the full version makes (`endpoint`) and the write's
- * name (`operation`); none of these names is in data/writeGate.js, so the gate
- * answers "closed" for every one of them. Opening one would need a reviewed send
- * path of its own, the server-side evidence in
- * docs/mobile/SECURITY-AND-FINANCIAL-GATES.md, and a change to the gate.
+ * A form here can be filled in, checked and reviewed. Each entry names the
+ * request the full version makes (`endpoint`) and the write's name
+ * (`operation`). Every operation is registered in data/writeGate.js
+ * (MOBILE_WRITES), has a payload builder (forms/writePayloads.js) and a send
+ * path (data/writeApi.js), and is CLOSED: APPROVED is empty, so the review ends
+ * at a disabled button, says why and links to the full version, and nothing is
+ * sent (tests/mobileForms.test.mjs, tests/mobileWriteGate.test.mjs and
+ * tests/mobileReadOnly.test.mjs check this). Opening one needs the server-side
+ * evidence in docs/mobile/SECURITY-AND-FINANCIAL-GATES.md and a reviewed change
+ * to APPROVED; a write classified in NEVER_APPROVABLE can't be opened that way.
  *
  * Fields are only the documented ones (docs/<feature>/api.md); a field the full
  * version shows as fixed after creation (an account's currency, a budget's
@@ -861,5 +862,5 @@ export const NEW_ENTRY_ORDER = Object.freeze(["expense", "income", "transfer", "
 /** Every form at /m/add/{id}: the Add sheet's, and the export form (opened from Exports). */
 export const NEW_FORM_IDS = Object.freeze([...NEW_ENTRY_ORDER, "export"]);
 
-/** Every write these forms stand for. None is sent; none is in the write gate (tests/mobileForms.test.mjs). */
+/** Every write these forms stand for. Each is registered in the write gate and closed there (tests/mobileForms.test.mjs). */
 export const DRAFT_ONLY_OPERATIONS = Object.freeze(Object.values(WORKFLOWS).map((workflow) => workflow.operation));

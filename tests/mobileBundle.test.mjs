@@ -217,8 +217,14 @@ describe("test-only helpers in the Mobile bundle", () => {
     const gateChunks = js.filter((file) => text(file).includes("Mobile does not send"));
     assert.equal(gateChunks.length, 1, "the write gate is in one chunk");
     const gate = text(gateChunks[0]);
-    // `A=Object.freeze([]),isWriteOpen=op=>Object.hasOwn(WRITES,op)&&A.includes(op)`: no mutable override is consulted.
-    assert.match(gate, /(\w+)=Object\.freeze\(\[\]\),\w+=\w+=>Object\.hasOwn\(\w+,\w+\)&&\1\.includes\(\w+\)/, "isWriteOpen reads the frozen empty list and nothing else");
+    // `A=Object.freeze([]),N=Object.freeze(["next-open"]),ok=op=>!N.includes(WRITES[op].serverDedup),
+    // isWriteOpen=op=>Object.hasOwn(WRITES,op)&&ok(op)&&A.includes(op)`: no mutable override is consulted,
+    // and the never-approvable guard ships in the build.
+    assert.match(
+      gate,
+      /(\w+)=Object\.freeze\(\[\]\),(\w+)=Object\.freeze\(\[[`"']next-open[`"']\]\),(\w+)=\w+=>!\2\.includes\(\w+\[\w+\]\.serverDedup\),\w+=\w+=>Object\.hasOwn\(\w+,\w+\)&&\3\(\w+\)&&\1\.includes\(\w+\)/,
+      "isWriteOpen reads the frozen empty list and the never-approvable guard, and nothing else",
+    );
   });
 });
 

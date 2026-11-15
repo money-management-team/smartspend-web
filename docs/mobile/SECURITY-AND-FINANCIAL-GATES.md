@@ -76,9 +76,10 @@ Every form's request is now defined and has a send path (WRITE-INTEGRATION.md). 
 - With the gate closed, the review shows the disabled button and has no click handler.
 - The guard tests pin:
   - the facade's exact wrapper calls;
-  - that only `MobileCategoryForm.jsx` and `forms/useWorkflowSubmit.js` import it;
+  - that only `MobileCategoryForm.jsx`, `forms/useWorkflowSubmit.js` and `assist/useCaptureUpload.js` import it;
   - that every registered write is closed;
-  - that no money write is registered as unprotected against duplicates.
+  - that no money write is registered as unprotected against duplicates;
+  - that a write classified `next-open` (recurring confirm-next and skip-next: a duplicate acts on the following occurrence, WRITE-INTEGRATION.md) stays closed even if it is listed in `APPROVED` (`NEVER_APPROVABLE` in `writeGate.js`).
 
 Opening a write still means changing that one line in a reviewed commit, for one operation, after its staging evidence.
 

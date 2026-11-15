@@ -43,25 +43,46 @@ The comparison script is `formreq.mjs` in the session scratchpad. The payloads f
   - It is kept after an unknown outcome and cleared after a confirmed or certainly refused answer.
   - It is not renewed when the details change, like the full version's debt-payment form. After an unknown outcome the backend therefore replays the first result or refuses different values; it cannot post twice.
 - **Outcomes:**
-  - **Rejected:** only 422, 403, 404 and 429 (Laravel's throttle runs before the controller), plus a closed gate or a missing workspace.
-  - **Unknown:** everything else, including 409, a 5xx, a timeout, the network or a malformed answer. An unknown write is never resent, and the form offers no resend.
+  - **Rejected:** only 422, 403, 404 and 429 (Laravel's throttle runs before the controller). Also rejected: a closed gate, a missing workspace, or a key that could not be written to storage (nothing was sent in all three).
+  - **Possible duplicate:** a 409 whose body carries the backend's `possible_duplicate` code and the matched transaction (`data/possibleDuplicate.js`). The form asks the person. Confirming resends the same write with the same key plus `confirm_possible_duplicate: true`; cancelling sends nothing.
+  - **Unknown:** everything else, including any other 409, a 5xx, a timeout, the network or a malformed answer. An unknown write is never resent automatically.
   - **Session ended:** a 401 ends the session.
   - **Workspace changed:** if the workspace changed while the request was in flight, the outcome is reported as "changed".
-- **Nothing is stored:** no retry, no queue, nothing in storage. After anything but a certain refusal, the cached reads are dropped.
+- **What is stored:** only the submission's key and a hash of `{operation, ids, input}`, per user, workspace and operation, for 24 hours (`data/pendingWriteStorage.js`). That lets a reload retry with the same key. The input itself, amounts and the token are never stored. There is no retry, no queue and no replay. After anything but a certain refusal or a possible duplicate, the cached reads are dropped.
 
 ## Backend status per write (`serverDedup`)
 
 | Value | Writes |
 |---|---|
-| `key-atomic` | transfer; goal contribution and withdrawal (via `TransferMoneyAction`); recurring confirm-next; receipt, voice and WhatsApp confirm |
-| `key-fix-pending` | expense, income, correction, debt payment. Atomic only on the unmerged `c18d4ea` |
+| `key-atomic` | transfer; goal contribution and withdrawal (via `TransferMoneyAction`); receipt, voice and WhatsApp confirm; receipt and voice upload |
+| `key-fix-pending` | expense, income, correction, debt payment; goal, debt and recurring-rule create (key required only on the fix branch). Atomic only on the unmerged fix branch |
 | `once-only` | transaction, transfer and debt-payment reversal; account archive |
-| `unique-index` | category create and rename |
+| `unique-index` | category create and rename; account create (unique `workspace_id, name`); budget create (unique `active_uniqueness_key`) |
 | `same-result` | the record updates (`PATCH`/`PUT`) |
-| `duplicates` | account, budget, goal, debt, rule, planned contribution and export creates: no key and no unique rule |
-| `unverified` | recurring skip-next; password change |
+| `next-open` | recurring confirm-next and skip-next. **Never approvable** |
+| `duplicates` | planned contribution and export creates: no key and no unique rule |
+| `unverified` | password change |
 
-A money write is never registered as `duplicates`; a test enforces that.
+Two invariants are enforced by `tests/mobileWriteGate.test.mjs`:
+- A money write is never registered as `duplicates`.
+- A write whose classification is in `NEVER_APPROVABLE` (`next-open`) stays closed even when it is listed in `APPROVED` or the test switch. The shipped `APPROVED` must not name one either.
+
+**`unique-index` is not idempotency.** The database refuses the copy, so no second record is created, but nothing replays the first answer.
+- A copy is refused with 422: on `name` for an account, by `StoreBudgetRequest` for a budget.
+- A copy that races the first passes validation and is stopped by the index. On `develop` @ `fd87531` that answer is a 500. On the fix branch @ `6b696d72` (`296602e0`) it is a 422 for an account and a 409 (`DuplicateBudgetException`) for a budget.
+- So after a lost answer, a refusal can come for a create that happened. The category form drops its cached reads after such a 422. `forms/useWorkflowSubmit.js` does not: it reports the 422 as a refusal. Account and budget create stay closed.
+
+**`next-open`: recurring confirm-next and skip-next** (`RecurringTransactionController` `confirmNext`, `skipNext` and `nextOpenOccurrence`, on `develop` @ `fd87531` and `6b696d72`).
+- The request names no occurrence. The backend takes the rule's next open occurrence (scheduled or due) when the request arrives.
+- `PostOccurrenceAction` doesn't check that the occurrence is due.
+- `RecurringScheduleService::advance` creates the next occurrence as soon as one is posted.
+- A copy of the request therefore acts on the **following** occurrence: confirm-next posts the next period's money under that occurrence's own derived key, and skip-next skips a second period.
+- The derived key can't stop this, because it is a different occurrence. The full version sends the same requests.
+- This needs a backend change that names the occurrence in the request.
+
+**Correction to the earlier `serverDedup` values** (2026-11-15):
+- confirm-next was `key-atomic`; skip-next was `unverified`.
+- Account and budget create were `duplicates`. That missed the unique indexes, which `develop` already has.
 
 **Correction to the 2026-11-01 audit.** Receipt **confirmation** was listed as affected by the completion window. It isn't:
 - `AiCaptureConfirmationService` runs it in one outer transaction with a row lock and posts through `PostExpenseAction`.
@@ -72,8 +93,12 @@ A money write is never registered as `duplicates`; a test enforces that.
 These are concise and source-backed. Opening each Mobile write depends on its row.
 
 1. **Fix not deployed:** the P0 fix is unmerged and undeployed (`c18d4ea` versus `develop`/production `fd87531`). Expense, income, correction and debt payment stay closed until it is merged, deployed and the production commit is confirmed.
-2. **Creates without duplicate protection:** account, budget, goal, debt, recurring rule, planned contribution and report export creates take no `Idempotency-Key` and have no unique rule, so a request the browser delivers twice creates two records. They need an optional key or a natural unique rule before Mobile sends them.
-3. **`skip-next` is not specific:** `POST /recurring-transactions/{id}/skip-next` names no occurrence and takes no key, so whether a duplicate skips a second occurrence is not established. It needs the occurrence (id or date) in the request, or a key.
+2. **Creates without duplicate protection:**
+   - Planned contribution and report export creates take no `Idempotency-Key` and have no unique rule, so a request the browser delivers twice creates two records.
+   - Goal, debt and recurring-rule creates are protected by a required key only on the fix branch.
+   - For exports, the fix branch returns the in-flight export for an identical request (`2ebd0099`); `develop` does not.
+   - Account and budget creates are covered by unique indexes; see `unique-index` above.
+3. **Recurring confirm-next and skip-next act on the next open occurrence** (`next-open` above). A duplicate request confirms or skips the following occurrence. Both need the occurrence (id or due date) in the request, refused when it is not the open one named. Until then both are never approvable from Mobile.
 4. **Password change is ambiguous:** a copy that arrives after success fails on the current password (422), so the answer can say "refused" for a change that happened. It needs a key, or an answer that can be told apart.
 5. **Reversal conflicts are indistinguishable:** a 409 from a reversal ("already reversed") can't be told apart from other 409s by the client, so Mobile reports it as unknown. A stable error `code` (for example `already_reversed`) would let the screen say "already done".
 6. **Import batches:** confirm and reverse still use `run()` without `atomic` (row posting is atomic on `c18d4ea`). The backend team lists import reconciliation as open; Mobile import writes stay closed.
@@ -91,6 +116,10 @@ Not a backend blocker: funding preview. Its evidence is complete (BACKEND-VERIFI
   - the receipt two-step flow, including no confirm without a version.
 - **Guard tests, updated to the new invariants:**
   - `tests/mobileForms.test.mjs`: every form write is registered, has a send path and a payload, and is closed;
-  - `tests/mobileWriteGate.test.mjs`: the registry is exactly the form writes plus categories, all closed;
-  - `tests/mobileReadOnly.test.mjs`: the write facade's imports, its exact wrapper calls, the gate assertion as `sendWorkflowWrite`'s first statement, and the only two importers of the facade.
+  - `tests/mobileWriteGate.test.mjs`:
+    - the registry is exactly the form writes plus categories and the receipt and voice uploads, all closed, each with a known classification;
+    - the expected `serverDedup` of every write;
+    - the `next-open` writes stay closed even when listed in `APPROVED` (checked on a compiled copy of the gate);
+    - the shipped `APPROVED` names no never-approvable write;
+  - `tests/mobileReadOnly.test.mjs`: the write facade's imports, its exact wrapper calls, the gate assertion as `sendWorkflowWrite`'s first statement, and the only three importers of the facade (`categories/MobileCategoryForm.jsx`, `forms/useWorkflowSubmit.js`, `assist/useCaptureUpload.js`).
 - **Fake backend:** `tests/helpers/mobileApi.mjs` `FORM_WRITES` lists the only form requests a test may allow. Anything else is still a violation.
