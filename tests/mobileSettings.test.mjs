@@ -58,10 +58,10 @@ afterEach(async () => {
 });
 
 describe("Profile and settings", () => {
-  it("is six labelled groups under who is signed in, the session last", async () => {
+  it("is eight labelled groups under who is signed in, the session last", async () => {
     await open();
     assert.equal(q(".sm-bar-title").textContent, "Profile and settings");
-    assert.deepEqual(qa(".sm-more-group").map((item) => item.querySelector(".sm-group-label").textContent), ["Account", "Security", "Preferences", "Notifications", "Help and privacy", "Session"]);
+    assert.deepEqual(qa(".sm-more-group").map((item) => item.querySelector(".sm-group-label").textContent), ["Account", "Appearance and language", "Currency and region", "Privacy on this device", "Notifications", "Security", "Help and privacy", "Session"]);
     assert.equal(qa(".sm-more-group").every((item) => item.getAttribute("aria-labelledby") === item.querySelector(".sm-group-label").id), true);
     const who = section("identity");
     assert.match(text(who), /Signed in as: Alex Example/);
@@ -78,12 +78,12 @@ describe("Profile and settings", () => {
     assert.equal(q("[data-sm-action='check-email']"), null, "nothing to check without the app's email status");
   });
 
-  it("the account group shows the phone, workspace and main currency, and opens the profile form", async () => {
+  it("the account group shows the phone and workspace and opens the profile form; the main currency is under currency and region", async () => {
     await open();
     const account = group("account");
     assert.match(text(account), /Phone.*0500000000/);
     assert.match(text(account), /Workspace.*Home budget/);
-    assert.match(text(account), /Main currency.*ILS/);
+    assert.match(text(group("region")), /Main currency.*ILS/);
     assert.equal(q("[data-sm-action='profile-edit']", account).getAttribute("href"), "/m/profile/edit");
   });
 
@@ -112,13 +112,14 @@ describe("Profile and settings", () => {
     await click(choice("العربية"));
     await settle();
     assert.equal(document.documentElement.dir, "rtl");
-    assert.deepEqual(qa(".sm-group-label").map((label) => label.textContent), ["الحساب", "الأمان", "التفضيلات", "الإشعارات", "المساعدة والخصوصية", "الجلسة"]);
+    assert.deepEqual(qa(".sm-group-label").map((label) => label.textContent), ["الحساب", "المظهر واللغة", "العملة والمنطقة", "الخصوصية على هذا الجهاز", "الإشعارات", "الأمان", "المساعدة والخصوصية", "الجلسة"]);
     await i18n.changeLanguage("en");
   });
 
   it("the time zone is shown as it is saved, and changing it is the full version's", async () => {
     await open();
     const zone = section("timezone");
+    assert.ok(group("region").contains(zone), "the time zone sits with the currency");
     assert.match(text(zone), /Time zone.*Asia\/Hebron/);
     assert.equal(q("a", zone).getAttribute("href"), getSettingsTabPath("preferences"));
     assert.equal(qa("select", zone).length, 0, "no control that looks like it would save");
@@ -127,6 +128,7 @@ describe("Profile and settings", () => {
   it("'Hide amounts' is a device preference that can be switched here and back, with no request", async () => {
     await open();
     const box = q("[data-sm-pref='hide-amounts']");
+    assert.ok(group("privacy").contains(box), "in its own privacy group");
     assert.equal(box.checked, false);
     const before = api.calls.length;
     await click(box);

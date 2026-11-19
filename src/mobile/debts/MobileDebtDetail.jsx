@@ -148,7 +148,7 @@ function Detail({ debt, locale, timeZone }) {
 
   return (
     <>
-      <section className="sm-card sm-hero" aria-labelledby="sm-debt-title">
+      <section className="sm-card sm-hero sm-detail-hero" aria-labelledby="sm-debt-title" data-sm-status={debt.status ?? "none"} data-sm-direction={debt.direction ?? "none"}>
         <h2 id="sm-debt-title" className="sm-card-title sm-user-text">{debt.counterparty ?? t("debts.unnamed")}</h2>
         <p className="sm-chips-inline">
           <span className="sm-chip">{direction}</span>
@@ -156,7 +156,16 @@ function Detail({ debt, locale, timeZone }) {
         </p>
         <p className="sm-balance-label">{t(debt.direction === "receivable" ? "debts.remainingReceivable" : "debts.remaining")}</p>
         <Money className="sm-hero-money" value={debt.remaining} currency={debt.currency} />
-        <p className="sm-hero-note">{t("debts.original")} <Money value={debt.original} currency={debt.currency} /> · {t("debts.paid")} <Money value={debt.paid} currency={debt.currency} /></p>
+        {/* The original and what was paid, under the outstanding figure: the backend's own. */}
+        <dl className="sm-debt-figures">
+          <div data-sm-figure="original"><dt>{t("debts.original")}</dt><dd><Money plain value={debt.original} currency={debt.currency} /></dd></div>
+          <div data-sm-figure="paid"><dt>{t("debts.paid")}</dt><dd><Money plain value={debt.paid} currency={debt.currency} /></dd></div>
+        </dl>
+        {/* When: the due date and the backend's own day count. */}
+        <dl className="sm-debt-when">
+          <Fact label={t("debts.due")}>{day(debt.dueDate) ? <bdi>{day(debt.dueDate)}</bdi> : t("debts.noDue")}</Fact>
+          <Countdown debt={debt} t={t} />
+        </dl>
         <p className="sm-text sm-muted sm-fine">{t("debts.backendFigures")}</p>
       </section>
 
@@ -168,12 +177,11 @@ function Detail({ debt, locale, timeZone }) {
 
       <section className="sm-card" aria-labelledby="sm-debt-facts">
         <h2 id="sm-debt-facts" className="sm-card-title">{t("debts.details")}</h2>
+        {/* The due date and its countdown are in the summary above. */}
         <dl className="sm-stats sm-stats-stacked">
           <Fact label={t("debts.directionLabel")}>{direction}</Fact>
           {debt.currency && <Fact label={t("debts.currency")}><bdi dir="ltr">{debt.currency}</bdi></Fact>}
           {day(debt.issuedAt) && <Fact label={t("debts.issued")}><bdi>{day(debt.issuedAt)}</bdi></Fact>}
-          <Fact label={t("debts.due")}>{day(debt.dueDate) ? <bdi>{day(debt.dueDate)}</bdi> : t("debts.noDue")}</Fact>
-          <Countdown debt={debt} t={t} />
           {debt.lifecycle && debt.lifecycle !== debt.status && <Fact label={t("debts.lifecycle")}><StateChip state={debt.lifecycle} known={debt.lifecycleKnown} labels="debts.status" tones={DEBT_TONES} /></Fact>}
           {debt.paymentsCount !== null && <Fact label={t("debts.paymentsCount")}><bdi dir="ltr">{debt.paymentsCount}</bdi></Fact>}
           <Fact label={t("debts.opening")}>

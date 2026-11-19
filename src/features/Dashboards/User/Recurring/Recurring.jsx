@@ -16,6 +16,7 @@ import RecurringOperationRow from "./components/RecurringOperationRow/RecurringO
 import RecurringSection from "./components/RecurringSection/RecurringSection";
 import {
   getRecurringErrorMessage,
+  getNextOccurrenceId,
   getRuleActions,
   hasActiveRecurringFilters,
   isRuleEntity,
@@ -32,8 +33,9 @@ const ACTION_REQUESTS = {
   pause: (rule) => recurringTransactionsApi.pause(rule.id),
   resume: (rule) => recurringTransactionsApi.resume(rule.id),
   archive: (rule) => recurringTransactionsApi.archive(rule.id),
-  confirm: (rule) => recurringTransactionsApi.confirmNext(rule.id),
-  skip: (rule, reason) => recurringTransactionsApi.skipNext(rule.id, reason),
+  // Confirm and skip name the occurrence the dialog showed (schedule.next_occurrence.id).
+  confirm: (rule) => recurringTransactionsApi.confirmNext(rule.id, getNextOccurrenceId(rule)),
+  skip: (rule, reason) => recurringTransactionsApi.skipNext(rule.id, getNextOccurrenceId(rule), reason),
 };
 
 // Which action each row button opens, checked against the rule's status.

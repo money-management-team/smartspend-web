@@ -27,6 +27,12 @@ const text = (root = document) => root.textContent.replace(/\s+/g, " ");
 const identityScreen = () => q("[data-sm-identity]");
 const nameInput = () => q("main input[type='text']");
 const submit = () => q("[data-sm-action='submit']");
+const confirm = () => q("[data-sm-action='confirm']");
+// The form ends in a review since Phase 2E: submitting opens it and its Confirm sends.
+const send = async () => {
+  await click(submit());
+  if (confirm()) await click(confirm());
+};
 const hold = () => {
   let release;
   const promise = new Promise((resolve) => {
@@ -65,7 +71,7 @@ describe("a category write under a changing identity", () => {
     await fillCreate();
 
     clearSessionStorage();
-    await click(submit());
+    await send();
     await settle();
 
     assert.deepEqual(writes(), []);
@@ -78,7 +84,7 @@ describe("a category write under a changing identity", () => {
 
     // Storage changed, but no `storage` event reached this tab (it could have been missed).
     storeSession({ token: TOKEN_B, user: USER_B });
-    await click(submit());
+    await send();
     await settle();
 
     assert.deepEqual(writes(), []);
@@ -90,7 +96,7 @@ describe("a category write under a changing identity", () => {
     const held = hold();
     await setup("/m/planning/categories/new", { onCreate: () => held.promise });
     await fillCreate();
-    await click(submit());
+    await send();
     assert.equal(writes().length, 1);
     assert.equal(writes()[0].auth, `Bearer ${TOKEN_A}`);
 
@@ -111,7 +117,7 @@ describe("a category write under a changing identity", () => {
     const held = hold();
     await setup("/m/planning/categories/new", { onCreate: () => held.promise });
     await fillCreate();
-    await click(submit());
+    await send();
 
     storeSession({ token: TOKEN_B, user: USER_B });
     otherTabWrote("ACCESS_TOKEN", TOKEN_B);
@@ -128,7 +134,7 @@ describe("a category write under a changing identity", () => {
     const held = hold();
     await setup("/m/planning/categories/new", { onCreate: () => held.promise });
     await fillCreate();
-    await click(submit());
+    await send();
 
     storeSession({ token: TOKEN_B, user: USER_B });
     held.release(created({ name: "Alpha private category" }));
@@ -141,7 +147,7 @@ describe("a category write under a changing identity", () => {
   it("the session expires while saving (401): it is a refusal, the session ends, no resend", async () => {
     await setup("/m/planning/categories/new", { onCreate: () => failure(401, "Unauthenticated.") });
     await fillCreate();
-    await click(submit());
+    await send();
     await settle();
 
     assert.equal(writes().length, 1);
@@ -158,7 +164,7 @@ describe("a category write under a changing identity", () => {
     Object.defineProperty(globalThis, "localStorage", { value: blocked, configurable: true, writable: true });
     Object.defineProperty(globalThis, "sessionStorage", { value: blocked, configurable: true, writable: true });
     try {
-      await click(submit());
+      await send();
       await settle();
       assert.deepEqual(writes(), []);
       assert.equal(identityScreen().dataset.smIdentity, "storage-unavailable");
@@ -181,7 +187,7 @@ describe("a category write under a changing identity", () => {
     await click(qa("a", q("main")).find((item) => item.textContent.trim() === "New category"));
     await settle();
     await fillCreate("Rent");
-    await click(submit());
+    await send();
 
     await click(qa("nav.sm-nav a").find((item) => item.textContent.trim() === "Home"));
     await settle();
@@ -208,7 +214,7 @@ describe("a category write under a changing identity", () => {
     const held = hold();
     await setup("/m/planning/categories/1/edit", { onUpdate: () => held.promise });
     await change(nameInput(), "Renamed one");
-    await click(submit());
+    await send();
 
     await click(qa("a", q("main")).find((item) => item.textContent.trim() === "Back to the category"));
     await settle();

@@ -403,7 +403,8 @@ describe("Accounts list", () => {
 
     assert.match(text(q("a[href='/m/accounts/1']")), /Bank/);
     assert.match(text(q("a[href='/m/accounts/2']")), /Archived/);
-    assert.match(text(q("main")), /use the full version/);
+    assert.match(text(q("main")), /Sending is done in the full version/);
+    assert.equal(q("a[data-sm-action='add-account']").getAttribute("href"), "/m/add/account");
     assert.ok(q("a[href='/dashboard/accounts']", q("main")));
     assert.equal(qa("form, input, textarea, select").length, 0);
   });
@@ -585,7 +586,7 @@ describe("Account details", () => {
     assert.equal(qa("form, input, textarea, select").length, 0);
     assert.deepEqual(qa("button", q("main")).map((item) => item.textContent), [], "no buttons at all on a one-page account");
     const changes = q("section[aria-labelledby='sm-account-changes']");
-    assert.match(text(changes), /Editing, archiving and statements aren't available in Mobile yet/);
+    assert.match(text(changes), /Edit or archive an active account here.*SmartSpend has no way to restore an archived account/);
     assert.ok(q("a[href='/dashboard/accounts/5']", changes), "the way to do it is the full version");
   });
 

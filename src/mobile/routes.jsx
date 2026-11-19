@@ -6,12 +6,12 @@ import IdentityBoundary from "./identity/IdentityBoundary.jsx";
 import {
   MobileAccountDetail, MobileAccounts, MobileActivity, MobileAssistant, MobileAttention, MobileBudgetDetail, MobileBudgets, MobileCalendar, MobileCaptureDetail,
   MobileCaptures, MobileCategories, MobileCategoryCreate, MobileCategoryDetail, MobileCategoryEdit, MobileConversation, MobileDebtDetail, MobileDebts, MobileEnter,
-  MobileExportDetail, MobileExports, MobileGettingStarted, MobileGoalDetail, MobileGoals, MobileImportDetail, MobileImportNew, MobileImports, MobileMore,
+  MobileExportDetail, MobileExports, MobileForgotPassword, MobileGettingStarted, MobileGoalDetail, MobileGoals, MobileImportDetail, MobileImportNew, MobileImports, MobileMore,
   MobileNewEntry, MobileNotifications, MobilePlanning, MobileProfile, MobileProfileForm, MobileReceiptNew, MobileRecordAction, MobileRecurring, MobileRecurringDetail,
-  MobileRegister, MobileReport, MobileReports, MobileReview, MobileSearch, MobileSignIn, MobileTemplates, MobileTransactionDetail, MobileTransferDetail,
+  MobileRegister, MobileReport, MobileReports, MobileResetPassword, MobileReview, MobileSearch, MobileSignIn, MobileTemplates, MobileTransactionDetail, MobileTransferDetail,
   MobileTransfers, MobileVoiceNew, MobileWhatsApp, MobileWhatsAppDraft, MobileWhatsAppDrafts,
 } from "./lazyScreens.js";
-import { MOBILE_ENTER, MOBILE_PREFIX, MOBILE_REGISTER, MOBILE_SIGNIN } from "./navigation.js";
+import { MOBILE_ENTER, MOBILE_FORGOT_PASSWORD, MOBILE_PREFIX, MOBILE_REGISTER, MOBILE_RESET_PASSWORD, MOBILE_SIGNIN } from "./navigation.js";
 import MobileNotAvailable from "./screens/MobileNotAvailable.jsx";
 import MobileAppShell from "./shell/MobileAppShell.jsx";
 import ScreenBoundary from "./shell/ScreenBoundary.jsx";
@@ -49,6 +49,10 @@ export const mobileRoutes = [
   { path: MOBILE_SIGNIN, element: <MobileGuestOnly><ScreenBoundary standalone><MobileSignIn /></ScreenBoundary></MobileGuestOnly> },
   // Registration applies the guest rule itself, so a registration that succeeds can go on to Profile (verification).
   { path: MOBILE_REGISTER, element: <ScreenBoundary standalone><MobileRegister /></ScreenBoundary> },
+  // Account recovery (auth/MobileRecovery.jsx). Asking for a link is for signed-out visitors, like sign-in. The reset page has no
+  // guard: the emailed link must work whether or not someone is signed in on this device, as the full version's page does.
+  { path: MOBILE_FORGOT_PASSWORD, element: <MobileGuestOnly><ScreenBoundary standalone><MobileForgotPassword /></ScreenBoundary></MobileGuestOnly> },
+  { path: MOBILE_RESET_PASSWORD, element: <ScreenBoundary standalone><MobileResetPassword /></ScreenBoundary> },
   {
     path: MOBILE_PREFIX,
     element: (

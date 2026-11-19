@@ -42,11 +42,40 @@ function storageUnavailableError() {
  * it fires — submit() refuses the request before it exists — so a retry is
  * exactly as safe as a fresh start.
  */
+/*
+ * Which cached reads a write may have changed, for the writes whose effect is known and narrow. Everything else drops every read (below),
+ * because a write that may have happened makes everything read before it unreliable. The assistant's writes touch little: feedback changes
+ * nothing Mobile shows, queuing an insight refresh changes nothing until the job runs, a dismissal changes only the insights, and a
+ * message only its conversation and the conversation list. Dropping more would also remount the screen the person is on (the feedback sheet,
+ * the "refresh queued" note, the box a question is typed in).
+ */
+const READS_CHANGED_BY = Object.freeze({
+  "ai.messageFeedback": () => false,
+  "ai.insightFeedback": () => false,
+  "ai.insightsRefresh": () => false,
+  "ai.insightDismiss": (key) => key.startsWith("ai:insights:"),
+  "ai.message": (key) => key.startsWith("ai:conversation"),
+});
+
 const REJECTED = new Set(["VALIDATION_ERROR", "FORBIDDEN", "NOT_FOUND", "RATE_LIMITED", "WRITE_CLOSED", "NO_WORKSPACE", "STORAGE_UNAVAILABLE"]);
+
+// A 409 whose machine-readable code says nothing was done: archiving an account that an active savings plan is funded
+// from (ArchiveAccountAction refuses before it changes anything). Any other 409 stays unknown.
+const CERTAIN_409 = new Set(["account_funds_active_savings_plan"]);
+
+/*
+ * The assistant answers a provider failure with { status: false, message, error: { code, retryable } } and a 429, 502 or 503
+ * (AiMessageController). By then the attempt is already stored as a FAILED answer (AiChatService::failAssistant), so the request is
+ * finished: it is a certain outcome, not an unknown one. A deliberate retry needs a new client_request_id, because the same one
+ * would replay the stored failure; the hook releases the key on "rejected", so the next send mints a new one.
+ */
+const isAiFailure = (error) => [429, 502, 503].includes(error?.status) && typeof error?.payload?.error?.code === "string";
 
 export function classifyWriteOutcome(error) {
   const code = error?.code ?? error?.name ?? "UNKNOWN";
   if (code === "UNAUTHENTICATED") return { kind: "identity", code };
+  if (isAiFailure(error)) return { kind: "rejected", code: "AI_FAILED", error };
+  if (error?.status === 409 && CERTAIN_409.has(error?.serverCode)) return { kind: "rejected", code: "CONFLICT", error };
   if (error?.name === "WriteClosedError") return { kind: "rejected", code: "WRITE_CLOSED", error };
   if (isPossibleDuplicateError(error)) {
     const matched = possibleDuplicateMatch(error);
@@ -123,7 +152,12 @@ export function useWorkflowSubmit() {
   const settle = useCallback(
     (outcome) => {
       if (outcome.kind === "identity") return;
-      if (outcome.kind !== "rejected" && outcome.kind !== "possibleDuplicate" && !store.isDisposed()) store.drop(() => true);
+      // A new account refused for its name: the first copy of a create whose answer was lost may be the one that is there
+      // (there is no replay, only a unique name), so the lists are read again to show it.
+      const nameTaken = outcome.kind === "rejected" && pendingWrite.current?.operation === "account.create" && Array.isArray(outcome.error?.errors?.name);
+      // The assistant's failed attempt is stored in the conversation (AiChatService::failAssistant), so it is read again like a write that happened.
+      const storedFailure = outcome.kind === "rejected" && outcome.code === "AI_FAILED";
+      if ((nameTaken || storedFailure || (outcome.kind !== "rejected" && outcome.kind !== "possibleDuplicate")) && !store.isDisposed()) store.drop(READS_CHANGED_BY[pendingWrite.current?.operation] ?? (() => true));
       if (outcome.kind === "confirmed" || outcome.kind === "rejected") {
         // Read before clearing: nothing left to protect either way.
         if (pendingWrite.current) clearPendingWrite(pendingWrite.current.operation);
@@ -175,6 +209,7 @@ export function useWorkflowSubmit() {
       }
 
       settle(outcome);
+      return outcome;
     },
     [guard, settle],
   );

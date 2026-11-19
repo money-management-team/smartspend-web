@@ -50,6 +50,10 @@ const dirtyNew = async (entry = "/m/planning/categories/new") => {
   nameInput().focus();
   await change(nameInput(), "Half-typed draft");
 };
+const sendForm = async () => {
+  await tap(q("[data-sm-action='submit']"));
+  if (q("[data-sm-action='confirm']")) await tap(q("[data-sm-action='confirm']"));
+};
 const tap = async (element) => {
   await click(element);
   await settle();
@@ -243,7 +247,7 @@ describe("nothing is held when there is nothing to lose", () => {
     await open("/m/planning/categories/new");
     await change(nameInput(), "Rent");
     await click(q("main input[value='expense']"));
-    await tap(q("[data-sm-action='submit']"));
+    await sendForm();
     assert.ok(q("[data-sm-outcome='confirmed']"));
 
     await tap(navLink("Home"));
@@ -254,7 +258,7 @@ describe("nothing is held when there is nothing to lose", () => {
     await open("/m/planning/categories/new", { onCreate: () => failure(503, "") });
     await change(nameInput(), "Rent");
     await click(q("main input[value='expense']"));
-    await tap(q("[data-sm-action='submit']"));
+    await sendForm();
     assert.ok(q("[data-sm-outcome='unknown']"));
 
     await tap(navLink("Home"));
@@ -272,7 +276,7 @@ describe("while the request is on its way", () => {
     await open("/m/planning/categories/new", { onCreate: () => held.promise });
     await change(nameInput(), "Rent");
     await click(q("main input[value='expense']"));
-    await click(q("[data-sm-action='submit']"));
+    await sendForm();
 
     await tap(navLink("Home"));
     assert.match(text(dialog()), /This is still being sent.*Leaving won't stop it/);
@@ -290,7 +294,7 @@ describe("while the request is on its way", () => {
     await open("/m/planning/categories/new", { onCreate: () => held.promise });
     await change(nameInput(), "Rent");
     await click(q("main input[value='expense']"));
-    await click(q("[data-sm-action='submit']"));
+    await sendForm();
     await tap(navLink("Home"));
     assert.ok(dialog());
 
@@ -322,7 +326,7 @@ describe("identity and the guard", () => {
     await open("/m/planning/categories/new", { onCreate: () => failure(401, "Unauthenticated.") });
     await change(nameInput(), "Rent");
     await click(q("main input[value='expense']"));
-    await tap(q("[data-sm-action='submit']"));
+    await sendForm();
 
     assert.equal(q("[data-sm-identity]").dataset.smIdentity, "signed-out-elsewhere");
     assert.equal(q("[data-sm-outcome]"), null);
@@ -335,7 +339,7 @@ describe("identity and the guard", () => {
     await open("/m/planning/categories/new", { onCreate: () => held.promise });
     await change(nameInput(), "Rent");
     await click(q("main input[value='expense']"));
-    await click(q("[data-sm-action='submit']"));
+    await sendForm();
 
     window.localStorage.setItem("workspace", JSON.stringify({ id: 2 }));
     otherTabWrote("workspace", JSON.stringify({ id: 2 }));

@@ -1,5 +1,7 @@
 import { isCurrencyCode } from "../money/decimal.js";
 import { normalizeAccount } from "./accounts.js";
+import { BUDGET_PROGRESS, buildProgress as budgetProgress } from "./budgets.js";
+import { buildProgress as goalProgress } from "./goals.js";
 import { amountIn, amountOrNull, countOrNull, dateOnlyOrNull, flagOrNull, idText, isRecord, textOrNull } from "./values.js";
 
 /*
@@ -131,6 +133,64 @@ function buildRecent(data) {
   return { state: "ready", rows: [], items };
 }
 
+/*
+ * `planning` (PlanningSummaryService): budgets covering today and active
+ * savings goals, both in the dashboard's primary currency only (budgets and
+ * goals in other currencies are not in it at all). Each part has the backend's
+ * own totals for that one currency, its counts, and up to five rows that are
+ * the same progress rows the Budgets and Goals screens read (budgets closest
+ * to their limit first; goals nearest to done first).
+ *
+ * Nothing is calculated here: the totals, the remaining amounts and every
+ * percentage are the backend's. There is no overall percentage in the
+ * response, so none is drawn. Rows whose currency or id do not check out are
+ * dropped rather than shown with a guess.
+ */
+const MAX_PLANNING_ROWS = 3;
+
+function planningPart(raw, { totals, rowId, progressOf, counts }) {
+  if (!isRecord(raw) || !isCurrencyCode(raw.currency_code)) return UNAVAILABLE;
+  const currency = raw.currency_code;
+  const count = countOrNull(raw.active_count);
+  if (count === null) return UNAVAILABLE;
+  if (count === 0) return { ...EMPTY, currency };
+
+  const figures = Object.fromEntries(Object.entries(totals).map(([name, key]) => [name, amountIn(raw[key], currency)]));
+  if (Object.values(figures).some((value) => value === null)) return UNAVAILABLE;
+
+  const items = [];
+  for (const row of Array.isArray(raw.items) ? raw.items : []) {
+    if (!isRecord(row)) continue;
+    const id = idText(row[rowId]);
+    const progress = id ? progressOf(row, id, currency) : null;
+    if (!progress) continue;
+    items.push({ id, name: textOrNull(row.name, 150), progress });
+  }
+
+  return { state: "ready", rows: [], currency, count, ...figures, ...counts(raw), items: items.slice(0, MAX_PLANNING_ROWS) };
+}
+
+function buildPlanning(data) {
+  const planning = isRecord(data.planning) ? data.planning : null;
+  if (!planning) return { budgets: UNAVAILABLE, goals: UNAVAILABLE };
+
+  return {
+    budgets: planningPart(planning.budgets, {
+      totals: { totalLimit: "total_limit", totalSpent: "total_spent", totalRemaining: "total_remaining" },
+      rowId: "budget_id",
+      progressOf: budgetProgress,
+      // How many budgets are in each progress state, only for the states the app knows.
+      counts: (raw) => ({ byStatus: BUDGET_PROGRESS.map((status) => ({ status, count: countOrNull(raw.by_status?.[status]) })).filter((entry) => entry.count) }),
+    }),
+    goals: planningPart(planning.savings_goals, {
+      totals: { totalTarget: "total_target", totalSaved: "total_saved", totalRemaining: "total_remaining" },
+      rowId: "goal_id",
+      progressOf: goalProgress,
+      counts: (raw) => ({ achievedCount: countOrNull(raw.achieved_count) }),
+    }),
+  };
+}
+
 /** @returns {object | null} null when the response is not an object at all */
 export function buildHomeModel(data) {
   if (!isRecord(data)) return null;
@@ -140,6 +200,7 @@ export function buildHomeModel(data) {
     balances: buildBalances(data),
     accounts: buildAccounts(data),
     recent: buildRecent(data),
+    planning: buildPlanning(data),
   };
 }
 

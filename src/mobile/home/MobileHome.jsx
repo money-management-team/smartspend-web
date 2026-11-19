@@ -21,7 +21,10 @@ import { currencyName } from "../money/decimal.js";
 import { formatDay, formatDayMonth, formatToday } from "../money/format.js";
 import Money from "../money/Money.jsx";
 import { buildAlertsModel, buildHomeModel } from "../models/home.js";
-import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_ATTENTION, MOBILE_PREFIX, MOBILE_RECEIPT_NEW, MOBILE_VOICE_NEW, accountDetailPath, activityDetailPath } from "../navigation.js";
+import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_ATTENTION, MOBILE_BUDGETS, MOBILE_GOALS, MOBILE_PREFIX, MOBILE_RECEIPT_NEW, MOBILE_VOICE_NEW, accountDetailPath, activityDetailPath, budgetDetailPath, goalDetailPath } from "../navigation.js";
+import PlanChip from "../planning/PlanChip.jsx";
+import Progress from "../planning/Progress.jsx";
+import { TONES, toneOf } from "../planning/tones.js";
 import Chevron from "../ui/Chevron.jsx";
 import IconButton from "../ui/IconButton.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
@@ -246,6 +249,103 @@ function RecentCard({ section, locale, timeZone }) {
   );
 }
 
+/*
+ * Budgets and savings goals on Home, from GET /dashboard `planning` (models/home.js buildPlanning).
+ * Every figure, remaining amount and percentage is the backend's, in the one currency it reports
+ * planning in (the primary one); in a multi-currency workspace the card says so instead of implying
+ * that this is everything. The rows link to the existing Budget and Goal pages.
+ */
+const PLAN_CARDS = {
+  budgets: {
+    id: "sm-home-budgets",
+    keyPrefix: "home.budgetsCard",
+    listPath: MOBILE_BUDGETS,
+    detailPath: budgetDetailPath,
+    untitled: "planning.budgets.untitled",
+    spoken: "planning.budgets.percentSpoken",
+    totals: [["spent", "totalSpent"], ["limit", "totalLimit"], ["remaining", "totalRemaining"]],
+    rowFigures: [["spent", "spent"], ["remaining", "remaining"]],
+  },
+  goals: {
+    id: "sm-home-goals",
+    keyPrefix: "home.goalsCard",
+    listPath: MOBILE_GOALS,
+    detailPath: goalDetailPath,
+    untitled: "planning.goals.untitled",
+    spoken: "planning.goals.percentSpoken",
+    totals: [["saved", "totalSaved"], ["target", "totalTarget"], ["remaining", "totalRemaining"]],
+    rowFigures: [["saved", "saved"], ["remaining", "remaining"]],
+  },
+};
+
+function PlanCard({ kind, section, multi }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const card = PLAN_CARDS[kind];
+  const k = (key, options) => t(`${card.keyPrefix}.${key}`, options);
+  const allLink = section.state !== "unavailable" ? <Link className="sm-card-link" to={card.listPath}>{k("all")}</Link> : null;
+  const primaryNote = multi && section.currency ? <p className="sm-text sm-muted sm-fine" data-sm-note="primary-only">{k("primaryOnly", { currency: section.currency })}</p> : null;
+
+  return (
+    <Card id={card.id} title={k("title")} className="sm-home-plan" action={allLink}>
+      {section.state === "ready" && (
+        <>
+          <p className="sm-home-plan-meta">
+            <span>{k("active", { count: section.count })}</span>
+            {kind === "budgets" && section.byStatus.map((entry) => (
+              <span key={entry.status} className="sm-chip sm-plan-chip" data-sm-tone={TONES[entry.status] ?? "neutral"} data-sm-state={entry.status}>
+                {t(`planning.state.${entry.status}`)} <bdi dir="ltr">{entry.count}</bdi>
+              </span>
+            ))}
+            {kind === "goals" && section.achievedCount > 0 && (
+              <span className="sm-chip sm-plan-chip" data-sm-tone="calm" data-sm-state="achieved">{k("achieved", { count: section.achievedCount })}</span>
+            )}
+          </p>
+          <dl className="sm-home-plan-totals" data-sm-currency={section.currency}>
+            {card.totals.map(([label, field]) => (
+              <div key={label} className="sm-home-plan-total" data-sm-total={label}>
+                <dt>{k(label)}</dt>
+                <dd><Money value={section[field]} currency={section.currency} /></dd>
+              </div>
+            ))}
+          </dl>
+          {section.items.length > 0 && (
+            <ul className="sm-list sm-home-plan-list">
+              {section.items.map((item) => (
+                <li key={item.id}>
+                  <Link className="sm-row sm-home-plan-row" to={card.detailPath(item.id)} state={{ from: MOBILE_PREFIX }} data-sm-plan-row={item.id}>
+                    <span className="sm-row-main">
+                      <span className="sm-home-plan-row-head">
+                        <span className="sm-row-title sm-user-text">{item.name ?? t(card.untitled)}</span>
+                        <PlanChip state={item.progress.status} known={item.progress.statusKnown} />
+                      </span>
+                      <Progress percent={item.progress.percent} tone={toneOf(item.progress.status, item.progress.statusKnown)} spoken={item.progress.percent ? t(card.spoken, { value: item.progress.percent.text }) : ""} />
+                      <span className="sm-plan-figures">
+                        {card.rowFigures.map(([label, field]) => (
+                          <span key={label}>{k(label)} <Money plain value={item.progress[field]} currency={section.currency} /></span>
+                        ))}
+                      </span>
+                    </span>
+                    <Chevron />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+          {section.count > section.items.length && <p className="sm-text sm-muted sm-fine" data-sm-note="shown-of">{k("shownOf", { shown: section.items.length, count: section.count })}</p>}
+          {primaryNote}
+        </>
+      )}
+      {section.state === "empty" && (
+        <>
+          <Unavailable>{k("empty", { currency: section.currency })}</Unavailable>
+          {primaryNote}
+        </>
+      )}
+      {section.state === "unavailable" && <Unavailable>{k("unavailable")}</Unavailable>}
+    </Card>
+  );
+}
+
 function AttentionCard({ alerts }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const model = useMemo(() => buildAlertsModel(alerts.data), [alerts.data]);
@@ -315,10 +415,12 @@ function QuickAddExpense() {
  * /financial-alerts. Every figure is the backend's, in the currency it
  * reported it in, and nothing is added up across currencies.
  *
- * Order: who and when, the balance, the three ways to record an expense, the
- * period with what came in and went out, what needs attention, the accounts,
- * the latest activity. Arrange Home still reorders and hides the cards; the
- * balance, when it leads, keeps the entry points directly under it.
+ * Order (preferences/deviceStore.js HOME_BLOCKS): who and when, the balance,
+ * the three ways to record an expense, the period with what came in and went
+ * out, budgets and savings goals (the dashboard's `planning`), the accounts,
+ * the latest activity, what needs attention. Arrange Home still reorders and
+ * hides the cards; the balance, when it leads, keeps the entry points directly
+ * under it.
  */
 function readPeriod(params) {
   const period = DASHBOARD_PERIODS.includes(params.get("period")) ? params.get("period") : "month";
@@ -376,6 +478,8 @@ export default function MobileHome() {
         <SummaryCard balances={model.balances} period={model.period} locale={locale} timeZone={timeZone} />
       </div>
     ),
+    budgets: <PlanCard key="budgets" kind="budgets" section={model.planning.budgets} multi={model.balances.multi === true} />,
+    goals: <PlanCard key="goals" kind="goals" section={model.planning.goals} multi={model.balances.multi === true} />,
     accounts: <AccountsCard key="accounts" section={model.accounts} />,
     recent: <RecentCard key="recent" section={model.recent} locale={locale} timeZone={timeZone} />,
     attention: <AttentionCard key="attention" alerts={alerts} />,

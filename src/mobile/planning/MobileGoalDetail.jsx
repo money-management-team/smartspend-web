@@ -41,28 +41,37 @@ function Detail({ goal, locale, timeZone }) {
 
   return (
     <>
-      <section className="sm-card sm-hero sm-detail-hero" aria-labelledby="sm-goal-title">
+      <section className="sm-card sm-hero sm-detail-hero" aria-labelledby="sm-goal-title" data-sm-status={goal.status ?? "none"}>
         <h2 id="sm-goal-title" className="sm-card-title sm-user-text">{goal.name ?? t("planning.goals.untitled")}</h2>
         <p className="sm-chips-inline">
           <PlanChip state={goal.status} known={goal.statusKnown} />
           {progress?.status && goal.status !== "achieved" && <PlanChip state={progress.status} known={progress.statusKnown} />}
-          {progress?.deadlinePassed === true && <span className="sm-chip">{t("planning.goals.deadlinePassed")}</span>}
+          {progress?.deadlinePassed === true && <span className="sm-chip" data-sm-deadline="passed">{t("planning.goals.deadlinePassed")}</span>}
         </p>
         <p className="sm-balance-label">{t("planning.goals.saved")}</p>
         <Money className="sm-hero-money" value={progress?.saved ?? null} currency={goal.currency} />
         {/* The bar belongs with the figure it is a picture of: the backend's percentage, and its words for people who cannot see it. */}
         {progress && <Progress percent={progress.percent} tone={toneOf(progress.status, progress.statusKnown)} spoken={progress.percent ? t("planning.goals.percentSpoken", { value: progress.percent.text }) : ""} />}
-        <p className="sm-hero-note">{t("planning.goals.target")} <Money value={goal.target} currency={goal.currency} /></p>
+        {/* Target and remaining under the bar they explain: the backend's own figures. */}
+        <dl className="sm-goal-figures">
+          <div data-sm-figure="target"><dt>{t("planning.goals.target")}</dt><dd><Money plain value={goal.target} currency={goal.currency} /></dd></div>
+          {progress && <div data-sm-figure="remaining"><dt>{t("planning.goals.remaining")}</dt><dd><Money plain value={progress.remaining} currency={goal.currency} /></dd></div>}
+        </dl>
+        {/* When: the target date and the backend's days-left count. */}
+        {(date || progress?.daysRemaining != null) && (
+          <dl className="sm-goal-when">
+            {date && <div><dt>{t("planning.goals.targetDate")}</dt><dd><bdi>{date}</bdi></dd></div>}
+            {progress?.daysRemaining != null && <div data-sm-days><dt>{t("planning.goals.daysLeft")}</dt><dd><bdi dir="ltr">{progress.daysRemaining}</bdi></dd></div>}
+          </dl>
+        )}
       </section>
 
       <section className="sm-card" aria-labelledby="sm-goal-progress">
         <h2 id="sm-goal-progress" className="sm-card-title">{t("planning.goals.progress")}</h2>
         {progress ? (
           <>
+            {/* Target, remaining, the date and days left are in the summary above; this card is the contributions, the achievement and the account. */}
             <dl className="sm-stats sm-stats-stacked">
-              <Fact label={t("planning.goals.remaining")}><Money value={progress.remaining} currency={goal.currency} /></Fact>
-              {date && <Fact label={t("planning.goals.targetDate")}><bdi>{date}</bdi></Fact>}
-              {progress.daysRemaining !== null && <Fact label={t("planning.goals.daysLeft")}><bdi dir="ltr">{progress.daysRemaining}</bdi></Fact>}
               {progress.contributionsCount !== null && <Fact label={t("planning.goals.contributions")}><bdi dir="ltr">{progress.contributionsCount}</bdi></Fact>}
               {achieved && <Fact label={t("planning.goals.achievedOn")}><bdi>{achieved}</bdi></Fact>}
               {goal.accountName && (

@@ -13,6 +13,18 @@
 - **Last local verification (Windows, Node, 2026-11-14, on top of `b1996e2`):** `npm test` 1,968 / 1,968 (342 suites), `npm run lint` clean. The suite includes the flag-off, flag-on and PWA bundle builds (`mobileBundle.test.mjs`). A flag-off production-mode build has no Mobile chunk; a production-mode build that asks for the PWA warns and emits no worker; `APPROVED` is still `Object.freeze([])`.
 - **PWA readiness (local and staging only, never production):** the worker covers `/m` and `/m/` (script `/smartspend-mobile-sw.js`, scope `/m`), with 192/512/maskable/Apple icons, theme colour and `viewport-fit`. In headless Chrome: installability errors none, offline reload of `/m` and `/m/` shows the offline page, update waits for the Reload tap, rollback with the retire worker leaves nothing behind (30 of 30 checks; `PWA-AND-DEVICE-QA.md`). Real devices, the real host and screen readers remain unverified.
 
+## Write-safety readiness (Phase 2G, documents only)
+
+No write is approved and none is open (`APPROVED = Object.freeze([])`, 50 registered writes). Opening one needs per-write evidence and a named approval, not passing tests. The package:
+
+| Document | What it is |
+|---|---|
+| [STAGING-READINESS.md](STAGING-READINESS.md) | What exists, what is missing, the staging checklist, how a pilot build is isolated, the recommended order |
+| [HTTP-408-EVIDENCE.md](HTTP-408-EVIDENCE.md) | The unproven 408 rule: the risk stated precisely, the staging-only experiments, pass and fail, the record. **Not satisfied** |
+| [AI-STAGING-TEST-PLAN.md](AI-STAGING-TEST-PLAN.md) | The test matrix for the nine AI writes and the provider decision |
+| [NOTIFICATION-PILOT.md](NOTIFICATION-PILOT.md) | The first pilot (`notifications.markRead`, then `notifications.markAllRead`): acceptance criteria and stop conditions |
+| [WRITE-APPROVAL-REGISTER.md](WRITE-APPROVAL-REGISTER.md) | One row per registered write (tiers, blockers, all "Not approved") and the per-write approval template; kept in step with `writeGate.js` by `tests/mobileApprovalRegister.test.mjs` |
+
 ## Known release blockers
 
 Mobile is **not ready for production**. Open items, by who can close them. None of them is a Frontend code defect, and none was changed by this documentation phase.
@@ -22,7 +34,7 @@ Mobile is **not ready for production**. Open items, by who can close them. None 
 2. The other backend items in `WRITE-INTEGRATION.md` "Remaining backend API blockers" (creates with no duplicate protection, `skip-next`, password change, reversal 409 codes, import batches).
 
 **Environment and validation (no staging or device evidence exists):**
-3. **No staging environment.** Every Mobile read was run only against a local Laravel on fictional data. Nothing, including category writes, was run against staging.
+3. **No staging environment.** Every Mobile read was run only against a local Laravel on fictional data. Nothing, including category writes, was run against staging. The plan to build one, and the evidence each write needs before it can be opened, is in [STAGING-READINESS.md](STAGING-READINESS.md); the unproven HTTP 408 rule has its own plan in [HTTP-408-EVIDENCE.md](HTTP-408-EVIDENCE.md).
 4. **No real-device testing:** no iOS or Android, no installed-PWA run, no camera or microphone capture, no screen reader (VoiceOver, TalkBack). Browser checks used headless Chrome.
 5. **Google sign-in is untested for real.** It is covered only by mocks; the Google client ID must allow the origin that serves `/m/signin`.
 

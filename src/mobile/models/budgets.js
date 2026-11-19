@@ -67,7 +67,8 @@ export function budgetFiltersToQuery(filters, page, perPage, workspaceId) {
 
 /* ---------- One budget ---------- */
 
-function buildProgress(raw, id, currency) {
+// Also read by Home (models/home.js) for the budget rows of GET /dashboard `planning.budgets.items`, which are the same progress rows.
+export function buildProgress(raw, id, currency) {
   if (!isRecord(raw)) return null;
   // Figures that name another budget or another currency are not this budget's.
   if (raw.budget_id != null && idText(raw.budget_id) !== id) return null;

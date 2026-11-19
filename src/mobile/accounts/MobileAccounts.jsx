@@ -15,14 +15,16 @@ import Skeleton from "../ui/Skeleton.jsx";
 import ListMeta from "../ui/ListMeta.jsx";
 import StaleNotice from "../ui/StaleNotice.jsx";
 import AccountRow from "./AccountRow.jsx";
+import { newEntryPath } from "../forms/actionRoutes.js";
+import { MOBILE_ACCOUNTS } from "../navigation.js";
 
 const MALFORMED = Object.freeze({ code: "MALFORMED_RESPONSE" });
 
 /*
  * Mobile Accounts: the user's active accounts from GET /accounts, in groups
  * per currency. Each balance is the backend's own, in the account's currency;
- * a group has a count of accounts and no total. Read-only: creating, editing
- * and archiving accounts stay in the full version.
+ * a group has a count of accounts and no total. Adding an account opens its form (forms/);
+ * editing and archiving are on the account's page. Every write is closed (data/writeGate.js).
  */
 export default function MobileAccounts() {
   const { t, i18n } = useTranslation(MOBILE_NAMESPACE);
@@ -48,6 +50,13 @@ export default function MobileAccounts() {
     );
   }
 
+  const addAccount = (
+    <Link className="sm-link-row" to={newEntryPath("account")} state={{ from: MOBILE_ACCOUNTS }} data-sm-action="add-account">
+      <span>{t("accounts.add")}</span>
+      <Chevron />
+    </Link>
+  );
+
   const fullVersion = (
     <Link className="sm-link-row" to={PATH.USER.ACCOUNTS}>
       <span>{t("accounts.openFull")}</span>
@@ -62,6 +71,7 @@ export default function MobileAccounts() {
         <div className="sm-card">
           <h2 className="sm-card-title">{t("accounts.empty.title")}</h2>
           <p className="sm-text">{t("accounts.empty.body")}</p>
+          {addAccount}
           {fullVersion}
         </div>
       </section>
@@ -78,16 +88,20 @@ export default function MobileAccounts() {
         const id = `sm-accounts-group-${index}`;
 
         return (
-          <section key={group.currency ?? "none"} className="sm-card" aria-labelledby={id} data-sm-currency={group.currency ?? "none"}>
-            <h2 id={id} className="sm-card-title">
-              {group.currency ? (
-                <>
-                  <bdi dir="ltr">{group.currency}</bdi> <span className="sm-muted">{currencyName(group.currency, locale)}</span>
-                </>
-              ) : (
-                t("accounts.noCurrency")
-              )}
-            </h2>
+          <section key={group.currency ?? "none"} className="sm-card sm-accounts-group" aria-labelledby={id} data-sm-currency={group.currency ?? "none"} data-sm-primary={group.currency && group.currency === primary ? "true" : undefined}>
+            <div className="sm-card-head">
+              <h2 id={id} className="sm-card-title">
+                {group.currency ? (
+                  <>
+                    <bdi dir="ltr" className="sm-accounts-code">{group.currency}</bdi> <span className="sm-muted">{currencyName(group.currency, locale)}</span>
+                  </>
+                ) : (
+                  t("accounts.noCurrency")
+                )}
+              </h2>
+              {/* The workspace's primary currency (its group comes first); GET /accounts says nothing about a default account. */}
+              {group.currency && group.currency === primary && <span className="sm-chip sm-accounts-primary">{t("home.balance.primary")}</span>}
+            </div>
             <ul className="sm-list">
               {group.items.map((account, itemIndex) => (
                 <li key={account.id ?? `row-${itemIndex}`}><AccountRow account={account} /></li>
@@ -99,6 +113,7 @@ export default function MobileAccounts() {
 
       <div className="sm-full-note">
         <p className="sm-text sm-muted sm-fine">{t("accounts.readOnly")}</p>
+        {addAccount}
         {fullVersion}
       </div>
     </section>

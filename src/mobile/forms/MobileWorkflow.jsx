@@ -1,14 +1,15 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useParams } from "react-router-dom";
 
-import { accountLoader, budgetLoader, debtLoader, goalLoader, keys, paymentsLoader, ruleLoader, transactionLoader, transferLoader } from "../data/loaders.js";
+import { assistKeys, conversationLoader, loadAiSettings } from "../data/assistLoaders.js";
+import { accountLoader, budgetLoader, categoryLoader, debtLoader, goalLoader, keys, paymentsLoader, ruleLoader, transactionLoader, transferLoader } from "../data/loaders.js";
 import { isAccountId, sessionWorkspace } from "../data/readApi.js";
 import { useResource } from "../data/useResource.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { formatDay } from "../money/format.js";
 import Money from "../money/Money.jsx";
-import { MOBILE_PREFIX, accountDetailPath, activityDetailPath, backPathFrom, budgetDetailPath, debtDetailPath, goalDetailPath, recurringDetailPath, transferDetailPath } from "../navigation.js";
+import { MOBILE_AI, MOBILE_PREFIX, accountDetailPath, activityDetailPath, aiConversationPath, backPathFrom, budgetDetailPath, categoryDetailPath, debtDetailPath, goalDetailPath, recurringDetailPath, transferDetailPath } from "../navigation.js";
 import MobileNotAvailable from "../screens/MobileNotAvailable.jsx";
 import Chevron from "../ui/Chevron.jsx";
 import { useDevicePreferences } from "../preferences/deviceStore.js";
@@ -29,6 +30,10 @@ const MALFORMED = Object.freeze({ code: "MALFORMED_RESPONSE" });
  * page of payments, and one that is not there is reported as not found.
  */
 const RECORD_SOURCES = {
+  // The assistant's settings are one record with no id in the address (param: null).
+  aiSettings: { param: null, key: () => assistKeys.aiSettings, loader: () => loadAiSettings, back: () => MOBILE_AI },
+  aiConversation: { param: "conversationId", key: (id) => assistKeys.conversation(id, 1), loader: (id) => conversationLoader(id, 1), back: aiConversationPath },
+  category: { param: "categoryId", key: keys.category, loader: categoryLoader, back: categoryDetailPath },
   transaction: { param: "transactionId", key: keys.transaction, loader: transactionLoader, back: activityDetailPath },
   transfer: { param: "transferId", key: keys.transfer, loader: transferLoader, back: transferDetailPath },
   account: { param: "accountId", key: keys.account, loader: accountLoader, back: accountDetailPath },
@@ -63,8 +68,10 @@ function RecordSummary({ summary }) {
   if (!summary) return null;
 
   const rows = [
+    summary.type && ["type", <span key="ty">{t(`categories.type.${summary.type}`)}</span>],
     summary.name && ["name", <bdi key="n" dir="auto" className="sm-user-text">{summary.name}</bdi>],
     summary.amount && ["amount", <Money key="a" plain value={summary.amount} currency={summary.currency ?? undefined} />],
+    summary.balance && ["balance", <Money key="b" plain value={summary.balance} currency={summary.currency ?? undefined} />],
     summary.date && ["date", <bdi key="d">{formatDay(summary.date, locale, "UTC") ?? summary.date}</bdi>],
     summary.account && ["account", <bdi key="c" dir="auto" className="sm-user-text">{summary.account}</bdi>],
     summary.from && ["from", <bdi key="f" dir="auto" className="sm-user-text">{summary.from}</bdi>],
@@ -99,7 +106,9 @@ export function MobileNewEntry() {
   // The router state names a template by its id only; the template itself is read from this identity's own preferences.
   const templateId = typeof location.state?.template === "string" ? location.state.template : null;
   const template = templates.find((item) => item.id === templateId && item.type === id) ?? null;
-  const ctx = useMemo(() => ({ today: today(), template }), [template]);
+  const { i18n } = useTranslation(MOBILE_NAMESPACE);
+  const language = i18n.resolvedLanguage?.startsWith("ar") ? "ar" : "en";
+  const ctx = useMemo(() => ({ today: today(), template, language }), [template, language]);
   const backTo = backPathFrom(location.state, MOBILE_PREFIX);
 
   if (!workflow) return <MobileNotAvailable />;
@@ -121,9 +130,9 @@ export function MobileRecordAction({ workflowId }) {
   const location = useLocation();
   const workflow = WORKFLOWS[workflowId];
   const source = RECORD_SOURCES[workflow.record];
-  const recordId = params[source.param];
+  const recordId = source.param ? params[source.param] : "settings";
   const parentId = source.parent ? params[source.parent] : null;
-  const valid = isAccountId(recordId) && (!source.parent || isAccountId(parentId));
+  const valid = (!source.param || isAccountId(recordId)) && (!source.parent || isAccountId(parentId));
   const loadId = source.parent ? parentId : recordId;
   const loader = useMemo(() => source.loader(loadId), [source, loadId]);
   const resource = useResource(source.key(loadId), loader, { enabled: valid });
@@ -132,12 +141,32 @@ export function MobileRecordAction({ workflowId }) {
   const ctx = useMemo(() => (record ? { today: today(), record, debtId: parentId } : null), [record, parentId]);
   const backTo = backPathFrom(location.state, source.back(loadId));
 
+  /*
+   * Once the form has been shown it stays, with the record it was shown for. A write that may have changed something drops
+   * every cached read (forms/useWorkflowSubmit.js), so this record is read again: without this the page would go back to
+   * "Loading" (and then to "not eligible", the record having just changed) and take the form, with the server's answer, away.
+   */
+  const [shown, setShown] = useState(null);
+  const ready = valid && !resource.loading && resource.status !== "error" && Boolean(record) && !workflow.eligible?.(record);
+  if (ready && !shown) setShown({ record, ctx });
+  const formFor = shown ?? (ready ? { record, ctx } : null);
+
   const page = (state, children) => (
     <section className="sm-page" data-sm-screen="workflow" data-sm-workflow={workflow.id} data-sm-state={state} data-sm-record={record?.id}>
       <BackLink to={backTo} label={t("forms.back")} />
       {children}
     </section>
   );
+
+  if (formFor) {
+    return page(
+      resource.stale ? "stale" : "ready",
+      <>
+        <FlowHeader workflow={workflow} />
+        <FormWithChoices key={`${workflow.id}:${formFor.record.id}`} workflow={workflow} ctx={formFor.ctx} backTo={backTo} />
+      </>,
+    );
+  }
 
   if (!valid) return page("error", <ErrorPanel error={NOT_FOUND} />);
   if (resource.loading) return page("loading", <Skeleton lines={5} label={t("forms.loadingRecord")} />);
@@ -156,11 +185,5 @@ export function MobileRecordAction({ workflowId }) {
     );
   }
 
-  return page(
-    resource.stale ? "stale" : "ready",
-    <>
-      <FlowHeader workflow={workflow} />
-      <FormWithChoices key={`${workflow.id}:${record.id}`} workflow={workflow} ctx={ctx} backTo={backTo} />
-    </>,
-  );
+  return null;
 }

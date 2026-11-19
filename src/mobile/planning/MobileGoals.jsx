@@ -22,18 +22,27 @@ export function GoalRow({ goal, from, pages, locale }) {
   const date = formatDay(goal.targetDate, locale);
 
   return (
-    <Link className="sm-row sm-plan-row" to={goalDetailPath(goal.id)} state={{ from, pages }} data-sm-goal={goal.id} data-sm-status={goal.status ?? "none"}>
+    <Link className="sm-row sm-plan-row" to={goalDetailPath(goal.id)} state={{ from, pages }} data-sm-goal={goal.id} data-sm-status={goal.status ?? "none"} data-sm-progress={progress?.status ?? "none"}>
       <span className="sm-row-main">
         <span className="sm-row-title sm-user-text">{goal.name ?? t("planning.goals.untitled")}</span>
-        {date && <span className="sm-row-meta">{t("planning.goals.targetDate")} <bdi>{date}</bdi></span>}
+        {/* When: the target date and the backend's own days-left count (never worked out here). */}
+        {(date || progress?.daysRemaining != null) && (
+          <span className="sm-row-meta sm-goal-when">
+            {date && <span>{t("planning.goals.targetDate")} <bdi>{date}</bdi></span>}
+            {progress?.daysRemaining != null && <span data-sm-days>{t("planning.goals.daysLeft")} <bdi dir="ltr">{progress.daysRemaining}</bdi></span>}
+          </span>
+        )}
         <span className="sm-chips-inline">
           <PlanChip state={goal.status} known={goal.statusKnown} />
           {progress && goal.status !== "achieved" && progress.status && <PlanChip state={progress.status} known={progress.statusKnown} />}
+          {progress?.deadlinePassed === true && <span className="sm-chip" data-sm-deadline="passed">{t("planning.goals.deadlinePassed")}</span>}
         </span>
         {progress && <Progress percent={progress.percent} tone={toneOf(progress.status, progress.statusKnown)} spoken={progress.percent ? t("planning.goals.percentSpoken", { value: progress.percent.text }) : ""} />}
+        {/* Saved, target and remaining: the backend's figures, in the goal's own currency. */}
         <span className="sm-plan-figures">
-          <span>{t("planning.goals.saved")} <Money plain value={progress?.saved ?? null} currency={goal.currency} /></span>
-          <span>{t("planning.goals.target")} <Money plain value={goal.target} currency={goal.currency} /></span>
+          <span data-sm-figure="saved">{t("planning.goals.saved")} <Money plain value={progress?.saved ?? null} currency={goal.currency} /></span>
+          <span data-sm-figure="target">{t("planning.goals.target")} <Money plain value={goal.target} currency={goal.currency} /></span>
+          {progress && <span data-sm-figure="remaining">{t("planning.goals.remaining")} <Money plain value={progress.remaining} currency={goal.currency} /></span>}
         </span>
       </span>
       <Chevron />

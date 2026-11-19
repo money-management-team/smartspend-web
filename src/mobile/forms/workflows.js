@@ -1,5 +1,7 @@
-import { PATH, getAccountDetailsPath, getAiExpenseCapturePath, getSettingsTabPath, getWhatsAppDraftPath, getNewOperationPath, getNewSavingsGoalPath, getNewTransferPath, getBudgetDetailsPath, getDebtDetailsPath, getRecurringDetailsPath, getSavingsGoalDetailsPath, getTransactionDetailsPath, getTransferDetailsPath } from "../../routes/Path.js";
+import { PATH, getAccountDetailsPath, getCategoryDetailsPath, getAiExpenseCapturePath, getSettingsTabPath, getWhatsAppDraftPath, getNewOperationPath, getNewSavingsGoalPath, getNewTransferPath, getBudgetDetailsPath, getDebtDetailsPath, getRecurringDetailsPath, getSavingsGoalDetailsPath, getTransactionDetailsPath, getTransferDetailsPath } from "../../routes/Path.js";
 import { isCurrencyCode, parseDecimal } from "../money/decimal.js";
+import { buildAiSettings, normalizeConversation } from "../models/assist.js";
+import { buildCategoryDetail } from "../models/categories.js";
 import { idText, isRecord, textOrNull } from "../models/values.js";
 import { amountError, compareAmounts, dateError, integerError, normalizeAmount, textError } from "./validation.js";
 
@@ -27,6 +29,11 @@ import { amountError, compareAmounts, dateError, integerError, normalizeAmount, 
 
 // The currencies the full version offers (Accounts/accountHelpers.js ACCOUNT_CURRENCIES; tests/mobileForms.test.mjs keeps them equal).
 export const FORM_CURRENCIES = Object.freeze(["ILS", "USD", "EUR", "JOD", "SAR", "AED"]);
+// StoreAccountRequest / UpdateAccountRequest: name max:150 (the full version allows 255, which the backend refuses with a 422).
+export const ACCOUNT_NAME_MAX = 150;
+// The assistant's languages (UpdateAiSettingsRequest / StoreAiConversationRequest: ar, en) and its default conversation retention range (config ai_copilot.retention.conversations).
+export const AI_LOCALES = Object.freeze(["ar", "en"]);
+export const AI_RETENTION = Object.freeze({ min: 7, max: 365 });
 export const ACCOUNT_TYPES = Object.freeze(["cash", "bank", "wallet", "savings", "custom"]);
 export const REASON = Object.freeze({ min: 3, max: 500 });
 export const PASSWORD_MIN = 8;
@@ -45,6 +52,24 @@ const day = (value) => (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(v
 
 /* ---------- The records some forms start from (each refuses an answer about another id) ---------- */
 
+// Types only a debt posts: the generic reversal refuses them (409 debt_transaction_requires_domain_reversal) and the correction takes income and expense only.
+// The source the backend gives what a statement upload posted (TransactionSource).
+export const isStatementSource = (source) => /^statement_import$/.test(source);
+
+export const DEBT_TYPES = Object.freeze(["debt_received", "debt_given", "debt_payment", "debt_collection"]);
+
+/*
+ * Why a transaction can't be corrected or reversed from a form, or null. Mirrors the backend (UpdateTransactionAction,
+ * ReverseTransactionAction; develop @ fd87531 and 6b696d72): only a posted, plain income or expense is corrected; a reversal, a
+ * transfer's leg (reversed as a transfer) and a debt's money (reversed through the debt) are not reversed here.
+ *
+ * A transaction a statement upload posted is not corrected from Mobile: on develop @ fd87531 its replacement loses the
+ * upload's provenance, so reversing the whole upload later leaves the corrected money behind; only 6b696d72 (unmerged)
+ * carries it over. Reversing one is fine (reversing the whole upload skips what is already reversed).
+ */
+export const eligibleToCorrect = (record) => (record.status !== "posted" || record.isReversal || record.isTransfer || !["income", "expense"].includes(record.type) ? "notCorrectable" : record.isImported ? "importedCorrection" : null);
+export const eligibleToReverse = (record) => (record.status !== "posted" || record.isReversal || record.isTransfer ? "notReversible" : record.isDebtMoney ? "debtMoney" : null);
+
 const pickTransaction = (data, id) => {
   const raw = isRecord(data) ? data.transaction : null;
   if (!isRecord(raw) || idText(raw.id) !== String(id)) return null;
@@ -55,9 +80,13 @@ const pickTransaction = (data, id) => {
     status: text(raw.status),
     isReversal: raw.reversal_of_id != null || raw.type === "reversal",
     isTransfer: raw.transfer_id != null || raw.type === "transfer" || raw.type === "fee",
+    // Money a statement import posted, and money a debt owns: the backend treats both specially (see eligibleToCorrect / eligibleToReverse).
+    isImported: isStatementSource(raw.source),
+    isDebtMoney: DEBT_TYPES.includes(raw.type),
     currency: isCurrencyCode(raw.currency_code) ? raw.currency_code : null,
     amount: digits(raw.amount),
     accountId: idText(own?.account?.id ?? own?.account_id ?? raw.account_id) ?? "",
+    accountName: textOrNull(own?.account?.name, 80),
     categoryId: idText(raw.category?.id ?? raw.category_id) ?? "",
     description: text(raw.description),
     referenceNumber: text(raw.reference_number),
@@ -89,6 +118,8 @@ const pickAccount = (data, id) => {
     currency: isCurrencyCode(raw.currency_code) ? raw.currency_code : null,
     openingBalance: parseDecimal(raw.opening_balance) ? String(raw.opening_balance).replace(/(\.\d*?)0+$/, "$1").replace(/\.$/, "") : "",
     allowNegative: raw.allow_negative_balance === true,
+    // The balance as the server computed it (the closing balance an archive shows).
+    balance: parseDecimal(raw.current_balance) ? String(raw.current_balance) : null,
     status: text(raw.status),
     isGoal: Boolean(raw.savings_goal) || raw.type === "savings_goal",
   };
@@ -145,6 +176,8 @@ const pickRule = (data, id) => {
     notes: text(raw.notes),
     status: text(raw.status),
     nextDue: day(raw.schedule?.next_occurrence?.due_date ?? raw.next_due_date),
+    // The open occurrence a confirm or skip names (occurrence_id); null when the schedule names none.
+    nextOccurrenceId: isRecord(raw.schedule?.next_occurrence) && raw.schedule.next_occurrence.is_open !== false ? idText(raw.schedule.next_occurrence.id) : null,
   };
 };
 
@@ -181,7 +214,31 @@ const pickPayment = (data, paymentId) => {
   };
 };
 
-export const RECORD_PICKERS = Object.freeze({ transaction: pickTransaction, transfer: pickTransfer, account: pickAccount, budget: pickBudget, goal: pickGoal, rule: pickRule, debt: pickDebt, payment: pickPayment });
+// A category as the category page reads it; a response about another id is refused (models/categories.js).
+const pickCategory = (data, id) => buildCategoryDetail(data, id);
+
+/*
+ * Why a category can't be archived, or null (ArchiveCategoryAction, identical on develop @ fd87531 and 6b696d72): a system
+ * category never can (422), one with no workspace can't (422), one that is already archived is refused (422). Anything the
+ * page can't read as plainly yours and active is treated as not archivable (fail closed, like the rename form).
+ */
+export const eligibleToArchiveCategory = (record) => (record.system === true ? "systemCategory" : record.active === false ? "categoryArchived" : !record.manageable ? "notManageable" : null);
+
+// The assistant's settings (GET /ai/settings; there is one record per person, so no id) and one conversation (GET /ai/conversations/{id}).
+const pickAiSettings = (data) => {
+  try {
+    const settings = buildAiSettings(data);
+    return { id: "settings", ...settings, retentionDays: settings.retentionDays !== null ? String(settings.retentionDays) : "" };
+  } catch {
+    return null;
+  }
+};
+const pickAiConversation = (data, id) => {
+  const conversation = isRecord(data) ? normalizeConversation(data.conversation) : null;
+  return conversation && conversation.id === String(id) ? conversation : null;
+};
+
+export const RECORD_PICKERS = Object.freeze({ aiSettings: pickAiSettings, aiConversation: pickAiConversation, category: pickCategory, transaction: pickTransaction, transfer: pickTransfer, account: pickAccount, budget: pickBudget, goal: pickGoal, rule: pickRule, debt: pickDebt, payment: pickPayment });
 
 /* ---------- Shared pieces ---------- */
 
@@ -260,7 +317,7 @@ export const WORKFLOWS = Object.freeze({
     fullPath: () => PATH.USER.ACCOUNTS,
     needs: {},
     fields: [
-      { name: "name", kind: "text", required: true, max: 255 },
+      { name: "name", kind: "text", required: true, max: ACCOUNT_NAME_MAX },
       { name: "type", kind: "choice", required: true, options: ACCOUNT_TYPES, optionKey: "accountType" },
       { name: "currency_code", kind: "currency", required: true },
       { name: "opening_balance", kind: "amount", required: true, zero: true, currency: (values) => values.currency_code || null, hint: "openingHint" },
@@ -367,9 +424,11 @@ export const WORKFLOWS = Object.freeze({
     endpoint: "PATCH /transactions/{id}",
     record: "transaction",
     fullPath: (ctx) => getTransactionDetailsPath(ctx.record.id),
-    eligible: (record) => (record.status !== "posted" || record.isReversal || record.isTransfer || !["income", "expense"].includes(record.type) ? "notCorrectable" : null),
+    eligible: eligibleToCorrect,
     needs: { accounts: true, categories: true },
     editsRecord: true,
+    // The review shows what each changed detail was before.
+    showsOriginal: true,
     fields: [
       { name: "account_id", kind: "account", required: true, accounts: (account, values, ctx) => sameCurrencyAs(ctx.record.currency)(account) },
       { name: "category_id", kind: "category", required: (values, ctx) => ctx.record.type === "expense", categoryType: (values, ctx) => ctx.record.type },
@@ -390,11 +449,12 @@ export const WORKFLOWS = Object.freeze({
     endpoint: "POST /transactions/{id}/reverse",
     record: "transaction",
     fullPath: (ctx) => getTransactionDetailsPath(ctx.record.id),
-    eligible: (record) => (record.status !== "posted" || record.isReversal || record.isTransfer ? "notReversible" : null),
+    eligible: eligibleToReverse,
     needs: {},
     fields: [reasonField],
     initial: () => ({ reason: "" }),
-    summary: (ctx) => ({ amount: ctx.record.amount, currency: ctx.record.currency, date: ctx.record.occurredAt }),
+    // The account is the one the transaction was recorded on (its own ledger entry).
+    summary: (ctx) => ({ amount: ctx.record.amount, currency: ctx.record.currency, date: ctx.record.occurredAt, account: ctx.record.accountName }),
     effectKey: "reverseEffect",
   },
 
@@ -424,14 +484,95 @@ export const WORKFLOWS = Object.freeze({
     eligible: (record) => (record.status === "archived" ? "archived" : record.isGoal ? "goalAccount" : null),
     needs: {},
     editsRecord: true,
+    showsOriginal: true,
     fields: [
-      { name: "name", kind: "text", required: true, max: 255 },
+      { name: "name", kind: "text", required: true, max: ACCOUNT_NAME_MAX },
       { name: "type", kind: "choice", required: true, options: ACCOUNT_TYPES, optionKey: "accountType" },
       { name: "currency_code", kind: "locked", value: (ctx) => ctx.record.currency, hint: "currencyLocked" },
       { name: "opening_balance", kind: "amount", required: true, zero: true, currency: (values, ctx) => ctx.record.currency, hint: "openingLockedHint" },
       { name: "allow_negative_balance", kind: "check" },
     ],
     initial: (ctx) => ({ name: ctx.record.name, type: ACCOUNT_TYPES.includes(ctx.record.type) ? ctx.record.type : "", opening_balance: ctx.record.openingBalance, allow_negative_balance: ctx.record.allowNegative }),
+  },
+
+  /* ----- The assistant (docs/mobile/AI-ASSISTANT.md) ----- */
+
+  "ai-new": {
+    id: "ai-new",
+    group: "assist",
+    operation: "ai.conversationCreate",
+    endpoint: "POST /ai/conversations",
+    fullPath: () => PATH.USER.AI_ASSISTANT,
+    needs: {},
+    fields: [{ name: "locale", kind: "choice", required: true, options: AI_LOCALES, optionKey: "aiLocale", hint: "aiLocaleHint" }],
+    initial: (ctx) => ({ locale: AI_LOCALES.includes(ctx.language) ? ctx.language : "en" }),
+    effectKey: "aiNewEffect",
+  },
+
+  "ai-settings": {
+    id: "ai-settings",
+    group: "assist",
+    operation: "ai.settings",
+    endpoint: "PUT /ai/settings",
+    record: "aiSettings",
+    fullPath: () => PATH.USER.AI_ASSISTANT,
+    // Turning the assistant on is a consent decision (the backend creates or renews consent only for ai_enabled=true), so Mobile edits
+    // an assistant that is already on and can turn it off; turning it on again is done in the full version, where the consent is shown.
+    eligible: (record) => (record.consent === true ? null : "aiOff"),
+    needs: {},
+    editsRecord: true,
+    showsOriginal: true,
+    fields: [
+      { name: "ai_enabled", kind: "check", hint: "aiEnabledHint" },
+      { name: "insights_enabled", kind: "check" },
+      { name: "forecast_enabled", kind: "check" },
+      { name: "preferred_language", kind: "choice", options: AI_LOCALES, optionKey: "aiLocale" },
+      { name: "retention_days", kind: "integer", required: true, min: AI_RETENTION.min, max: AI_RETENTION.max, hint: "retentionHint" },
+    ],
+    initial: (ctx) => ({ ai_enabled: ctx.record.consent === true, insights_enabled: ctx.record.insights === true, forecast_enabled: ctx.record.forecast === true, preferred_language: AI_LOCALES.includes(ctx.record.language) ? ctx.record.language : "", retention_days: ctx.record.retentionDays }),
+    effectKey: "aiSettingsEffect",
+  },
+
+  "ai-conversation-delete": {
+    id: "ai-conversation-delete",
+    group: "assist",
+    operation: "ai.conversationDelete",
+    endpoint: "DELETE /ai/conversations/{id}",
+    record: "aiConversation",
+    fullPath: () => PATH.USER.AI_ASSISTANT,
+    needs: {},
+    fields: [],
+    initial: () => ({}),
+    summary: (ctx) => ({ name: ctx.record.title }),
+    effectKey: "aiConversationDeleteEffect",
+  },
+
+  "ai-data-delete": {
+    id: "ai-data-delete",
+    group: "assist",
+    operation: "ai.dataDelete",
+    endpoint: "DELETE /ai/data",
+    record: "aiSettings",
+    fullPath: () => PATH.USER.AI_ASSISTANT,
+    needs: {},
+    fields: [{ name: "understand", kind: "check", required: true, hint: "aiDataHint" }],
+    initial: () => ({ understand: false }),
+    effectKey: "aiDataDeleteEffect",
+  },
+
+  "category-archive": {
+    id: "category-archive",
+    group: "planning",
+    operation: "category.archive",
+    endpoint: "POST /categories/{id}/archive",
+    record: "category",
+    fullPath: (ctx) => getCategoryDetailsPath(ctx.record.id),
+    eligible: eligibleToArchiveCategory,
+    needs: {},
+    fields: [],
+    initial: () => ({}),
+    summary: (ctx) => ({ name: ctx.record.name, type: ctx.record.typeKnown ? ctx.record.type : null }),
+    effectKey: "categoryArchiveEffect",
   },
 
   "account-archive": {
@@ -445,7 +586,8 @@ export const WORKFLOWS = Object.freeze({
     needs: {},
     fields: [],
     initial: () => ({}),
-    summary: (ctx) => ({ name: ctx.record.name }),
+    // The closing balance is the server's, read with the account.
+    summary: (ctx) => ({ name: ctx.record.name, balance: ctx.record.balance, currency: ctx.record.currency }),
     effectKey: "archiveEffect",
   },
 
@@ -544,7 +686,8 @@ export const WORKFLOWS = Object.freeze({
     endpoint: "POST /recurring-transactions/{id}/confirm-next",
     record: "rule",
     fullPath: (ctx) => getRecurringDetailsPath(ctx.record.id),
-    eligible: (record) => (record.status !== "active" ? "ruleNotActive" : null),
+    // The request names the occurrence shown (occurrence_id), so there must be one.
+    eligible: (record) => (record.status !== "active" ? "ruleNotActive" : !record.nextOccurrenceId ? "noOpenOccurrence" : null),
     needs: {},
     fields: [],
     initial: () => ({}),
@@ -559,7 +702,7 @@ export const WORKFLOWS = Object.freeze({
     endpoint: "POST /recurring-transactions/{id}/skip-next",
     record: "rule",
     fullPath: (ctx) => getRecurringDetailsPath(ctx.record.id),
-    eligible: (record) => (record.status !== "active" ? "ruleNotActive" : null),
+    eligible: (record) => (record.status !== "active" ? "ruleNotActive" : !record.nextOccurrenceId ? "noOpenOccurrence" : null),
     needs: {},
     fields: [{ name: "reason", kind: "textarea", max: 500 }],
     initial: () => ({ reason: "" }),
@@ -798,6 +941,7 @@ export function validateWorkflow(workflow, values, ctx) {
     else if (field.kind === "text" || field.kind === "textarea") error = textError(value, { required, min: field.min ?? 0, max: field.max ?? 255 });
     else if (field.kind === "email") error = textError(value, { required, max: field.max ?? 255 }) ?? (value?.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim()) ? "email" : null);
     else if (field.kind === "password") error = value ? null : required ? "required" : null;
+    else if (field.kind === "check") error = required && value !== true ? "required" : null;
     else if (field.kind === "date") error = dateError(value, { required });
     else if (field.kind === "integer") error = integerError(value, { required, min: field.min, max: field.max });
     else if (field.kind === "choice") error = value ? (field.options.includes(value) ? null : "choice") : required ? "required" : null;
@@ -860,7 +1004,7 @@ export const effectKeyOf = (workflow, ctx) => (typeof workflow.effectKey === "fu
 export const NEW_ENTRY_ORDER = Object.freeze(["expense", "income", "transfer", "account", "budget", "goal", "recurring", "debt"]);
 
 /** Every form at /m/add/{id}: the Add sheet's, and the export form (opened from Exports). */
-export const NEW_FORM_IDS = Object.freeze([...NEW_ENTRY_ORDER, "export"]);
+export const NEW_FORM_IDS = Object.freeze([...NEW_ENTRY_ORDER, "export", "ai-new"]);
 
 /** Every write these forms stand for. Each is registered in the write gate and closed there (tests/mobileForms.test.mjs). */
 export const DRAFT_ONLY_OPERATIONS = Object.freeze(Object.values(WORKFLOWS).map((workflow) => workflow.operation));

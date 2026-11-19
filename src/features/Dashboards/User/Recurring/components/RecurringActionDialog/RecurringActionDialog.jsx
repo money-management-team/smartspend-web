@@ -41,9 +41,11 @@ const OUTDATING_CODES = ["NOT_FOUND", "CONFLICT", "VALIDATION_ERROR"];
  * Confirms one action on a recurring rule:
  * - "pause" / "resume"  → POST …/pause | …/resume (no body)
  * - "archive"           → DELETE …/{id} (an archive, never a deletion)
- * - "confirm"           → POST …/confirm-next: MOVES MONEY, posts the oldest
- *                         open occurrence as a real transaction
- * - "skip"              → POST …/skip-next (optional reason): moves no money
+ * - "confirm"           → POST …/confirm-next with the occurrence shown below
+ *                         (`occurrence_id`): MOVES MONEY, posts that occurrence
+ *                         as a real transaction
+ * - "skip"              → POST …/skip-next with the same `occurrence_id`
+ *                         (optional reason): moves no money
  *
  * `onConfirm(reason)` performs the request and throws on failure; errors are
  * shown here. A confirm whose outcome is unknown (network error, timeout,
@@ -114,7 +116,13 @@ export default function RecurringActionDialog({
           fieldError: error?.errors?.reason?.[0] ?? "",
         });
 
-        if (unknownOutcome && action === "confirm") setIsBlocked(true);
+        // Nothing to retry from here: the request named this date, so sending it again either
+        // repeats the same answer (a failed occurrence is settled and the schedule moved on;
+        // a 409 means the date can no longer be acted on) or, after an unknown outcome, must
+        // wait for a refresh. The page is refreshed when the dialog closes.
+        const settledHere = action === "confirm" && getFailedOccurrence(error) != null;
+        const staleOccurrence = typeof error?.serverCode === "string" && error.serverCode.startsWith("recurring_occurrence_");
+        if ((unknownOutcome && action === "confirm") || settledHere || staleOccurrence) setIsBlocked(true);
         if (unknownOutcome || OUTDATING_CODES.includes(error?.code))
           onOutdated?.();
       }

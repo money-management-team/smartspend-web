@@ -25,6 +25,7 @@ for (const key of ["localStorage", "sessionStorage", "matchMedia"]) {
 
 export const { default: i18n } = await import("../../src/i18n.js");
 export const { AuthContext } = await import("../../src/contexts/auth/authContext.js");
+export const { EmailVerificationContext } = await import("../../src/contexts/emailVerification/emailVerificationContext.js");
 const { default: AuthProvider } = await import("../../src/contexts/auth/authProvider.jsx");
 const { default: ThemeProvider } = await import("../../src/contexts/theme/themeProvider.jsx");
 const { default: LanguageProvider } = await import("../../src/contexts/language/languageProvider.jsx");
@@ -126,7 +127,8 @@ const stub = (id) => h("div", { id }, id);
  * `auth` is the AuthContext value; by default it is user A, matching what the caller stored.
  */
 // `realAuth: true` mounts the app's real AuthProvider instead of a fixed context value (for tests of real sign-in dispatch).
-export async function mountMobile({ entry = "/m", auth, preference = "mobile", realAuth = false } = {}) {
+// `emailVerification` is the value the app's EmailVerificationProvider would give (status, loading, error, refresh); omitted, Profile sees none.
+export async function mountMobile({ entry = "/m", auth, preference = "mobile", realAuth = false, emailVerification } = {}) {
   if (preference) window.localStorage.setItem(PRESENTATION_KEY, preference);
 
   const value = auth ?? { isAuthenticated: true, initializing: false, token: TOKEN_A, user: USER_A, workspace: { id: 1, base_currency_code: "ILS", timezone: "UTC" } };
@@ -134,11 +136,12 @@ export async function mountMobile({ entry = "/m", auth, preference = "mobile", r
   // A data router, as in the app (src/main.jsx), so screens can block navigation (useBlocker).
   const router = createMemoryRouter([{ path: "*", element: h(Fragment, null, h(Probe), h(MobileEntry, { desktop })) }], { initialEntries: [entry] });
 
+  const routed = h(RouterProvider, { router });
+  const inner = emailVerification ? h(EmailVerificationContext.Provider, { value: emailVerification }, routed) : routed;
   const view = await render(
     h(ThemeProvider, null,
       h(LanguageProvider, null,
-        realAuth ? h(AuthProvider, null, h(RouterProvider, { router })) : h(AuthHarness, { initial: value },
-          h(RouterProvider, { router })))),
+        realAuth ? h(AuthProvider, null, inner) : h(AuthHarness, { initial: value }, inner))),
   );
 
   await settle();

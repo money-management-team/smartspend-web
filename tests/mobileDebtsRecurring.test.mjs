@@ -274,7 +274,8 @@ describe("A debt's payments", () => {
   });
 
   it("the due date in words, from the backend's own day count", async () => {
-    const facts = () => text(q("#sm-debt-facts").closest("section"));
+    // The due date and its countdown sit in the summary, under the outstanding figure.
+    const facts = () => text(q("[data-sm-screen='debt'] .sm-hero .sm-debt-when"));
 
     await openDebts("/m/planning/debts/1", { debts: [debt(1, { days_until_due: 34 })], payments: {} });
     assert.match(facts(), /Days until due\s*34/);

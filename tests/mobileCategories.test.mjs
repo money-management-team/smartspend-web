@@ -36,6 +36,12 @@ const open = async (entry, { rows, hooks, handler } = {}) => {
 const nameInput = () => q("main input[type='text']");
 const radio = (value) => q(`main input[type='radio'][value='${value}']`);
 const submitButton = () => q("[data-sm-action='submit']");
+// The form ends in a review since Phase 2E: "submit" opens it and its Confirm sends. This is the whole gesture.
+const confirmButton = () => q("[data-sm-action='confirm']");
+const clickSend = async () => {
+  await click(submitButton());
+  if (confirmButton()) await click(confirmButton());
+};
 const hold = () => {
   let release;
   const promise = new Promise((resolve) => {
@@ -176,7 +182,7 @@ describe("a new category", () => {
   it("needs a name and a type before anything is sent; the summary takes the focus and links to the fields", async () => {
     await open("/m/planning/categories/new");
 
-    await click(submitButton());
+    await clickSend();
 
     assert.deepEqual(writes(), []);
     const summary = q("[data-sm-summary]");
@@ -190,7 +196,7 @@ describe("a new category", () => {
   it("a name over 255 characters is refused here", async () => {
     await open("/m/planning/categories/new");
     await fillCreate("x".repeat(256));
-    await click(submitButton());
+    await clickSend();
 
     assert.deepEqual(writes(), []);
     assert.match(text(q("main")), /Use at most 255 characters/);
@@ -199,7 +205,7 @@ describe("a new category", () => {
   it("sends exactly one POST /categories with exactly { workspace_id, name, type }, and no idempotency key", async () => {
     await open("/m/planning/categories/new");
     await fillCreate("  Rent  ");
-    await click(submitButton());
+    await clickSend();
     await settle();
 
     assert.deepEqual(writes().map((call) => `${call.method} ${call.path}`), ["POST /categories"]);
@@ -216,7 +222,7 @@ describe("a new category", () => {
     await click(link("New category"));
     await settle();
     await fillCreate("Rent");
-    await click(submitButton());
+    await clickSend();
     await settle();
 
     const outcome = q("[data-sm-outcome='confirmed']");
@@ -234,10 +240,10 @@ describe("a new category", () => {
     await open("/m/planning/categories/new", { hooks: { onCreate: () => held.promise } });
     await fillCreate("Rent");
 
+    await click(submitButton());
     await act(async () => {
-      submitButton().click();
-      submitButton().click();
-      q("form.sm-cat-form").dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+      confirmButton().click();
+      confirmButton()?.click();
     });
 
     assert.equal(writes().length, 1);
@@ -267,7 +273,7 @@ describe("a new category", () => {
       },
     });
     await fillCreate("Groceries");
-    await click(submitButton());
+    await clickSend();
     await settle();
 
     assert.equal(q("[data-sm-summary]").dataset.smSummary, "rejected:VALIDATION_ERROR");
@@ -278,7 +284,7 @@ describe("a new category", () => {
     assert.equal(writes().length, 1, "nothing was sent again by itself");
 
     await change(nameInput(), "Groceries 2");
-    await click(submitButton());
+    await clickSend();
     await settle();
     assert.equal(writes().length, 2);
     assert.ok(q("[data-sm-outcome='confirmed']"));
@@ -300,7 +306,7 @@ describe("a new category", () => {
     await click(link("New category"));
     await settle();
     await fillCreate("Rent");
-    await click(submitButton());
+    await clickSend();
     await settle();
     assert.equal(q("[data-sm-summary]").dataset.smSummary, "rejected:VALIDATION_ERROR");
     assert.equal(writes().length, 1, "nothing was sent again by itself");
@@ -317,7 +323,7 @@ describe("a new category", () => {
   it("a 403 is a refusal by the contract: said in words, the draft stays, nothing resent", async () => {
     await open("/m/planning/categories/new", { hooks: { onCreate: () => failure(403, "refused") } });
     await fillCreate();
-    await click(submitButton());
+    await clickSend();
     await settle();
 
     assert.equal(q("[data-sm-summary]").dataset.smSummary, "rejected:FORBIDDEN");
@@ -330,7 +336,7 @@ describe("a new category", () => {
     it(`a ${status} on a create is unknown, not a refusal: no "nothing was saved", no resend`, async () => {
       await open("/m/planning/categories/new", { hooks: { onCreate: () => failure(status, "refused") } });
       await fillCreate();
-      await click(submitButton());
+      await clickSend();
       await settle();
 
       const outcome = q("[data-sm-outcome='unknown']");
@@ -354,7 +360,7 @@ describe("a new category", () => {
     it(`${label} is unknown: not called a failure, no resend, only checks offered`, async () => {
       await open("/m/planning/categories/new", { hooks: { onCreate: response } });
       await fillCreate();
-      await click(submitButton());
+      await clickSend();
       await settle();
 
       const outcome = q("[data-sm-outcome='unknown']");
@@ -415,7 +421,7 @@ describe("a new category", () => {
     await open("/m/planning/categories/new");
     const before = { local: Object.keys(window.localStorage).sort(), session: Object.keys(window.sessionStorage).sort() };
     await fillCreate("Very private name");
-    await click(submitButton());
+    await clickSend();
     await settle();
 
     const all = [window.localStorage, window.sessionStorage].flatMap((storage) => Object.keys(storage).map((key) => storage.getItem(key))).join(" ");
@@ -430,7 +436,8 @@ describe("a rename", () => {
     await open("/m/planning/categories/1/edit");
 
     assert.equal(nameInput().value, "Groceries");
-    assert.equal(q("main input[type='radio']"), null);
+    assert.equal(q("main input[type='radio'][value='expense']"), null, "no type choice on an edit (the colour choices are radios too)");
+    assert.equal(q("main input[type='radio'][value='income']"), null);
     assert.match(text(q("[data-sm-locked='type']")), /Expense.*can't be changed here/);
     assert.equal(submitButton().disabled, true);
 
@@ -443,7 +450,7 @@ describe("a rename", () => {
   it("sends exactly one PATCH with only the name, and confirms with the server's name", async () => {
     await open("/m/planning/categories/1/edit");
     await change(nameInput(), "Food shopping");
-    await click(submitButton());
+    await clickSend();
     await settle();
 
     assert.deepEqual(writes().map((call) => `${call.method} ${call.path}`), ["PATCH /categories/1"]);
@@ -456,7 +463,7 @@ describe("a rename", () => {
     const handler = (call) => (call.method === "GET" && call.path === "/categories/1" && writes().length ? { body: envelope({ category: category(1, { name: "Renamed again elsewhere" }) }) } : base(call));
     await open("/m/planning/categories/1/edit", { handler });
     await change(nameInput(), "Food shopping");
-    await click(submitButton());
+    await clickSend();
     await settle();
 
     assert.match(text(q("[data-sm-outcome='confirmed']")), /Food shopping/);
@@ -477,7 +484,7 @@ describe("a rename", () => {
   it("a 409 on a rename is unknown (no category meaning is documented): nothing claimed either way, no resend", async () => {
     await open("/m/planning/categories/1/edit", { hooks: { onUpdate: () => failure(409, "Changed meanwhile") } });
     await change(nameInput(), "New name");
-    await click(submitButton());
+    await clickSend();
     await settle();
 
     assert.ok(q("[data-sm-outcome='unknown']"));
@@ -488,7 +495,7 @@ describe("a rename", () => {
   it("a 404 on a rename is a refusal by the contract: the category isn't available, the draft stays", async () => {
     await open("/m/planning/categories/1/edit", { hooks: { onUpdate: () => failure(404, "Not found") } });
     await change(nameInput(), "New name");
-    await click(submitButton());
+    await clickSend();
     await settle();
 
     assert.equal(q("[data-sm-summary]").dataset.smSummary, "rejected:NOT_FOUND");
@@ -507,7 +514,7 @@ describe("a rename", () => {
   it("an unknown rename offers to check the category and the list, nothing else", async () => {
     await open("/m/planning/categories/1/edit", { hooks: { onUpdate: () => failure(502, "") } });
     await change(nameInput(), "New name");
-    await click(submitButton());
+    await clickSend();
     await settle();
 
     const outcome = q("[data-sm-outcome='unknown']");
@@ -521,7 +528,7 @@ describe("a rename", () => {
     await click(link("Rename category"));
     await settle();
     await change(nameInput(), "Food shopping");
-    await click(submitButton());
+    await clickSend();
     await settle();
 
     await click(link("View the category"));

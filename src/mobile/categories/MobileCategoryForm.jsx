@@ -9,13 +9,14 @@ import { sendCategoryCreate, sendCategoryUpdate } from "../data/writeApi.js";
 import { isWriteOpen } from "../data/writeGate.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { CATEGORY_TYPES, NAME_MAX, buildCategoryDetail } from "../models/categories.js";
-import { buildCreatePayload, buildUpdatePayload, confirmCreate, confirmUpdate, fieldErrorsOf, validateName, validateType, workspaceIdForBody } from "../models/categoryForm.js";
+import { CATEGORY_COLORS, CATEGORY_ICONS, buildCreatePayload, buildUpdatePayload, confirmCreate, confirmUpdate, fieldErrorsOf, validateName, validateType, workspaceIdForBody } from "../models/categoryForm.js";
 import { MOBILE_CATEGORIES, backPathFrom, categoryDetailPath } from "../navigation.js";
 import RecordScreen from "../planning/RecordScreen.jsx";
 import MobileSheet from "../shell/MobileSheet.jsx";
 import { PATH, getCategoryDetailsPath } from "../../routes/Path.js";
 import Chevron from "../ui/Chevron.jsx";
 import WriteClosedNotice from "../ui/WriteClosedNotice.jsx";
+import CategoryBadge from "./CategoryBadge.jsx";
 import CategoryOutcome from "./CategoryOutcome.jsx";
 import { useCategoryMutation } from "./useCategoryMutation.js";
 import { useLeaveGuard } from "./useLeaveGuard.js";
@@ -23,14 +24,16 @@ import { useLeaveGuard } from "./useLeaveGuard.js";
 const REJECTION_KEYS = { VALIDATION_ERROR: "validation", FORBIDDEN: "forbidden", NOT_FOUND: "notFound", WRITE_CLOSED: "closed" };
 
 /*
- * The category form, for a new category or a rename.
+ * The category form, for a new category or an edit.
  *
- *   create: name and type, sent as POST /categories with the session's workspace;
- *   edit:   the name only, sent as PATCH /categories/{id} { name } when it changed.
+ *   create: name and type, and optionally a colour and an icon, sent as POST /categories with the session's workspace;
+ *   edit:   the name, colour and icon, sent as PATCH /categories/{id} with only what changed.
  *
- * Locked here, and said so: the type of an existing category (changing it changes
- * what its existing transactions mean), its colour and icon, and archiving. No
- * parent is offered: no parent field is documented for a write.
+ * Either one ends in a review (what would be sent, and for an edit what each detail was) before anything is sent; only
+ * the review's Confirm sends. Locked here, and said so: the type of an existing category (changing it changes what its
+ * existing transactions mean, and the backend refuses it once a transaction uses the category). No parent is offered:
+ * the backend has no parent field on a write (CreateCategoryAction sets parent_id null; UpdateCategoryRequest has none).
+ * Archiving is its own form (forms/, category-archive).
  *
  * Validation runs before anything is sent; the server's own 422 messages are
  * shown under the field they name and in the summary at the top, which takes the
@@ -45,6 +48,9 @@ function CategoryForm({ mode, category, backTo }) {
   // Seeded once: a later read of the same category does not overwrite what is being typed.
   const [name, setName] = useState(() => (mode === "edit" ? category.name ?? "" : ""));
   const [type, setType] = useState("");
+  const [color, setColor] = useState(() => (mode === "edit" ? category.color?.toUpperCase() ?? "" : ""));
+  const [icon, setIcon] = useState(() => (mode === "edit" ? category.icon ?? "" : ""));
+  const [reviewing, setReviewing] = useState(false);
   const [attempted, setAttempted] = useState(false);
   const summaryRef = useRef(null);
   // Where the person was in the form when a navigation was held: "Keep editing" puts the focus back there.
@@ -52,7 +58,8 @@ function CategoryForm({ mode, category, backTo }) {
   const [workspaceId] = useState(() => (mode === "create" ? workspaceIdForBody(sessionWorkspace()) : null));
 
   const original = mode === "edit" ? category.name ?? "" : "";
-  const dirty = mode === "edit" ? name.trim() !== original.trim() : name.trim() !== "" || type !== "";
+  const changes = mode === "edit" ? buildUpdatePayload({ name, color, icon }, category) : {};
+  const dirty = mode === "edit" ? Object.keys(changes).length > 0 : name.trim() !== "" || type !== "" || color !== "" || icon !== "";
   const local = { name: validateName(name), type: mode === "create" ? validateType(type) : null };
   const server = mutation.phase === "rejected" && mutation.code === "VALIDATION_ERROR" ? fieldErrorsOf(mutation.rejection) : { name: null, type: null };
   const nameError = server.name ?? (attempted && local.name ? t(`categories.form.validation.${local.name}`, { max: NAME_MAX }) : null);
@@ -83,18 +90,28 @@ function CategoryForm({ mode, category, backTo }) {
     if (local.name || local.type) return;
     if (mode === "edit" && !dirty) return;
 
+    // Nothing is sent from the form itself: it ends in the review, and only the review's Confirm sends.
+    setReviewing(true);
+  };
+
+  const confirm = () => {
+    if (mutation.submitting || blocked) return;
+
+    // The review gives way to the form while the request runs (its button says so and everything is disabled).
+    setReviewing(false);
+
     if (mode === "create") {
-      const payload = buildCreatePayload({ workspaceId, name, type });
+      const payload = buildCreatePayload({ workspaceId, name, type, color, icon });
       mutation.start({
         operation: "create",
         send: () => sendCategoryCreate(payload),
-        prove: (data) => confirmCreate(data, { name: payload.name, type: payload.type, workspaceId }),
+        prove: (data) => confirmCreate(data, { name: payload.name, type: payload.type, workspaceId, color: payload.color, icon: payload.icon }),
         // The workspace it was sent for must still be the session's when the answer arrives, or the answer is not shown as this screen's.
         stillCurrent: () => workspaceIdForBody(sessionWorkspace()) === workspaceId,
       });
     } else {
-      const payload = buildUpdatePayload({ name });
-      mutation.start({ operation: "update", send: () => sendCategoryUpdate(category.id, payload), prove: (data) => confirmUpdate(data, category.id, payload.name) });
+      const payload = buildUpdatePayload({ name, color, icon }, category);
+      mutation.start({ operation: "update", send: () => sendCategoryUpdate(category.id, payload), prove: (data) => confirmUpdate(data, category.id, payload) });
     }
   };
 
@@ -108,10 +125,48 @@ function CategoryForm({ mode, category, backTo }) {
     event.preventDefault();
     document.getElementById(id)?.focus();
   };
+  const colorId = `${ids}-color`;
+  const iconId = `${ids}-icon`;
   const nameId = `${ids}-name`;
   const typeId = `${ids}-type`;
   const rejectionText = rejected ? t(`categories.form.rejected.${REJECTION_KEYS[mutation.code] ?? "other"}`) : null;
   const serverMessage = rejected && mutation.code === "VALIDATION_ERROR" && mutation.rejection?.message ? mutation.rejection.message.slice(0, 300) : null;
+
+  const previewType = mode === "create" ? type : category.type;
+  const shown = (value) => (value ? <bdi dir="ltr">{value}</bdi> : <span className="sm-muted">{t(mode === "create" ? "categories.form.review.none" : "categories.form.review.default")}</span>);
+  const row = (key, label, now, was, changed) => (
+    <div key={key} className="sm-stat" data-sm-field={key} data-sm-changed={changed ? "true" : undefined}>
+      <dt>{label}{changed && <span className="sm-chip sm-review-changed">{t("forms.changed")}</span>}</dt>
+      <dd>
+        {now}
+        {changed && <span className="sm-review-was sm-muted sm-fine" data-sm-was={key}>{t("forms.was")} {was}</span>}
+      </dd>
+    </div>
+  );
+
+  if (reviewing && !mutation.submitting && (mutation.phase === "editing" || mutation.phase === "rejected")) {
+    const edit = mode === "edit";
+    return (
+      <section className="sm-form-review" data-sm-step="review" data-sm-form={mode} aria-labelledby={`${ids}-review`}>
+        <div className="sm-card" tabIndex={-1}>
+          <h2 id={`${ids}-review`} className="sm-card-title">{t("categories.form.review.title")}</h2>
+          <p className="sm-text sm-muted">{t(edit ? "categories.form.review.introEdit" : "categories.form.review.introCreate")}</p>
+          <div className="sm-tx-head"><CategoryBadge category={{ icon: icon || null, color: color || null, type: previewType }} /></div>
+          <dl className="sm-stats sm-stats-stacked sm-review-list">
+            {row("name", t("categories.form.name"), <bdi className="sm-user-text">{name.trim()}</bdi>, <bdi className="sm-user-text">{original}</bdi>, edit && changes.name !== undefined)}
+            <div className="sm-stat" data-sm-field="type"><dt>{t("categories.form.type")}</dt><dd>{t(`categories.type.${previewType}`)}</dd></div>
+            {row("color", t("categories.color"), shown(color), shown(category?.color), edit && Object.hasOwn(changes, "color"))}
+            {row("icon", t("categories.icon"), shown(icon), shown(category?.icon), edit && Object.hasOwn(changes, "icon"))}
+          </dl>
+          <p className="sm-text sm-review-effect" data-sm-effect={edit ? "categoryEditEffect" : "categoryCreateEffect"}>{t(edit ? "categories.form.review.effectEdit" : "categories.form.review.effectCreate")}</p>
+        </div>
+        <div className="sm-actions sm-form-actions">
+          <button type="button" className="sm-button" onClick={confirm} data-sm-action="confirm">{t(edit ? "categories.form.review.confirmEdit" : "categories.form.review.confirmCreate")}</button>
+          <button type="button" className="sm-button sm-button-quiet" onClick={() => setReviewing(false)} data-sm-action="edit">{t("forms.backToEdit")}</button>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <form className="sm-cat-form" onSubmit={submit} onFocusCapture={rememberFocus} noValidate aria-busy={mutation.submitting} data-sm-form={mode} data-sm-phase={mutation.phase}>
@@ -177,6 +232,28 @@ function CategoryForm({ mode, category, backTo }) {
             <p className="sm-text sm-muted sm-fine">{t("categories.form.typeLocked")}</p>
           </div>
         )}
+
+        <fieldset className="sm-fieldset" data-sm-field="color">
+          <legend className="sm-label">{t("categories.color")} <span className="sm-muted sm-fine">{t("categories.form.optional")}</span></legend>
+          <div className="sm-cat-swatches">
+            <label className="sm-choice sm-cat-choice"><input type="radio" name={colorId} value="" checked={color === ""} onChange={() => setColor("")} /><span>{t(mode === "create" ? "categories.form.review.none" : "categories.form.review.default")}</span></label>
+            {CATEGORY_COLORS.map((value) => (
+              <label key={value} className="sm-choice sm-cat-choice">
+                <input type="radio" name={colorId} value={value} checked={color === value} onChange={() => setColor(value)} />
+                <span><span className="sm-cat-swatch" aria-hidden="true" style={{ "--sm-cat-color": value }} /> <bdi dir="ltr">{value}</bdi></span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+
+        <div className="sm-field" data-sm-field="icon">
+          <label className="sm-label" htmlFor={iconId}>{t("categories.icon")} <span className="sm-muted sm-fine">{t("categories.form.optional")}</span></label>
+          <select id={iconId} className="sm-select" dir="ltr" value={icon} onChange={(event) => setIcon(event.target.value)}>
+            <option value="">{t("categories.iconDefault")}</option>
+            {CATEGORY_ICONS.map((value) => <option key={value} value={value}>{value.replace(/-/g, " ")}</option>)}
+            {icon && !CATEGORY_ICONS.includes(icon) && <option value={icon}>{icon}</option>}
+          </select>
+        </div>
 
         <p className="sm-text sm-muted sm-fine">{t(mode === "create" ? "categories.form.notHereCreate" : "categories.form.notHereEdit")}</p>
       </fieldset>

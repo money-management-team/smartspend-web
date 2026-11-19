@@ -18,6 +18,8 @@ npx eslint src/path/to/File.jsx   # lint a single file
 
 `npm test` runs the Node built-in runner over `tests/**/*.test.mjs` (API adapters and contracts, with `fetch` mocked; no framework dependency). UI tests render the real components in jsdom. A few suites (`mobileBundle`, `mobileSavings`, the build-flag suites) run `vite build` themselves, so the whole run takes about a minute and a half. See `docs/whatsapp/testing.md`.
 
+Staging: `.github/workflows/deploy-staging.yml` is manual (`workflow_dispatch`), runs in the GitHub environment `staging`, reads only `STAGING_*` secrets/variables and can never build a production branch; `npm run staging:verify` checks it and that the production workflow is unchanged (`scripts/stagingIsolation.mjs`). It is implemented but staging is **not provisioned**; see `docs/mobile/STAGING-INFRASTRUCTURE.md`.
+
 CI: `.github/workflows/deploy-hostinger.yml` runs lint and a production build, then deploys, and only for `development`. `.github/workflows/ci.yml` runs lint and `npm test` on pull requests and on `integration/**` pushes; it has no secrets and never deploys. See `docs/mobile/RELEASE-AND-ROLLBACK.md`.
 
 Environment variables (`.env`):

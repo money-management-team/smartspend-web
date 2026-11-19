@@ -162,7 +162,8 @@ function formsBackend({ transactions = [tx(1), tx(2, { status: "reversed" })], d
       one(/^\/transfers\/(\d+)$/, [transfer(7)], "transfer") ??
       one(/^\/budgets\/(\d+)$/, [budget(1)], "budget") ??
       one(/^\/savings-goals\/(\d+)$/, [goal(1, { account: { id: 9, name: "Laptop savings" } })], "savings_goal") ??
-      one(/^\/recurring-transactions\/(\d+)$/, [rule(1)], "recurring_transaction") ??
+      // Confirm and skip name the rule's next open occurrence (occurrence_id), so the rule has one.
+      one(/^\/recurring-transactions\/(\d+)$/, [rule(1, { schedule: { next_occurrence: { id: 31, due_date: "2026-11-01", status: "scheduled", is_open: true }, open_occurrences_count: 1 } })], "recurring_transaction") ??
       one(/^\/debts\/(\d+)$/, debts, "debt") ??
       failure(404, "Not found")
     );

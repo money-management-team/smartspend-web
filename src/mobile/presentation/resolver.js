@@ -1,5 +1,6 @@
 import { PATH, getAccountDetailsPath, getBudgetDetailsPath, getCategoryDetailsPath, getRecurringDetailsPath, getSavingsGoalDetailsPath, getTransactionDetailsPath } from "../../routes/Path.js";
-import { MOBILE_ACCOUNTS, MOBILE_BUDGETS, MOBILE_CATEGORIES, MOBILE_CATEGORY_NEW, MOBILE_ENTER, MOBILE_GOALS, MOBILE_PREFIX, MOBILE_RECURRING, MOBILE_SCREENS } from "../navigation.js";
+import { isWriteOpen } from "../data/writeGate.js";
+import { MOBILE_ACCOUNTS, MOBILE_BUDGETS, MOBILE_CATEGORIES, MOBILE_CATEGORY_NEW, MOBILE_ENTER, MOBILE_FORGOT_PASSWORD, MOBILE_GOALS, MOBILE_PREFIX, MOBILE_RECURRING, MOBILE_RESET_PASSWORD, MOBILE_SCREENS } from "../navigation.js";
 
 /*
  * Maps a location to the presentation that should show it. Pure: no React, no
@@ -57,12 +58,33 @@ export function isProtectedPath(pathname) {
 
 export const toPath = ({ pathname, search = "", hash = "" }) => `${pathname}${search}${hash}`;
 
+/*
+ * The one emailed link Mobile takes over: the reset link (`/reset-password?token=…&identifier=…`, ResetPasswordNotification).
+ * It is the exception to "protected paths are never touched", and it applies whether or not anyone is signed in (the link is
+ * opened from a mail app), so it is also decided before the session has been restored. All of these must hold:
+ *   - Mobile is built in, and this device's presentation is Mobile (a stored choice, or Automatic on a phone)
+ *   - the Mobile reset operation is OPEN. While it is closed (the default) the link keeps opening the full version's page,
+ *     so a closed gate can never strand someone who is trying to recover their account, and the page that would have to
+ *     send them back to the full version cannot loop with this rule
+ * The whole query goes across unchanged: the Mobile page reads it once and removes it from the address bar.
+ * (The verification link is not handled: the backend addresses it to its own API, so the app never receives it.)
+ */
+export function getHandoff(location, { enabled, mode }) {
+  if (!enabled || mode !== "mobile") return null;
+  if (normalizePathname(location.pathname) !== PATH.AUTH.RESET_PASSWORD) return null;
+  if (!isWriteOpen("auth.resetPassword")) return null;
+  return { pathname: MOBILE_RESET_PASSWORD, search: location.search ?? "", hash: location.hash ?? "" };
+}
+
 /**
  * @param {{ pathname: string, search?: string, hash?: string }} location
  * @param {{ enabled: boolean, authenticated: boolean, mode: "mobile" | "desktop" }} context
  * @returns {{ pathname: string, search: string, hash: string } | null} where to go, or null to stay
  */
 export function getRedirect(location, { enabled, authenticated, mode }) {
+  const handoff = getHandoff(location, { enabled, mode });
+  if (handoff) return handoff;
+
   if (!enabled || !authenticated) return null;
 
   const { search = "", hash = "" } = location;
@@ -77,6 +99,10 @@ export function getRedirect(location, { enabled, authenticated, mode }) {
 
   if (mode === "desktop" && isMobilePath(pathname)) {
     if (pathname === MOBILE_ENTER) return null;
+
+    // The recovery pages go to their full-version twins; the reset link's query is the one thing that must survive the trip.
+    if (pathname === MOBILE_RESET_PASSWORD) return { pathname: PATH.AUTH.RESET_PASSWORD, search, hash };
+    if (pathname === MOBILE_FORGOT_PASSWORD) return { pathname: PATH.AUTH.FORGOT_PASSWORD, search: "", hash: "" };
 
     const screen = MOBILE_SCREENS.find((item) => item.mobile === pathname);
     if (screen) return { pathname: screen.canonical, search, hash };

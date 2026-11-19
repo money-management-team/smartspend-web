@@ -80,6 +80,12 @@ Two invariants are enforced by `tests/mobileWriteGate.test.mjs`:
 - The derived key can't stop this, because it is a different occurrence. The full version sends the same requests.
 - This needs a backend change that names the occurrence in the request.
 
+**Occurrence-specific confirm and skip (frontend done; backend change uncommitted).**
+- **Backend:** the change exists only as uncommitted work in the `fix/financial-idempotency-p0` worktree, on top of `6b696d72`; nothing deployed takes it. Both endpoints then require `occurrence_id`. Under the rule lock it must still be the earliest open occurrence; otherwise the answer is 409 `recurring_occurrence_not_next` or `recurring_occurrence_not_open`, and nothing changes. A repeat of a request that already settled the occurrence gets that result back.
+- **Desktop** sends the rule's `schedule.next_occurrence.id`. **Mobile** does the same (`pickRule` → `nextOccurrenceId`, `forms/writePayloads.js`); a rule with no open occurrence is ineligible (`noOpenOccurrence`).
+- Tests: `tests/recurringOccurrence.test.mjs`.
+- Both writes stay `next-open` and never approvable until that backend change is merged, deployed and its production commit confirmed. Only then does the classification change, in a reviewed commit.
+
 **Correction to the earlier `serverDedup` values** (2026-11-15):
 - confirm-next was `key-atomic`; skip-next was `unverified`.
 - Account and budget create were `duplicates`. That missed the unique indexes, which `develop` already has.

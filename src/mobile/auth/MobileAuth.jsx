@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { useTranslation } from "react-i18next";
+import { LuArrowRight, LuLockKeyhole, LuUserRound } from "react-icons/lu";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 
 import logo from "../../assets/smart-spend-logo.png";
@@ -9,7 +10,7 @@ import { errorKind } from "../data/errorKind.js";
 import { textError } from "../forms/validation.js";
 import "../i18n/register.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
-import { MOBILE_PREFIX, MOBILE_PROFILE, MOBILE_REGISTER, MOBILE_SIGNIN } from "../navigation.js";
+import { MOBILE_FORGOT_PASSWORD, MOBILE_PREFIX, MOBILE_PROFILE, MOBILE_REGISTER, MOBILE_SIGNIN } from "../navigation.js";
 import { usePresentation } from "../presentation/usePresentation.js";
 import { useOnline } from "../ui/useOnline.js";
 import { claimMobile } from "./claimMobile.js";
@@ -28,35 +29,62 @@ const firstOf = (value) => (Array.isArray(value) ? value.find((item) => typeof i
  * password, confirmation and one consent for terms and privacy) and the same
  * Remember me default (on). Mobile stores no token and makes no request of its
  * own here, so cross-tab sign-in protection and the session-expiry flow are
- * unchanged. Google sign-in, forgotten passwords and the signed email links are
- * the full version's pages, linked from here.
+ * unchanged. Forgotten and reset passwords are Mobile's own pages (auth/MobileRecovery.jsx, behind the write gate);
+ * the signed verification link is the backend's own address, which Mobile never receives (docs/mobile/AUTH-RECOVERY.md).
  */
-function AuthFrame({ screen, title, children }) {
+// `fullPath` is where "Use the full version instead" goes: the full version's sign-in, or for the recovery pages its own forgot-password page.
+export function AuthFrame({ screen, title, children, fullPath = PATH.AUTH.SIGNIN }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const { setPreference } = usePresentation();
   const navigate = useNavigate();
   // The full version's sign-in, with Google: the choice is stored, as from More.
   const toFull = () => {
     setPreference("desktop");
-    navigate(PATH.AUTH.SIGNIN);
+    navigate(fullPath);
   };
+  const fullVersion = <button type="button" className="sm-link-button" onClick={toFull} data-sm-action="full-version">{t("auth.fullVersion")}</button>;
+
+  // Sign-in has its own frame (styles: "Mobile sign-in, premium frame" in styles/mobile.css): a brand
+  // header on a navy band, the form in one elevated card, the way out below it. The recovery pages (auth/MobileRecovery.jsx)
+  // use it too; registration keeps the plain frame.
+  if (screen === "signin" || screen === "forgot" || screen === "reset") {
+    return (
+      <div className="sm-root sm-standalone sm-auth sm-auth-premium" data-sm-screen={screen}>
+        <div className="sm-auth-hero" aria-hidden="true" />
+        <main className="sm-standalone-body sm-auth-body">
+          <header className="sm-auth-brand">
+            <span className="sm-auth-mark"><img className="sm-auth-logo" src={logo} alt={t("bar.logo")} width="40" height="40" /></span>
+            <bdi className="sm-auth-wordmark" dir="ltr" aria-hidden="true">SmartSpend</bdi>
+          </header>
+          <section className="sm-auth-card" aria-labelledby={`${screen}-title`}>
+            <h1 id={`${screen}-title`} className="sm-identity-title">{title}</h1>
+            {children}
+          </section>
+          {fullVersion}
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="sm-root sm-standalone sm-auth" data-sm-screen={screen}>
       <main className="sm-standalone-body sm-auth-body">
         <img className="sm-auth-logo" src={logo} alt={t("bar.logo")} width="48" height="48" />
         <h1 className="sm-identity-title">{title}</h1>
         {children}
-        <button type="button" className="sm-link-button" onClick={toFull} data-sm-action="full-version">{t("auth.fullVersion")}</button>
+        {fullVersion}
       </main>
     </div>
   );
 }
 
-function PasswordInput({ id, value, onChange, autoComplete, invalid, describedBy }) {
+// `icon` (sign-in only) adds a decorative leading icon inside the control; registration passes none.
+export function PasswordInput({ id, value, onChange, autoComplete, invalid, describedBy, icon = null }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const [shown, setShown] = useState(false);
   return (
     <span className="sm-password">
+      {icon && <span className="sm-auth-icon" aria-hidden="true">{icon}</span>}
       <input id={id} className="sm-input" type={shown ? "text" : "password"} dir="ltr" autoComplete={autoComplete} autoCapitalize="none" spellCheck="false" value={value} onChange={onChange} aria-invalid={invalid ? "true" : undefined} aria-describedby={describedBy} required />
       <button type="button" className="sm-button sm-button-quiet sm-button-small" aria-pressed={shown} aria-controls={id} onClick={() => setShown(!shown)} data-sm-action="toggle-password">{t(shown ? "auth.hide" : "auth.show")}</button>
     </span>
@@ -137,31 +165,37 @@ export function MobileSignIn() {
           <p className="sm-text">{t(`auth.signedOut.${signedOut}`)}</p>
         </div>
       )}
-      <p className="sm-text sm-muted">{t("auth.signin.intro")}</p>
+      <p className="sm-text sm-muted sm-auth-intro">{t("auth.signin.intro")}</p>
       <form className="sm-auth-form" onSubmit={onSubmit} noValidate aria-busy={busy} data-sm-form="signin">
         {general && <div className="sm-error sm-error-compact" role="alert" tabIndex={-1} ref={alertRef} data-sm-auth-error>{general}</div>}
         <div className="sm-field">
           <label className="sm-label" htmlFor={`${ids}-identifier`}>{t("auth.identifier")}</label>
-          <input id={`${ids}-identifier`} className="sm-input" type="text" inputMode="email" dir="ltr" autoComplete="username" autoCapitalize="none" spellCheck="false" value={identifier} onChange={(event) => setIdentifier(event.target.value)} aria-invalid={errors.identifier ? "true" : undefined} aria-describedby={errors.identifier ? `${ids}-identifier-error` : undefined} disabled={busy} required />
+          <span className="sm-auth-control">
+            <span className="sm-auth-icon" aria-hidden="true"><LuUserRound /></span>
+            <input id={`${ids}-identifier`} className="sm-input" type="text" inputMode="email" dir="ltr" autoComplete="username" autoCapitalize="none" spellCheck="false" value={identifier} onChange={(event) => setIdentifier(event.target.value)} aria-invalid={errors.identifier ? "true" : undefined} aria-describedby={errors.identifier ? `${ids}-identifier-error` : undefined} disabled={busy} required />
+          </span>
           {errors.identifier && <p id={`${ids}-identifier-error`} className="sm-text sm-form-error">{errors.identifier}</p>}
         </div>
         <div className="sm-field">
           <span className="sm-auth-label-row">
             <label className="sm-label" htmlFor={`${ids}-password`}>{t("auth.password")}</label>
-            <Link className="sm-note-link" to={PATH.AUTH.FORGOT_PASSWORD}>{t("auth.forgot")}</Link>
+            <Link className="sm-note-link" to={MOBILE_FORGOT_PASSWORD}>{t("auth.forgot")}</Link>
           </span>
-          <PasswordInput id={`${ids}-password`} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" invalid={Boolean(errors.password)} describedBy={errors.password ? `${ids}-password-error` : undefined} />
+          <PasswordInput id={`${ids}-password`} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" invalid={Boolean(errors.password)} describedBy={errors.password ? `${ids}-password-error` : undefined} icon={<LuLockKeyhole />} />
           {errors.password && <p id={`${ids}-password-error`} className="sm-text sm-form-error">{errors.password}</p>}
         </div>
-        <label className="sm-choice sm-cat-choice">
+        <label className="sm-choice sm-cat-choice sm-auth-remember">
           <input type="checkbox" checked={remember} onChange={(event) => setRemember(event.target.checked)} disabled={busy} />
           <span>{t("auth.remember")}</span>
         </label>
-        <button type="submit" className="sm-button" disabled={busy} aria-busy={busy} data-sm-action="signin">{t(busy ? "auth.signin.busy" : "auth.signin.submit")}</button>
+        <button type="submit" className="sm-button sm-auth-submit" disabled={busy} aria-busy={busy} data-sm-action="signin">
+          <span>{t(busy ? "auth.signin.busy" : "auth.signin.submit")}</span>
+          {!busy && <LuArrowRight className="sm-auth-submit-arrow" aria-hidden="true" />}
+        </button>
       </form>
       <p className="sm-auth-divider" aria-hidden="true"><span>{t("auth.or")}</span></p>
       <GoogleSignIn remember={remember} disabled={busy} />
-      <p className="sm-text">{t("auth.noAccount")} <Link to={MOBILE_REGISTER} state={location.state}>{t("auth.register.link")}</Link></p>
+      <p className="sm-text sm-auth-switch">{t("auth.noAccount")} <Link to={MOBILE_REGISTER} state={location.state}>{t("auth.register.link")}</Link></p>
     </AuthFrame>
   );
 }

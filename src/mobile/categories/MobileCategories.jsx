@@ -49,14 +49,22 @@ function CategoryRow({ category, from, child = false }) {
 }
 
 function Section({ id, title, groups, from }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
   if (groups.length === 0) return null;
+
+  // Expense and income categories are told apart: when a section holds both, each gets its own heading (the backend lists by type).
+  const kinds = [...new Set(groups.map((group) => group.category.type))];
+  const headed = kinds.length > 1;
 
   return (
     <section className="sm-card" aria-labelledby={id} data-sm-section={id}>
       <h2 id={id} className="sm-card-title">{title}</h2>
       <ul className="sm-list">
-        {groups.map((group) => (
+        {groups.map((group, index) => {
+          const heading = headed && group.category.type !== groups[index - 1]?.category.type ? group.category.type : null;
+          return (
           <li key={group.category.id}>
+            {heading && <p className="sm-cat-type-heading sm-muted sm-fine" data-sm-type-group={heading}>{["income", "expense"].includes(heading) ? t(`categories.type.${heading}`) : heading}</p>}
             <CategoryRow category={group.category} from={from} />
             {/* Named after the parent, so a screen reader says whose subcategories follow. */}
             {group.children.length > 0 && (
@@ -67,7 +75,8 @@ function Section({ id, title, groups, from }) {
               </ul>
             )}
           </li>
-        ))}
+          );
+        })}
       </ul>
     </section>
   );

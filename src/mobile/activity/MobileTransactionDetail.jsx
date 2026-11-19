@@ -3,6 +3,7 @@ import { LuArrowRightLeft, LuCircleHelp, LuClock, LuPencilLine, LuUndo2 } from "
 import { useTranslation } from "react-i18next";
 import { Link, useLocation, useParams } from "react-router-dom";
 import DraftLinks from "../forms/DraftLinks.jsx";
+import { DEBT_TYPES, eligibleToCorrect, eligibleToReverse, isStatementSource } from "../forms/workflows.js";
 
 import { useAuthContext } from "../../contexts/auth/useAuthContext";
 import { getTransactionDetailsPath } from "../../routes/Path.js";
@@ -44,6 +45,9 @@ function NoteRow({ icon: Icon, note, children }) {
     </p>
   );
 }
+
+// What the Correct and Reverse forms check (forms/workflows.js), from the transaction as this page read it.
+const changeable = (transaction) => ({ status: transaction.status, type: transaction.type, isReversal: transaction.isReversal, isTransfer: transaction.isTransfer, isImported: isStatementSource(transaction.source), isDebtMoney: DEBT_TYPES.includes(transaction.type) });
 
 function Detail({ transaction, resource, backTo, backState, locale, timeZone }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
@@ -192,7 +196,7 @@ function Detail({ transaction, resource, backTo, backState, locale, timeZone }) 
       <section className="sm-card" aria-labelledby="sm-tx-changes">
         <h2 id="sm-tx-changes" className="sm-card-title">{t("tx.changesTitle")}</h2>
         <p className="sm-text sm-muted">{t("tx.changesBody")}</p>
-        <DraftLinks ids={{ transactionId: transaction.id }} actions={transaction.status === "posted" && !transaction.isReversal && !transaction.isTransfer ? [...(["income", "expense"].includes(transaction.type) ? ["transaction-correct"] : []), "transaction-reverse"] : []} />
+        <DraftLinks ids={{ transactionId: transaction.id }} actions={[...(eligibleToCorrect(changeable(transaction)) === null ? ["transaction-correct"] : []), ...(eligibleToReverse(changeable(transaction)) === null ? ["transaction-reverse"] : [])]} />
         <Link className="sm-link-row" to={getTransactionDetailsPath(transaction.id)}>
           <span>{t("detail.openFull")}</span>
           <Chevron />

@@ -2,7 +2,7 @@
 export const settings = {
   en: {
     settings: {
-      groups: { account: "Account", security: "Security", preferences: "Preferences", notifications: "Notifications", help: "Help and privacy", session: "Session" },
+      groups: { account: "Account", appearance: "Appearance and language", region: "Currency and region", privacy: "Privacy on this device", notifications: "Notifications", security: "Security", help: "Help and privacy", session: "Session" },
       chip: { verified: "Email verified", unverified: "Email not verified", loading: "Checking email", error: "Email not checked", unknown: "Email status unknown" },
       editProfile: "Edit your profile", editProfileHint: "Name, email and phone",
       changePassword: "Change your password", changePasswordHint: "Choose a new password",
@@ -20,7 +20,7 @@ export const settings = {
   },
   ar: {
     settings: {
-      groups: { account: "الحساب", security: "الأمان", preferences: "التفضيلات", notifications: "الإشعارات", help: "المساعدة والخصوصية", session: "الجلسة" },
+      groups: { account: "الحساب", appearance: "المظهر واللغة", region: "العملة والمنطقة", privacy: "الخصوصية على هذا الجهاز", notifications: "الإشعارات", security: "الأمان", help: "المساعدة والخصوصية", session: "الجلسة" },
       chip: { verified: "البريد موثّق", unverified: "البريد غير موثّق", loading: "جارٍ فحص البريد", error: "تعذّر فحص البريد", unknown: "حالة البريد غير معروفة" },
       editProfile: "تعديل ملفك الشخصي", editProfileHint: "الاسم والبريد والهاتف",
       changePassword: "تغيير كلمة المرور", changePasswordHint: "اختر كلمة مرور جديدة",

@@ -16,6 +16,17 @@ import ErrorPanel from "../ui/ErrorPanel.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
 import StaleNotice from "../ui/StaleNotice.jsx";
 import { useOnline } from "../ui/useOnline.js";
+import { buildTransferResult } from "../models/transferResult.js";
+import { buildAccountArchived, buildAccountCreated, buildAccountUpdated } from "../models/accountResult.js";
+import { buildConversationCreated, buildDataDeleted, buildSettingsSaved } from "../models/aiWrites.js";
+import { confirmArchive } from "../models/categoryForm.js";
+import AiResult from "./AiResult.jsx";
+import AccountResult from "./AccountResult.jsx";
+import CategoryArchiveResult from "./CategoryArchiveResult.jsx";
+import { buildCorrectionResult, buildReversalResult, buildTransactionResult } from "../models/transactionResult.js";
+import ReversalResult from "./ReversalResult.jsx";
+import TransactionResult from "./TransactionResult.jsx";
+import TransferResult from "./TransferResult.jsx";
 import { useWorkflowSubmit } from "./useWorkflowSubmit.js";
 import WriteOutcome from "./WriteOutcome.jsx";
 import { normalizeAmount } from "./validation.js";
@@ -81,7 +92,29 @@ export default function DraftForm({ workflow, ctx, choices, backTo, recordSummar
     if (sent.phase !== "idle" && sent.phase !== "sending") outcomeRef.current?.focus();
   }, [sent.phase]);
 
-  const send = () => sent.submit(buildWrite(workflow, values, { ...full, workspaceId: sessionWorkspace()?.id ?? null }));
+  // The input that was sent, kept so a confirmed transfer's answer can be checked against what was asked for.
+  const [sentInput, setSentInput] = useState(null);
+  const send = () => {
+    const write = buildWrite(workflow, values, { ...full, workspaceId: sessionWorkspace()?.id ?? null });
+    setSentInput(write.input);
+    return sent.submit(write);
+  };
+  // A confirmed transfer, expense or income shows the server's own record when its answer is provably the one that was sent.
+  const transferResult = workflow.operation === "transfer.create" && sent.phase === "confirmed" ? buildTransferResult(sent.data, sentInput) : null;
+  const entryResult = (workflow.id === "expense" || workflow.id === "income") && sent.phase === "confirmed" ? buildTransactionResult(sent.data, sentInput, workflow.id) : null;
+  // A confirmed correction or reversal shows the server's own answer when it is provably about the transaction the form was for.
+  const correctionResult = workflow.id === "transaction-correct" && sent.phase === "confirmed" ? buildCorrectionResult(sent.data, sentInput, full.record) : null;
+  // A confirmed account write shows the account as the server answered it.
+  const accountResult = sent.phase !== "confirmed" ? null : workflow.id === "account" ? buildAccountCreated(sent.data, sentInput) : workflow.id === "account-edit" ? buildAccountUpdated(sent.data, sentInput, full.record) : workflow.id === "account-archive" ? buildAccountArchived(sent.data, full.record) : null;
+  // A confirmed assistant write: the new conversation, the settings as saved, a deletion (and, for the data, the counts the server reports).
+  const aiResult = sent.phase !== "confirmed" ? null
+    : workflow.id === "ai-new" ? (() => { const made = buildConversationCreated(sent.data, sentInput); return made ? { kind: "created", result: made } : null; })()
+    : workflow.id === "ai-settings" ? (() => { const saved = buildSettingsSaved(sent.data, sentInput); return saved ? { kind: "settings", result: saved } : null; })()
+    : workflow.id === "ai-conversation-delete" ? { kind: "deleted", result: null }
+    : workflow.id === "ai-data-delete" ? { kind: "data", result: buildDataDeleted(sent.data) }
+    : null;
+  const categoryResult = workflow.id === "category-archive" && sent.phase === "confirmed" ? confirmArchive(sent.data, full.record.id) : null;
+  const reversalResult = workflow.id === "transaction-reverse" && sent.phase === "confirmed" ? buildReversalResult(sent.data, full.record) : null;
 
   const problemSignal = attempted ? errorNames.join(",") : "";
   useEffect(() => {
@@ -153,7 +186,12 @@ export default function DraftForm({ workflow, ctx, choices, backTo, recordSummar
   const changed = new Set(changedFields(workflow, values, full).map((field) => field.name));
 
   if (step === "review") {
-    const rows = fields.filter((field) => field.kind !== "locked" || field.value(full)).map((field) => ({ field, shown: field.kind === "locked" ? display(field) : display(field, values[field.name]) })).filter((row) => row.shown !== null);
+    // A change that shows its original (a correction) lists a cleared detail too, as "Not set", with what it was.
+    const before = workflow.showsOriginal ? workflow.initial(full) : null;
+    const rows = fields
+      .filter((field) => field.kind !== "locked" || field.value(full))
+      .map((field) => ({ field, shown: field.kind === "locked" ? display(field) : display(field, values[field.name]) }))
+      .filter((row) => row.shown !== null || (before && changed.has(row.field.name)));
 
     return (
       <section className="sm-form-review" data-sm-step="review" data-sm-workflow={workflow.id} aria-labelledby={`${ids}-review`}>
@@ -166,7 +204,12 @@ export default function DraftForm({ workflow, ctx, choices, backTo, recordSummar
               {rows.map(({ field, shown: value }) => (
                 <div key={field.name} className="sm-stat" data-sm-field={field.name} data-sm-changed={changed.has(field.name) ? "true" : undefined}>
                   <dt>{label(field)}{changed.has(field.name) && <span className="sm-chip sm-review-changed">{t("forms.changed")}</span>}</dt>
-                  <dd>{value}</dd>
+                  <dd>
+                    {value ?? <span className="sm-muted">{t("forms.notSet")}</span>}
+                    {before && changed.has(field.name) && (
+                      <span className="sm-review-was sm-muted sm-fine" data-sm-was={field.name}>{t("forms.was")} {display(field, before[field.name]) ?? t("forms.notSet")}</span>
+                    )}
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -189,8 +232,16 @@ export default function DraftForm({ workflow, ctx, choices, backTo, recordSummar
           <PossibleDuplicateStep outcome={sent} outcomeRef={outcomeRef} t={t} locale={locale} />
         )}
 
-        {operationOpen && sent.phase !== "idle" && sent.phase !== "sending" && !duplicatePending && (
-          <WriteOutcome outcome={sent} outcomeRef={outcomeRef} backTo={backTo} t={t} />
+        {operationOpen && transferResult && <TransferResult result={transferResult} outcomeRef={outcomeRef} backTo={backTo} locale={locale} t={t} />}
+        {operationOpen && entryResult && <TransactionResult result={entryResult} outcomeRef={outcomeRef} backTo={backTo} locale={locale} t={t} />}
+        {operationOpen && correctionResult && <TransactionResult result={{ ...correctionResult, previousAccount: full.record.accountId && full.record.accountId !== correctionResult.account.id ? { id: full.record.accountId, name: full.accounts.find((item) => item.id === full.record.accountId)?.name ?? null } : null }} outcomeRef={outcomeRef} backTo={backTo} locale={locale} t={t} />}
+        {operationOpen && aiResult && <AiResult kind={aiResult.kind} result={aiResult.result} outcomeRef={outcomeRef} t={t} />}
+        {operationOpen && categoryResult && <CategoryArchiveResult category={categoryResult} outcomeRef={outcomeRef} backTo={backTo} t={t} />}
+        {operationOpen && accountResult && <AccountResult result={accountResult} outcomeRef={outcomeRef} backTo={backTo} locale={locale} t={t} />}
+        {operationOpen && reversalResult && <ReversalResult result={reversalResult} outcomeRef={outcomeRef} backTo={backTo} locale={locale} t={t} />}
+
+        {operationOpen && sent.phase !== "idle" && sent.phase !== "sending" && !duplicatePending && !transferResult && !entryResult && !correctionResult && !reversalResult && !accountResult && !categoryResult && !aiResult && (
+          <WriteOutcome outcome={sent} operation={workflow.operation} outcomeRef={outcomeRef} backTo={backTo} t={t} />
         )}
 
         {!settled && !duplicatePending && (
