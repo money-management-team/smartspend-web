@@ -11,6 +11,8 @@ import RecordScreen from "../planning/RecordScreen.jsx";
 import { isWriteOpen } from "../data/writeGate.js";
 import Chevron from "../ui/Chevron.jsx";
 import WriteClosedNotice from "../ui/WriteClosedNotice.jsx";
+import DraftLinks from "../forms/DraftLinks.jsx";
+import { eligibleToArchiveCategory } from "../forms/workflows.js";
 import CategoryBadge from "./CategoryBadge.jsx";
 
 const keyOf = keys.category;
@@ -83,6 +85,7 @@ function Detail({ category, locale }) {
         ) : (
           <p className="sm-text sm-muted">{t("categories.cannotChange")}</p>
         )}
+        <DraftLinks ids={{ categoryId: category.id }} actions={eligibleToArchiveCategory(category) === null ? ["category-archive"] : []} />
         <Link className="sm-link-row" to={getCategoryDetailsPath(category.id)}>
           <span>{t("categories.openFullOne")}</span>
           <Chevron />

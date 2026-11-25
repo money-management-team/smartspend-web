@@ -1,11 +1,13 @@
-import { useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 import { LuArrowUp, LuInfo, LuSparkles } from "react-icons/lu";
 import { useTranslation } from "react-i18next";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 
 import { PATH } from "../../routes/Path.js";
 import { assistKeys, conversationLoader, conversationsLoader, insightsLoader, loadAiSettings, loadForecast, loadInputQuotas } from "../data/assistLoaders.js";
 import { isAccountId } from "../data/readApi.js";
+import { isWriteOpen } from "../data/writeGate.js";
+import { actionPath, newEntryPath } from "../forms/actionRoutes.js";
 import { useResource } from "../data/useResource.js";
 import { useLeaveGuard } from "../categories/useLeaveGuard.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
@@ -18,6 +20,8 @@ import Chevron from "../ui/Chevron.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
 import { DeleteConversation, FeedbackButton } from "./AiFeedback.jsx";
+import ConversationComposer from "./ConversationComposer.jsx";
+import { DismissInsight, RefreshInsights } from "./InsightActions.jsx";
 import PagedRead from "./PagedRead.jsx";
 
 export const MESSAGE_MAX = 4000;
@@ -55,16 +59,25 @@ function Sources({ sources }) {
 }
 
 /*
- * The message box. It can be typed in and filled from a suggestion; Send is
- * disabled because sending a message is a write (POST …/messages) that Mobile
- * does not make. The text stays in this component only and is never stored.
+ * The message box on the assistant's page. It can be typed in and filled from a suggestion. A question lives in a conversation, so Send here
+ * starts one (the form at /m/add/ai-new, which reviews it and creates the conversation); the question then travels to the new
+ * conversation's own box, where it is sent. Nothing is sent from this box, and while starting a conversation is closed (data/writeGate.js
+ * ai.conversationCreate) Send is disabled and says so. The text stays in this component only and is never stored.
  */
 function Composer() {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const ids = useId();
+  const navigate = useNavigate();
+  const startOpen = isWriteOpen("ai.conversationCreate");
   const [text, setText] = useState("");
-  const guard = useLeaveGuard(text.trim() !== "");
+  // Starting a conversation carries the question with it (router state), so leaving for the new-conversation form loses nothing and is not held.
+  const [starting, setStarting] = useState(false);
+  const guard = useLeaveGuard(text.trim() !== "" && !starting);
   const length = [...text].length;
+
+  useEffect(() => {
+    if (starting) navigate(newEntryPath("ai-new"), { state: { from: MOBILE_AI, draft: text.trim() } });
+  }, [starting, navigate, text]);
 
   return (
     <section className="sm-card sm-composer" aria-labelledby={`${ids}-title`} data-sm-section="composer">
@@ -82,13 +95,27 @@ function Composer() {
         <textarea id={`${ids}-message`} className="sm-input sm-textarea" dir="auto" rows={3} value={text} onChange={(event) => setText(event.target.value)} aria-describedby={`${ids}-count ${ids}-closed`} aria-invalid={length > MESSAGE_MAX ? "true" : undefined} />
         <div className="sm-composer-foot">
           <p id={`${ids}-count`} className={`sm-text sm-fine ${length > MESSAGE_MAX ? "sm-form-error" : "sm-muted"}`}>{t("assist.count", { count: length, max: MESSAGE_MAX })}</p>
-          <button type="button" className="sm-button sm-button-small" disabled data-sm-action="send-message">
+          <button
+            type="button"
+            className="sm-button sm-button-small"
+            disabled={!startOpen || text.trim() === "" || length > MESSAGE_MAX}
+            onClick={() => setStarting(true)}
+            data-sm-action="send-message"
+          >
             <LuArrowUp aria-hidden="true" />
-            <span>{t("assist.send")}</span>
+            <span>{t(startOpen ? "assist.startConversation" : "assist.send")}</span>
           </button>
         </div>
       </div>
-      <p id={`${ids}-closed`} className="sm-draft-note" role="note" data-sm-note="write-closed" data-sm-write="ai.message"><LuInfo aria-hidden="true" /><span>{t("assist.sendClosed")}</span></p>
+      {startOpen ? (
+        <p id={`${ids}-closed`} className="sm-text sm-muted sm-fine" data-sm-note="start-hint">{t("assist.startHint")}</p>
+      ) : (
+        <p id={`${ids}-closed`} className="sm-draft-note" role="note" data-sm-note="write-closed" data-sm-write="ai.message"><LuInfo aria-hidden="true" /><span>{t("assist.sendClosed")}</span></p>
+      )}
+      <Link className="sm-link-row" to={newEntryPath("ai-new")} state={{ from: MOBILE_AI }} data-sm-action="new-conversation">
+        <span>{t("assist.newConversation")}</span>
+        <Chevron />
+      </Link>
       <Link className="sm-link-row" to={PATH.USER.AI_ASSISTANT} data-sm-action="ask-full">
         <span>{t("assist.askFull")}</span>
         <Chevron />
@@ -256,6 +283,7 @@ export default function MobileAssistant() {
       {on && settings.insights === true && (
         <section className="sm-card" aria-labelledby="sm-ai-insights" data-sm-section="insights">
           <h2 id="sm-ai-insights" className="sm-card-title">{t("assist.insightsTitle")}</h2>
+          <RefreshInsights />
           <PagedRead
             name="insights"
             param="i"
@@ -272,7 +300,7 @@ export default function MobileAssistant() {
                   {insight.summary && <p className="sm-text sm-user-text">{insight.summary}</p>}
                   {insight.explanation && <p className="sm-text sm-muted sm-user-text">{insight.explanation}</p>}
                   <Sources sources={insight.sources} />
-                  <span className="sm-ai-tools"><FeedbackButton kind="insight" id={insight.id} /></span>
+                  <span className="sm-ai-tools"><FeedbackButton kind="insight" id={insight.id} /><DismissInsight id={insight.id} /></span>
                 </span>
               </article>
             )}
@@ -320,6 +348,16 @@ export default function MobileAssistant() {
           <div className="sm-stat"><dt>{t("assist.consent")}</dt><dd>{t(settings.consent === true ? "assist.on" : settings.consent === false ? "assist.offShort" : "assist.unknown")}</dd></div>
           {settings.retentionDays !== null && <div className="sm-stat"><dt>{t("assist.retention")}</dt><dd>{t("assist.days", { count: settings.retentionDays })}</dd></div>}
         </dl>
+        {on && (
+          <Link className="sm-link-row" to={actionPath("ai-settings", {})} state={{ from: MOBILE_AI }} data-sm-action="ai-settings">
+            <span>{t("assist.privacyControls")}</span>
+            <Chevron />
+          </Link>
+        )}
+        <Link className="sm-link-row" to={actionPath("ai-data-delete", {})} state={{ from: MOBILE_AI }} data-sm-action="ai-delete-data">
+          <span>{t("assist.deleteData")}</span>
+          <Chevron />
+        </Link>
         <Link className="sm-link-row" to={PATH.USER.AI_ASSISTANT}>
           <span>{t("assist.settingsFull")}</span>
           <Chevron />
@@ -334,6 +372,9 @@ export function MobileConversation() {
   const { t, i18n } = useTranslation(MOBILE_NAMESPACE);
   const locale = localeOf(i18n);
   const { conversationId } = useParams();
+  const location = useLocation();
+  // A question typed on the assistant's page arrives with the new conversation (router state), ready to send.
+  const draft = typeof location.state?.draft === "string" ? location.state.draft : "";
   const valid = isAccountId(conversationId);
   const keyOf = useMemo(() => (page) => assistKeys.conversation(conversationId, page), [conversationId]);
   const loaderOf = useMemo(() => (page) => conversationLoader(conversationId, page), [conversationId]);
@@ -381,13 +422,14 @@ export function MobileConversation() {
               )}
             />
           </div>
+          {isWriteOpen("ai.message") && <ConversationComposer key={conversationId} conversationId={conversationId} initialDraft={draft} />}
           <div className="sm-card sm-chat-foot">
-            <p className="sm-draft-note" role="note" data-sm-note="write-closed" data-sm-write="ai.message"><LuInfo aria-hidden="true" /><span>{t("assist.replyClosed")}</span></p>
+            {!isWriteOpen("ai.message") && <p className="sm-draft-note" role="note" data-sm-note="write-closed" data-sm-write="ai.message"><LuInfo aria-hidden="true" /><span>{t("assist.replyClosed")}</span></p>}
             <Link className="sm-link-row" to={PATH.USER.AI_ASSISTANT} data-sm-action="continue-full">
               <span>{t("assist.continueFull")}</span>
               <Chevron />
             </Link>
-            <DeleteConversation />
+            <DeleteConversation conversationId={conversationId} />
           </div>
         </>
       )}

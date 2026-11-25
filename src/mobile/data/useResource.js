@@ -21,13 +21,17 @@ export function useResource(key, loader, { enabled = true } = {}) {
 
   const reload = useCallback(() => store.load(key, loader), [store, key, loader]);
 
+  // An entry that goes back to idle while this screen is mounted was dropped (a write that may have changed it: forms/useWorkflowSubmit.js):
+  // it is read again here, instead of leaving the screen on its loading state until it is opened anew.
+  const dropped = entry.status === "idle";
+
   useEffect(() => {
     const current = store.get(key);
     const fresh = current.status === "ready" && Date.now() - current.updatedAt < FRESH_MS;
     const running = current.status === "loading" || current.status === "refreshing";
 
     if (enabled && !fresh && !running) store.load(key, loader);
-  }, [store, key, loader, enabled]);
+  }, [store, key, loader, enabled, dropped]);
 
   return {
     status: entry.status,

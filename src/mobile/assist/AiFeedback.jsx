@@ -3,6 +3,12 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 import { PATH } from "../../routes/Path.js";
+import { isWriteOpen } from "../data/writeGate.js";
+import { actionPath } from "../forms/actionRoutes.js";
+import WriteOutcome from "../forms/WriteOutcome.jsx";
+import { useWorkflowSubmit } from "../forms/useWorkflowSubmit.js";
+import { buildFeedbackSaved } from "../models/aiWrites.js";
+import { MOBILE_AI } from "../navigation.js";
 import { useLeaveGuard } from "../categories/useLeaveGuard.js";
 import { textError } from "../forms/validation.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
@@ -31,6 +37,17 @@ function FeedbackForm({ target, onClose }) {
   const commentError = textError(comment, { max: FEEDBACK_COMMENT_MAX });
   const ratingError = rating ? null : "required";
   const summaryRef = useRef(null);
+  // The two feedback writes (POST /ai/messages/{id}/feedback, POST /ai/insights/{id}/feedback) are upserts: one row per person and answer, so a
+  // copy sets the same values. Both are closed until opened in data/writeGate.js; closed, Send stays disabled and says so.
+  const operation = target.kind === "insight" ? "ai.insightFeedback" : "ai.messageFeedback";
+  const open = isWriteOpen(operation);
+  const sent = useWorkflowSubmit();
+  const done = sent.phase === "confirmed";
+
+  const send = () => {
+    const input = { rating, ...(reason ? { reason_code: reason } : {}), ...(comment.trim() ? { comment: comment.trim() } : {}) };
+    return sent.submit({ operation, ids: target.kind === "insight" ? { insightId: target.id } : { messageId: target.id }, input });
+  };
 
   const check = (event) => {
     event.preventDefault();
@@ -68,12 +85,16 @@ function FeedbackForm({ target, onClose }) {
         <textarea id={`${ids}-comment`} className="sm-input sm-textarea" dir="auto" rows={3} value={comment} onChange={(event) => setComment(event.target.value)} aria-invalid={checked && commentError ? "true" : undefined} aria-describedby={`${ids}-count`} />
         <p id={`${ids}-count`} className="sm-text sm-muted sm-fine">{t("assist.count", { count: [...comment].length, max: FEEDBACK_COMMENT_MAX })}</p>
       </div>
-      {ok && <p className="sm-text" role="status" data-sm-note="feedback-ready">{t("aiFeedback.ready")}</p>}
-      <p id={`${ids}-closed`} className="sm-text sm-muted sm-fine" role="note" data-sm-note="write-closed" data-sm-write={`ai.${target.kind}Feedback`}>{t("aiFeedback.closed")}</p>
+      {ok && !done && <p className="sm-text" role="status" data-sm-note="feedback-ready">{t("aiFeedback.ready")}</p>}
+      {!open && <p id={`${ids}-closed`} className="sm-text sm-muted sm-fine" role="note" data-sm-note="write-closed" data-sm-write={`ai.${target.kind}Feedback`}>{t("aiFeedback.closed")}</p>}
+      {done && <p className="sm-text" role="status" data-sm-note="feedback-saved" data-sm-proven={buildFeedbackSaved(sent.data, { rating, ...(reason ? { reason_code: reason } : {}) }) ? "true" : "false"}>{t("aiFeedback.saved")}</p>}
+      {["rejected", "unknown", "changed"].includes(sent.phase) && <WriteOutcome outcome={sent} operation={operation} outcomeRef={null} backTo={MOBILE_AI} t={t} />}
       <div className="sm-actions sm-form-actions">
-        <button type="submit" className="sm-button sm-button-quiet" data-sm-action="check-feedback">{t("aiFeedback.check")}</button>
-        <button type="button" className="sm-button" disabled aria-describedby={`${ids}-closed`} data-sm-action="send">{t("aiFeedback.send")}</button>
-        <button type="button" className="sm-button sm-button-quiet" onClick={onClose} data-sm-action="cancel">{t("forms.cancel")}</button>
+        {!done && <button type="submit" className="sm-button sm-button-quiet" data-sm-action="check-feedback" disabled={sent.sending}>{t("aiFeedback.check")}</button>}
+        {!done && (open
+          ? <button type="button" className="sm-button" onClick={send} disabled={!ok || sent.sending || sent.phase === "unknown"} aria-busy={sent.sending ? "true" : undefined} data-sm-action="send" data-sm-open="true">{t(sent.sending ? "aiFeedback.sending" : "aiFeedback.send")}</button>
+          : <button type="button" className="sm-button" disabled aria-describedby={`${ids}-closed`} data-sm-action="send">{t("aiFeedback.send")}</button>)}
+        <button type="button" className="sm-button sm-button-quiet" onClick={onClose} data-sm-action="cancel">{t(done ? "forms.cancel" : "forms.cancel")}</button>
       </div>
       <Link className="sm-link-row" to={PATH.USER.AI_ASSISTANT}><span>{t("aiFeedback.full")}</span><Chevron /></Link>
       {guard.blocked && (
@@ -112,7 +133,7 @@ export function FeedbackButton({ kind, id }) {
  * which Mobile does not confirm. The conversation is not removed from anything
  * here; the last button is disabled (DELETE /ai/conversations/{id} is a write).
  */
-export function DeleteConversation({ title }) {
+export function DeleteConversation({ title, conversationId }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const ids = useId();
   const [open, setOpen] = useState(false);
@@ -128,6 +149,7 @@ export function DeleteConversation({ title }) {
           <li className="sm-text">{t("aiDelete.retention")}</li>
         </ul>
         <p id={`${ids}-closed`} className="sm-text sm-muted sm-fine" role="note" data-sm-note="write-closed" data-sm-write="ai.conversationDelete">{t("aiDelete.closed")}</p>
+        {conversationId && <Link className="sm-link-row" to={actionPath("ai-conversation-delete", { conversationId })} state={{ from: `/m/assistant/conversations/${conversationId}` }} data-sm-action="review-delete"><span>{t("aiDelete.review")}</span><Chevron /></Link>}
         <div className="sm-actions sm-leave-actions">
           <button type="button" className="sm-button" onClick={() => setOpen(false)} data-sm-action="keep-conversation">{t("aiDelete.keep")}</button>
           <button type="button" className="sm-button sm-button-quiet" disabled aria-describedby={`${ids}-closed`} data-sm-action="confirm-delete">{t("aiDelete.confirm")}</button>

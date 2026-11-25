@@ -41,7 +41,7 @@ describe("the source", () => {
       // The assistant, captures, WhatsApp and notification-preference reads: GET only (see below).
       "src/mobile/data/readAssistApi.js": ["aiCopilotApi", "aiExpenseCapturesApi", "aiInputQuotasApi", "aiVoiceExpenseCapturesApi", "notificationsApi", "whatsappApi"],
       // The one write facade: every call checks the write gate first (all closed), then uses the app's own wrapper.
-      "src/mobile/data/writeApi.js": ["accountsApi", "apiClient", "aiExpenseCapturesApi", "aiVoiceExpenseCapturesApi", "authApi", "budgetsApi", "categoriesApi", "debtsApi", "plannedSavingsApi", "recurringTransactionsApi", "reportExportsApi", "savingsGoalsApi", "transactionsApi", "transfersApi", "whatsappApi"],
+      "src/mobile/data/writeApi.js": ["accountsApi", "apiClient", "aiCopilotApi", "aiExpenseCapturesApi", "aiVoiceExpenseCapturesApi", "authApi", "budgetsApi", "categoriesApi", "debtsApi", "notificationsApi", "plannedSavingsApi", "recurringTransactionsApi", "reportExportsApi", "savingsGoalsApi", "transactionsApi", "transfersApi", "whatsappApi"],
       "src/mobile/identity/guard.js": ["apiClient"],
     });
   });
@@ -65,23 +65,25 @@ describe("the source", () => {
     // forms/ names the full version's endpoints as text ("POST /accounts/{id}/archive") and has a Mobile address
     // ending in /archive (a review that sends nothing); tests/mobileForms.test.mjs checks that forms/ has no request code.
     // The gate's registry names the full version's endpoints as text too (".../archive"); the facade's calls are pinned below.
-    const notForms = sources.filter((file) => !rel(file).startsWith("src/mobile/forms/") && rel(file) !== "src/mobile/data/writeGate.js");
-    assert.deepEqual(find(/categoriesApi\.(archive|delete)|\/archive[`"']/, notForms), [], "no archive, no delete");
+    // data/writeApi.js is the one facade that may name the category archive (pinned in the list below, behind the gate).
+    const notForms = sources.filter((file) => !rel(file).startsWith("src/mobile/forms/") && rel(file) !== "src/mobile/data/writeGate.js" && rel(file) !== WRITE);
+    assert.deepEqual(find(/categoriesApi\.(archive|delete)|\/archive[`"']/, notForms), [], "no archive, no delete outside the write facade");
     assert.deepEqual(find(/categoriesApi|accountsApi|Api\.archive/, sources.filter((file) => rel(file).startsWith("src/mobile/forms/"))), [], "forms/ names no API wrapper at all");
     const calls = [...code(path.join(ROOT, WRITE)).matchAll(/\b(\w+Api)\.(\w+)\s*\(/g)].map((match) => `${match[1]}.${match[2]}`);
     assert.deepEqual([...new Set(calls)].sort(), [
-      "accountsApi.archive", "accountsApi.create", "accountsApi.update", "aiExpenseCapturesApi.confirm", "aiExpenseCapturesApi.create", "aiExpenseCapturesApi.update",
+      "accountsApi.archive", "accountsApi.create", "accountsApi.update", "aiCopilotApi.createConversation", "aiCopilotApi.deleteConversation", "aiCopilotApi.deleteData", "aiCopilotApi.dismissInsight", "aiCopilotApi.insightFeedback", "aiCopilotApi.messageFeedback", "aiCopilotApi.refreshInsights", "aiCopilotApi.sendMessage", "aiCopilotApi.updateSettings", "aiExpenseCapturesApi.confirm", "aiExpenseCapturesApi.create", "aiExpenseCapturesApi.update",
       "aiVoiceExpenseCapturesApi.confirm", "aiVoiceExpenseCapturesApi.create", "aiVoiceExpenseCapturesApi.update", "authApi.changePassword", "authApi.updateProfile",
-      "budgetsApi.create", "budgetsApi.update", "categoriesApi.create", "categoriesApi.update", "debtsApi.create", "debtsApi.recordPayment",
-      "debtsApi.reversePayment", "debtsApi.update", "plannedSavingsApi.create", "recurringTransactionsApi.confirmNext", "recurringTransactionsApi.create",
+      "budgetsApi.create", "budgetsApi.update", "categoriesApi.archive", "categoriesApi.create", "categoriesApi.update", "debtsApi.create", "debtsApi.recordPayment",
+      "debtsApi.reversePayment", "debtsApi.update", "notificationsApi.markAllRead", "notificationsApi.markRead", "notificationsApi.updatePreferences", "plannedSavingsApi.create", "recurringTransactionsApi.confirmNext", "recurringTransactionsApi.create",
       "recurringTransactionsApi.skipNext", "recurringTransactionsApi.update", "reportExportsApi.create", "savingsGoalsApi.contribute", "savingsGoalsApi.create",
       "savingsGoalsApi.update", "savingsGoalsApi.withdraw", "transactionsApi.correct", "transactionsApi.createExpense", "transactionsApi.createIncome",
       "transactionsApi.reverse", "transfersApi.create", "transfersApi.reverse", "whatsappApi.confirmDraft", "whatsappApi.updateDraft",
-    ], "the facade names these writes and no other (no budget, goal, debt, rule or category archive; no import, discard or unlink)");
+    ], "the facade names these writes and no other (no budget, goal, debt or rule archive; no category delete; no import, discard or unlink)");
     // Every one of them is behind the gate: the only function that reaches SENDERS asserts it first.
     assert.match(code(path.join(ROOT, WRITE)), /export function sendWorkflowWrite\(write, key\) \{\n  assertWriteOpen\(write\.operation\);/);
-    // Three places send: the category form, the forms' submission hook, and the receipt/voice upload hook. No other screen imports the write facade.
-    assert.deepEqual(find(/from\s*["'][^"']*data\/writeApi(?:\.js)?["']/), ["src/mobile/assist/useCaptureUpload.js", "src/mobile/categories/MobileCategoryForm.jsx", "src/mobile/forms/useWorkflowSubmit.js"]);
+    // Five places send: the category form, the forms' submission hook, the receipt/voice upload hook, the notification
+    // write hook (mark read, mark all read) and the preference write hook. No other screen imports the write facade.
+    assert.deepEqual(find(/from\s*["'][^"']*data\/writeApi(?:\.js)?["']/), ["src/mobile/assist/useCaptureUpload.js", "src/mobile/categories/MobileCategoryForm.jsx", "src/mobile/forms/useWorkflowSubmit.js", "src/mobile/notifications/useNotificationWrite.js", "src/mobile/settings/usePreferenceWrite.js"]);
   });
 
   it("never asks for the Smart Savings funding preview: a POST, blocked until the backend shows it has no consequential side effect", () => {
@@ -195,7 +197,7 @@ describe("the facade", () => {
     const assist = await import("../src/mobile/data/readAssistApi.js");
     assert.ok(Object.keys(assist).every((name) => /^read[A-Z]|_PER_PAGE$/.test(name)), "the assistant facade exports reads only");
     const write = await import("../src/mobile/data/writeApi.js");
-    assert.deepEqual(Object.keys(write).sort(), ["SENDABLE_OPERATIONS", "newWriteKey", "sendCategoryCreate", "sendCategoryUpdate", "sendWorkflowWrite"]);
+    assert.deepEqual(Object.keys(write).sort(), ["SENDABLE_OPERATIONS", "newWriteKey", "sendCategoryCreate", "sendCategoryUpdate", "sendNotificationPreferences", "sendNotificationRead", "sendNotificationsReadAll", "sendWorkflowWrite"]);
   });
 
   it("each read sends a GET to its documented endpoint, with only documented filters", async () => {

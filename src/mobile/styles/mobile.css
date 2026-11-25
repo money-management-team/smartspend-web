@@ -4017,3 +4017,1888 @@
 .sm-root .sm-signed-out-warn {
   border-color: var(--sm-warn, #b7791f);
 }
+
+/* ---------- Mobile sign-in, premium frame (auth/MobileAuth.jsx AuthFrame, screen "signin" only) ----------
+   A navy brand band that fades into the page, the brand on it, the form in one elevated card that overlaps it,
+   and the way out below. Built only from the tokens above, so light and dark follow the theme.
+   Registration keeps the plain frame. Selectors stay under .sm-root (tests/mobileBoundaries.test.mjs). */
+.sm-root.sm-auth-premium {
+  --sm-auth-field: color-mix(in srgb, var(--sm-surface-2) 55%, var(--sm-surface));
+  --sm-auth-ring: 0 0 0 4px color-mix(in srgb, var(--sm-focus) 18%, transparent);
+  --sm-auth-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  isolation: isolate;
+  align-items: flex-start;
+  padding-block: calc(1.5rem + var(--sm-safe-top)) calc(1.5rem + var(--sm-safe-bottom));
+  /* A slimmer gutter on the narrowest phones, without a media query. */
+  padding-inline: calc(clamp(0.875rem, 4vw, 1.25rem) + var(--sm-safe-start)) calc(clamp(0.875rem, 4vw, 1.25rem) + var(--sm-safe-end));
+}
+:root[data-theme="dark"] .sm-root.sm-auth-premium {
+  --sm-auth-field: var(--sm-surface-2);
+}
+
+/* The band: the brand gradient with a second, softer light from the start side, fading into the page
+   (no hard edge for the card's sides to reveal). */
+.sm-root.sm-auth-premium .sm-auth-hero {
+  position: absolute;
+  z-index: -1;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: calc(14.5rem + var(--sm-safe-top));
+  background:
+    radial-gradient(90% 70% at 0% 0%, rgba(37, 99, 235, 0.32) 0%, rgba(37, 99, 235, 0) 60%),
+    var(--sm-hero);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 0%, #000 78%, transparent 100%);
+}
+.sm-root.sm-auth-premium .sm-auth-body {
+  gap: 1.25rem;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  max-inline-size: 26.5rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+/* Brand: the logo on a soft tile, the wordmark in white beside it. */
+.sm-root.sm-auth-premium .sm-auth-brand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  min-inline-size: 0;
+  padding-block: 0.5rem 0.75rem;
+  padding-inline: 0.25rem;
+  color: #ffffff;
+}
+.sm-root.sm-auth-premium .sm-auth-mark {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  inline-size: 3rem;
+  block-size: 3rem;
+  border-radius: 0.875rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5fd 100%);
+  box-shadow: 0 10px 24px -6px rgba(3, 10, 26, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+}
+.sm-root.sm-auth-premium .sm-auth-logo { justify-self: auto; display: block; inline-size: 2.125rem; block-size: 2.125rem; object-fit: contain; }
+.sm-root.sm-auth-premium .sm-auth-wordmark {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--sm-font-heading);
+  font-size: 1.1875rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+}
+
+/* The card that holds the whole sign-in. */
+.sm-root.sm-auth-premium .sm-auth-card {
+  display: grid;
+  gap: 1.125rem;
+  min-inline-size: 0;
+  padding-block: clamp(1.375rem, 6vw, 1.75rem) clamp(1.125rem, 5vw, 1.375rem);
+  padding-inline: clamp(1.125rem, 5vw, 1.5rem);
+  border: 1px solid color-mix(in srgb, var(--sm-border) 70%, transparent);
+  border-radius: var(--sm-radius-xl);
+  background: var(--sm-surface);
+  box-shadow: 0 1px 2px rgba(7, 20, 43, 0.04), 0 24px 48px -20px rgba(7, 20, 43, 0.28);
+}
+:root[data-theme="dark"] .sm-root.sm-auth-premium .sm-auth-card {
+  border-color: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 24px 48px -18px rgba(0, 0, 0, 0.75);
+}
+
+/* Type: one clear heading, a quiet intro under it. */
+.sm-root.sm-auth-premium .sm-identity-title {
+  font-size: clamp(1.5rem, 1.25rem + 1.2vw, 1.75rem);
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+/* Negative letter-spacing breaks Arabic joining: none in Arabic. */
+.sm-root.sm-auth-premium .sm-identity-title:lang(ar) { letter-spacing: 0; line-height: 1.35; }
+.sm-root.sm-auth-premium .sm-auth-intro { margin-block-start: -0.625rem; font-size: 0.9375rem; line-height: 1.55; }
+.sm-root.sm-auth-premium .sm-auth-form { gap: 1rem; }
+.sm-root.sm-auth-premium .sm-field { gap: 0.4375rem; }
+.sm-root.sm-auth-premium .sm-label { font-size: 0.875rem; font-weight: 700; }
+
+/* Fields: one composite control (leading icon, the input, Show/Hide for the password), lightly filled,
+   a subtle border, and on focus the surface colour with a soft ring. The input itself draws nothing. */
+.sm-root.sm-auth-premium .sm-auth-control,
+.sm-root.sm-auth-premium .sm-password {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0;
+  min-block-size: 3.125rem;
+  min-inline-size: 0;
+  border: 1.5px solid var(--sm-border);
+  border-radius: var(--sm-radius-md);
+  background: var(--sm-auth-field);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+.sm-root.sm-auth-premium .sm-auth-control:hover,
+.sm-root.sm-auth-premium .sm-password:hover { border-color: color-mix(in srgb, var(--sm-blue) 32%, var(--sm-border)); }
+.sm-root.sm-auth-premium .sm-auth-control:has(.sm-input:focus),
+.sm-root.sm-auth-premium .sm-password:has(.sm-input:focus) {
+  border-color: var(--sm-focus);
+  background: var(--sm-surface);
+  box-shadow: var(--sm-auth-ring);
+}
+:root[data-theme="dark"] .sm-root.sm-auth-premium .sm-auth-control:has(.sm-input:focus),
+:root[data-theme="dark"] .sm-root.sm-auth-premium .sm-password:has(.sm-input:focus) { background: var(--sm-surface-2); }
+.sm-root.sm-auth-premium .sm-auth-control:has(.sm-input[aria-invalid="true"]),
+.sm-root.sm-auth-premium .sm-password:has(.sm-input[aria-invalid="true"]) {
+  border-color: var(--sm-neg);
+  background: color-mix(in srgb, var(--sm-neg) 4%, var(--sm-auth-field));
+}
+.sm-root.sm-auth-premium .sm-auth-control:has(.sm-input[aria-invalid="true"]:focus),
+.sm-root.sm-auth-premium .sm-password:has(.sm-input[aria-invalid="true"]:focus) { box-shadow: 0 0 0 4px color-mix(in srgb, var(--sm-neg) 16%, transparent); }
+.sm-root.sm-auth-premium .sm-auth-control:has(.sm-input:disabled) { opacity: 0.65; }
+
+.sm-root.sm-auth-premium .sm-auth-control .sm-input,
+.sm-root.sm-auth-premium .sm-password .sm-input {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  min-block-size: 3rem;
+  padding-inline: 0.75rem;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  font-size: 1rem;
+}
+.sm-root.sm-auth-premium .sm-auth-control .sm-input:focus-visible,
+.sm-root.sm-auth-premium .sm-password .sm-input:focus-visible { outline: none; }
+
+/* The leading icon: muted, the brand colour while its field has focus. */
+.sm-root.sm-auth-premium .sm-auth-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  margin-inline-end: -0.375rem;
+  color: var(--sm-muted);
+  font-size: 1.125rem;
+  transition: color 0.18s ease;
+}
+.sm-root.sm-auth-premium :has(> .sm-input:focus) > .sm-auth-icon { color: var(--sm-blue); }
+:root[data-theme="dark"] .sm-root.sm-auth-premium :has(> .sm-input:focus) > .sm-auth-icon { color: var(--sm-cyan); }
+.sm-root.sm-auth-premium :has(> .sm-input[aria-invalid="true"]) > .sm-auth-icon { color: var(--sm-neg); }
+
+/* Show/Hide inside the password control. */
+.sm-root.sm-auth-premium .sm-password .sm-button-small {
+  min-block-size: var(--sm-target);
+  margin-inline-end: 0.25rem;
+  padding-inline: 0.75rem;
+  border: 0;
+  border-radius: var(--sm-radius-sm);
+  color: var(--sm-blue);
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.sm-root.sm-auth-premium .sm-password .sm-button-small:hover:not(:disabled) { color: var(--sm-blue); background: var(--sm-in-soft); border-color: transparent; }
+:root[data-theme="dark"] .sm-root.sm-auth-premium .sm-password .sm-button-small,
+:root[data-theme="dark"] .sm-root.sm-auth-premium .sm-password .sm-button-small:hover:not(:disabled) { color: var(--sm-cyan); }
+
+/* Validation under a field: smaller and lighter than the label, in the error colour. */
+.sm-root.sm-auth-premium .sm-form-error { font-size: 0.8125rem; font-weight: 600; line-height: 1.45; }
+
+/* The label row: "Forgot your password?" as a quiet link on the same line. */
+.sm-root.sm-auth-premium .sm-auth-label-row .sm-note-link {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--sm-blue);
+  text-decoration: none;
+}
+.sm-root.sm-auth-premium .sm-auth-label-row .sm-note-link:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+:root[data-theme="dark"] .sm-root.sm-auth-premium .sm-auth-label-row .sm-note-link { color: var(--sm-cyan); }
+
+/* Keep me signed in: a plain row with the box, not a bordered option card. */
+.sm-root.sm-auth-premium .sm-auth-remember {
+  padding-inline: 0;
+  border: 0;
+  box-shadow: none;
+  color: var(--sm-muted);
+  font-size: 0.9375rem;
+}
+.sm-root.sm-auth-premium .sm-auth-remember:has(input:checked) { border: 0; box-shadow: none; color: var(--sm-text); }
+.sm-root.sm-auth-premium .sm-auth-remember input { accent-color: var(--sm-blue); inline-size: 1.125rem; block-size: 1.125rem; }
+
+/* The primary action: full width, a restrained gradient, a soft glow, an arrow that leans forward on hover,
+   and a spinner in its place while the request runs. */
+.sm-root.sm-auth-premium .sm-auth-submit {
+  position: relative;
+  gap: 0.5rem;
+  inline-size: 100%;
+  min-block-size: 3.25rem;
+  margin-block-start: 0.125rem;
+  border-radius: var(--sm-radius-md);
+  background: linear-gradient(180deg, #3172f3 0%, var(--sm-blue) 52%, #1d4ed8 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 12px 24px -10px rgba(37, 99, 235, 0.6);
+  font-size: 1rem;
+  transition: box-shadow 0.2s ease, transform 0.12s ease, filter 0.2s ease;
+}
+.sm-root.sm-auth-premium .sm-auth-submit:hover:not(:disabled) {
+  background: linear-gradient(180deg, #3172f3 0%, var(--sm-blue) 52%, #1d4ed8 100%);
+  filter: brightness(1.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 16px 28px -10px rgba(37, 99, 235, 0.65);
+}
+.sm-root.sm-auth-premium .sm-auth-submit:active:not(:disabled) { transform: scale(0.985); filter: brightness(0.97); }
+.sm-root.sm-auth-premium .sm-auth-submit-arrow { flex: none; font-size: 1.125rem; transition: transform 0.2s var(--sm-auth-ease); }
+.sm-root.sm-auth-premium .sm-auth-submit:hover:not(:disabled) .sm-auth-submit-arrow { transform: translateX(3px); }
+/* The arrow points the way the reading goes. */
+.sm-root.sm-auth-premium .sm-auth-submit-arrow:dir(rtl) { transform: scaleX(-1); }
+.sm-root.sm-auth-premium .sm-auth-submit:hover:not(:disabled) .sm-auth-submit-arrow:dir(rtl) { transform: scaleX(-1) translateX(3px); }
+.sm-root.sm-auth-premium .sm-auth-submit[aria-busy="true"] { cursor: progress; }
+.sm-root.sm-auth-premium .sm-auth-submit[aria-busy="true"]::before {
+  content: "";
+  flex: none;
+  inline-size: 1.05rem;
+  block-size: 1.05rem;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-block-start-color: #ffffff;
+  border-radius: 50%;
+  animation: sm-spin 0.8s linear infinite;
+}
+
+/* "or": two fine lines and a small word between the two ways in. */
+.sm-root.sm-auth-premium .sm-auth-divider { margin: 0; font-size: 0.8125rem; font-weight: 600; }
+
+/* Google: Google's own button (it can't be restyled), centred; while it loads, a quiet placeholder of
+   the same size keeps the layout still. Its notes are small and centred. */
+.sm-root.sm-auth-premium .sm-google { gap: 0.625rem; }
+.sm-root.sm-auth-premium .sm-google-slot { display: flex; justify-content: center; min-inline-size: 0; min-block-size: 2.75rem; border-radius: 999px; }
+.sm-root.sm-auth-premium .sm-google-slot[hidden] { display: none; }
+.sm-root.sm-auth-premium [data-sm-google="loading"] .sm-google-slot { background: var(--sm-auth-field); box-shadow: inset 0 0 0 1px var(--sm-border); }
+.sm-root.sm-auth-premium .sm-google .sm-fine { font-size: 0.8125rem; line-height: 1.5; text-align: center; }
+.sm-root.sm-auth-premium .sm-google-consent { border-radius: var(--sm-radius-lg); background: var(--sm-surface-2); }
+
+/* Errors and the sign-out note: tinted panels, with an accent along the start edge. */
+.sm-root.sm-auth-premium [data-sm-auth-error],
+.sm-root.sm-auth-premium [data-sm-google-error] {
+  padding: 0.75rem 0.875rem;
+  border: 1px solid color-mix(in srgb, var(--sm-neg) 28%, transparent);
+  border-inline-start: 3px solid var(--sm-neg);
+  border-radius: var(--sm-radius-md);
+  color: var(--sm-text);
+  background: color-mix(in srgb, var(--sm-neg) 7%, var(--sm-surface));
+  font-size: 0.9375rem;
+  animation: sm-auth-rise 0.28s var(--sm-auth-ease) both;
+}
+.sm-root.sm-auth-premium .sm-signed-out {
+  margin: 0;
+  padding: 0.75rem 0.875rem;
+  border: 0;
+  border-inline-start: 3px solid var(--sm-blue);
+  border-radius: var(--sm-radius-md);
+  background: var(--sm-in-soft);
+  box-shadow: none;
+}
+.sm-root.sm-auth-premium .sm-signed-out-warn {
+  border-inline-start-color: var(--sm-warn, #b7791f);
+  background: color-mix(in srgb, var(--sm-warn, #b7791f) 10%, var(--sm-surface));
+}
+
+/* New to SmartSpend? Create an account. */
+.sm-root.sm-auth-premium .sm-auth-switch {
+  padding-block-start: 1rem;
+  border-block-start: 1px solid color-mix(in srgb, var(--sm-border) 80%, transparent);
+  color: var(--sm-muted);
+  text-align: center;
+}
+/* The link wraps as one unit, never split across two lines. */
+.sm-root.sm-auth-premium .sm-auth-switch a { display: inline-block; max-inline-size: 100%; font-weight: 700; color: var(--sm-blue); text-decoration: none; }
+.sm-root.sm-auth-premium .sm-auth-switch a:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+:root[data-theme="dark"] .sm-root.sm-auth-premium .sm-auth-switch a { color: var(--sm-cyan); }
+
+/* The way out, below the card and quieter than anything in it. */
+.sm-root.sm-auth-premium .sm-auth-body > .sm-link-button {
+  justify-self: center;
+  color: var(--sm-muted);
+  font-size: 0.875rem;
+  text-underline-offset: 0.2em;
+}
+.sm-root.sm-auth-premium .sm-auth-body > .sm-link-button:hover { color: var(--sm-text); }
+
+/* Entrance: the brand, then the card, rise in once, gently. */
+@keyframes sm-auth-rise {
+  from { opacity: 0; transform: translateY(0.625rem); }
+  to { opacity: 1; transform: none; }
+}
+.sm-root.sm-auth-premium .sm-auth-brand { animation: sm-auth-rise 0.45s var(--sm-auth-ease) both; }
+.sm-root.sm-auth-premium .sm-auth-card { animation: sm-auth-rise 0.55s var(--sm-auth-ease) 0.07s both; }
+.sm-root.sm-auth-premium .sm-auth-body > .sm-link-button { animation: sm-auth-rise 0.55s var(--sm-auth-ease) 0.14s both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sm-root.sm-auth-premium .sm-auth-brand,
+  .sm-root.sm-auth-premium .sm-auth-card,
+  .sm-root.sm-auth-premium .sm-auth-body > .sm-link-button,
+  .sm-root.sm-auth-premium [data-sm-auth-error],
+  .sm-root.sm-auth-premium [data-sm-google-error] { animation: none; }
+  .sm-root.sm-auth-premium .sm-auth-control,
+  .sm-root.sm-auth-premium .sm-password,
+  .sm-root.sm-auth-premium .sm-auth-icon,
+  .sm-root.sm-auth-premium .sm-auth-submit,
+  .sm-root.sm-auth-premium .sm-auth-submit-arrow { transition: none; }
+  .sm-root.sm-auth-premium .sm-auth-submit:active:not(:disabled) { transform: none; }
+  .sm-root.sm-auth-premium .sm-auth-submit:hover:not(:disabled) .sm-auth-submit-arrow { transform: none; }
+  .sm-root.sm-auth-premium .sm-auth-submit:hover:not(:disabled) .sm-auth-submit-arrow:dir(rtl) { transform: scaleX(-1); }
+  .sm-root.sm-auth-premium .sm-auth-submit[aria-busy="true"]::before { animation: none; border-color: rgba(255, 255, 255, 0.85); }
+}
+
+/* ---------- Mobile Home, premium refinement (home/MobileHome.jsx; everything under .sm-home) ----------
+   The same finish as the sign-in card: softer borders, layered shadows, the brand light on the balance.
+   Scoped to .sm-home, so the detail pages, the Add sheet and every other screen that share these classes
+   are unchanged. Presentation only: no figure, order or content changes here. */
+.sm-root .sm-home {
+  --sm-home-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sm-home-card-shadow: 0 1px 2px rgba(7, 20, 43, 0.04), 0 14px 30px -20px rgba(7, 20, 43, 0.26);
+  gap: 1.25rem;
+}
+:root[data-theme="dark"] .sm-root .sm-home {
+  --sm-home-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 36px -20px rgba(0, 0, 0, 0.7);
+}
+
+/* Greeting: the date quiet, the name strong. */
+.sm-root .sm-home .sm-home-hello { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.025em; }
+.sm-root .sm-home .sm-home-hello:lang(ar) { letter-spacing: 0; }
+.sm-root .sm-home .sm-home-date { font-size: 0.8125rem; font-weight: 600; }
+
+/* Cards: one finish for every card on Home. */
+.sm-root .sm-home .sm-card {
+  border-color: color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: var(--sm-radius-lg);
+  box-shadow: var(--sm-home-card-shadow);
+}
+:root[data-theme="dark"] .sm-root .sm-home .sm-card { border-color: rgba(255, 255, 255, 0.07); }
+/* The period picker is a card on purpose drawn as nothing (HomeControls.jsx); it stays that way. */
+.sm-root .sm-home .sm-home-period,
+:root[data-theme="dark"] .sm-root .sm-home .sm-home-period { border: 0; box-shadow: none; }
+.sm-root .sm-home .sm-card-title { font-size: 1rem; font-weight: 800; }
+.sm-root .sm-home .sm-card-link { padding-block: 0.25rem; }
+.sm-root .sm-home .sm-card-link:hover { text-decoration: underline; text-underline-offset: 0.2em; }
+
+/* The balance: the screen's one strong surface, with the brand light from the start corner and a faint
+   ring at the far corner for depth. */
+.sm-root .sm-home .sm-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  gap: 0.875rem;
+  padding: 1.5rem 1.5rem 1.375rem;
+  border-radius: var(--sm-radius-xl);
+  background:
+    radial-gradient(90% 75% at 0% 0%, rgba(37, 99, 235, 0.34) 0%, rgba(37, 99, 235, 0) 62%),
+    var(--sm-hero);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 24px 44px -24px rgba(7, 20, 43, 0.7);
+}
+:root[data-theme="dark"] .sm-root .sm-home .sm-hero {
+  border-color: rgba(94, 200, 245, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 24px 44px -24px rgba(0, 0, 0, 0.85);
+}
+.sm-root .sm-home .sm-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset-block-start: -5rem;
+  inset-inline-end: -4.5rem;
+  inline-size: 13rem;
+  block-size: 13rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.75rem rgba(255, 255, 255, 0.025), 0 0 0 3.5rem rgba(255, 255, 255, 0.015);
+  pointer-events: none;
+}
+.sm-root .sm-home .sm-hero .sm-card-title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #a9b9da;
+}
+.sm-root .sm-home .sm-hero .sm-card-title:lang(ar) { letter-spacing: 0; text-transform: none; font-size: 0.875rem; }
+.sm-root .sm-home .sm-balance-label { font-size: 0.8125rem; color: #9fb0d3; }
+.sm-root .sm-home .sm-balance-lead .sm-hero-money { font-size: clamp(2.25rem, 1.6rem + 3.2vw, 2.75rem); }
+.sm-root .sm-home .sm-hero-note {
+  padding-block-start: 0.875rem;
+  border-block-start: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.8125rem;
+}
+
+/* The three ways to add an expense: quieter icons (a tinted rounded square, not a glowing disc) so the
+   balance stays the anchor; a slight lift on hover, a press on tap. */
+.sm-root .sm-home .sm-home-quick { gap: 0.5rem; }
+.sm-root .sm-home .sm-home-quick .sm-add-section-label:lang(ar) { text-transform: none; letter-spacing: 0; }
+.sm-root .sm-home .sm-home-quick .sm-add-choice {
+  gap: 0.5rem;
+  padding: 0.9375rem 0.5rem 0.8125rem;
+  border: 1px solid color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: var(--sm-radius-lg);
+  background: var(--sm-surface);
+  box-shadow: var(--sm-home-card-shadow);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+}
+:root[data-theme="dark"] .sm-root .sm-home .sm-home-quick .sm-add-choice { border-color: rgba(255, 255, 255, 0.07); }
+.sm-root .sm-home .sm-home-quick .sm-add-choice:hover {
+  border-color: color-mix(in srgb, var(--sm-blue) 40%, var(--sm-border));
+  background: var(--sm-surface);
+  transform: translateY(-1px);
+}
+.sm-root .sm-home .sm-home-quick .sm-add-choice:active { transform: scale(0.97); }
+.sm-root .sm-home .sm-home-quick .sm-add-choice-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.875rem;
+  color: var(--sm-blue);
+  background: var(--sm-in-soft);
+  font-size: 1.25rem;
+  box-shadow: none;
+  transition: color 0.18s ease, background-color 0.18s ease;
+}
+.sm-root .sm-home .sm-home-quick .sm-add-choice:hover .sm-add-choice-icon { color: #ffffff; background: var(--sm-blue); }
+:root[data-theme="dark"] .sm-root .sm-home .sm-home-quick .sm-add-choice-icon { color: var(--sm-cyan); background: rgba(94, 200, 245, 0.12); }
+:root[data-theme="dark"] .sm-root .sm-home .sm-home-quick .sm-add-choice:hover .sm-add-choice-icon { color: var(--sm-navy); background: var(--sm-cyan); }
+.sm-root .sm-home .sm-home-quick .sm-add-choice-label { font-size: 0.8125rem; line-height: 1.3; }
+
+/* Money in and out: two clear tiles, the arrows in solid marks, and the net as its own line below. */
+.sm-root .sm-home .sm-flow { gap: 0.625rem; }
+.sm-root .sm-home .sm-flow-tile { gap: 0.5rem; padding: 0.9375rem 1rem; border-radius: var(--sm-radius-lg); }
+.sm-root .sm-home .sm-flow-tile dt { gap: 0.5rem; font-size: 0.8125rem; }
+.sm-root .sm-home .sm-flow-tile dd { font-size: 1.0625rem; font-weight: 800; }
+.sm-root .sm-home .sm-flow-icon { width: 1.75rem; height: 1.75rem; border-radius: 0.5rem; font-size: 0.9375rem; }
+.sm-root .sm-home .sm-flow-tile[data-sm-flow="in"] .sm-flow-icon { color: #ffffff; background: var(--sm-in); }
+:root[data-theme="dark"] .sm-root .sm-home .sm-flow-tile[data-sm-flow="in"] .sm-flow-icon { color: var(--sm-navy); }
+.sm-root .sm-home .sm-flow-tile[data-sm-flow="out"] .sm-flow-icon { color: var(--sm-surface); background: var(--sm-muted); }
+.sm-root .sm-home .sm-flow-net {
+  align-items: center;
+  margin-block-start: 0.125rem;
+  padding-block-start: 0.875rem;
+  padding-inline: 0.125rem;
+  border-block-start: 1px solid color-mix(in srgb, var(--sm-border) 80%, transparent);
+}
+.sm-root .sm-home .sm-flow-net dd { font-size: 1.0625rem; font-weight: 800; }
+
+/* Accounts: tiles with a touch of depth and a lift on hover. */
+.sm-root .sm-home .sm-account-tile {
+  border-color: color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: var(--sm-radius-lg);
+  background: linear-gradient(180deg, var(--sm-surface) 0%, color-mix(in srgb, var(--sm-surface-2) 45%, var(--sm-surface)) 100%);
+  box-shadow: var(--sm-shadow-xs);
+  transition: border-color 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease;
+}
+:root[data-theme="dark"] .sm-root .sm-home .sm-account-tile { border-color: rgba(255, 255, 255, 0.07); background: var(--sm-surface-2); }
+.sm-root .sm-home a.sm-account-tile:hover { border-color: color-mix(in srgb, var(--sm-blue) 40%, var(--sm-border)); transform: translateY(-1px); box-shadow: var(--sm-home-card-shadow); }
+.sm-root .sm-home a.sm-account-tile:active { transform: scale(0.98); }
+.sm-root .sm-home .sm-tile-icon { border-radius: 0.75rem; }
+.sm-root .sm-home .sm-tile-amount { font-size: 1.125rem; font-weight: 800; }
+
+/* Recent activity: each row a small grid. The icon spans both lines; the title and the amount share the
+   first; the category and date use the full width of the second, so the date no longer wraps. */
+.sm-root .sm-home .sm-tx-list > li + li { border-block-start-color: color-mix(in srgb, var(--sm-border) 72%, transparent); }
+.sm-root .sm-home .sm-tx-list .sm-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "icon title end" "icon meta meta";
+  align-items: center;
+  column-gap: 0.75rem;
+  row-gap: 0.125rem;
+  padding-block: 0.75rem;
+}
+.sm-root .sm-home .sm-tx-list .sm-tx-icon { grid-area: icon; border-radius: 0.875rem; }
+.sm-root .sm-home .sm-tx-list .sm-row-main { display: contents; }
+/* justify-self: start puts the text at the reading start of its cell; user text keeps its own direction inside it. */
+.sm-root .sm-home .sm-tx-list .sm-row-title { grid-area: title; justify-self: start; font-size: 0.9375rem; }
+.sm-root .sm-home .sm-tx-list .sm-row-meta { grid-area: meta; justify-self: start; font-size: 0.8125rem; }
+.sm-root .sm-home .sm-tx-list .sm-row-end { grid-area: end; margin: 0; align-self: center; }
+.sm-root .sm-home .sm-tx-list .sm-row-amount { font-size: 0.9375rem; }
+
+/* Budgets and savings goals (MobileHome.jsx PlanCard): the counts, the backend's three totals as one
+   band, then up to three rows, each with its own bar from the backend's percentage. There is no overall
+   percentage in the response, so the totals have no bar. */
+.sm-root .sm-home .sm-home-plan-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem 0.5rem;
+  margin-block-start: -0.375rem;
+  color: var(--sm-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.sm-root .sm-home .sm-home-plan-meta > span:first-child { margin-inline-end: 0.25rem; }
+/* The chip's label and its count: inline-flex drops the space between them, so the gap puts it back. */
+.sm-root .sm-home .sm-home-plan-meta .sm-chip { gap: 0.375rem; font-size: 0.75rem; }
+/* The three totals as label / figure lines: they never wrap into an uneven grid. */
+.sm-root .sm-home .sm-home-plan-totals {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0.25rem 0.875rem;
+  border-radius: var(--sm-radius-md);
+  background: color-mix(in srgb, var(--sm-surface-2) 70%, var(--sm-surface));
+}
+:root[data-theme="dark"] .sm-root .sm-home .sm-home-plan-totals { background: var(--sm-surface-2); }
+.sm-root .sm-home .sm-home-plan-total { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0.125rem 0.75rem; min-inline-size: 0; padding-block: 0.5rem; }
+.sm-root .sm-home .sm-home-plan-total + .sm-home-plan-total { border-block-start: 1px solid color-mix(in srgb, var(--sm-border) 70%, transparent); }
+.sm-root .sm-home .sm-home-plan-total dt { margin: 0; color: var(--sm-muted); font-size: 0.8125rem; font-weight: 600; }
+.sm-root .sm-home .sm-home-plan-total dd { margin: 0; min-inline-size: 0; font-size: 0.9375rem; font-weight: 800; }
+.sm-root .sm-home .sm-home-plan-total[data-sm-total="remaining"] dd { font-size: 1rem; }
+.sm-root .sm-home .sm-home-plan-list > li + li { border-block-start-color: color-mix(in srgb, var(--sm-border) 72%, transparent); }
+.sm-root .sm-home .sm-home-plan-row { flex-wrap: nowrap; padding-block: 0.75rem; }
+.sm-root .sm-home .sm-home-plan-row .sm-row-main { gap: 0.4375rem; }
+.sm-root .sm-home .sm-home-plan-row-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.25rem 0.5rem; min-inline-size: 0; }
+.sm-root .sm-home .sm-home-plan-row .sm-row-title { font-size: 0.9375rem; min-inline-size: 0; }
+.sm-root .sm-home .sm-home-plan-row .sm-plan-figures { font-size: 0.8125rem; }
+.sm-root .sm-home .sm-home-plan-row .sm-plan-figures .sm-money { color: var(--sm-text); font-weight: 700; }
+.sm-root .sm-home .sm-home-plan .sm-progress-track { block-size: 0.4375rem; background: color-mix(in srgb, var(--sm-border) 80%, transparent); }
+.sm-root .sm-home .sm-home-plan .sm-progress-fill {
+  background: linear-gradient(90deg, var(--sm-blue), color-mix(in srgb, var(--sm-blue) 70%, var(--sm-cyan)));
+  transform-origin: 0 50%;
+  animation: sm-home-fill 0.6s var(--sm-home-ease) 0.15s both;
+}
+.sm-root .sm-home .sm-home-plan .sm-progress-fill:dir(rtl) { transform-origin: 100% 50%; }
+:root[data-theme="dark"] .sm-root .sm-home .sm-home-plan .sm-progress-fill { background: linear-gradient(90deg, var(--sm-cyan), color-mix(in srgb, var(--sm-cyan) 70%, var(--sm-blue))); }
+.sm-root .sm-home .sm-home-plan .sm-progress[data-sm-tone="warn"] .sm-progress-fill { background: #c98a00; }
+.sm-root .sm-home .sm-home-plan .sm-progress[data-sm-tone="bad"] .sm-progress-fill { background: var(--sm-neg); }
+.sm-root .sm-home .sm-home-plan .sm-progress[data-sm-tone="neutral"] .sm-progress-fill { background: var(--sm-muted); }
+:root[data-theme="dark"] .sm-root .sm-home .sm-home-plan .sm-progress[data-sm-tone="warn"] .sm-progress-fill { background: #f0b840; }
+.sm-root .sm-home .sm-home-plan .sm-progress-text { font-size: 0.8125rem; }
+@keyframes sm-home-fill {
+  from { transform: scaleX(0); }
+  to { transform: none; }
+}
+
+/* Needs attention: the accent edge stays the only signal (no new hue); a faint tint of it on the card,
+   and the severity as a soft chip in the same accent. */
+.sm-root .sm-home .sm-attention {
+  border-color: transparent;
+  border-inline-start: 3px solid var(--sm-cyan);
+  background: color-mix(in srgb, var(--sm-cyan) 5%, var(--sm-surface));
+}
+.sm-root .sm-home .sm-attention .sm-chip-severity {
+  border-color: transparent;
+  color: var(--sm-text);
+  background: color-mix(in srgb, var(--sm-cyan) 18%, var(--sm-surface));
+}
+.sm-root .sm-home .sm-attention .sm-alert { display: grid; justify-items: start; gap: 0.375rem; padding-block: 0.625rem; }
+
+/* Entrance: the sections rise in once, quickly, one after another. */
+@keyframes sm-home-rise {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to { opacity: 1; transform: none; }
+}
+.sm-root .sm-home > .sm-home-head,
+.sm-root .sm-home > .sm-card,
+.sm-root .sm-home > .sm-home-quick,
+.sm-root .sm-home > .sm-home-period-block { animation: sm-home-rise 0.36s var(--sm-home-ease) both; }
+.sm-root .sm-home > :nth-child(2) { animation-delay: 0.03s; }
+.sm-root .sm-home > :nth-child(3) { animation-delay: 0.06s; }
+.sm-root .sm-home > :nth-child(4) { animation-delay: 0.09s; }
+.sm-root .sm-home > :nth-child(5) { animation-delay: 0.12s; }
+.sm-root .sm-home > :nth-child(n + 6) { animation-delay: 0.15s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sm-root .sm-home > .sm-home-head,
+  .sm-root .sm-home > .sm-card,
+  .sm-root .sm-home > .sm-home-quick,
+  .sm-root .sm-home > .sm-home-period-block { animation: none; }
+  .sm-root .sm-home .sm-home-quick .sm-add-choice,
+  .sm-root .sm-home .sm-home-quick .sm-add-choice-icon,
+  .sm-root .sm-home .sm-account-tile { transition: none; }
+  .sm-root .sm-home .sm-home-quick .sm-add-choice:hover,
+  .sm-root .sm-home .sm-home-quick .sm-add-choice:active,
+  .sm-root .sm-home a.sm-account-tile:hover,
+  .sm-root .sm-home a.sm-account-tile:active { transform: none; }
+  .sm-root .sm-home .sm-home-plan .sm-progress-fill { animation: none; }
+}
+
+/* ---------- Mobile Activity and a transaction, premium refinement ----------
+   activity/MobileActivity.jsx ([data-sm-screen="activity"]) and activity/MobileTransactionDetail.jsx
+   ([data-sm-screen="transaction"]). The same finish as Home and sign-in; presentation only (no request,
+   figure, filter or link changes). Scoped to those two screens, so Accounts, transfers and every other list
+   that shares .sm-tx, .sm-ledger or .sm-hero are unchanged. */
+.sm-root [data-sm-screen="activity"],
+.sm-root [data-sm-screen="transaction"] {
+  --sm-tx-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sm-tx-card-shadow: 0 1px 2px rgba(7, 20, 43, 0.04), 0 14px 30px -20px rgba(7, 20, 43, 0.26);
+  gap: 1.125rem;
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="activity"],
+:root[data-theme="dark"] .sm-root [data-sm-screen="transaction"] {
+  --sm-tx-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 36px -20px rgba(7, 20, 43, 0.7);
+}
+.sm-root [data-sm-screen="activity"] .sm-card,
+.sm-root [data-sm-screen="transaction"] .sm-card {
+  border-color: color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: var(--sm-radius-lg);
+  box-shadow: var(--sm-tx-card-shadow);
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="activity"] .sm-card,
+:root[data-theme="dark"] .sm-root [data-sm-screen="transaction"] .sm-card { border-color: rgba(255, 255, 255, 0.07); }
+.sm-root [data-sm-screen="activity"] .sm-card-title,
+.sm-root [data-sm-screen="transaction"] .sm-card-title { font-size: 1rem; font-weight: 800; }
+
+/* ----- The list's toolbar and filter chips ----- */
+.sm-root [data-sm-screen="activity"] .sm-toolbar .sm-button-small {
+  border-color: color-mix(in srgb, var(--sm-border) 72%, transparent);
+  box-shadow: var(--sm-shadow-xs);
+  font-weight: 700;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="activity"] .sm-toolbar .sm-button-small { border-color: rgba(255, 255, 255, 0.1); }
+.sm-root [data-sm-screen="activity"] .sm-toolbar .sm-button-small:hover:not(:disabled) { border-color: color-mix(in srgb, var(--sm-blue) 40%, var(--sm-border)); background: var(--sm-surface); }
+.sm-root [data-sm-screen="activity"] .sm-toolbar .sm-button-small svg { color: var(--sm-blue); }
+:root[data-theme="dark"] .sm-root [data-sm-screen="activity"] .sm-toolbar .sm-button-small svg { color: var(--sm-cyan); }
+.sm-root [data-sm-screen="activity"] .sm-chip-button {
+  min-block-size: 2.25rem;
+  gap: 0.375rem;
+  padding-inline: 0.75rem 0.625rem;
+  border-color: color-mix(in srgb, var(--sm-blue) 28%, var(--sm-border));
+  color: var(--sm-text);
+  background: var(--sm-in-soft);
+  transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+.sm-root [data-sm-screen="activity"] .sm-chip-button svg { color: var(--sm-blue); }
+:root[data-theme="dark"] .sm-root [data-sm-screen="activity"] .sm-chip-button svg { color: var(--sm-cyan); }
+.sm-root [data-sm-screen="activity"] .sm-chip-button:hover { border-color: var(--sm-blue); }
+.sm-root [data-sm-screen="activity"] .sm-chip-button.sm-chip-quiet { border-color: transparent; color: var(--sm-nav-active); background: transparent; }
+
+/* ----- The list: one card, days as headings that stay in view while their day scrolls ----- */
+.sm-root [data-sm-screen="activity"] .sm-ledger { padding-block: 0 0.375rem; padding-inline: 1rem; }
+.sm-root [data-sm-screen="activity"] .sm-day-title {
+  position: sticky;
+  z-index: 1;
+  inset-block-start: 0;
+  margin-inline: -1rem;
+  margin-block-end: 0;
+  padding: 0.875rem 1rem 0.5rem;
+  border-block-end: 1px solid color-mix(in srgb, var(--sm-border) 60%, transparent);
+  color: var(--sm-muted);
+  background: color-mix(in srgb, var(--sm-surface) 94%, transparent);
+  -webkit-backdrop-filter: saturate(140%) blur(6px);
+  backdrop-filter: saturate(140%) blur(6px);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+.sm-root [data-sm-screen="activity"] .sm-ledger > section:first-child .sm-day-title { border-start-start-radius: var(--sm-radius-lg); border-start-end-radius: var(--sm-radius-lg); }
+.sm-root [data-sm-screen="activity"] .sm-day-title:lang(ar) { letter-spacing: 0; }
+.sm-root [data-sm-screen="activity"] .sm-ledger .sm-list > li + li { border-block-start-color: color-mix(in srgb, var(--sm-border) 60%, transparent); }
+
+/* A row as a small grid: the icon spans the row; title and amount share the first line; the kind,
+   category and accounts use the full width below; a status chip, when there is one, under that. */
+.sm-root [data-sm-screen="activity"] .sm-tx {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "icon title end" "icon meta meta" "icon chip chip";
+  align-items: center;
+  column-gap: 0.75rem;
+  row-gap: 0.125rem;
+  padding-block: 0.75rem;
+}
+.sm-root [data-sm-screen="activity"] .sm-tx .sm-tx-icon { grid-area: icon; align-self: start; border-radius: 0.875rem; }
+.sm-root [data-sm-screen="activity"] .sm-tx .sm-row-main { display: contents; }
+/* justify-self: start puts the text at the reading start of its cell; user text keeps its own direction inside it. */
+.sm-root [data-sm-screen="activity"] .sm-tx .sm-row-title { grid-area: title; justify-self: start; font-size: 0.9375rem; }
+.sm-root [data-sm-screen="activity"] .sm-tx .sm-row-meta { grid-area: meta; justify-self: start; font-size: 0.8125rem; }
+.sm-root [data-sm-screen="activity"] .sm-tx .sm-status { grid-area: chip; justify-self: start; margin-block-start: 0.25rem; }
+.sm-root [data-sm-screen="activity"] .sm-tx .sm-row-end { grid-area: end; margin: 0; }
+.sm-root [data-sm-screen="activity"] .sm-tx .sm-row-amount { font-size: 0.9375rem; }
+.sm-root [data-sm-screen="activity"] a.sm-tx:active { transform: scale(0.99); }
+
+/* Load more: a full-width quiet pill, not a stray button. */
+.sm-root [data-sm-screen="activity"] [data-sm-more] {
+  inline-size: 100%;
+  min-block-size: 3rem;
+  border-color: color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: 999px;
+  color: var(--sm-nav-active);
+  background: var(--sm-surface);
+  box-shadow: var(--sm-shadow-xs);
+}
+
+/* ----- A transaction: the amount is the focus ----- */
+.sm-root [data-sm-screen="transaction"] .sm-detail-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  gap: 0.625rem;
+  padding: 1.5rem 1.5rem 1.375rem;
+  border-radius: var(--sm-radius-xl);
+  background:
+    radial-gradient(90% 75% at 0% 0%, rgba(37, 99, 235, 0.34) 0%, rgba(37, 99, 235, 0) 62%),
+    var(--sm-hero);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 24px 44px -24px rgba(7, 20, 43, 0.7);
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="transaction"] .sm-detail-hero { border-color: rgba(94, 200, 245, 0.18); }
+.sm-root [data-sm-screen="transaction"] .sm-detail-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset-block-start: -5rem;
+  inset-inline-end: -4.5rem;
+  inline-size: 13rem;
+  block-size: 13rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.75rem rgba(255, 255, 255, 0.025), 0 0 0 3.5rem rgba(255, 255, 255, 0.015);
+  pointer-events: none;
+}
+.sm-root [data-sm-screen="transaction"] .sm-detail-hero .sm-tx-icon { border-radius: 0.875rem; }
+.sm-root [data-sm-screen="transaction"] .sm-detail-hero .sm-card-title { font-size: 1.125rem; font-weight: 800; color: #ffffff; }
+.sm-root [data-sm-screen="transaction"] .sm-detail-hero .sm-balance-label { margin-block-start: 0.5rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #a9b9da; }
+.sm-root [data-sm-screen="transaction"] .sm-detail-hero .sm-balance-label:lang(ar) { letter-spacing: 0; text-transform: none; font-size: 0.8125rem; }
+.sm-root [data-sm-screen="transaction"] .sm-detail-hero .sm-hero-money { font-size: clamp(2.25rem, 1.6rem + 3.2vw, 2.75rem); }
+.sm-root [data-sm-screen="transaction"] .sm-detail-hero .sm-hero-note {
+  margin-block-start: 0.25rem;
+  padding-block-start: 0.875rem;
+  border-block-start: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.8125rem;
+}
+
+/* Details: label / value lines with hairlines, like a statement. */
+.sm-root [data-sm-screen="transaction"] .sm-stats-stacked { gap: 0; }
+.sm-root [data-sm-screen="transaction"] .sm-stats-stacked .sm-stat { align-items: center; min-block-size: 2.75rem; padding-block: 0.5rem; }
+.sm-root [data-sm-screen="transaction"] .sm-stats-stacked .sm-stat + .sm-stat { border-block-start: 1px solid color-mix(in srgb, var(--sm-border) 60%, transparent); }
+.sm-root [data-sm-screen="transaction"] .sm-stats-stacked .sm-stat dt { font-size: 0.8125rem; font-weight: 600; }
+.sm-root [data-sm-screen="transaction"] .sm-stats-stacked .sm-stat dd { font-weight: 600; }
+.sm-root [data-sm-screen="transaction"] .sm-more-details summary { color: var(--sm-nav-active); font-weight: 700; }
+
+/* The notes about what a transaction is to others: a soft tinted card. */
+.sm-root [data-sm-screen="transaction"] .sm-tx-notes { background: color-mix(in srgb, var(--sm-blue) 5%, var(--sm-surface)); }
+
+/* Ledger entries: account and amount on one line, the role under it. */
+.sm-root [data-sm-screen="transaction"] [data-sm-entry] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "title end" "meta end";
+  align-items: center;
+  column-gap: 0.75rem;
+  row-gap: 0.125rem;
+}
+.sm-root [data-sm-screen="transaction"] [data-sm-entry] .sm-row-main { display: contents; }
+.sm-root [data-sm-screen="transaction"] [data-sm-entry] .sm-row-title { grid-area: title; justify-self: start; font-size: 0.9375rem; }
+.sm-root [data-sm-screen="transaction"] [data-sm-entry] .sm-row-meta { grid-area: meta; justify-self: start; font-size: 0.8125rem; }
+.sm-root [data-sm-screen="transaction"] [data-sm-entry] .sm-row-amount { grid-area: end; margin: 0; font-weight: 700; }
+.sm-root [data-sm-screen="transaction"] [data-sm-entry] .sm-row-title a { text-decoration: none; color: var(--sm-nav-active); }
+
+/* Changes: the actions as clear, tappable tiles (each opens a review that sends nothing). */
+.sm-root [data-sm-screen="transaction"] .sm-draft-links { gap: 0.5rem; }
+.sm-root [data-sm-screen="transaction"] .sm-draft-links .sm-link-row {
+  padding-inline: 0.875rem;
+  border: 1px solid color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: var(--sm-radius-md);
+  background: color-mix(in srgb, var(--sm-surface-2) 55%, var(--sm-surface));
+  transition: border-color 0.18s ease, background-color 0.18s ease;
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="transaction"] .sm-draft-links .sm-link-row { border-color: rgba(255, 255, 255, 0.08); background: var(--sm-surface-2); }
+.sm-root [data-sm-screen="transaction"] .sm-draft-links .sm-link-row:hover { border-color: color-mix(in srgb, var(--sm-blue) 40%, var(--sm-border)); }
+
+/* Entrance: the cards rise in once, quickly. */
+@keyframes sm-tx-rise {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to { opacity: 1; transform: none; }
+}
+.sm-root [data-sm-screen="activity"] > .sm-card,
+.sm-root [data-sm-screen="transaction"] > .sm-card { animation: sm-tx-rise 0.34s var(--sm-tx-ease) both; }
+.sm-root [data-sm-screen="transaction"] > .sm-card:nth-of-type(2) { animation-delay: 0.04s; }
+.sm-root [data-sm-screen="transaction"] > .sm-card:nth-of-type(n + 3) { animation-delay: 0.08s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sm-root [data-sm-screen="activity"] > .sm-card,
+  .sm-root [data-sm-screen="transaction"] > .sm-card { animation: none; }
+  .sm-root [data-sm-screen="activity"] a.sm-tx:active { transform: none; }
+  .sm-root [data-sm-screen="activity"] .sm-toolbar .sm-button-small,
+  .sm-root [data-sm-screen="activity"] .sm-chip-button,
+  .sm-root [data-sm-screen="transaction"] .sm-draft-links .sm-link-row { transition: none; }
+}
+
+/* ---------- Mobile Accounts and an account, premium refinement ----------
+   accounts/MobileAccounts.jsx ([data-sm-screen="accounts"]) and accounts/MobileAccountDetail.jsx
+   ([data-sm-screen="account-detail"]). The same finish as Home and Activity; presentation only (no request,
+   balance, grouping or link changes). Scoped to those two screens: Home's account tiles and every other screen
+   that shares .sm-row, .sm-tile-icon or .sm-hero are unchanged. */
+.sm-root [data-sm-screen="accounts"],
+.sm-root [data-sm-screen="account-detail"] {
+  --sm-acc-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sm-acc-card-shadow: 0 1px 2px rgba(7, 20, 43, 0.04), 0 14px 30px -20px rgba(7, 20, 43, 0.26);
+  gap: 1.125rem;
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="accounts"],
+:root[data-theme="dark"] .sm-root [data-sm-screen="account-detail"] {
+  --sm-acc-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 36px -20px rgba(0, 0, 0, 0.7);
+}
+.sm-root [data-sm-screen="accounts"] .sm-card,
+.sm-root [data-sm-screen="account-detail"] .sm-card {
+  border-color: color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: var(--sm-radius-lg);
+  box-shadow: var(--sm-acc-card-shadow);
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="accounts"] .sm-card,
+:root[data-theme="dark"] .sm-root [data-sm-screen="account-detail"] .sm-card { border-color: rgba(255, 255, 255, 0.07); }
+.sm-root [data-sm-screen="accounts"] .sm-card-title,
+.sm-root [data-sm-screen="account-detail"] .sm-card-title { font-size: 1rem; font-weight: 800; }
+
+/* Icons by kind: a soft tint each, all within the brand's blues (the kind is always written beside it). */
+.sm-root [data-sm-screen="accounts"] .sm-tile-icon,
+.sm-root [data-sm-screen="account-detail"] .sm-card:not(.sm-hero) .sm-tile-icon { border-radius: 0.875rem; }
+.sm-root [data-sm-screen="accounts"] .sm-tile-icon[data-sm-kind="bank"] { color: #1e3a8a; background: color-mix(in srgb, #1e3a8a 12%, var(--sm-surface)); }
+.sm-root [data-sm-screen="accounts"] .sm-tile-icon[data-sm-kind="wallet"] { color: #0e7490; background: color-mix(in srgb, var(--sm-cyan) 16%, var(--sm-surface)); }
+.sm-root [data-sm-screen="accounts"] .sm-tile-icon[data-sm-kind="savings"] { color: #5b4bc4; background: color-mix(in srgb, #5b4bc4 12%, var(--sm-surface)); }
+.sm-root [data-sm-screen="accounts"] .sm-tile-icon[data-sm-kind="savings_goal"] { color: #0369a1; background: color-mix(in srgb, #0369a1 12%, var(--sm-surface)); }
+:root[data-theme="dark"] .sm-root [data-sm-screen="accounts"] .sm-tile-icon { color: var(--sm-cyan); background: rgba(94, 200, 245, 0.12); }
+:root[data-theme="dark"] .sm-root [data-sm-screen="accounts"] .sm-tile-icon[data-sm-kind="bank"] { color: #9db8ff; background: rgba(157, 184, 255, 0.12); }
+:root[data-theme="dark"] .sm-root [data-sm-screen="accounts"] .sm-tile-icon[data-sm-kind="savings"] { color: #b9aefc; background: rgba(185, 174, 252, 0.12); }
+
+/* ----- The list: one card per currency ----- */
+.sm-root [data-sm-screen="accounts"] .sm-accounts-group { gap: 0.5rem; padding-block-end: 0.75rem; }
+.sm-root [data-sm-screen="accounts"] .sm-accounts-group > .sm-card-head { padding-block-end: 0.5rem; border-block-end: 1px solid color-mix(in srgb, var(--sm-border) 60%, transparent); }
+.sm-root [data-sm-screen="accounts"] .sm-accounts-group .sm-card-title { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 0.5rem; min-inline-size: 0; }
+.sm-root [data-sm-screen="accounts"] .sm-accounts-group .sm-card-title .sm-muted { font-size: 0.875rem; font-weight: 600; }
+.sm-root [data-sm-screen="accounts"] .sm-accounts-code {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.5rem;
+  color: #ffffff;
+  background: var(--sm-hero);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="accounts"] .sm-accounts-code { box-shadow: inset 0 0 0 1px rgba(94, 200, 245, 0.25); }
+.sm-root [data-sm-screen="accounts"] .sm-accounts-primary {
+  border-color: transparent;
+  color: var(--sm-nav-active);
+  background: var(--sm-in-soft);
+}
+.sm-root [data-sm-screen="accounts"] .sm-accounts-group[data-sm-primary="true"] { border-inline-start: 3px solid var(--sm-blue); }
+:root[data-theme="dark"] .sm-root [data-sm-screen="accounts"] .sm-accounts-group[data-sm-primary="true"] { border-inline-start-color: var(--sm-cyan); }
+.sm-root [data-sm-screen="accounts"] .sm-list > li + li { border-block-start-color: color-mix(in srgb, var(--sm-border) 60%, transparent); }
+
+/* A row as a small grid: the icon spans it; the name (up to two lines) and the balance share the top line;
+   the kind sits under the name. A long name no longer pushes the balance onto a line of its own. */
+.sm-root [data-sm-screen="accounts"] .sm-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "icon title end" "icon meta end";
+  align-items: center;
+  column-gap: 0.75rem;
+  row-gap: 0.125rem;
+  padding-block: 0.75rem;
+}
+.sm-root [data-sm-screen="accounts"] .sm-row .sm-tile-icon { grid-area: icon; }
+.sm-root [data-sm-screen="accounts"] .sm-row .sm-row-main { display: contents; }
+.sm-root [data-sm-screen="accounts"] .sm-row .sm-row-title {
+  grid-area: title;
+  justify-self: start;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.9375rem;
+  line-height: 1.3;
+}
+.sm-root [data-sm-screen="accounts"] .sm-row .sm-row-meta { grid-area: meta; justify-self: start; font-size: 0.8125rem; }
+.sm-root [data-sm-screen="accounts"] .sm-row .sm-row-end { grid-area: end; margin: 0; }
+.sm-root [data-sm-screen="accounts"] .sm-row .sm-row-amount { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sm-root [data-sm-screen="accounts"] a.sm-row:active { transform: scale(0.99); }
+
+/* ----- An account: the balance is the focus ----- */
+.sm-root [data-sm-screen="account-detail"] .sm-detail-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  gap: 0.625rem;
+  padding: 1.5rem 1.5rem 1.375rem;
+  border-radius: var(--sm-radius-xl);
+  background:
+    radial-gradient(90% 75% at 0% 0%, rgba(37, 99, 235, 0.34) 0%, rgba(37, 99, 235, 0) 62%),
+    var(--sm-hero);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 24px 44px -24px rgba(7, 20, 43, 0.7);
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="account-detail"] .sm-detail-hero { border-color: rgba(94, 200, 245, 0.18); }
+.sm-root [data-sm-screen="account-detail"] .sm-detail-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset-block-start: -5rem;
+  inset-inline-end: -4.5rem;
+  inline-size: 13rem;
+  block-size: 13rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.75rem rgba(255, 255, 255, 0.025), 0 0 0 3.5rem rgba(255, 255, 255, 0.015);
+  pointer-events: none;
+}
+.sm-root [data-sm-screen="account-detail"] .sm-detail-head { align-items: flex-start; }
+.sm-root [data-sm-screen="account-detail"] .sm-detail-hero .sm-card-title { font-size: 1.125rem; font-weight: 800; }
+.sm-root [data-sm-screen="account-detail"] .sm-detail-hero .sm-balance-label { margin-block-start: 0.5rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #a9b9da; }
+.sm-root [data-sm-screen="account-detail"] .sm-detail-hero .sm-balance-label:lang(ar) { letter-spacing: 0; text-transform: none; font-size: 0.8125rem; }
+.sm-root [data-sm-screen="account-detail"] .sm-detail-hero .sm-hero-money { font-size: clamp(2.25rem, 1.6rem + 3.2vw, 2.75rem); }
+.sm-root [data-sm-screen="account-detail"] .sm-detail-hero .sm-hero-note {
+  margin-block-start: 0.25rem;
+  padding-block-start: 0.875rem;
+  border-block-start: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.8125rem;
+}
+
+/* About this account: label / value lines with hairlines, like a statement. */
+.sm-root [data-sm-screen="account-detail"] .sm-stats-stacked { gap: 0; }
+.sm-root [data-sm-screen="account-detail"] .sm-stats-stacked .sm-stat { align-items: center; min-block-size: 2.75rem; padding-block: 0.5rem; }
+.sm-root [data-sm-screen="account-detail"] .sm-stats-stacked .sm-stat + .sm-stat { border-block-start: 1px solid color-mix(in srgb, var(--sm-border) 60%, transparent); }
+.sm-root [data-sm-screen="account-detail"] .sm-stats-stacked .sm-stat dt { font-size: 0.8125rem; font-weight: 600; }
+.sm-root [data-sm-screen="account-detail"] .sm-stats-stacked .sm-stat dd { font-weight: 600; }
+
+/* The archived note: a soft tinted card. */
+.sm-root [data-sm-screen="account-detail"] > .sm-card[role="note"] { border-inline-start: 3px solid var(--sm-muted); background: color-mix(in srgb, var(--sm-surface-2) 60%, var(--sm-surface)); }
+
+/* Movements: the same two-line rows as Activity. */
+.sm-root [data-sm-screen="account-detail"] .sm-tx {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas: "icon title end" "icon meta meta";
+  align-items: center;
+  column-gap: 0.75rem;
+  row-gap: 0.125rem;
+  padding-block: 0.75rem;
+}
+.sm-root [data-sm-screen="account-detail"] .sm-tx .sm-tx-icon { grid-area: icon; align-self: start; border-radius: 0.875rem; }
+.sm-root [data-sm-screen="account-detail"] .sm-tx .sm-row-main { display: contents; }
+.sm-root [data-sm-screen="account-detail"] .sm-tx .sm-row-title { grid-area: title; justify-self: start; font-size: 0.9375rem; }
+.sm-root [data-sm-screen="account-detail"] .sm-tx .sm-row-meta { grid-area: meta; justify-self: start; font-size: 0.8125rem; }
+.sm-root [data-sm-screen="account-detail"] .sm-tx .sm-row-end { grid-area: end; margin: 0; }
+.sm-root [data-sm-screen="account-detail"] .sm-tx .sm-row-amount { font-size: 0.9375rem; }
+.sm-root [data-sm-screen="account-detail"] .sm-list > li + li { border-block-start-color: color-mix(in srgb, var(--sm-border) 60%, transparent); }
+.sm-root [data-sm-screen="account-detail"] [data-sm-more] { inline-size: 100%; border-radius: 999px; color: var(--sm-nav-active); }
+
+/* Changes: Edit and Archive as clear tiles (each opens a review that sends nothing). */
+.sm-root [data-sm-screen="account-detail"] .sm-draft-links { gap: 0.5rem; }
+.sm-root [data-sm-screen="account-detail"] .sm-draft-links .sm-link-row {
+  padding-inline: 0.875rem;
+  border: 1px solid color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: var(--sm-radius-md);
+  background: color-mix(in srgb, var(--sm-surface-2) 55%, var(--sm-surface));
+  transition: border-color 0.18s ease;
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="account-detail"] .sm-draft-links .sm-link-row { border-color: rgba(255, 255, 255, 0.08); background: var(--sm-surface-2); }
+.sm-root [data-sm-screen="account-detail"] .sm-draft-links .sm-link-row:hover { border-color: color-mix(in srgb, var(--sm-blue) 40%, var(--sm-border)); }
+
+/* Entrance: the cards rise in once, quickly. */
+@keyframes sm-acc-rise {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to { opacity: 1; transform: none; }
+}
+.sm-root [data-sm-screen="accounts"] > .sm-card,
+.sm-root [data-sm-screen="account-detail"] > .sm-card { animation: sm-acc-rise 0.34s var(--sm-acc-ease) both; }
+.sm-root [data-sm-screen="accounts"] > .sm-card:nth-of-type(2),
+.sm-root [data-sm-screen="account-detail"] > .sm-card:nth-of-type(2) { animation-delay: 0.04s; }
+.sm-root [data-sm-screen="accounts"] > .sm-card:nth-of-type(n + 3),
+.sm-root [data-sm-screen="account-detail"] > .sm-card:nth-of-type(n + 3) { animation-delay: 0.08s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sm-root [data-sm-screen="accounts"] > .sm-card,
+  .sm-root [data-sm-screen="account-detail"] > .sm-card { animation: none; }
+  .sm-root [data-sm-screen="accounts"] a.sm-row:active { transform: none; }
+  .sm-root [data-sm-screen="account-detail"] .sm-draft-links .sm-link-row { transition: none; }
+}
+
+/* ---------- Mobile Budgets and a budget, premium refinement ----------
+   planning/MobileBudgets.jsx ([data-sm-screen="budgets"]) and planning/MobileBudgetDetail.jsx
+   ([data-sm-screen="budget"]). The same finish as Home, Activity and Accounts; presentation only (no request,
+   figure, filter, pagination or link changes). Scoped to those two screens: Goals, Recurring and Home's
+   planning cards, which share .sm-plan-row, .sm-plan-figures and .sm-progress, are unchanged. */
+.sm-root [data-sm-screen="budgets"],
+.sm-root [data-sm-screen="budget"] {
+  --sm-bud-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sm-bud-card-shadow: 0 1px 2px rgba(7, 20, 43, 0.04), 0 14px 30px -20px rgba(7, 20, 43, 0.26);
+  gap: 1.125rem;
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="budgets"],
+:root[data-theme="dark"] .sm-root [data-sm-screen="budget"] {
+  --sm-bud-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 36px -20px rgba(0, 0, 0, 0.7);
+}
+.sm-root [data-sm-screen="budgets"] .sm-card:not(.sm-plan-filters),
+.sm-root [data-sm-screen="budget"] .sm-card {
+  border-color: color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: var(--sm-radius-lg);
+  box-shadow: var(--sm-bud-card-shadow);
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="budgets"] .sm-card:not(.sm-plan-filters),
+:root[data-theme="dark"] .sm-root [data-sm-screen="budget"] .sm-card { border-color: rgba(255, 255, 255, 0.07); }
+.sm-root [data-sm-screen="budget"] .sm-card-title { font-size: 1rem; font-weight: 800; }
+
+/* ----- The list ----- */
+.sm-root [data-sm-screen="budgets"] .sm-plan-list { padding-block: 0.25rem; }
+.sm-root [data-sm-screen="budgets"] .sm-plan-list > li + li { border-block-start-color: color-mix(in srgb, var(--sm-border) 60%, transparent); }
+.sm-root [data-sm-screen="budgets"] .sm-plan-row { padding-block: 1rem; }
+.sm-root [data-sm-screen="budgets"] .sm-plan-row .sm-row-main { gap: 0.5rem; }
+.sm-root [data-sm-screen="budgets"] .sm-plan-row .sm-row-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.sm-root [data-sm-screen="budgets"] .sm-plan-row .sm-row-meta { font-size: 0.8125rem; }
+.sm-root [data-sm-screen="budgets"] .sm-plan-row .sm-progress-track { block-size: 0.5rem; background: color-mix(in srgb, var(--sm-border) 80%, transparent); }
+.sm-root [data-sm-screen="budgets"] .sm-plan-row .sm-progress-text { font-size: 0.8125rem; }
+
+/* Spent, limit and remaining as label / figure lines on a tinted panel (three columns don't fit beside the
+   chevron at phone widths and wrapped unevenly); remaining, last, is emphasised. */
+.sm-root [data-sm-screen="budgets"] .sm-plan-figures {
+  display: grid;
+  justify-self: stretch;
+  inline-size: 100%;
+  gap: 0;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--sm-radius-md);
+  background: color-mix(in srgb, var(--sm-surface-2) 70%, var(--sm-surface));
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="budgets"] .sm-plan-figures { background: var(--sm-surface-2); }
+.sm-root [data-sm-screen="budgets"] .sm-plan-figures > span { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 0.75rem; min-inline-size: 0; padding-block: 0.3125rem; font-size: 0.8125rem; font-weight: 600; }
+.sm-root [data-sm-screen="budgets"] .sm-plan-figures > span + span { border-block-start: 1px solid color-mix(in srgb, var(--sm-border) 70%, transparent); }
+.sm-root [data-sm-screen="budgets"] .sm-plan-figures .sm-money { color: var(--sm-text); font-size: 0.9375rem; font-weight: 800; overflow-wrap: anywhere; }
+.sm-root [data-sm-screen="budgets"] .sm-plan-figures [data-sm-figure="remaining"] .sm-money { font-size: 1rem; }
+.sm-root [data-sm-screen="budgets"] .sm-plan-figures [data-sm-figure="remaining"] .sm-money-negative { color: var(--sm-neg); }
+
+/* Filters and Load more. */
+.sm-root [data-sm-screen="budgets"] [data-sm-more] { inline-size: 100%; min-block-size: 3rem; border-radius: 999px; color: var(--sm-nav-active); background: var(--sm-surface); box-shadow: var(--sm-shadow-xs); }
+
+/* ----- A budget: the summary is the focus ----- */
+.sm-root [data-sm-screen="budget"] .sm-detail-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  gap: 0.625rem;
+  padding: 1.5rem 1.5rem 1.375rem;
+  border-radius: var(--sm-radius-xl);
+  background:
+    radial-gradient(90% 75% at 0% 0%, rgba(37, 99, 235, 0.34) 0%, rgba(37, 99, 235, 0) 62%),
+    var(--sm-hero);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 24px 44px -24px rgba(7, 20, 43, 0.7);
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="budget"] .sm-detail-hero { border-color: rgba(94, 200, 245, 0.18); }
+.sm-root [data-sm-screen="budget"] .sm-detail-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset-block-start: -5rem;
+  inset-inline-end: -4.5rem;
+  inline-size: 13rem;
+  block-size: 13rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.75rem rgba(255, 255, 255, 0.025), 0 0 0 3.5rem rgba(255, 255, 255, 0.015);
+  pointer-events: none;
+}
+.sm-root [data-sm-screen="budget"] .sm-detail-hero .sm-card-title { font-size: 1.125rem; font-weight: 800; }
+.sm-root [data-sm-screen="budget"] .sm-detail-hero .sm-balance-label { margin-block-start: 0.5rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #a9b9da; }
+.sm-root [data-sm-screen="budget"] .sm-detail-hero .sm-balance-label:lang(ar) { letter-spacing: 0; text-transform: none; font-size: 0.8125rem; }
+.sm-root [data-sm-screen="budget"] .sm-detail-hero .sm-hero-money { font-size: clamp(2.25rem, 1.6rem + 3.2vw, 2.75rem); }
+.sm-root [data-sm-screen="budget"] .sm-detail-hero .sm-progress-track { block-size: 0.5rem; background: rgba(255, 255, 255, 0.14); }
+.sm-root [data-sm-screen="budget"] .sm-detail-hero .sm-progress-text { color: #ffffff; }
+.sm-root [data-sm-screen="budget"] .sm-detail-hero .sm-hero-note { font-size: 0.8125rem; }
+.sm-root [data-sm-screen="budget"] .sm-detail-hero .sm-hero-note[data-sm-hint] { color: #dbe4f7; font-weight: 600; }
+.sm-root [data-sm-screen="budget"] .sm-detail-hero .sm-hero-note:last-child { padding-block-start: 0.75rem; border-block-start: 1px solid rgba(255, 255, 255, 0.1); }
+
+/* Spent and remaining under the bar: two figures side by side on a glass panel. */
+.sm-root [data-sm-screen="budget"] .sm-budget-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 7rem), 1fr));
+  gap: 0.5rem 0.75rem;
+  margin: 0.25rem 0 0;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--sm-radius-md);
+  background: rgba(255, 255, 255, 0.06);
+}
+.sm-root [data-sm-screen="budget"] .sm-budget-figures > div { display: grid; gap: 0.125rem; min-inline-size: 0; }
+.sm-root [data-sm-screen="budget"] .sm-budget-figures dt { margin: 0; color: #a9b9da; font-size: 0.75rem; font-weight: 700; }
+.sm-root [data-sm-screen="budget"] .sm-budget-figures dd { margin: 0; min-inline-size: 0; font-size: 1.125rem; font-weight: 800; overflow-wrap: anywhere; }
+.sm-root [data-sm-screen="budget"] .sm-budget-figures .sm-money { color: #ffffff; }
+.sm-root [data-sm-screen="budget"] .sm-budget-figures .sm-money-negative { color: #ffb4a8; }
+
+/* Progress: label / value lines with hairlines, then the way to this budget's expenses as a tile. */
+.sm-root [data-sm-screen="budget"] .sm-stats-stacked { gap: 0; }
+.sm-root [data-sm-screen="budget"] .sm-stats-stacked .sm-stat { align-items: center; min-block-size: 2.75rem; padding-block: 0.5rem; }
+.sm-root [data-sm-screen="budget"] .sm-stats-stacked .sm-stat + .sm-stat { border-block-start: 1px solid color-mix(in srgb, var(--sm-border) 60%, transparent); }
+.sm-root [data-sm-screen="budget"] .sm-stats-stacked .sm-stat dt { font-size: 0.8125rem; font-weight: 600; }
+.sm-root [data-sm-screen="budget"] .sm-stats-stacked .sm-stat dd { font-weight: 700; }
+.sm-root [data-sm-screen="budget"] [data-sm-action="budget-expenses"],
+.sm-root [data-sm-screen="budget"] .sm-draft-links .sm-link-row {
+  padding-inline: 0.875rem;
+  border: 1px solid color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: var(--sm-radius-md);
+  background: color-mix(in srgb, var(--sm-surface-2) 55%, var(--sm-surface));
+  transition: border-color 0.18s ease;
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="budget"] [data-sm-action="budget-expenses"],
+:root[data-theme="dark"] .sm-root [data-sm-screen="budget"] .sm-draft-links .sm-link-row { border-color: rgba(255, 255, 255, 0.08); background: var(--sm-surface-2); }
+.sm-root [data-sm-screen="budget"] [data-sm-action="budget-expenses"]:hover,
+.sm-root [data-sm-screen="budget"] .sm-draft-links .sm-link-row:hover { border-color: color-mix(in srgb, var(--sm-blue) 40%, var(--sm-border)); }
+.sm-root [data-sm-screen="budget"] [data-sm-action="budget-expenses"] .sm-row-title { font-size: 0.9375rem; font-weight: 700; color: var(--sm-text); }
+.sm-root [data-sm-screen="budget"] [data-sm-action="budget-expenses"] .sm-row-meta { font-size: 0.8125rem; color: var(--sm-muted); }
+.sm-root [data-sm-screen="budget"] .sm-draft-links { gap: 0.5rem; }
+
+/* Entrance: the cards rise in once, quickly. */
+@keyframes sm-bud-rise {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to { opacity: 1; transform: none; }
+}
+.sm-root [data-sm-screen="budgets"] > .sm-card,
+.sm-root [data-sm-screen="budget"] > .sm-card { animation: sm-bud-rise 0.34s var(--sm-bud-ease) both; }
+.sm-root [data-sm-screen="budget"] > .sm-card:nth-of-type(2) { animation-delay: 0.04s; }
+.sm-root [data-sm-screen="budget"] > .sm-card:nth-of-type(n + 3) { animation-delay: 0.08s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sm-root [data-sm-screen="budgets"] > .sm-card,
+  .sm-root [data-sm-screen="budget"] > .sm-card { animation: none; }
+  .sm-root [data-sm-screen="budget"] [data-sm-action="budget-expenses"],
+  .sm-root [data-sm-screen="budget"] .sm-draft-links .sm-link-row { transition: none; }
+}
+
+/* ---------- Mobile Savings goals and a goal, premium refinement ----------
+   planning/MobileGoals.jsx ([data-sm-screen="goals"]) and planning/MobileGoalDetail.jsx ([data-sm-screen="goal"]).
+   The same finish as Home, Activity, Accounts and Budgets; presentation only (no request, figure, filter,
+   pagination or link changes). Scoped to those two screens: Budgets, Recurring and Home's planning cards, which
+   share .sm-plan-row, .sm-plan-figures and .sm-progress, are unchanged. An achieved goal is told apart by the
+   backend's own status word (data-sm-status / data-sm-progress), never by comparing two figures. */
+.sm-root [data-sm-screen="goals"],
+.sm-root [data-sm-screen="goal"] {
+  --sm-goal-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sm-goal-card-shadow: 0 1px 2px rgba(7, 20, 43, 0.04), 0 14px 30px -20px rgba(7, 20, 43, 0.26);
+  --sm-goal-done: #0f7a55;
+  --sm-goal-done-soft: #e3f5ec;
+  gap: 1.125rem;
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="goals"],
+:root[data-theme="dark"] .sm-root [data-sm-screen="goal"] {
+  --sm-goal-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 36px -20px rgba(0, 0, 0, 0.7);
+  --sm-goal-done: #5fd6a6;
+  --sm-goal-done-soft: #0f2f25;
+}
+.sm-root [data-sm-screen="goals"] .sm-card:not(.sm-plan-filters),
+.sm-root [data-sm-screen="goal"] .sm-card {
+  border-color: color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: var(--sm-radius-lg);
+  box-shadow: var(--sm-goal-card-shadow);
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="goals"] .sm-card:not(.sm-plan-filters),
+:root[data-theme="dark"] .sm-root [data-sm-screen="goal"] .sm-card { border-color: rgba(255, 255, 255, 0.07); }
+.sm-root [data-sm-screen="goal"] .sm-card-title { font-size: 1rem; font-weight: 800; }
+
+/* ----- The list ----- */
+.sm-root [data-sm-screen="goals"] .sm-plan-list { padding-block: 0.25rem; }
+.sm-root [data-sm-screen="goals"] .sm-plan-list > li + li { border-block-start-color: color-mix(in srgb, var(--sm-border) 60%, transparent); }
+.sm-root [data-sm-screen="goals"] .sm-plan-row { padding-block: 1rem; }
+.sm-root [data-sm-screen="goals"] .sm-plan-row .sm-row-main { gap: 0.5rem; }
+.sm-root [data-sm-screen="goals"] .sm-plan-row .sm-row-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+/* When: the target date and days left, two quiet items on one line. */
+.sm-root [data-sm-screen="goals"] .sm-goal-when { display: flex; flex-wrap: wrap; gap: 0.25rem 0.875rem; font-size: 0.8125rem; }
+.sm-root [data-sm-screen="goals"] .sm-goal-when > span { white-space: nowrap; }
+.sm-root [data-sm-screen="goals"] .sm-goal-when bdi { color: var(--sm-text); font-weight: 700; }
+.sm-root [data-sm-screen="goals"] .sm-plan-row .sm-progress-track { block-size: 0.5rem; background: color-mix(in srgb, var(--sm-border) 80%, transparent); }
+.sm-root [data-sm-screen="goals"] .sm-plan-row .sm-progress-text { font-size: 0.8125rem; }
+
+/* Saved, target and remaining as label / figure lines on a tinted panel; saved, first, is emphasised. */
+.sm-root [data-sm-screen="goals"] .sm-plan-figures {
+  display: grid;
+  justify-self: stretch;
+  inline-size: 100%;
+  gap: 0;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--sm-radius-md);
+  background: color-mix(in srgb, var(--sm-surface-2) 70%, var(--sm-surface));
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="goals"] .sm-plan-figures { background: var(--sm-surface-2); }
+.sm-root [data-sm-screen="goals"] .sm-plan-figures > span { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 0.75rem; min-inline-size: 0; padding-block: 0.3125rem; font-size: 0.8125rem; font-weight: 600; }
+.sm-root [data-sm-screen="goals"] .sm-plan-figures > span + span { border-block-start: 1px solid color-mix(in srgb, var(--sm-border) 70%, transparent); }
+.sm-root [data-sm-screen="goals"] .sm-plan-figures .sm-money { color: var(--sm-text); font-size: 0.9375rem; font-weight: 800; overflow-wrap: anywhere; }
+.sm-root [data-sm-screen="goals"] .sm-plan-figures [data-sm-figure="saved"] .sm-money { font-size: 1rem; }
+
+/* Achieved: a green bar, chip and panel edge, from the backend's status word. */
+.sm-root [data-sm-screen="goals"] .sm-plan-row[data-sm-status="achieved"] .sm-progress-fill,
+.sm-root [data-sm-screen="goals"] .sm-plan-row[data-sm-progress="achieved"] .sm-progress-fill { background: var(--sm-goal-done); }
+:root[data-theme="dark"] .sm-root [data-sm-screen="goals"] .sm-plan-row[data-sm-status="achieved"] .sm-progress-fill,
+:root[data-theme="dark"] .sm-root [data-sm-screen="goals"] .sm-plan-row[data-sm-progress="achieved"] .sm-progress-fill,
+.sm-root [data-sm-screen="goal"] .sm-detail-hero[data-sm-status="achieved"] .sm-progress-fill,
+:root[data-theme="dark"] .sm-root [data-sm-screen="goal"] .sm-detail-hero[data-sm-status="achieved"] .sm-progress-fill { background: linear-gradient(90deg, #34d399, #6ee7b7); }
+.sm-root [data-sm-screen="goals"] .sm-plan-chip[data-sm-state="achieved"] { color: var(--sm-goal-done); background: var(--sm-goal-done-soft); border-color: color-mix(in srgb, var(--sm-goal-done) 45%, transparent); }
+.sm-root [data-sm-screen="goals"] .sm-plan-row[data-sm-status="achieved"] .sm-plan-figures { box-shadow: inset 3px 0 0 var(--sm-goal-done); }
+.sm-root [data-sm-screen="goals"] .sm-plan-row[data-sm-status="achieved"] .sm-plan-figures:lang(ar) { box-shadow: inset -3px 0 0 var(--sm-goal-done); }
+/* Paused and archived read as quieter; a passed deadline is a warning chip. */
+.sm-root [data-sm-screen="goals"] .sm-plan-row[data-sm-status="paused"] .sm-progress-fill,
+.sm-root [data-sm-screen="goals"] .sm-plan-row[data-sm-status="archived"] .sm-progress-fill,
+:root[data-theme="dark"] .sm-root [data-sm-screen="goals"] .sm-plan-row[data-sm-status="paused"] .sm-progress-fill,
+:root[data-theme="dark"] .sm-root [data-sm-screen="goals"] .sm-plan-row[data-sm-status="archived"] .sm-progress-fill { background: var(--sm-muted); }
+.sm-root [data-sm-screen="goals"] .sm-chip[data-sm-deadline="passed"],
+.sm-root [data-sm-screen="goal"] .sm-chip[data-sm-deadline="passed"] { color: #7a4b00; background: #fff3d6; border-color: #e3b04a; }
+:root[data-theme="dark"] .sm-root [data-sm-screen="goals"] .sm-chip[data-sm-deadline="passed"],
+:root[data-theme="dark"] .sm-root [data-sm-screen="goal"] .sm-chip[data-sm-deadline="passed"] { color: #ffd98a; background: #3a2a05; border-color: #8a6a1d; }
+
+/* Load more. */
+.sm-root [data-sm-screen="goals"] [data-sm-more] { inline-size: 100%; min-block-size: 3rem; border-radius: 999px; color: var(--sm-nav-active); background: var(--sm-surface); box-shadow: var(--sm-shadow-xs); }
+
+/* ----- A goal: the summary is the focus ----- */
+.sm-root [data-sm-screen="goal"] .sm-detail-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  gap: 0.625rem;
+  padding: 1.5rem 1.5rem 1.375rem;
+  border-radius: var(--sm-radius-xl);
+  background:
+    radial-gradient(90% 75% at 0% 0%, rgba(37, 99, 235, 0.34) 0%, rgba(37, 99, 235, 0) 62%),
+    var(--sm-hero);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 24px 44px -24px rgba(7, 20, 43, 0.7);
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="goal"] .sm-detail-hero { border-color: rgba(94, 200, 245, 0.18); }
+.sm-root [data-sm-screen="goal"] .sm-detail-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset-block-start: -5rem;
+  inset-inline-end: -4.5rem;
+  inline-size: 13rem;
+  block-size: 13rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.75rem rgba(255, 255, 255, 0.025), 0 0 0 3.5rem rgba(255, 255, 255, 0.015);
+  pointer-events: none;
+}
+.sm-root [data-sm-screen="goal"] .sm-detail-hero .sm-card-title { font-size: 1.125rem; font-weight: 800; }
+.sm-root [data-sm-screen="goal"] .sm-detail-hero .sm-balance-label { margin-block-start: 0.5rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #a9b9da; }
+.sm-root [data-sm-screen="goal"] .sm-detail-hero .sm-balance-label:lang(ar) { letter-spacing: 0; text-transform: none; font-size: 0.8125rem; }
+.sm-root [data-sm-screen="goal"] .sm-detail-hero .sm-hero-money { font-size: clamp(2.25rem, 1.6rem + 3.2vw, 2.75rem); }
+.sm-root [data-sm-screen="goal"] .sm-detail-hero .sm-progress-track { block-size: 0.5rem; background: rgba(255, 255, 255, 0.14); }
+.sm-root [data-sm-screen="goal"] .sm-detail-hero .sm-progress-text { color: #ffffff; }
+.sm-root [data-sm-screen="goal"] .sm-detail-hero .sm-plan-chip[data-sm-state="achieved"] { color: #06291c; background: #6ee7b7; border-color: #6ee7b7; }
+.sm-root [data-sm-screen="goal"] .sm-detail-hero .sm-chip[data-sm-deadline="passed"] { color: #3a2a05; background: #ffd98a; border-color: #ffd98a; }
+
+/* Target and remaining under the bar: two figures side by side on a glass panel. */
+.sm-root [data-sm-screen="goal"] .sm-goal-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 7rem), 1fr));
+  gap: 0.5rem 0.75rem;
+  margin: 0.25rem 0 0;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--sm-radius-md);
+  background: rgba(255, 255, 255, 0.06);
+}
+.sm-root [data-sm-screen="goal"] .sm-goal-figures > div { display: grid; gap: 0.125rem; min-inline-size: 0; }
+.sm-root [data-sm-screen="goal"] .sm-goal-figures dt { margin: 0; color: #a9b9da; font-size: 0.75rem; font-weight: 700; }
+.sm-root [data-sm-screen="goal"] .sm-goal-figures dd { margin: 0; min-inline-size: 0; font-size: 1.125rem; font-weight: 800; overflow-wrap: anywhere; }
+.sm-root [data-sm-screen="goal"] .sm-goal-figures .sm-money { color: #ffffff; }
+
+/* When: the target date and days left under a hairline. */
+.sm-root [data-sm-screen="goal"] .sm-goal-when {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem 1.25rem;
+  margin: 0.25rem 0 0;
+  padding-block-start: 0.75rem;
+  border-block-start: 1px solid rgba(255, 255, 255, 0.1);
+}
+.sm-root [data-sm-screen="goal"] .sm-goal-when > div { display: flex; align-items: baseline; gap: 0.375rem; min-inline-size: 0; }
+.sm-root [data-sm-screen="goal"] .sm-goal-when dt { margin: 0; color: #a9b9da; font-size: 0.8125rem; font-weight: 600; }
+.sm-root [data-sm-screen="goal"] .sm-goal-when dd { margin: 0; color: #ffffff; font-size: 0.875rem; font-weight: 700; }
+
+/* Progress: label / value lines with hairlines. */
+.sm-root [data-sm-screen="goal"] .sm-stats-stacked { gap: 0; }
+.sm-root [data-sm-screen="goal"] .sm-stats-stacked .sm-stat { align-items: center; min-block-size: 2.75rem; padding-block: 0.5rem; }
+.sm-root [data-sm-screen="goal"] .sm-stats-stacked .sm-stat + .sm-stat { border-block-start: 1px solid color-mix(in srgb, var(--sm-border) 60%, transparent); }
+.sm-root [data-sm-screen="goal"] .sm-stats-stacked .sm-stat dt { font-size: 0.8125rem; font-weight: 600; }
+.sm-root [data-sm-screen="goal"] .sm-stats-stacked .sm-stat dd { font-weight: 700; }
+
+/* Money movements: the tabs as a segmented control, rows with hairlines, paging as pills. */
+.sm-root [data-sm-screen="goal"] [data-sm-section="goal-movements"] .sm-tx-list > li + li { border-block-start-color: color-mix(in srgb, var(--sm-border) 60%, transparent); }
+.sm-root [data-sm-screen="goal"] [data-sm-section="goal-movements"] .sm-row-title { font-weight: 700; }
+.sm-root [data-sm-screen="goal"] [data-sm-section="goal-movements"] .sm-movement-date { font-size: 0.75rem; }
+.sm-root [data-sm-screen="goal"] [data-sm-section="goal-movements"] .sm-tx-icon[data-sm-direction="income"] { color: var(--sm-goal-done); background: var(--sm-goal-done-soft); }
+.sm-root [data-sm-screen="goal"] [data-sm-section="goal-movements"] .sm-paged-nav .sm-card-link { padding-inline: 0.875rem; border: 1px solid color-mix(in srgb, var(--sm-border) 72%, transparent); border-radius: 999px; }
+
+/* Links: the write tiles and the full-version link as bordered tiles. */
+.sm-root [data-sm-screen="goal"] .sm-draft-links { gap: 0.5rem; }
+.sm-root [data-sm-screen="goal"] .sm-draft-links .sm-link-row {
+  padding-inline: 0.875rem;
+  border: 1px solid color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: var(--sm-radius-md);
+  background: color-mix(in srgb, var(--sm-surface-2) 55%, var(--sm-surface));
+  transition: border-color 0.18s ease;
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="goal"] .sm-draft-links .sm-link-row { border-color: rgba(255, 255, 255, 0.08); background: var(--sm-surface-2); }
+.sm-root [data-sm-screen="goal"] .sm-draft-links .sm-link-row:hover { border-color: color-mix(in srgb, var(--sm-blue) 40%, var(--sm-border)); }
+
+/* Entrance: the cards rise in once, quickly. */
+@keyframes sm-goal-rise {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to { opacity: 1; transform: none; }
+}
+.sm-root [data-sm-screen="goals"] > .sm-card,
+.sm-root [data-sm-screen="goal"] > .sm-card { animation: sm-goal-rise 0.34s var(--sm-goal-ease) both; }
+.sm-root [data-sm-screen="goal"] > .sm-card:nth-of-type(2) { animation-delay: 0.04s; }
+.sm-root [data-sm-screen="goal"] > .sm-card:nth-of-type(n + 3) { animation-delay: 0.08s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sm-root [data-sm-screen="goals"] > .sm-card,
+  .sm-root [data-sm-screen="goal"] > .sm-card { animation: none; }
+  .sm-root [data-sm-screen="goal"] .sm-draft-links .sm-link-row { transition: none; }
+}
+
+/* ---------- Mobile Debts and a debt, premium refinement ----------
+   debts/MobileDebts.jsx ([data-sm-screen="debts"]) and debts/MobileDebtDetail.jsx ([data-sm-screen="debt"]).
+   The same finish as Home, Activity, Accounts, Budgets and Goals; presentation only (no request, figure, filter,
+   pagination or link changes). Scoped to those two screens. Settled, partly paid and overdue are told apart by the
+   backend's own status word (data-sm-status), never from the dates or by comparing figures. There is no progress
+   bar: the API sends no paid percentage, and Mobile does not divide one amount by another. */
+.sm-root [data-sm-screen="debts"],
+.sm-root [data-sm-screen="debt"] {
+  --sm-debt-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sm-debt-card-shadow: 0 1px 2px rgba(7, 20, 43, 0.04), 0 14px 30px -20px rgba(7, 20, 43, 0.26);
+  --sm-debt-good: #0f7a55;
+  --sm-debt-good-soft: #e3f5ec;
+  gap: 1.125rem;
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="debts"],
+:root[data-theme="dark"] .sm-root [data-sm-screen="debt"] {
+  --sm-debt-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 36px -20px rgba(0, 0, 0, 0.7);
+  --sm-debt-good: #5fd6a6;
+  --sm-debt-good-soft: #0f2f25;
+}
+.sm-root [data-sm-screen="debts"] .sm-card:not(.sm-plan-filters),
+.sm-root [data-sm-screen="debt"] .sm-card {
+  border-color: color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: var(--sm-radius-lg);
+  box-shadow: var(--sm-debt-card-shadow);
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="debts"] .sm-card:not(.sm-plan-filters),
+:root[data-theme="dark"] .sm-root [data-sm-screen="debt"] .sm-card { border-color: rgba(255, 255, 255, 0.07); }
+.sm-root [data-sm-screen="debts"] .sm-card-title,
+.sm-root [data-sm-screen="debt"] .sm-card-title { font-size: 1rem; font-weight: 800; }
+
+/* ----- Where you stand: one tinted block per currency ----- */
+.sm-root [data-sm-screen="debts"] .sm-debt-currency {
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: var(--sm-radius-md);
+  background: color-mix(in srgb, var(--sm-surface-2) 60%, var(--sm-surface));
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="debts"] .sm-debt-currency { border-color: rgba(255, 255, 255, 0.07); background: var(--sm-surface-2); }
+.sm-root [data-sm-screen="debts"] .sm-debt-currency-code { font-weight: 800; color: var(--sm-nav-active); }
+.sm-root [data-sm-screen="debts"] .sm-debt-side { border-block-end-color: color-mix(in srgb, var(--sm-border) 70%, transparent); }
+.sm-root [data-sm-screen="debts"] .sm-debt-side-money { font-weight: 800; }
+.sm-root [data-sm-screen="debts"] .sm-debt-net { padding-block-start: 0.125rem; }
+.sm-root [data-sm-screen="debts"] .sm-debt-net-money { font-size: 1.125rem; font-weight: 800; }
+.sm-root [data-sm-screen="debts"] .sm-debt-net[data-sm-net="positive"] .sm-debt-net-money { color: var(--sm-debt-good); }
+
+/* ----- The list ----- */
+.sm-root [data-sm-screen="debts"] .sm-plan-list { padding-block: 0.25rem; }
+.sm-root [data-sm-screen="debts"] .sm-plan-list > li + li { border-block-start-color: color-mix(in srgb, var(--sm-border) 60%, transparent); }
+.sm-root [data-sm-screen="debts"] .sm-plan-row { padding-block: 1rem; }
+.sm-root [data-sm-screen="debts"] .sm-plan-row .sm-row-main { gap: 0.5rem; }
+.sm-root [data-sm-screen="debts"] .sm-plan-row .sm-row-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.sm-root [data-sm-screen="debts"] .sm-plan-row .sm-row-meta { font-size: 0.8125rem; }
+
+/* Outstanding, original and paid as label / figure lines on a tinted panel; the outstanding amount comes first and largest. */
+.sm-root [data-sm-screen="debts"] .sm-plan-figures {
+  display: grid;
+  justify-self: stretch;
+  inline-size: 100%;
+  gap: 0;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--sm-radius-md);
+  background: color-mix(in srgb, var(--sm-surface-2) 70%, var(--sm-surface));
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="debts"] .sm-plan-figures { background: var(--sm-surface-2); }
+.sm-root [data-sm-screen="debts"] .sm-plan-figures > span { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 0.75rem; min-inline-size: 0; padding-block: 0.3125rem; font-size: 0.8125rem; font-weight: 600; }
+.sm-root [data-sm-screen="debts"] .sm-plan-figures > span + span { border-block-start: 1px solid color-mix(in srgb, var(--sm-border) 70%, transparent); }
+.sm-root [data-sm-screen="debts"] .sm-plan-figures .sm-money { color: var(--sm-text); font-size: 0.9375rem; font-weight: 700; overflow-wrap: anywhere; }
+.sm-root [data-sm-screen="debts"] .sm-plan-figures [data-sm-figure="remaining"] { padding-block: 0.5rem; color: var(--sm-text); font-weight: 700; }
+.sm-root [data-sm-screen="debts"] .sm-plan-figures [data-sm-figure="remaining"] .sm-money { font-size: 1.125rem; font-weight: 800; }
+
+/* Status: an edge on the figures panel (the inline-start side, the right in Arabic) from the backend's word. */
+.sm-root [data-sm-screen="debts"] .sm-plan-row[data-sm-status="overdue"] .sm-plan-figures { box-shadow: inset 3px 0 0 var(--sm-neg); }
+.sm-root [data-sm-screen="debts"] .sm-plan-row[data-sm-status="overdue"] .sm-plan-figures:lang(ar) { box-shadow: inset -3px 0 0 var(--sm-neg); }
+.sm-root [data-sm-screen="debts"] .sm-plan-row[data-sm-status="overdue"] [data-sm-figure="remaining"] .sm-money { color: var(--sm-neg); }
+.sm-root [data-sm-screen="debts"] .sm-plan-row[data-sm-status="paid"] .sm-plan-figures { box-shadow: inset 3px 0 0 var(--sm-debt-good); }
+.sm-root [data-sm-screen="debts"] .sm-plan-row[data-sm-status="paid"] .sm-plan-figures:lang(ar) { box-shadow: inset -3px 0 0 var(--sm-debt-good); }
+.sm-root [data-sm-screen="debts"] .sm-plan-row[data-sm-status="archived"] .sm-plan-figures { opacity: 0.75; }
+.sm-root [data-sm-screen="debts"] .sm-plan-chip[data-sm-state="paid"],
+.sm-root [data-sm-screen="debt"] [data-sm-section="debt-payments"] .sm-plan-chip[data-sm-state="posted"] { color: var(--sm-debt-good); background: var(--sm-debt-good-soft); border-color: color-mix(in srgb, var(--sm-debt-good) 45%, transparent); }
+
+/* Load more. */
+.sm-root [data-sm-screen="debts"] [data-sm-more] { inline-size: 100%; min-block-size: 3rem; border-radius: 999px; color: var(--sm-nav-active); background: var(--sm-surface); box-shadow: var(--sm-shadow-xs); }
+
+/* ----- A debt: the summary is the focus ----- */
+.sm-root [data-sm-screen="debt"] .sm-detail-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  gap: 0.625rem;
+  padding: 1.5rem 1.5rem 1.375rem;
+  border-radius: var(--sm-radius-xl);
+  background:
+    radial-gradient(90% 75% at 0% 0%, rgba(37, 99, 235, 0.34) 0%, rgba(37, 99, 235, 0) 62%),
+    var(--sm-hero);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 24px 44px -24px rgba(7, 20, 43, 0.7);
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="debt"] .sm-detail-hero { border-color: rgba(94, 200, 245, 0.18); }
+.sm-root [data-sm-screen="debt"] .sm-detail-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset-block-start: -5rem;
+  inset-inline-end: -4.5rem;
+  inline-size: 13rem;
+  block-size: 13rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.75rem rgba(255, 255, 255, 0.025), 0 0 0 3.5rem rgba(255, 255, 255, 0.015);
+  pointer-events: none;
+}
+.sm-root [data-sm-screen="debt"] .sm-detail-hero .sm-card-title { font-size: 1.125rem; font-weight: 800; }
+.sm-root [data-sm-screen="debt"] .sm-detail-hero .sm-balance-label { margin-block-start: 0.5rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #a9b9da; }
+.sm-root [data-sm-screen="debt"] .sm-detail-hero .sm-balance-label:lang(ar) { letter-spacing: 0; text-transform: none; font-size: 0.8125rem; }
+.sm-root [data-sm-screen="debt"] .sm-detail-hero .sm-hero-money { font-size: clamp(2.25rem, 1.6rem + 3.2vw, 2.75rem); overflow-wrap: anywhere; }
+.sm-root [data-sm-screen="debt"] .sm-detail-hero > .sm-text.sm-fine { margin: 0; color: #8fa1c4; }
+/* The status chip in the summary keeps the backend's meaning: settled green, partly paid amber, overdue red. */
+.sm-root [data-sm-screen="debt"] .sm-detail-hero .sm-plan-chip[data-sm-state="paid"] { color: #06291c; background: #6ee7b7; border-color: #6ee7b7; }
+.sm-root [data-sm-screen="debt"] .sm-detail-hero .sm-plan-chip[data-sm-state="partially_paid"] { color: #3a2a05; background: #ffd98a; border-color: #ffd98a; }
+.sm-root [data-sm-screen="debt"] .sm-detail-hero .sm-plan-chip[data-sm-state="overdue"] { color: #ffffff; background: #e5484d; border-color: #e5484d; }
+.sm-root [data-sm-screen="debt"] .sm-detail-hero .sm-plan-chip[data-sm-state="archived"] { color: #dbe4f7; background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.18); }
+.sm-root [data-sm-screen="debt"] .sm-detail-hero[data-sm-status="overdue"] .sm-hero-money .sm-money-number { color: #ffb4a8; }
+
+/* Original and paid: two figures side by side on a glass panel. */
+.sm-root [data-sm-screen="debt"] .sm-debt-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 7rem), 1fr));
+  gap: 0.5rem 0.75rem;
+  margin: 0.25rem 0 0;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--sm-radius-md);
+  background: rgba(255, 255, 255, 0.06);
+}
+.sm-root [data-sm-screen="debt"] .sm-debt-figures > div { display: grid; gap: 0.125rem; min-inline-size: 0; }
+.sm-root [data-sm-screen="debt"] .sm-debt-figures dt { margin: 0; color: #a9b9da; font-size: 0.75rem; font-weight: 700; }
+.sm-root [data-sm-screen="debt"] .sm-debt-figures dd { margin: 0; min-inline-size: 0; font-size: 1.125rem; font-weight: 800; overflow-wrap: anywhere; }
+.sm-root [data-sm-screen="debt"] .sm-debt-figures .sm-money { color: #ffffff; }
+
+/* When: the due date and the countdown under a hairline. */
+.sm-root [data-sm-screen="debt"] .sm-debt-when {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem 1.25rem;
+  margin: 0.25rem 0 0;
+  padding-block-start: 0.75rem;
+  border-block-start: 1px solid rgba(255, 255, 255, 0.1);
+}
+.sm-root [data-sm-screen="debt"] .sm-debt-when .sm-stat { display: flex; align-items: baseline; gap: 0.375rem; min-inline-size: 0; padding: 0; border: 0; }
+.sm-root [data-sm-screen="debt"] .sm-debt-when dt { margin: 0; color: #a9b9da; font-size: 0.8125rem; font-weight: 600; }
+.sm-root [data-sm-screen="debt"] .sm-debt-when dd { margin: 0; color: #ffffff; font-size: 0.875rem; font-weight: 700; }
+.sm-root [data-sm-screen="debt"] .sm-detail-hero[data-sm-status="overdue"] .sm-debt-when dd { color: #ffb4a8; }
+
+/* The state notes (settled, overdue, archived) as a soft callout. */
+.sm-root [data-sm-screen="debt"] [data-sm-note^="debt-"],
+:root[data-theme="dark"] .sm-root [data-sm-screen="debt"] [data-sm-note^="debt-"] { border-inline-start: 3px solid var(--sm-blue); }
+.sm-root [data-sm-screen="debt"] [data-sm-note="debt-overdue"],
+:root[data-theme="dark"] .sm-root [data-sm-screen="debt"] [data-sm-note="debt-overdue"] { border-inline-start-color: var(--sm-neg); }
+.sm-root [data-sm-screen="debt"] [data-sm-note="debt-paid"],
+:root[data-theme="dark"] .sm-root [data-sm-screen="debt"] [data-sm-note="debt-paid"] { border-inline-start-color: var(--sm-debt-good); }
+
+/* Details: label / value lines with hairlines. */
+.sm-root [data-sm-screen="debt"] .sm-stats-stacked { gap: 0; }
+.sm-root [data-sm-screen="debt"] .sm-stats-stacked .sm-stat { align-items: center; min-block-size: 2.75rem; padding-block: 0.5rem; }
+.sm-root [data-sm-screen="debt"] .sm-stats-stacked .sm-stat + .sm-stat { border-block-start: 1px solid color-mix(in srgb, var(--sm-border) 60%, transparent); }
+.sm-root [data-sm-screen="debt"] .sm-stats-stacked .sm-stat dt { font-size: 0.8125rem; font-weight: 600; }
+.sm-root [data-sm-screen="debt"] .sm-stats-stacked .sm-stat dd { font-weight: 700; }
+
+/* Payments: the amount bold, hairlines between payments. */
+.sm-root [data-sm-screen="debt"] [data-sm-section="debt-payments"] .sm-list > li + li { border-block-start: 1px solid color-mix(in srgb, var(--sm-border) 60%, transparent); }
+.sm-root [data-sm-screen="debt"] [data-sm-section="debt-payments"] .sm-row { padding-block: 0.875rem; }
+.sm-root [data-sm-screen="debt"] [data-sm-section="debt-payments"] .sm-row-title .sm-money { font-size: 1.0625rem; font-weight: 800; }
+.sm-root [data-sm-screen="debt"] [data-sm-section="debt-payments"] .sm-row-meta { font-size: 0.8125rem; }
+
+/* Links: the write tiles as bordered tiles (their send stays closed by the write gate). */
+.sm-root [data-sm-screen="debt"] .sm-draft-links { gap: 0.5rem; }
+.sm-root [data-sm-screen="debt"] .sm-draft-links .sm-link-row {
+  padding-inline: 0.875rem;
+  border: 1px solid color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: var(--sm-radius-md);
+  background: color-mix(in srgb, var(--sm-surface-2) 55%, var(--sm-surface));
+  transition: border-color 0.18s ease;
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="debt"] .sm-draft-links .sm-link-row { border-color: rgba(255, 255, 255, 0.08); background: var(--sm-surface-2); }
+.sm-root [data-sm-screen="debt"] .sm-draft-links .sm-link-row:hover { border-color: color-mix(in srgb, var(--sm-blue) 40%, var(--sm-border)); }
+
+/* Entrance: the cards rise in once, quickly. */
+@keyframes sm-debt-rise {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to { opacity: 1; transform: none; }
+}
+.sm-root [data-sm-screen="debts"] > .sm-card,
+.sm-root [data-sm-screen="debt"] > .sm-card { animation: sm-debt-rise 0.34s var(--sm-debt-ease) both; }
+.sm-root [data-sm-screen="debt"] > .sm-card:nth-of-type(2) { animation-delay: 0.04s; }
+.sm-root [data-sm-screen="debt"] > .sm-card:nth-of-type(n + 3) { animation-delay: 0.08s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sm-root [data-sm-screen="debts"] > .sm-card,
+  .sm-root [data-sm-screen="debt"] > .sm-card { animation: none; }
+  .sm-root [data-sm-screen="debt"] .sm-draft-links .sm-link-row { transition: none; }
+}
+
+/* ---------- Mobile Profile and settings, premium refinement ----------
+   settings/MobileProfile.jsx ([data-sm-screen="profile"]) and its profile and password forms. The same finish as Home,
+   Activity, Accounts, Budgets, Goals and Debts; presentation only (no request, control, link or behaviour change).
+   Scoped to the profile screen: More, which shares .sm-more-group and .sm-group-label, is unchanged. */
+.sm-root [data-sm-screen="profile"] {
+  --sm-prof-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sm-prof-card-shadow: 0 1px 2px rgba(7, 20, 43, 0.04), 0 14px 30px -20px rgba(7, 20, 43, 0.26);
+  gap: 1.375rem;
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="profile"] {
+  --sm-prof-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 36px -20px rgba(0, 0, 0, 0.7);
+}
+
+/* ----- Who is signed in: the navy header ----- */
+.sm-root [data-sm-screen="profile"] .sm-profile-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  gap: 1.125rem;
+  padding: 1.5rem;
+  border-color: transparent;
+  border-radius: var(--sm-radius-xl);
+  color: #ffffff;
+  background:
+    radial-gradient(90% 75% at 0% 0%, rgba(37, 99, 235, 0.34) 0%, rgba(37, 99, 235, 0) 62%),
+    var(--sm-hero);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 24px 44px -24px rgba(7, 20, 43, 0.7);
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="profile"] .sm-profile-hero { border-color: rgba(94, 200, 245, 0.18); }
+.sm-root [data-sm-screen="profile"] .sm-profile-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset-block-start: -5rem;
+  inset-inline-end: -4.5rem;
+  inline-size: 13rem;
+  block-size: 13rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.75rem rgba(255, 255, 255, 0.025), 0 0 0 3.5rem rgba(255, 255, 255, 0.015);
+  pointer-events: none;
+}
+.sm-root [data-sm-screen="profile"] .sm-profile-hero .sm-avatar-large {
+  inline-size: 4rem;
+  block-size: 4rem;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--sm-blue), var(--sm-cyan));
+  font-family: var(--sm-font-heading);
+  font-size: 1.625rem;
+  font-weight: 800;
+  box-shadow: 0 10px 24px -10px rgba(37, 99, 235, 0.8);
+}
+.sm-root [data-sm-screen="profile"] .sm-profile-hero .sm-identity-name { color: #ffffff; font-size: 1.3125rem; font-weight: 800; }
+.sm-root [data-sm-screen="profile"] .sm-profile-hero .sm-identity-email { color: #a9b9da; font-size: 0.875rem; }
+.sm-root [data-sm-screen="profile"] .sm-profile-hero .sm-identity-chip { color: #dbe4f7; background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.18); }
+.sm-root [data-sm-screen="profile"] .sm-profile-hero .sm-identity-chip[data-sm-chip="verified"] { color: #06291c; background: #6ee7b7; border-color: #6ee7b7; }
+.sm-root [data-sm-screen="profile"] .sm-profile-hero .sm-identity-chip[data-sm-chip="unverified"],
+.sm-root [data-sm-screen="profile"] .sm-profile-hero .sm-identity-chip[data-sm-chip="error"] { color: #3a2a05; background: #ffd98a; border-color: #ffd98a; }
+
+/* ----- Groups: an icon before each label, one card each ----- */
+.sm-root [data-sm-screen="profile"] .sm-more-group { gap: 0.625rem; }
+.sm-root [data-sm-screen="profile"] .sm-group-label { display: flex; align-items: center; gap: 0.5rem; color: var(--sm-text); font-size: 0.8125rem; font-weight: 800; }
+.sm-root [data-sm-screen="profile"] .sm-group-label:lang(ar) { letter-spacing: 0; text-transform: none; font-size: 0.875rem; }
+.sm-root [data-sm-screen="profile"] .sm-group-icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border-radius: 0.5rem;
+  color: var(--sm-nav-active);
+  background: color-mix(in srgb, var(--sm-blue) 12%, var(--sm-surface));
+  font-size: 0.9375rem;
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="profile"] .sm-group-icon { color: var(--sm-cyan); background: color-mix(in srgb, var(--sm-cyan) 14%, var(--sm-surface)); }
+.sm-root [data-sm-screen="profile"] .sm-group-card {
+  padding: 0.5rem 1rem;
+  border-color: color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: var(--sm-radius-lg);
+  box-shadow: var(--sm-prof-card-shadow);
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="profile"] .sm-group-card { border-color: rgba(255, 255, 255, 0.07); }
+.sm-root [data-sm-screen="profile"] .sm-group-card > * + * { border-block-start-color: color-mix(in srgb, var(--sm-border) 60%, transparent); }
+
+/* Rows: label / value lines with hairlines, values in a firmer weight. */
+.sm-root [data-sm-screen="profile"] .sm-stats-stacked { gap: 0; }
+.sm-root [data-sm-screen="profile"] .sm-stats-stacked .sm-stat { align-items: center; min-block-size: 2.75rem; padding-block: 0.5rem; }
+.sm-root [data-sm-screen="profile"] .sm-stats-stacked .sm-stat + .sm-stat { border-block-start: 1px solid color-mix(in srgb, var(--sm-border) 60%, transparent); }
+.sm-root [data-sm-screen="profile"] .sm-stats-stacked .sm-stat dt { font-size: 0.8125rem; font-weight: 600; }
+.sm-root [data-sm-screen="profile"] .sm-stats-stacked .sm-stat dd { font-weight: 700; }
+.sm-root [data-sm-screen="profile"] .sm-more-link .sm-row-title { font-size: 0.9375rem; font-weight: 700; }
+.sm-root [data-sm-screen="profile"] .sm-more-link .sm-row-meta { font-size: 0.8125rem; }
+.sm-root [data-sm-screen="profile"] .sm-more-link { transition: background-color 0.18s ease; }
+.sm-root [data-sm-screen="profile"] .sm-more-link:hover { background: color-mix(in srgb, var(--sm-surface-2) 70%, transparent); }
+.sm-root [data-sm-screen="profile"] .sm-setting-link { font-size: 0.875rem; }
+
+/* Notes: a quiet tinted line. */
+.sm-root [data-sm-screen="profile"] .sm-draft-note { padding: 0.625rem 0.75rem; border-radius: var(--sm-radius-md); background: color-mix(in srgb, var(--sm-surface-2) 70%, var(--sm-surface)); font-size: 0.8125rem; }
+:root[data-theme="dark"] .sm-root [data-sm-screen="profile"] .sm-draft-note { background: var(--sm-surface-2); }
+
+/* Sign out: a clear, calm, full-width button in the error colour. */
+.sm-root [data-sm-screen="profile"] .sm-signout { inline-size: 100%; min-block-size: 3rem; border-color: color-mix(in srgb, var(--sm-neg) 40%, var(--sm-border)); border-radius: 999px; color: var(--sm-neg); font-weight: 700; }
+.sm-root [data-sm-screen="profile"] .sm-signout:hover { background: color-mix(in srgb, var(--sm-neg) 8%, var(--sm-surface)); }
+
+/* Entrance: the header and groups rise in once, quickly. */
+@keyframes sm-prof-rise {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to { opacity: 1; transform: none; }
+}
+.sm-root [data-sm-screen="profile"] > .sm-card,
+.sm-root [data-sm-screen="profile"] > .sm-more-group { animation: sm-prof-rise 0.34s var(--sm-prof-ease) both; }
+.sm-root [data-sm-screen="profile"] > .sm-more-group:nth-of-type(n + 2) { animation-delay: 0.04s; }
+.sm-root [data-sm-screen="profile"] > .sm-more-group:nth-of-type(n + 4) { animation-delay: 0.08s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sm-root [data-sm-screen="profile"] > .sm-card,
+  .sm-root [data-sm-screen="profile"] > .sm-more-group { animation: none; }
+  .sm-root [data-sm-screen="profile"] .sm-more-link { transition: none; }
+}
+
+/* ---------- Mobile Recurring and a rule, premium refinement ----------
+   planning/MobileRecurring.jsx ([data-sm-screen="recurring"]) and planning/MobileRecurringDetail.jsx with
+   RuleOccurrences.jsx ([data-sm-screen="rule"]). CSS only, on the existing markup: no recurring component, request,
+   occurrence handling, confirm or skip logic, idempotency or write-gate classification is touched. Every state shown is
+   the backend's own word (data-sm-status, data-sm-overdue, data-sm-state). */
+.sm-root [data-sm-screen="recurring"],
+.sm-root [data-sm-screen="rule"] {
+  --sm-rec-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --sm-rec-card-shadow: 0 1px 2px rgba(7, 20, 43, 0.04), 0 14px 30px -20px rgba(7, 20, 43, 0.26);
+  --sm-rec-good: #0f7a55;
+  --sm-rec-good-soft: #e3f5ec;
+  --sm-rec-pause: #8a5a00;
+  --sm-rec-pause-soft: #fff3d6;
+  gap: 1.125rem;
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="recurring"],
+:root[data-theme="dark"] .sm-root [data-sm-screen="rule"] {
+  --sm-rec-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 36px -20px rgba(0, 0, 0, 0.7);
+  --sm-rec-good: #5fd6a6;
+  --sm-rec-good-soft: #0f2f25;
+  --sm-rec-pause: #ffd98a;
+  --sm-rec-pause-soft: #3a2a05;
+}
+.sm-root [data-sm-screen="recurring"] .sm-card:not(.sm-plan-filters),
+.sm-root [data-sm-screen="rule"] .sm-card {
+  border-color: color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: var(--sm-radius-lg);
+  box-shadow: var(--sm-rec-card-shadow);
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="recurring"] .sm-card:not(.sm-plan-filters),
+:root[data-theme="dark"] .sm-root [data-sm-screen="rule"] .sm-card { border-color: rgba(255, 255, 255, 0.07); }
+.sm-root [data-sm-screen="rule"] .sm-card-title { font-size: 1rem; font-weight: 800; }
+
+/* Rule states in words, coloured: paused amber, completed green, archived grey. */
+.sm-root [data-sm-screen="recurring"] .sm-plan-chip[data-sm-state="paused"],
+.sm-root [data-sm-screen="rule"] .sm-plan-chip[data-sm-state="paused"] { color: var(--sm-rec-pause); background: var(--sm-rec-pause-soft); border-color: color-mix(in srgb, var(--sm-rec-pause) 45%, transparent); }
+.sm-root [data-sm-screen="recurring"] .sm-plan-chip[data-sm-state="completed"],
+.sm-root [data-sm-screen="rule"] .sm-plan-chip[data-sm-state="completed"],
+.sm-root [data-sm-screen="rule"] .sm-plan-chip[data-sm-state="posted"] { color: var(--sm-rec-good); background: var(--sm-rec-good-soft); border-color: color-mix(in srgb, var(--sm-rec-good) 45%, transparent); }
+
+/* ----- The list ----- */
+.sm-root [data-sm-screen="recurring"] .sm-plan-list { padding-block: 0.25rem; }
+.sm-root [data-sm-screen="recurring"] .sm-plan-list > li + li { border-block-start-color: color-mix(in srgb, var(--sm-border) 60%, transparent); }
+.sm-root [data-sm-screen="recurring"] .sm-plan-row { align-items: flex-start; padding-block: 1rem; }
+.sm-root [data-sm-screen="recurring"] .sm-plan-row .sm-row-main { gap: 0.375rem; }
+.sm-root [data-sm-screen="recurring"] .sm-plan-row .sm-row-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+.sm-root [data-sm-screen="recurring"] .sm-plan-row .sm-row-meta { font-size: 0.8125rem; }
+.sm-root [data-sm-screen="recurring"] .sm-plan-row .sm-row-amount .sm-money { font-size: 1rem; font-weight: 800; }
+/* The next date (the line after type and frequency) as a small tinted pill, so it reads at a glance; red when overdue. */
+.sm-root [data-sm-screen="recurring"] .sm-plan-row .sm-row-title + .sm-row-meta + .sm-row-meta {
+  justify-self: start;
+  align-self: flex-start;
+  margin-block-start: 0.125rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.75rem;
+  color: var(--sm-nav-active);
+  background: color-mix(in srgb, var(--sm-blue) 10%, var(--sm-surface));
+  font-weight: 700;
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="recurring"] .sm-plan-row .sm-row-title + .sm-row-meta + .sm-row-meta { color: var(--sm-cyan); background: color-mix(in srgb, var(--sm-cyan) 12%, var(--sm-surface)); }
+.sm-root [data-sm-screen="recurring"] .sm-plan-row[data-sm-overdue="true"] .sm-row-title + .sm-row-meta + .sm-row-meta,
+:root[data-theme="dark"] .sm-root [data-sm-screen="recurring"] .sm-plan-row[data-sm-overdue="true"] .sm-row-title + .sm-row-meta + .sm-row-meta { color: var(--sm-neg); background: color-mix(in srgb, var(--sm-neg) 10%, var(--sm-surface)); }
+/* Paused, completed and archived rules read as quieter. */
+.sm-root [data-sm-screen="recurring"] .sm-plan-row[data-sm-status="paused"] .sm-row-amount,
+.sm-root [data-sm-screen="recurring"] .sm-plan-row[data-sm-status="completed"] .sm-row-amount,
+.sm-root [data-sm-screen="recurring"] .sm-plan-row[data-sm-status="archived"] .sm-row-amount { opacity: 0.6; }
+.sm-root [data-sm-screen="recurring"] [data-sm-more] { inline-size: 100%; min-block-size: 3rem; border-radius: 999px; color: var(--sm-nav-active); background: var(--sm-surface); box-shadow: var(--sm-shadow-xs); }
+
+/* ----- A rule: the summary is the focus ----- */
+.sm-root [data-sm-screen="rule"] .sm-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  gap: 0.625rem;
+  padding: 1.5rem 1.5rem 1.375rem;
+  border-radius: var(--sm-radius-xl);
+  background:
+    radial-gradient(90% 75% at 0% 0%, rgba(37, 99, 235, 0.34) 0%, rgba(37, 99, 235, 0) 62%),
+    var(--sm-hero);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 24px 44px -24px rgba(7, 20, 43, 0.7);
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="rule"] .sm-hero { border-color: rgba(94, 200, 245, 0.18); }
+.sm-root [data-sm-screen="rule"] .sm-hero::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset-block-start: -5rem;
+  inset-inline-end: -4.5rem;
+  inline-size: 13rem;
+  block-size: 13rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.75rem rgba(255, 255, 255, 0.025), 0 0 0 3.5rem rgba(255, 255, 255, 0.015);
+  pointer-events: none;
+}
+.sm-root [data-sm-screen="rule"] .sm-hero .sm-card-title { color: #ffffff; font-size: 1.125rem; font-weight: 800; }
+.sm-root [data-sm-screen="rule"] .sm-hero .sm-chip { color: #dbe4f7; background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.18); }
+.sm-root [data-sm-screen="rule"] .sm-hero .sm-plan-chip[data-sm-state="active"] { color: var(--sm-navy); background: var(--sm-cyan); border-color: var(--sm-cyan); }
+.sm-root [data-sm-screen="rule"] .sm-hero .sm-plan-chip[data-sm-state="paused"] { color: #3a2a05; background: #ffd98a; border-color: #ffd98a; }
+.sm-root [data-sm-screen="rule"] .sm-hero .sm-plan-chip[data-sm-state="completed"] { color: #06291c; background: #6ee7b7; border-color: #6ee7b7; }
+.sm-root [data-sm-screen="rule"] .sm-hero [data-sm-overdue-chip="true"] { color: #ffffff; background: #e5484d; border-color: #e5484d; }
+.sm-root [data-sm-screen="rule"] .sm-hero .sm-balance-label { margin-block-start: 0.5rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #a9b9da; }
+.sm-root [data-sm-screen="rule"] .sm-hero .sm-balance-label:lang(ar) { letter-spacing: 0; text-transform: none; font-size: 0.8125rem; }
+.sm-root [data-sm-screen="rule"] .sm-hero .sm-hero-money { font-size: clamp(2.25rem, 1.6rem + 3.2vw, 2.75rem); overflow-wrap: anywhere; }
+/* Type and frequency under a hairline, like the date line of the other summaries. */
+.sm-root [data-sm-screen="rule"] .sm-hero .sm-hero-note { margin-block-start: 0.25rem; padding-block-start: 0.75rem; border-block-start: 1px solid rgba(255, 255, 255, 0.1); color: #dbe4f7; font-size: 0.875rem; font-weight: 700; }
+
+/* "This is a rule" note: a quiet tinted callout. */
+.sm-root [data-sm-screen="rule"] [data-sm-note="rule"] { border-inline-start: 3px solid var(--sm-blue); background: color-mix(in srgb, var(--sm-surface-2) 55%, var(--sm-surface)); }
+:root[data-theme="dark"] .sm-root [data-sm-screen="rule"] [data-sm-note="rule"] { border-inline-start: 3px solid var(--sm-cyan); background: var(--sm-surface-2); }
+.sm-root [data-sm-screen="rule"] [data-sm-note="rule"] .sm-text { font-size: 0.9375rem; }
+.sm-root [data-sm-screen="rule"] [data-sm-note-status] { font-weight: 700; }
+
+/* Next occurrence: the card that answers "what happens next", with a brand edge; red when the backend says overdue. */
+.sm-root [data-sm-screen="rule"] [data-sm-section="rule-next"] { box-shadow: inset 3px 0 0 var(--sm-blue), var(--sm-rec-card-shadow); }
+.sm-root [data-sm-screen="rule"] [data-sm-section="rule-next"]:lang(ar) { box-shadow: inset -3px 0 0 var(--sm-blue), var(--sm-rec-card-shadow); }
+.sm-root [data-sm-screen="rule"] [data-sm-section="rule-next"] .sm-stat:first-child dd { font-family: var(--sm-font-heading); font-size: 1.125rem; font-weight: 800; }
+.sm-root [data-sm-screen="rule"] [data-sm-section="rule-next"] [data-sm-overdue="true"] .sm-stat:first-child dd { color: var(--sm-neg); }
+
+/* Details and next occurrence: label / value lines with hairlines. */
+.sm-root [data-sm-screen="rule"] .sm-stats-stacked { gap: 0; }
+.sm-root [data-sm-screen="rule"] .sm-stats-stacked .sm-stat { align-items: center; min-block-size: 2.75rem; padding-block: 0.5rem; }
+.sm-root [data-sm-screen="rule"] .sm-stats-stacked .sm-stat + .sm-stat { border-block-start: 1px solid color-mix(in srgb, var(--sm-border) 60%, transparent); }
+.sm-root [data-sm-screen="rule"] .sm-stats-stacked .sm-stat dt { font-size: 0.8125rem; font-weight: 600; }
+.sm-root [data-sm-screen="rule"] .sm-stats-stacked .sm-stat dd { font-weight: 700; }
+
+/* History: each occurrence with a status edge (posted green, failed red, waiting blue, skipped or cancelled grey). */
+.sm-root [data-sm-screen="rule"] [data-sm-section="rule-occurrences"] .sm-list > li + li { border-block-start: 1px solid color-mix(in srgb, var(--sm-border) 60%, transparent); }
+.sm-root [data-sm-screen="rule"] .sm-occurrence { padding-block: 0.875rem; padding-inline-start: 0.75rem; box-shadow: inset 3px 0 0 var(--sm-border); }
+.sm-root [data-sm-screen="rule"] .sm-occurrence:lang(ar) { box-shadow: inset -3px 0 0 var(--sm-border); }
+.sm-root [data-sm-screen="rule"] .sm-occurrence[data-sm-status="posted"] { box-shadow: inset 3px 0 0 var(--sm-rec-good); }
+.sm-root [data-sm-screen="rule"] .sm-occurrence[data-sm-status="posted"]:lang(ar) { box-shadow: inset -3px 0 0 var(--sm-rec-good); }
+.sm-root [data-sm-screen="rule"] .sm-occurrence[data-sm-status="failed"],
+.sm-root [data-sm-screen="rule"] .sm-occurrence[data-sm-overdue="true"] { box-shadow: inset 3px 0 0 var(--sm-neg); }
+.sm-root [data-sm-screen="rule"] .sm-occurrence[data-sm-status="failed"]:lang(ar),
+.sm-root [data-sm-screen="rule"] .sm-occurrence[data-sm-overdue="true"]:lang(ar) { box-shadow: inset -3px 0 0 var(--sm-neg); }
+.sm-root [data-sm-screen="rule"] .sm-occurrence[data-sm-status="scheduled"],
+.sm-root [data-sm-screen="rule"] .sm-occurrence[data-sm-status="due"] { box-shadow: inset 3px 0 0 var(--sm-blue); }
+.sm-root [data-sm-screen="rule"] .sm-occurrence[data-sm-status="scheduled"]:lang(ar),
+.sm-root [data-sm-screen="rule"] .sm-occurrence[data-sm-status="due"]:lang(ar) { box-shadow: inset -3px 0 0 var(--sm-blue); }
+.sm-root [data-sm-screen="rule"] .sm-occurrence .sm-row-title { font-weight: 800; }
+.sm-root [data-sm-screen="rule"] .sm-occurrence .sm-row-amount .sm-money { font-weight: 800; }
+.sm-root [data-sm-screen="rule"] .sm-occurrence[data-sm-status="skipped"] .sm-row-amount,
+.sm-root [data-sm-screen="rule"] .sm-occurrence[data-sm-status="cancelled"] .sm-row-amount { opacity: 0.6; }
+.sm-root [data-sm-screen="rule"] [data-sm-section="rule-occurrences"] .sm-note-link { color: var(--sm-nav-active); font-weight: 700; }
+
+/* Actions: Confirm, Skip and Edit as bordered tiles; Confirm, which would post money, is the emphasised one. Each
+   still opens its review, whose send stays closed by the write gate. */
+.sm-root [data-sm-screen="rule"] .sm-draft-links { gap: 0.5rem; }
+.sm-root [data-sm-screen="rule"] .sm-draft-links .sm-link-row {
+  padding-inline: 0.875rem;
+  border: 1px solid color-mix(in srgb, var(--sm-border) 72%, transparent);
+  border-radius: var(--sm-radius-md);
+  background: color-mix(in srgb, var(--sm-surface-2) 55%, var(--sm-surface));
+  font-weight: 700;
+  transition: border-color 0.18s ease;
+}
+:root[data-theme="dark"] .sm-root [data-sm-screen="rule"] .sm-draft-links .sm-link-row { border-color: rgba(255, 255, 255, 0.08); background: var(--sm-surface-2); }
+.sm-root [data-sm-screen="rule"] .sm-draft-links .sm-link-row:hover { border-color: color-mix(in srgb, var(--sm-blue) 40%, var(--sm-border)); }
+.sm-root [data-sm-screen="rule"] .sm-draft-links [data-sm-action="recurring-confirm"],
+:root[data-theme="dark"] .sm-root [data-sm-screen="rule"] .sm-draft-links [data-sm-action="recurring-confirm"] { border-color: color-mix(in srgb, var(--sm-blue) 45%, var(--sm-border)); color: var(--sm-nav-active); }
+
+/* Entrance: the cards rise in once, quickly. */
+@keyframes sm-rec-rise {
+  from { opacity: 0; transform: translateY(0.5rem); }
+  to { opacity: 1; transform: none; }
+}
+.sm-root [data-sm-screen="recurring"] > .sm-card,
+.sm-root [data-sm-screen="rule"] > .sm-card { animation: sm-rec-rise 0.34s var(--sm-rec-ease) both; }
+.sm-root [data-sm-screen="rule"] > .sm-card:nth-of-type(2) { animation-delay: 0.04s; }
+.sm-root [data-sm-screen="rule"] > .sm-card:nth-of-type(n + 3) { animation-delay: 0.08s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sm-root [data-sm-screen="recurring"] > .sm-card,
+  .sm-root [data-sm-screen="rule"] > .sm-card { animation: none; }
+  .sm-root [data-sm-screen="rule"] .sm-draft-links .sm-link-row { transition: none; }
+}
+
+/* Profile: the unsaved reminder preference, as a quiet tinted panel above its Save and Undo (usePreferenceWrite.js). */
+.sm-root [data-sm-screen="profile"] .sm-pref-draft { display: grid; gap: 0.5rem; padding: 0.75rem; border-radius: var(--sm-radius-md); background: color-mix(in srgb, var(--sm-blue) 7%, var(--sm-surface)); }
+:root[data-theme="dark"] .sm-root [data-sm-screen="profile"] .sm-pref-draft { background: var(--sm-surface-2); }
+.sm-root [data-sm-screen="profile"] [data-sm-pref-outcome] { margin: 0; }
+
+/* A confirmed transfer (forms/TransferResult.jsx): the server's amount large, then its details and the balances read again. */
+.sm-root .sm-transfer-result { gap: 0.625rem; border-inline-start: 3px solid var(--sm-blue); }
+:root[data-theme="dark"] .sm-root .sm-transfer-result { border-inline-start-color: var(--sm-cyan); }
+.sm-root .sm-transfer-result-amount { margin: 0; }
+.sm-root .sm-transfer-result-amount .sm-hero-money { font-size: clamp(1.75rem, 1.3rem + 2.2vw, 2.25rem); font-weight: 800; overflow-wrap: anywhere; }
+.sm-root .sm-transfer-result .sm-stats-stacked { gap: 0; }
+.sm-root .sm-transfer-result .sm-stats-stacked .sm-stat { align-items: center; min-block-size: 2.75rem; padding-block: 0.5rem; }
+.sm-root .sm-transfer-result .sm-stats-stacked .sm-stat + .sm-stat { border-block-start: 1px solid color-mix(in srgb, var(--sm-border) 60%, transparent); }
+.sm-root .sm-transfer-result .sm-stats-stacked .sm-stat dd { font-weight: 700; }
+.sm-root .sm-transfer-result-subtitle { margin-block-start: 0.5rem; font-size: 0.9375rem; }
+
+/* A correction's review: what a changed detail was, on its own line under the new value. */
+.sm-root .sm-review-was { display: block; margin-block-start: 0.125rem; }
+
+/* The category form's colour choices: a wrapping row of swatches. */
+.sm-root .sm-cat-swatches { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; }
+
+/* Expense and income headings inside a category section. */
+.sm-root .sm-cat-type-heading { margin: 0.5rem 0 0.125rem; font-weight: 700; }

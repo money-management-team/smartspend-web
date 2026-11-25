@@ -128,8 +128,15 @@ describe("data/pendingWriteStorage.js", () => {
   it("never writes the input, an amount, or the bearer token — only the key, a hash, and a timestamp", () => {
     writePendingWrite("transaction.expense", "mobile-transaction-expense-abc", hashFingerprint(JSON.stringify({ input: { amount: "999.0000", account_id: 42 } })));
     const raw = window.localStorage.getItem(`smartspend:mobile:pending-write:v1:u:${USER_A.id}:w:1:transaction.expense`);
-    assert.doesNotMatch(raw, /999|42|token-for-user-a/i);
-    assert.deepEqual(Object.keys(JSON.parse(raw)).sort(), ["createdAt", "hash", "key", "v"]);
+    // Parsed, field by field: a substring check would also match the clock (createdAt is Date.now()).
+    const stored = JSON.parse(raw);
+    assert.deepEqual(Object.keys(stored).sort(), ["createdAt", "hash", "key", "v"]);
+    assert.equal(stored.v, "v1");
+    assert.equal(stored.key, "mobile-transaction-expense-abc");
+    assert.equal(stored.hash, hashFingerprint(JSON.stringify({ input: { amount: "999.0000", account_id: 42 } })), "only the fingerprint, not the input");
+    assert.ok(!/999\.0000|account_id/.test(stored.hash) && !/999\.0000|account_id/.test(stored.key), "no amount or field name inside the fingerprint or the key");
+    assert.ok(Number.isSafeInteger(stored.createdAt) && stored.createdAt > 0);
+    assert.ok(!raw.includes(TOKEN_A), "never the bearer token");
   });
 });
 

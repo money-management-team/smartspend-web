@@ -11,8 +11,8 @@ All requests go through `apiRequest()` with relative paths (`VITE_API_BASE_URL` 
 | `archive(id)` | `DELETE /recurring-transactions/{id}` | — | `recurring_transaction` (archived) |
 | `pause(id)` | `POST …/{id}/pause` | none | `recurring_transaction` |
 | `resume(id)` | `POST …/{id}/resume` | none | `recurring_transaction` |
-| `confirmNext(id)` | `POST …/{id}/confirm-next` | none | `occurrence` + `recurring_transaction` (201) — **moves money** |
-| `skipNext(id, reason?)` | `POST …/{id}/skip-next` | `{ reason }` only when given | `occurrence` + `recurring_transaction` (201) |
+| `confirmNext(id, occurrenceId)` | `POST …/{id}/confirm-next` | `{ occurrence_id }` (required; the rule's `schedule.next_occurrence.id`) | `occurrence` + `recurring_transaction` (201) — **moves money** |
+| `skipNext(id, occurrenceId, reason?)` | `POST …/{id}/skip-next` | `{ occurrence_id, reason? }`; `reason` only when given | `occurrence` + `recurring_transaction` (200) |
 | `listOccurrences(id, query)` | `GET …/{id}/occurrences` | — | `occurrences` (paginator, rows in `.data`) |
 
 No request sends an `Idempotency-Key` (see [confirm-and-skip.md](confirm-and-skip.md) for confirm-next). There is no `delete` function: `DELETE` archives.
@@ -72,7 +72,7 @@ Query: `occurrence_status` (`scheduled`, `due`, `posted`, `skipped`, `failed`, `
 | 401 | Session expired | apiClient clears the session and logs out |
 | 403 | Not allowed | "You don't have permission…" |
 | 404 | Rule gone / not yours | Details page: "not found" state; dialogs: message, page refreshed on close |
-| 409 | Archive of an archived rule; update of an archived rule; other state conflicts | Specific wording, page refreshed on close |
+| 409 | Archive of an archived rule; update of an archived rule; confirm/skip of an occurrence that is no longer the one to act on (`code`: `recurring_occurrence_not_next`, `recurring_occurrence_not_open`; nothing changed); other state conflicts | Specific wording, page refreshed on close; confirm/skip offers no resend |
 | 422 | Validation (field errors under the inputs) or a domain rejection (not active, nothing open, insufficient balance). **Confirm-next may carry `data.occurrence`** | Backend message; for confirm-next `failure_reason` — see [confirm-and-skip.md](confirm-and-skip.md) |
 | 429 | Rate limited | "Try again after N seconds" |
 | network / timeout / 5xx | Unknown outcome for writes | Message; confirm-next blocks an immediate retry |

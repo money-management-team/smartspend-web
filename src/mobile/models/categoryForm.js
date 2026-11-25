@@ -21,6 +21,17 @@ export function validateName(value) {
   return [...name].length > NAME_MAX ? "tooLong" : null;
 }
 
+/*
+ * The colour and icon a category may carry: StoreCategoryRequest / UpdateCategoryRequest take an optional `color`
+ * (#RRGGBB, max 20) and `icon` (max 50) on both refs. Mobile offers the same presets the full version's form does
+ * (Categories/categoryHelpers.js) and no free text, so what is sent is always one of these or nothing.
+ */
+export const CATEGORY_COLORS = Object.freeze(["#3366FF", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#64748B"]);
+export const CATEGORY_ICONS = Object.freeze(["wallet", "briefcase", "gift", "piggy-bank", "utensils", "coffee", "shopping-cart", "shirt", "car", "plane", "home", "zap", "receipt", "smartphone", "heart-pulse", "graduation-cap", "gamepad", "tag"]);
+
+export const validateColor = (value) => (!value || CATEGORY_COLORS.includes(String(value).toUpperCase()) ? null : "invalid");
+export const validateIcon = (value) => (!value || CATEGORY_ICONS.includes(value) ? null : "invalid");
+
 export const validateType = (value) => (CATEGORY_TYPES.includes(value) ? null : "required");
 
 /** The session workspace as the backend expects it in the body, or null when it is not a plain id (then nothing is sent). */
@@ -33,11 +44,31 @@ export function workspaceIdForBody(workspace) {
   return Number.isSafeInteger(parsed) ? parsed : null;
 }
 
-export function buildCreatePayload({ workspaceId, name, type }) {
-  return { workspace_id: workspaceId, name: String(name).trim(), type };
+/** A create: the name and type, plus a colour and an icon only when one was chosen. */
+export function buildCreatePayload({ workspaceId, name, type, color = "", icon = "" }) {
+  return { workspace_id: workspaceId, name: String(name).trim(), type, ...(color ? { color: String(color).toUpperCase() } : {}), ...(icon ? { icon } : {}) };
 }
 
-export const buildUpdatePayload = ({ name }) => ({ name: String(name).trim() });
+/**
+ * An edit: only what changed among name, colour and icon (UpdateCategoryRequest is partial). The type is never sent: the
+ * backend refuses to change it once a transaction uses the category (422), and Mobile never changes what existing
+ * transactions mean. A colour or icon that was cleared is sent as null (both are nullable).
+ *
+ * @param {{ name: string, color?: string, icon?: string }} next
+ * @param {{ name: string | null, color: string | null, icon: string | null }} original
+ */
+export function buildUpdatePayload(next, original = null) {
+  const payload = {};
+  const name = String(next.name).trim();
+  if (!original || name !== String(original.name ?? "").trim()) payload.name = name;
+  if (original) {
+    const color = next.color ? String(next.color).toUpperCase() : null;
+    if (color !== (original.color ? original.color.toUpperCase() : null)) payload.color = color;
+    const icon = next.icon || null;
+    if (icon !== (original.icon ?? null)) payload.icon = icon;
+  }
+  return payload;
+}
 
 /*
  * Proof that a create happened: the answer carries a category with an id, the
@@ -53,14 +84,30 @@ export function confirmCreate(data, sent) {
   if (category.name !== sent.name.trim() || category.type !== sent.type) return null;
   if (category.system !== false || category.active === false) return null;
   if (category.workspaceId && String(category.workspaceId) !== String(sent.workspaceId)) return null;
+  if (sent.color && category.color?.toUpperCase() !== String(sent.color).toUpperCase()) return null;
+  if (sent.icon && category.icon !== sent.icon) return null;
 
   return category;
 }
 
-/** Proof that an edit happened: the same category, now with the name that was sent. */
-export function confirmUpdate(data, categoryId, sentName) {
+/** Proof that an edit happened: the same category, now with what was sent (the name, and a colour or icon when they were sent, null meaning cleared). */
+export function confirmUpdate(data, categoryId, sent) {
   const category = normalizeCategory(isRecord(data) ? data.category : null);
-  return category && category.id === String(categoryId) && category.name === String(sentName).trim() ? category : null;
+  const fields = typeof sent === "string" ? { name: sent } : sent;
+  if (!category || category.id !== String(categoryId) || category.active !== true) return null;
+  if (Object.hasOwn(fields, "name") && category.name !== String(fields.name).trim()) return null;
+  if (Object.hasOwn(fields, "color") && (category.color?.toUpperCase() ?? null) !== (fields.color ? String(fields.color).toUpperCase() : null)) return null;
+  if (Object.hasOwn(fields, "icon") && category.icon !== (fields.icon ?? null)) return null;
+  return category;
+}
+
+/*
+ * Proof that an archive happened: the same category, now inactive (POST /categories/{id}/archive answers the category with
+ * is_active false; ArchiveCategoryAction, identical on develop @ fd87531 and 6b696d72). Anything else is not "archived".
+ */
+export function confirmArchive(data, categoryId) {
+  const category = normalizeCategory(isRecord(data) ? data.category : null);
+  return category && category.id === String(categoryId) && category.active === false ? category : null;
 }
 
 /*
@@ -110,5 +157,5 @@ export function fieldErrorsOf(error) {
     return text ? text.slice(0, 300) : null;
   };
 
-  return { name: pick("name"), type: pick("type") };
+  return { name: pick("name"), type: pick("type"), color: pick("color"), icon: pick("icon") };
 }

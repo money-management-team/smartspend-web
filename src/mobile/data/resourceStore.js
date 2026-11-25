@@ -113,6 +113,20 @@ export function createResourceStore(guard, { now = Date.now } = {}) {
       emit();
     },
     isDisposed: () => disposed,
+    /**
+     * Stores what a write's own answer says, exactly as a successful read of `key` would have returned it (the server's
+     * figure: nothing is computed here). A read of the same key still running started before that answer, so it is
+     * cancelled rather than allowed to replace the newer figure with an older one.
+     */
+    accept(key, data) {
+      if (disposed) return;
+      const running = inflight.get(key);
+      if (running) {
+        running.controller.abort();
+        inflight.delete(key);
+      }
+      set(key, { status: "ready", data, error: null, updatedAt: now() });
+    },
     /** Changes whenever any entry does, for screens that read several keys at once. */
     getVersion: () => version,
     /** Forgets entries whose key passes the test (and cancels their reads): a refresh that must not reuse older pages. */

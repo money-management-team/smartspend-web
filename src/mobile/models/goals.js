@@ -51,7 +51,8 @@ export function goalFiltersToQuery(filters, page, perPage, workspaceId) {
 
 /* ---------- One goal ---------- */
 
-function buildProgress(raw, id, currency) {
+// Also read by Home (models/home.js) for the goal rows of GET /dashboard `planning.savings_goals.items`, which are the same progress rows.
+export function buildProgress(raw, id, currency) {
   if (!isRecord(raw)) return null;
   if (raw.goal_id != null && idText(raw.goal_id) !== id) return null;
   if (raw.currency_code != null && raw.currency_code !== currency) return null;

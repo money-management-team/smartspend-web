@@ -16,7 +16,8 @@ import { useAuthContext } from "../../contexts/auth/useAuthContext";
  * working for this visit only, and `persisted` says so.
  */
 
-export const HOME_BLOCKS = Object.freeze(["balances", "summary", "accounts", "recent", "attention"]);
+// The default order of Home's cards. A saved order that predates a card gets it appended (normalizePreferences).
+export const HOME_BLOCKS = Object.freeze(["balances", "summary", "budgets", "goals", "accounts", "recent", "attention"]);
 const MAX_VIEWS = 20;
 const MAX_TEMPLATES = 20;
 const ID = /^[1-9]\d{0,14}$/;

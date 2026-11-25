@@ -1,11 +1,13 @@
 import { accountsApi } from "../../features/Dashboards/User/api/accountsApi.js";
 import { createIdempotencyKey } from "../../features/Dashboards/User/api/apiClient.js";
+import { aiCopilotApi } from "../../features/Dashboards/User/api/aiCopilotApi.js";
 import { aiExpenseCapturesApi } from "../../features/Dashboards/User/api/aiExpenseCapturesApi.js";
 import { aiVoiceExpenseCapturesApi } from "../../features/Dashboards/User/api/aiVoiceExpenseCapturesApi.js";
 import { authApi } from "../../features/Dashboards/User/api/authApi.js";
 import { budgetsApi } from "../../features/Dashboards/User/api/budgetsApi.js";
 import { categoriesApi } from "../../features/Dashboards/User/api/categoriesApi.js";
 import { debtsApi } from "../../features/Dashboards/User/api/debtsApi.js";
+import { notificationsApi } from "../../features/Dashboards/User/api/notificationsApi.js";
 import { plannedSavingsApi } from "../../features/Dashboards/User/api/plannedSavingsApi.js";
 import { recurringTransactionsApi } from "../../features/Dashboards/User/api/recurringTransactionsApi.js";
 import { reportExportsApi } from "../../features/Dashboards/User/api/reportExportsApi.js";
@@ -40,6 +42,33 @@ export const sendCategoryUpdate = (categoryId, payload) => {
 };
 
 /*
+ * Notifications (notifications/useNotificationWrite.js): marking one read, or all of them. Neither takes a
+ * body or an Idempotency-Key: the backend's own rule makes a copy harmless (data/writeGate.js
+ * "same-result"). The id is checked to be a positive whole number before anything is sent.
+ */
+export const sendNotificationRead = (notificationId) => {
+  assertWriteOpen("notifications.markRead");
+  if (!/^[1-9]\d{0,14}$/.test(String(notificationId ?? ""))) throw Object.assign(new Error("Not a notification id."), { code: "INVALID_ID" });
+  return notificationsApi.markRead(String(notificationId));
+};
+
+export const sendNotificationsReadAll = () => {
+  assertWriteOpen("notifications.markAllRead");
+  return notificationsApi.markAllRead();
+};
+
+/*
+ * The savings reminder preference (settings/usePreferenceWrite.js), as the explicit value wanted: never "the other
+ * one", so a request delivered twice leaves the same setting. Anything that is not true or false is not sent.
+ */
+export const sendNotificationPreferences = (values) => {
+  assertWriteOpen("notifications.preferences");
+  const wanted = values?.savings_installment_reminders;
+  if (typeof wanted !== "boolean") throw Object.assign(new Error("A preference must be true or false."), { code: "INVALID_VALUE" });
+  return notificationsApi.updatePreferences({ savings_installment_reminders: wanted });
+};
+
+/*
  * The forms (forms/workflows.js), with their input built by forms/writePayloads.js.
  * `key` is the submission's Idempotency-Key (forms/useWorkflowSubmit.js); it is
  * passed only where the backend takes one (MOBILE_WRITES[operation].key).
@@ -62,7 +91,8 @@ const SENDERS = {
   "goal.withdrawal": ({ ids, input }, key) => savingsGoalsApi.withdraw(ids.goalId, input, key),
   "debt.payment": ({ ids, input }, key) => debtsApi.recordPayment(ids.debtId, input, key),
   "debt.paymentReverse": ({ ids, input }) => debtsApi.reversePayment(ids.paymentId, input.reason),
-  "recurring.confirmNext": ({ ids }) => recurringTransactionsApi.confirmNext(ids.ruleId),
+  // Names the occurrence the review showed (occurrence_id); the wrapper refuses to send without one.
+  "recurring.confirmNext": ({ ids, input }) => recurringTransactionsApi.confirmNext(ids.ruleId, input.occurrence_id),
   "receipt.confirm": (write, key) => saveThenConfirm(write, key, (id, body) => aiExpenseCapturesApi.update(id, body), (id, version, k) => aiExpenseCapturesApi.confirm(id, { review_version: version }, { idempotencyKey: k })),
   "voice.confirm": (write, key) => saveThenConfirm(write, key, (id, body) => aiVoiceExpenseCapturesApi.update(id, body), (id, version, k) => aiVoiceExpenseCapturesApi.confirm(id, { review_version: version }, { idempotencyKey: k })),
   // Stores the file and queues it for AI reading; creates no transaction. input: { file, workspaceId, signal }.
@@ -73,6 +103,17 @@ const SENDERS = {
     return whatsappApi.confirmDraft(ids.draftId, { reviewVersion: savedVersion(saved, "draft"), idempotencyKey: key });
   },
 
+  "category.archive": ({ ids }) => categoriesApi.archive(ids.categoryId),
+  // The assistant (every one closed; the message carries the submission's key as its client_request_id).
+  "ai.conversationCreate": ({ input }) => aiCopilotApi.createConversation(input.locale),
+  "ai.message": ({ ids, input }, key) => aiCopilotApi.sendMessage(ids.conversationId, input.content, key),
+  "ai.conversationDelete": ({ ids }) => aiCopilotApi.deleteConversation(ids.conversationId),
+  "ai.messageFeedback": ({ ids, input }) => aiCopilotApi.messageFeedback(ids.messageId, input),
+  "ai.insightFeedback": ({ ids, input }) => aiCopilotApi.insightFeedback(ids.insightId, input),
+  "ai.insightsRefresh": () => aiCopilotApi.refreshInsights(),
+  "ai.insightDismiss": ({ ids }) => aiCopilotApi.dismissInsight(ids.insightId),
+  "ai.settings": ({ input }) => aiCopilotApi.updateSettings(input),
+  "ai.dataDelete": () => aiCopilotApi.deleteData(),
   "account.create": ({ input }) => accountsApi.create(input),
   "account.update": ({ ids, input }) => accountsApi.update(ids.accountId, input),
   "account.archive": ({ ids }) => accountsApi.archive(ids.accountId),
@@ -83,7 +124,7 @@ const SENDERS = {
   "goal.plannedContribution": ({ ids, input }) => plannedSavingsApi.create(ids.goalId, input),
   "recurring.create": ({ input }, key) => recurringTransactionsApi.create(input, key),
   "recurring.update": ({ ids, input }) => recurringTransactionsApi.update(ids.ruleId, input),
-  "recurring.skipNext": ({ ids, input }) => recurringTransactionsApi.skipNext(ids.ruleId, input.reason),
+  "recurring.skipNext": ({ ids, input }) => recurringTransactionsApi.skipNext(ids.ruleId, input.occurrence_id, input.reason),
   "debt.create": ({ input }, key) => debtsApi.create(input, key),
   "debt.update": ({ ids, input }) => debtsApi.update(ids.debtId, input),
   "profile.update": ({ input }) => authApi.updateProfile(input),

@@ -24,16 +24,18 @@ function DebtRow({ debt, from, pages, locale }) {
   const due = formatDay(debt.dueDate, locale);
 
   return (
-    <Link className="sm-row sm-plan-row" to={debtDetailPath(debt.id)} state={{ from, pages }} data-sm-debt={debt.id} data-sm-status={debt.status ?? "none"}>
+    <Link className="sm-row sm-plan-row" to={debtDetailPath(debt.id)} state={{ from, pages }} data-sm-debt={debt.id} data-sm-status={debt.status ?? "none"} data-sm-direction={debt.direction ?? "none"}>
       <span className="sm-row-main">
         <span className="sm-row-title sm-user-text">{debt.counterparty ?? t("debts.unnamed")}</span>
         <span className="sm-row-meta">{debt.direction ? t(`debts.direction.${debt.direction}`) : t("debts.direction.unknown")}{due && <> · {t("debts.due")} <bdi>{due}</bdi></>}</span>
         <span className="sm-chips-inline">
           <StateChip state={debt.status} known={debt.statusKnown} labels="debts.status" tones={DEBT_TONES} />
         </span>
+        {/* What is still outstanding first, then the original and what was paid: the backend's figures, in the debt's own currency. */}
         <span className="sm-plan-figures">
-          <span>{t("debts.remaining")} <Money plain value={debt.remaining} currency={debt.currency} /></span>
-          <span>{t("debts.original")} <Money plain value={debt.original} currency={debt.currency} /></span>
+          <span data-sm-figure="remaining">{t(debt.direction === "receivable" ? "debts.remainingReceivable" : "debts.remaining")} <Money plain value={debt.remaining} currency={debt.currency} /></span>
+          <span data-sm-figure="original">{t("debts.original")} <Money plain value={debt.original} currency={debt.currency} /></span>
+          <span data-sm-figure="paid">{t("debts.paid")} <Money plain value={debt.paid} currency={debt.currency} /></span>
         </span>
       </span>
       <Chevron />

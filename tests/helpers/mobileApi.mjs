@@ -36,12 +36,31 @@ export const CATEGORY_WRITES = Object.freeze([
  */
 export const FORM_WRITES = Object.freeze({
   expense: { method: "POST", path: /^\/transactions\/expense$/ },
+  income: { method: "POST", path: /^\/transactions\/income$/ },
+  accountCreate: { method: "POST", path: /^\/accounts$/ },
+  accountUpdate: { method: "PATCH", path: /^\/accounts\/[1-9]\d*$/ },
+  accountArchive: { method: "POST", path: /^\/accounts\/[1-9]\d*\/archive$/ },
+  categoryArchive: { method: "POST", path: /^\/categories\/[1-9]\d*\/archive$/ },
+  aiConversationCreate: { method: "POST", path: /^\/ai\/conversations$/ },
+  aiMessage: { method: "POST", path: /^\/ai\/conversations\/[1-9]\d*\/messages$/ },
+  aiConversationDelete: { method: "DELETE", path: /^\/ai\/conversations\/[1-9]\d*$/ },
+  aiMessageFeedback: { method: "POST", path: /^\/ai\/messages\/[1-9]\d*\/feedback$/ },
+  aiInsightFeedback: { method: "POST", path: /^\/ai\/insights\/[1-9]\d*\/feedback$/ },
+  aiInsightsRefresh: { method: "POST", path: /^\/ai\/insights\/refresh$/ },
+  aiInsightDismiss: { method: "POST", path: /^\/ai\/insights\/[1-9]\d*\/dismiss$/ },
+  aiSettings: { method: "PUT", path: /^\/ai\/settings$/ },
+  aiDataDelete: { method: "DELETE", path: /^\/ai\/data$/ },
+  correct: { method: "PATCH", path: /^\/transactions\/[1-9]\d*$/ },
+  reverse: { method: "POST", path: /^\/transactions\/[1-9]\d*\/reverse$/ },
   transfer: { method: "POST", path: /^\/transfers$/ },
   receiptUpload: { method: "POST", path: /^\/ai\/expense-captures$/ },
   receiptSave: { method: "PATCH", path: /^\/ai\/expense-captures\/[1-9]\d*$/ },
   receiptConfirm: { method: "POST", path: /^\/ai\/expense-captures\/[1-9]\d*\/confirm$/ },
   voiceUpload: { method: "POST", path: /^\/ai\/voice-expense-captures$/ },
   budget: { method: "POST", path: /^\/budgets$/ },
+  notificationRead: { method: "PATCH", path: /^\/notifications\/[1-9]\d*\/read$/ },
+  notificationsReadAll: { method: "POST", path: /^\/notifications\/read-all$/ },
+  notificationPreferences: { method: "PATCH", path: /^\/notifications\/preferences$/ },
 });
 
 /**

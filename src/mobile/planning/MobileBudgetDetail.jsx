@@ -57,6 +57,13 @@ function Detail({ budget, locale }) {
         <Money className="sm-hero-money" value={budget.limit} currency={budget.currency} />
         {/* The bar belongs with the limit it measures; the sentence is Desktop's own reading of the backend's status word. */}
         {progress && <Progress percent={progress.percent} tone={toneOf(progress.status, progress.statusKnown)} spoken={progress.percent ? t("planning.budgets.percentSpoken", { value: progress.percent.text }) : ""} />}
+        {/* What was spent and what remains, next to the bar they explain: the backend's own figures. */}
+        {progress && (
+          <dl className="sm-budget-figures">
+            <div data-sm-figure="spent"><dt>{t("planning.budgets.spent")}</dt><dd><Money plain value={progress.spent} currency={budget.currency} /></dd></div>
+            <div data-sm-figure="remaining"><dt>{t("planning.budgets.remaining")}</dt><dd><Money value={progress.remaining} currency={budget.currency} /></dd></div>
+          </dl>
+        )}
         {progress?.statusKnown && STATUS_HINTS.includes(progress.status) && <p className="sm-hero-note" data-sm-hint={progress.status}>{t(`budgetView.hint.${progress.status}`)}</p>}
         {start && end && <p className="sm-hero-note"><bdi>{t("planning.range", { from: start, to: end })}</bdi></p>}
       </section>
@@ -65,9 +72,8 @@ function Detail({ budget, locale }) {
         <h2 id="sm-budget-progress" className="sm-card-title">{t("planning.budgets.progress")}</h2>
         {progress ? (
           <>
+            {/* Spent and remaining are in the summary above; this card is the period's count, days and state. */}
             <dl className="sm-stats sm-stats-stacked">
-              <Fact label={t("planning.budgets.spent")}><Money plain value={progress.spent} currency={budget.currency} /></Fact>
-              <Fact label={t("planning.budgets.remaining")}><Money value={progress.remaining} currency={budget.currency} /></Fact>
               {progress.expensesCount !== null && <Fact label={t("planning.budgets.expenses")}><bdi dir="ltr">{progress.expensesCount}</bdi></Fact>}
               {progress.daysRemaining !== null && <Fact label={t("planning.budgets.daysLeft")}><bdi dir="ltr">{progress.daysRemaining}</bdi></Fact>}
               {progress.hasStarted === false && <Fact label={t("planning.budgets.period")}>{t("planning.budgets.notStarted")}</Fact>}

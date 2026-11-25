@@ -94,6 +94,15 @@ const BUILDERS = {
 
   "account-edit": (wf, values, ctx) => ({ ids: { accountId: ctx.record.id }, input: changeInput(wf, values, ctx) }),
   "account-archive": (wf, values, ctx) => ({ ids: { accountId: ctx.record.id }, input: {} }),
+  // POST /ai/conversations: only the language (title is optional and not offered).
+  "ai-new": (wf, values) => ({ input: { locale: values.locale } }),
+  // PUT /ai/settings is partial: only what changed, and ai_enabled only as false (turning it on is a consent decision made in the full version).
+  "ai-settings": (wf, values, ctx) => ({ input: changeInput(wf, values, ctx) }),
+  "ai-conversation-delete": (wf, values, ctx) => ({ ids: { conversationId: ctx.record.id }, input: {} }),
+  // DELETE /ai/data: the wrapper adds the backend's confirmation constant (DeleteAiDataRequest); the person's acknowledgement is the form's.
+  "ai-data-delete": () => ({ input: {} }),
+  // POST /categories/{id}/archive takes no body.
+  "category-archive": (wf, values, ctx) => ({ ids: { categoryId: ctx.record.id }, input: {} }),
   "budget-edit": (wf, values, ctx) => ({ ids: { budgetId: ctx.record.id }, input: changeInput(wf, values, ctx) }),
   "goal-edit": (wf, values, ctx) => ({ ids: { goalId: ctx.record.id }, input: changeInput(wf, values, ctx) }),
   "goal-contribute": (wf, values, ctx) => ({ ids: { goalId: ctx.record.id }, input: createInput(wf, values, ctx, { dates: { occurred_at: occurredAt } }) }),
@@ -101,8 +110,12 @@ const BUILDERS = {
   "goal-plan": (wf, values, ctx) => ({ ids: { goalId: ctx.record.id }, input: createInput(wf, values, ctx) }),
 
   "recurring-edit": (wf, values, ctx) => ({ ids: { ruleId: ctx.record.id }, input: changeInput(wf, values, ctx) }),
-  "recurring-confirm": (wf, values, ctx) => ({ ids: { ruleId: ctx.record.id }, input: {} }),
-  "recurring-skip": (wf, values, ctx) => ({ ids: { ruleId: ctx.record.id }, input: compact({ reason: reasonOf(values) }) }),
+  // Both name the occurrence the review showed (the rule's schedule.next_occurrence.id), never "whichever is next".
+  "recurring-confirm": (wf, values, ctx) => ({ ids: { ruleId: ctx.record.id, occurrenceId: ctx.record.nextOccurrenceId }, input: compact({ occurrence_id: id(ctx.record.nextOccurrenceId) }) }),
+  "recurring-skip": (wf, values, ctx) => ({
+    ids: { ruleId: ctx.record.id, occurrenceId: ctx.record.nextOccurrenceId },
+    input: compact({ occurrence_id: id(ctx.record.nextOccurrenceId), reason: reasonOf(values) }),
+  }),
 
   "debt-edit": (wf, values, ctx) => ({ ids: { debtId: ctx.record.id }, input: changeInput(wf, values, ctx) }),
   // Like the full version (buildPaymentPayload): today's date is the backend's default, so it is left out.

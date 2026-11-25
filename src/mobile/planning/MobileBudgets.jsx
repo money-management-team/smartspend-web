@@ -34,8 +34,10 @@ export function BudgetRow({ budget, from, pages, locale }) {
         </span>
         {progress && <Progress percent={progress.percent} tone={toneOf(progress.status, progress.statusKnown)} spoken={progress.percent ? t("planning.budgets.percentSpoken", { value: progress.percent.text }) : ""} />}
         <span className="sm-plan-figures">
-          <span>{t("planning.budgets.spent")} <Money plain value={progress?.spent ?? null} currency={budget.currency} /></span>
-          <span>{t("planning.budgets.limit")} <Money plain value={budget.limit} currency={budget.currency} /></span>
+          <span data-sm-figure="spent">{t("planning.budgets.spent")} <Money plain value={progress?.spent ?? null} currency={budget.currency} /></span>
+          <span data-sm-figure="limit">{t("planning.budgets.limit")} <Money plain value={budget.limit} currency={budget.currency} /></span>
+          {/* The backend's own remaining amount (negative when over the limit); nothing is calculated here. */}
+          {progress && <span data-sm-figure="remaining">{t("planning.budgets.remaining")} <Money value={progress.remaining} currency={budget.currency} /></span>}
         </span>
       </span>
       <Chevron />

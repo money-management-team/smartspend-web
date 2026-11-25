@@ -165,8 +165,8 @@ describe("what an error means", () => {
     assert.equal(classifyOutcome(new IdentityError("changed-elsewhere"), "create").kind, "identity");
   });
 
-  it("takes the first server message of each field Mobile has an input for", () => {
-    assert.deepEqual(fieldErrorsOf({ errors: { name: ["The name has already been taken.", "x"], type: "Bad type", color: ["ignored"] } }), { name: "The name has already been taken.", type: "Bad type" });
-    assert.deepEqual(fieldErrorsOf({ errors: null }), { name: null, type: null });
+  it("takes the first server message of each field Mobile has an input for (name, type, colour, icon)", () => {
+    assert.deepEqual(fieldErrorsOf({ errors: { name: ["The name has already been taken.", "x"], type: "Bad type", color: ["ignored"] } }), { name: "The name has already been taken.", type: "Bad type", color: "ignored", icon: null });
+    assert.deepEqual(fieldErrorsOf({ errors: null }), { name: null, type: null, color: null, icon: null });
   });
 });

@@ -84,7 +84,8 @@ describe("Home", () => {
     await click(q("[data-sm-arrange='recent'] [data-sm-move='up']"));
     const stored = JSON.parse(window.localStorage.getItem(prefKey));
     assert.deepEqual(stored.homeHidden, ["accounts"]);
-    assert.deepEqual(stored.homeOrder.slice(0, 4), ["balances", "summary", "recent", "accounts"]);
+    // Default order: balances, summary, budgets, goals, accounts, recent, attention; "recent" moved up one.
+    assert.deepEqual(stored.homeOrder.slice(0, 6), ["balances", "summary", "budgets", "goals", "recent", "accounts"]);
     assert.doesNotMatch(JSON.stringify(stored), /1234|Everyday|token/i, "no figure, name or token");
     await click(action("reset-arrange"));
     assert.deepEqual(JSON.parse(window.localStorage.getItem(prefKey)).homeHidden, []);
@@ -106,7 +107,8 @@ describe("device preferences", () => {
     assert.equal(preferenceKey(1, 2), "smartspend:mobile:prefs:v1:u:1:w:2");
     assert.equal(preferenceKey(null, 2), null);
     const clean = normalizePreferences({ version: 1, homeOrder: ["recent", "bogus"], homeHidden: ["recent", "recent"], templates: [{ id: "abcdefgh1", name: " Coffee ", type: "expense", amount: "1.23456" }, { id: "abcdefgh2", name: "Rent", type: "expense", amount: "100", account_id: "7" }], activityViews: [{ id: "abcdefgh3", name: "Food", params: { category_id: "4", evil: "<x>" } }] });
-    assert.deepEqual(clean.homeOrder, ["recent", "balances", "summary", "accounts", "attention"]);
+    // A saved order keeps its own cards first; cards it doesn't know (including ones added later) follow in the default order.
+    assert.deepEqual(clean.homeOrder, ["recent", "balances", "summary", "budgets", "goals", "accounts", "attention"]);
     assert.deepEqual(clean.homeHidden, ["recent"]);
     assert.deepEqual(clean.templates.map((item) => item.name), ["Rent"], "a template with a bad amount is dropped");
     assert.deepEqual(clean.activityViews[0].params, { category_id: "4" });
