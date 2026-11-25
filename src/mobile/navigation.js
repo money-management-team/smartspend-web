@@ -85,6 +85,9 @@ export const MOBILE_GETTING_STARTED = `${MOBILE_PREFIX}/getting-started`;
 // Mobile's own sign-in and registration pages (auth/), outside the shell; they use the app's one AuthProvider.
 export const MOBILE_SIGNIN = `${MOBILE_PREFIX}/signin`;
 export const MOBILE_REGISTER = `${MOBILE_PREFIX}/register`;
+// Account recovery (auth/MobileRecovery.jsx): also outside the shell. The reset page is the target of the emailed link's hand-off.
+export const MOBILE_FORGOT_PASSWORD = `${MOBILE_PREFIX}/forgot-password`;
+export const MOBILE_RESET_PASSWORD = `${MOBILE_PREFIX}/reset-password`;
 
 /* The More pages: More's current-page marker stays on inside them. */
 const MORE_WITHIN = [MOBILE_ATTENTION, MOBILE_ACCOUNTS, MOBILE_TRANSFERS, MOBILE_NOTIFICATIONS, MOBILE_REPORTS, MOBILE_EXPORTS, MOBILE_IMPORTS, MOBILE_AI, MOBILE_WHATSAPP, MOBILE_PROFILE, MOBILE_CAPTURES, MOBILE_SEARCH, MOBILE_REVIEW, MOBILE_TEMPLATES, MOBILE_GETTING_STARTED];

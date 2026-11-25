@@ -58,6 +58,28 @@ export const sendNotificationsReadAll = () => {
 };
 
 /*
+ * Account recovery (auth/useAuthWrite.js, docs/mobile/AUTH-RECOVERY.md). None takes an Idempotency-Key (the backend has
+ * none for these) and none moves money; each is CLOSED like every other write. The password, the reset token and the
+ * email address go to the wrapper and nowhere else: this file keeps and logs none of them.
+ */
+export const sendForgotPassword = (email) => {
+  assertWriteOpen("auth.forgotPassword");
+  return authApi.forgotPassword(email);
+};
+
+export const sendResetPassword = (input) => {
+  // The gate first: a closed operation does not even read what it was given.
+  assertWriteOpen("auth.resetPassword");
+  const { token, identifier, password, passwordConfirmation } = input;
+  return authApi.resetPassword({ token, identifier, password, passwordConfirmation });
+};
+
+export const sendVerificationResend = () => {
+  assertWriteOpen("email.resend");
+  return authApi.resendVerificationEmail();
+};
+
+/*
  * The savings reminder preference (settings/usePreferenceWrite.js), as the explicit value wanted: never "the other
  * one", so a request delivered twice leaves the same setting. Anything that is not true or false is not sent.
  */

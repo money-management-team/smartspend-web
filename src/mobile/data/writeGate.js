@@ -196,6 +196,25 @@ export const MOBILE_WRITES = Object.freeze({
   "profile.password": write("PATCH /profile/password", false, "none", "unverified"),
   "export.create": write("POST /report-exports", false, "none", "duplicates"),
 
+  // Account recovery (docs/mobile/AUTH-RECOVERY.md). None moves money and none takes a key; the routes, requests and
+  // notifications are identical on develop @ fd87531 and fix/financial-idempotency-p0 @ 6b696d72.
+  //
+  // POST /auth/forgot-password (PasswordResetController::sendResetLink, public, `throttle:auth`): the answer is the same
+  // whether or not the email has an account. Laravel's broker sends no second email inside its 60 s throttle
+  // (auth.passwords.users.throttle) and, after it, a copy creates a new token that replaces the earlier one
+  // (DatabaseTokenRepository::create deletes the existing token), so a copy only means one more email and the older
+  // link stops working.
+  "auth.forgotPassword": write("POST /auth/forgot-password", false, "none", "same-result"),
+  // POST /auth/reset-password (PasswordResetController::reset, public, `throttle:auth`): the token is single use (the
+  // broker deletes it after a reset), so a copy after success is answered 422 "invalid or expired". After a lost answer
+  // the page therefore cannot tell "it worked" from "the link was bad": Mobile says so and never retries on its own.
+  // A success also deletes every access token of the account.
+  "auth.resetPassword": write("POST /auth/reset-password", false, "none", "once-only"),
+  // POST /auth/email/verification-notification (EmailVerificationController::resend, signed in, `throttle:verification`
+  // 6/min per user): already-verified accounts get a 200 without a mail; otherwise every copy sends one more email with
+  // its own signed link and changes nothing else.
+  "email.resend": write("POST /auth/email/verification-notification", false, "none", "same-result"),
+
   // Notifications are the signed-in user's own (scoped by user_id, not by workspace) and move no money.
   // NotificationService::markRead sets read_at only while it is null and otherwise returns the row as it is,
   // so a copy changes nothing and answers with the same row; markAllRead updates only the caller's unread

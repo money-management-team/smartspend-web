@@ -47,7 +47,7 @@ describe("the gate", () => {
     // receipt.upload / voice.upload have no forms/workflows.js entry: assist/MobileReceiptNew.jsx and
     // MobileVoiceNew.jsx send them directly (assist/useCaptureUpload.js), never through DraftForm's review step.
     // notifications.markRead / markAllRead are one tap each on the notifications screen (notifications/useNotificationWrite.js).
-    assert.deepEqual(Object.keys(gate.MOBILE_WRITES).sort(), ["category.create", "category.update", "receipt.upload", "voice.upload", "notifications.markRead", "notifications.markAllRead", "notifications.preferences", "ai.message", "ai.messageFeedback", "ai.insightFeedback", "ai.insightsRefresh", "ai.insightDismiss", ...formWrites].sort());
+    assert.deepEqual(Object.keys(gate.MOBILE_WRITES).sort(), ["category.create", "category.update", "receipt.upload", "voice.upload", "notifications.markRead", "notifications.markAllRead", "notifications.preferences", "ai.message", "ai.messageFeedback", "ai.insightFeedback", "ai.insightsRefresh", "ai.insightDismiss", "auth.forgotPassword", "auth.resetPassword", "email.resend", ...formWrites].sort());
     const DEDUP = ["unique-index", "key-atomic", "key-fix-pending", "once-only", "same-result", "next-open", "duplicates", "unverified"];
     for (const [operation, write] of Object.entries(gate.MOBILE_WRITES)) {
       assert.equal(gate.isWriteOpen(operation), false, operation);
@@ -151,6 +151,10 @@ const EXPECTED_DEDUP = {
   "debt.update": "same-result",
   "profile.update": "same-result",
   "profile.password": "unverified",
+  // Account recovery (docs/mobile/AUTH-RECOVERY.md): a copy only sends one more email; the reset token is single use.
+  "auth.forgotPassword": "same-result",
+  "auth.resetPassword": "once-only",
+  "email.resend": "same-result",
   "export.create": "duplicates",
   "notifications.markRead": "same-result",
   "notifications.markAllRead": "same-result",

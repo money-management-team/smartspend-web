@@ -61,6 +61,10 @@ export const FORM_WRITES = Object.freeze({
   notificationRead: { method: "PATCH", path: /^\/notifications\/[1-9]\d*\/read$/ },
   notificationsReadAll: { method: "POST", path: /^\/notifications\/read-all$/ },
   notificationPreferences: { method: "PATCH", path: /^\/notifications\/preferences$/ },
+  // Account recovery (auth/useAuthWrite.js). The first two are public and carry no Authorization; the resend is the signed-in user's.
+  authForgotPassword: { method: "POST", path: /^\/auth\/forgot-password$/ },
+  authResetPassword: { method: "POST", path: /^\/auth\/reset-password$/ },
+  emailResend: { method: "POST", path: /^\/auth\/email\/verification-notification$/ },
 });
 
 /**

@@ -10,7 +10,7 @@ import { errorKind } from "../data/errorKind.js";
 import { textError } from "../forms/validation.js";
 import "../i18n/register.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
-import { MOBILE_PREFIX, MOBILE_PROFILE, MOBILE_REGISTER, MOBILE_SIGNIN } from "../navigation.js";
+import { MOBILE_FORGOT_PASSWORD, MOBILE_PREFIX, MOBILE_PROFILE, MOBILE_REGISTER, MOBILE_SIGNIN } from "../navigation.js";
 import { usePresentation } from "../presentation/usePresentation.js";
 import { useOnline } from "../ui/useOnline.js";
 import { claimMobile } from "./claimMobile.js";
@@ -29,23 +29,25 @@ const firstOf = (value) => (Array.isArray(value) ? value.find((item) => typeof i
  * password, confirmation and one consent for terms and privacy) and the same
  * Remember me default (on). Mobile stores no token and makes no request of its
  * own here, so cross-tab sign-in protection and the session-expiry flow are
- * unchanged. Google sign-in, forgotten passwords and the signed email links are
- * the full version's pages, linked from here.
+ * unchanged. Forgotten and reset passwords are Mobile's own pages (auth/MobileRecovery.jsx, behind the write gate);
+ * the signed verification link is the backend's own address, which Mobile never receives (docs/mobile/AUTH-RECOVERY.md).
  */
-function AuthFrame({ screen, title, children }) {
+// `fullPath` is where "Use the full version instead" goes: the full version's sign-in, or for the recovery pages its own forgot-password page.
+export function AuthFrame({ screen, title, children, fullPath = PATH.AUTH.SIGNIN }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const { setPreference } = usePresentation();
   const navigate = useNavigate();
   // The full version's sign-in, with Google: the choice is stored, as from More.
   const toFull = () => {
     setPreference("desktop");
-    navigate(PATH.AUTH.SIGNIN);
+    navigate(fullPath);
   };
   const fullVersion = <button type="button" className="sm-link-button" onClick={toFull} data-sm-action="full-version">{t("auth.fullVersion")}</button>;
 
   // Sign-in has its own frame (styles: "Mobile sign-in, premium frame" in styles/mobile.css): a brand
-  // header on a navy band, the form in one elevated card, the way out below it. Registration keeps the plain frame.
-  if (screen === "signin") {
+  // header on a navy band, the form in one elevated card, the way out below it. The recovery pages (auth/MobileRecovery.jsx)
+  // use it too; registration keeps the plain frame.
+  if (screen === "signin" || screen === "forgot" || screen === "reset") {
     return (
       <div className="sm-root sm-standalone sm-auth sm-auth-premium" data-sm-screen={screen}>
         <div className="sm-auth-hero" aria-hidden="true" />
@@ -77,7 +79,7 @@ function AuthFrame({ screen, title, children }) {
 }
 
 // `icon` (sign-in only) adds a decorative leading icon inside the control; registration passes none.
-function PasswordInput({ id, value, onChange, autoComplete, invalid, describedBy, icon = null }) {
+export function PasswordInput({ id, value, onChange, autoComplete, invalid, describedBy, icon = null }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
   const [shown, setShown] = useState(false);
   return (
@@ -177,7 +179,7 @@ export function MobileSignIn() {
         <div className="sm-field">
           <span className="sm-auth-label-row">
             <label className="sm-label" htmlFor={`${ids}-password`}>{t("auth.password")}</label>
-            <Link className="sm-note-link" to={PATH.AUTH.FORGOT_PASSWORD}>{t("auth.forgot")}</Link>
+            <Link className="sm-note-link" to={MOBILE_FORGOT_PASSWORD}>{t("auth.forgot")}</Link>
           </span>
           <PasswordInput id={`${ids}-password`} value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="current-password" invalid={Boolean(errors.password)} describedBy={errors.password ? `${ids}-password-error` : undefined} icon={<LuLockKeyhole />} />
           {errors.password && <p id={`${ids}-password-error`} className="sm-text sm-form-error">{errors.password}</p>}

@@ -3,7 +3,7 @@ import { Navigate, useLocation } from "react-router-dom";
 
 import { useAuthContext } from "../../contexts/auth/useAuthContext";
 import { isPresentationBusy, isRedirectLoop, recordRedirect } from "./guard.js";
-import { getRedirect, toPath } from "./resolver.js";
+import { getHandoff, getRedirect, toPath } from "./resolver.js";
 import { usePresentation } from "./usePresentation.js";
 
 // One automatic redirect, by history replacement, carrying the router state
@@ -19,7 +19,8 @@ function RedirectOnce({ from, to, state }) {
 /*
  * Sends a signed-in visitor to the presentation they should see, before the
  * page behind it mounts. While the session is still being restored nothing is
- * decided: the route guards show their loading state, and nothing here
+ * decided (except the reset-link hand-off, which does not depend on it): the route
+ * guards show their loading state, and nothing here
  * redirects a signed-out visitor, so their canonical URL is what gets
  * remembered for after sign-in.
  *
@@ -36,8 +37,10 @@ export default function PresentationGate({
   const { initializing, isAuthenticated } = useAuthContext();
   const { mode } = usePresentation();
 
+  // The reset link is opened from a mail app, so it is handed over without waiting for the session: nothing about it depends
+  // on who is signed in, and waiting would show the full version's page first.
   const target = initializing
-    ? null
+    ? getHandoff(location, { enabled, mode })
     : resolve(location, { enabled, authenticated: isAuthenticated, mode });
 
   if (target) {

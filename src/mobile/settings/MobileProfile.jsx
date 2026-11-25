@@ -13,6 +13,7 @@ import { isWriteOpen } from "../data/writeGate.js";
 import { FormWithChoices } from "../forms/MobileWorkflow.jsx";
 import { todayIn } from "../forms/validation.js";
 import { WORKFLOWS } from "../forms/workflows.js";
+import { useAuthWrite, useCooldown } from "../auth/useAuthWrite.js";
 import useSignOut from "../auth/useSignOut.js";
 import { MOBILE_NAMESPACE } from "../i18n/messages.js";
 import { buildNotificationPreferences } from "../models/assist.js";
@@ -37,7 +38,7 @@ const personOf = (user) => ({ id: String(user?.id ?? ""), name: textOrNull(user?
 /*
  * The email status comes from the app's EmailVerificationProvider, the single
  * owner of GET /auth/email/status. "Check again" re-reads it (a GET); sending a
- * new verification email is a write, so it is offered in the full version.
+ * new verification email is a write (closed), see ResendVerification below.
  * Outside that provider (it is always there in the app) the status is unknown.
  */
 function EmailStatus({ verification, state }) {
@@ -52,7 +53,53 @@ function EmailStatus({ verification, state }) {
       {verification && state !== "loading" && (
         <button type="button" className="sm-button sm-button-quiet sm-button-small sm-setting-action" onClick={() => verification.refresh?.()} data-sm-action="check-email">{t("profile.checkAgain")}</button>
       )}
-      {state === "unverified" && (
+      {state === "unverified" && <ResendVerification verification={verification} />}
+    </div>
+  );
+}
+
+/*
+ * Sending a new verification email (POST /auth/email/verification-notification, the write "email.resend", CLOSED). While it is
+ * closed the control is disabled and says so, with the full version as the way to do it. The answers are described by their
+ * code (models/authRecovery.js): "already verified" re-reads the status; a 429 waits as long as the server says; a request
+ * whose outcome is unknown is said to be unknown (an email may have been sent) and waits a minute before another; nothing is
+ * retried for the person. The link in the email is the backend's own address (docs/mobile/AUTH-RECOVERY.md): "Check again"
+ * is how the new status is read once the person has opened it.
+ */
+function ResendVerification({ verification }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const { closed, busy, run } = useAuthWrite("email.resend");
+  const [result, setResult] = useState(null);
+  const [wait, startWait] = useCooldown();
+
+  const send = async () => {
+    if (closed || busy || wait > 0) return;
+    setResult(null);
+    const outcome = await run();
+    if (outcome.kind === "busy") return;
+    if (outcome.ok) {
+      if (outcome.data?.already_verified === true) {
+        setResult({ kind: "already" });
+        verification?.refresh?.();
+      } else {
+        setResult({ kind: "sent" });
+        startWait(60);
+      }
+    } else if (outcome.kind === "rate") {
+      setResult({ kind: "rate", seconds: outcome.seconds });
+      startWait(outcome.seconds);
+    } else if (outcome.kind === "unknown") {
+      setResult({ kind: "unknown" });
+      startWait(60);
+    } else {
+      // A 422 here is "no email on this account" (the only refusal the endpoint documents).
+      setResult({ kind: outcome.kind === "invalid" ? "noEmail" : outcome.kind === "session" || outcome.kind === "forbidden" ? outcome.kind : "failed" });
+    }
+  };
+
+  return (
+    <>
+      {closed && (
         <>
           <p className="sm-draft-note" role="note" data-sm-note="write-closed" data-sm-write="email.resend"><LuInfo aria-hidden="true" /><span>{t("profile.resendClosed")}</span></p>
           <Link className="sm-link-row sm-setting-link" to={getSettingsTabPath("profile")}>
@@ -61,7 +108,11 @@ function EmailStatus({ verification, state }) {
           </Link>
         </>
       )}
-    </div>
+      <button type="button" className="sm-button sm-button-small sm-setting-action" onClick={send} disabled={closed || busy || wait > 0} aria-busy={busy} data-sm-action="resend-verification">
+        {busy ? t("profile.resend.busy") : wait > 0 ? t("profile.resend.wait", { seconds: wait }) : t("profile.resend.action")}
+      </button>
+      {result && <p className="sm-text sm-muted" role={result.kind === "sent" || result.kind === "already" ? "status" : "alert"} data-sm-resend={result.kind}>{t(`profile.resend.${result.kind}`, { seconds: result.seconds })}</p>}
+    </>
   );
 }
 

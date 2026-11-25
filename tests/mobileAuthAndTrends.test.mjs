@@ -74,13 +74,13 @@ describe("Mobile sign-in", () => {
     assert.equal(location(), "/m/signin");
   });
 
-  it("the password can be shown, the reset and Google links go to the full version's pages, and a signed-in visitor is not shown sign-in", async () => {
+  it("the password can be shown, the reset link goes to Mobile's own page, Google uses the app's mechanism, and a signed-in visitor is not shown sign-in", async () => {
     await mountSignedOut("/m/signin");
     const password = q("input[autocomplete='current-password']");
     assert.equal(password.type, "password");
     await click(action("toggle-password"));
     assert.equal(password.type, "text");
-    assert.equal(qa("a").find((link) => /Forgot/.test(link.textContent)).getAttribute("href"), "/forgot-password");
+    assert.equal(qa("a").find((link) => /Forgot/.test(link.textContent)).getAttribute("href"), "/m/forgot-password");
     assert.ok(q("[data-sm-google]"), "Google sign-in uses the app's own mechanism (Decision C); unconfigured in tests");
     await view.unmount();
     api.restore();

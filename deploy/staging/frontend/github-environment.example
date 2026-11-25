@@ -1,0 +1,23 @@
+# GitHub environment "staging" for the frontend repository: NAMES AND SHAPES ONLY. No value in this file is real, and no real value
+# may ever be written into the repository. Create the environment in Settings > Environments, restrict deployment branches to
+# staging/* and integration/*, and add exactly these. A production secret or variable must NOT be reused under any of these names.
+#
+# Environment secrets
+#   STAGING_SSH_KEY         the private key of a deploy credential that exists only for staging (a separate key pair)
+#   STAGING_KNOWN_HOSTS     the host's known_hosts line(s), so the connection is verified (StrictHostKeyChecking=yes)
+#   STAGING_SSH_HOST        host name of the SSH server
+#   STAGING_SSH_USER        the SSH user for staging (on a shared plan this may be the same account name as production's; see the note)
+#   STAGING_SSH_PORT        the SSH port
+#
+# Environment variables
+#   STAGING_API_BASE_URL    https://<staging API host>/api          must be https, a host containing "staging", never a production host
+#   STAGING_WEB_ORIGIN      https://<staging web host>              an origin only; also the backend's FRONTEND_URLS
+#   STAGING_REMOTE_BASE     /home/<user>/deploy/smartspend-web-staging   absolute, contains "staging", not inside or around a production path
+#   STAGING_GOOGLE_CLIENT_ID  (optional) a Google client whose authorised origins include the staging web origin; leave empty to disable Google sign-in
+#
+# Naming convention for the domains (the production hosts use a hyphen between the product and the role):
+#   web  https://smartspend-staging.<domain>
+#   API  https://smartspend-api-staging.<domain>/api
+#
+# Note on a shared Hostinger plan: if staging and production share an SSH account, a leaked staging key could reach production files.
+# Prefer a second SSH account (or a separate plan) for staging. Until then isolation rests on paths and on never-deploy-to.list.

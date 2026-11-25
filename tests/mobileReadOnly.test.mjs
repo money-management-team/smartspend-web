@@ -72,7 +72,7 @@ describe("the source", () => {
     const calls = [...code(path.join(ROOT, WRITE)).matchAll(/\b(\w+Api)\.(\w+)\s*\(/g)].map((match) => `${match[1]}.${match[2]}`);
     assert.deepEqual([...new Set(calls)].sort(), [
       "accountsApi.archive", "accountsApi.create", "accountsApi.update", "aiCopilotApi.createConversation", "aiCopilotApi.deleteConversation", "aiCopilotApi.deleteData", "aiCopilotApi.dismissInsight", "aiCopilotApi.insightFeedback", "aiCopilotApi.messageFeedback", "aiCopilotApi.refreshInsights", "aiCopilotApi.sendMessage", "aiCopilotApi.updateSettings", "aiExpenseCapturesApi.confirm", "aiExpenseCapturesApi.create", "aiExpenseCapturesApi.update",
-      "aiVoiceExpenseCapturesApi.confirm", "aiVoiceExpenseCapturesApi.create", "aiVoiceExpenseCapturesApi.update", "authApi.changePassword", "authApi.updateProfile",
+      "aiVoiceExpenseCapturesApi.confirm", "aiVoiceExpenseCapturesApi.create", "aiVoiceExpenseCapturesApi.update", "authApi.changePassword", "authApi.forgotPassword", "authApi.resendVerificationEmail", "authApi.resetPassword", "authApi.updateProfile",
       "budgetsApi.create", "budgetsApi.update", "categoriesApi.archive", "categoriesApi.create", "categoriesApi.update", "debtsApi.create", "debtsApi.recordPayment",
       "debtsApi.reversePayment", "debtsApi.update", "notificationsApi.markAllRead", "notificationsApi.markRead", "notificationsApi.updatePreferences", "plannedSavingsApi.create", "recurringTransactionsApi.confirmNext", "recurringTransactionsApi.create",
       "recurringTransactionsApi.skipNext", "recurringTransactionsApi.update", "reportExportsApi.create", "savingsGoalsApi.contribute", "savingsGoalsApi.create",
@@ -81,9 +81,9 @@ describe("the source", () => {
     ], "the facade names these writes and no other (no budget, goal, debt or rule archive; no category delete; no import, discard or unlink)");
     // Every one of them is behind the gate: the only function that reaches SENDERS asserts it first.
     assert.match(code(path.join(ROOT, WRITE)), /export function sendWorkflowWrite\(write, key\) \{\n  assertWriteOpen\(write\.operation\);/);
-    // Five places send: the category form, the forms' submission hook, the receipt/voice upload hook, the notification
-    // write hook (mark read, mark all read) and the preference write hook. No other screen imports the write facade.
-    assert.deepEqual(find(/from\s*["'][^"']*data\/writeApi(?:\.js)?["']/), ["src/mobile/assist/useCaptureUpload.js", "src/mobile/categories/MobileCategoryForm.jsx", "src/mobile/forms/useWorkflowSubmit.js", "src/mobile/notifications/useNotificationWrite.js", "src/mobile/settings/usePreferenceWrite.js"]);
+    // Six places send: the category form, the forms' submission hook, the receipt/voice upload hook, the notification
+    // write hook (mark read, mark all read), the preference write hook and the account-recovery hook (auth/useAuthWrite.js). No other screen imports the write facade.
+    assert.deepEqual(find(/from\s*["'][^"']*data\/writeApi(?:\.js)?["']/), ["src/mobile/assist/useCaptureUpload.js", "src/mobile/auth/useAuthWrite.js", "src/mobile/categories/MobileCategoryForm.jsx", "src/mobile/forms/useWorkflowSubmit.js", "src/mobile/notifications/useNotificationWrite.js", "src/mobile/settings/usePreferenceWrite.js"]);
   });
 
   it("never asks for the Smart Savings funding preview: a POST, blocked until the backend shows it has no consequential side effect", () => {
@@ -197,7 +197,7 @@ describe("the facade", () => {
     const assist = await import("../src/mobile/data/readAssistApi.js");
     assert.ok(Object.keys(assist).every((name) => /^read[A-Z]|_PER_PAGE$/.test(name)), "the assistant facade exports reads only");
     const write = await import("../src/mobile/data/writeApi.js");
-    assert.deepEqual(Object.keys(write).sort(), ["SENDABLE_OPERATIONS", "newWriteKey", "sendCategoryCreate", "sendCategoryUpdate", "sendNotificationPreferences", "sendNotificationRead", "sendNotificationsReadAll", "sendWorkflowWrite"]);
+    assert.deepEqual(Object.keys(write).sort(), ["SENDABLE_OPERATIONS", "newWriteKey", "sendCategoryCreate", "sendCategoryUpdate", "sendForgotPassword", "sendNotificationPreferences", "sendNotificationRead", "sendNotificationsReadAll", "sendResetPassword", "sendVerificationResend", "sendWorkflowWrite"]);
   });
 
   it("each read sends a GET to its documented endpoint, with only documented filters", async () => {
