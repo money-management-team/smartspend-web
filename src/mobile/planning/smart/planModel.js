@@ -2,7 +2,7 @@ import { isCurrencyCode, parseDecimal } from "../../money/decimal.js";
 import { dateOnlyOrNull, idText, isRecord, textOrNull } from "../../models/values.js";
 
 /*
- * A Smart Savings plan, its options and an installment's confirmation preview,
+ * A Smart Savings plan, its history, its options and an installment's confirmation preview,
  * as the plan section shows them. Pure. Only in a build with Smart Savings on
  * (this folder is imported only by planning/SmartPlanSection.jsx, which is
  * loaded behind the flag).
@@ -78,6 +78,74 @@ export function buildPlanDetail(data, goalId, currency) {
       atRisk: health.target_at_risk === true,
     },
   };
+}
+
+// The plan statuses and endings the history shows (the full version's planHistoryHelpers PLAN_STATUSES / CLOSED_REASONS).
+export const HISTORY_STATUSES = Object.freeze(["active", "completed", "discontinued", "superseded"]);
+const CLOSED_REASONS = Object.freeze(["plan_superseded", "plan_discontinued", "goal_archived", "goal_achieved"]);
+const moment = (value) => (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value) ? value : null);
+const count = (value) => (Number.isSafeInteger(value) && value >= 0 ? value : null);
+
+/*
+ * `data.savings_plans` (GET …/plans, a Laravel paginator) for this goal, or null when the shape is wrong:
+ * `{ plans, total, more }`. A row of another goal, or with a status the history doesn't know, is dropped.
+ * Each plan's figures are the plan's own (what it agreed, how many installments were confirmed), never
+ * the goal's balance; `financial_summary` is not shown, so nothing here depends on its attribution.
+ */
+export function buildPlanHistory(data, goalId) {
+  const page = isRecord(data) ? data.savings_plans : null;
+  if (!isRecord(page) || !Array.isArray(page.data)) return null;
+
+  const plans = page.data.filter((plan) => isRecord(plan) && idText(plan.id) && idText(plan.savings_goal_id) === String(goalId) && HISTORY_STATUSES.includes(plan.status)).map((plan) => {
+    const summary = isRecord(plan.installments_summary) ? plan.installments_summary : {};
+    return {
+      id: idText(plan.id),
+      status: plan.status,
+      planVersion: int(plan.plan_version),
+      intensity: word(plan.intensity),
+      frequency: word(plan.frequency),
+      interval: int(plan.interval),
+      installmentAmount: money(plan.installment_amount),
+      startDate: dateOnlyOrNull(plan.start_date),
+      lastDate: dateOnlyOrNull(plan.expected_completion_date),
+      acceptedAt: moment(plan.accepted_at),
+      endedAt: plan.status === "active" ? null : moment(plan.completed_at ?? plan.discontinued_at ?? plan.superseded_at),
+      ending: plan.status === "active" ? null : CLOSED_REASONS.includes(plan.closed_reason) ? plan.closed_reason : plan.status,
+      fulfilled: count(summary.fulfilled),
+      total: count(summary.total),
+    };
+  });
+  const total = count(page.total) ?? plans.length;
+  const lastPage = int(page.last_page) ?? 1;
+  const current = int(page.current_page) ?? 1;
+  return { plans, total, more: current < lastPage };
+}
+
+/*
+ * One page of GET …/plans/{plan}/installments for this plan: `{ rows, total, page, lastPage }`. It throws (a
+ * malformed answer) when the page is not this plan's or has no rows array, the full version's readPlanInstallments
+ * rule; a row of another plan is dropped. `state` is the full version's getInstallmentState: a confirmed installment
+ * with part of its payment reversed reads "partially_reversed". Every amount is the backend's own string.
+ */
+export function buildPlanInstallmentsPage(data, planId) {
+  const plan = isRecord(data) ? data.savings_plan : null;
+  const page = isRecord(data) ? data.installments : null;
+  if (!isRecord(plan) || idText(plan.id) !== String(planId) || !isRecord(page) || !Array.isArray(page.data)) {
+    throw Object.assign(new Error("Not this plan's installments."), { code: "MALFORMED_RESPONSE" });
+  }
+  const rows = page.data.filter((raw) => isRecord(raw) && idText(raw.savings_plan_id) === String(planId)).map((raw) => {
+    const base = normalizeInstallment(raw);
+    if (!base) return null;
+    const state = raw.status === "fulfilled" && raw.reversal_state === "partially_reversed" ? "partially_reversed" : base.status;
+    return {
+      ...base,
+      scheduled: money(raw.amount),
+      state,
+      confirmed: money(raw.effective_amount ?? raw.fulfilled_amount),
+      reason: CLOSED_REASONS.includes(raw.resolution_reason) ? raw.resolution_reason : null,
+    };
+  }).filter(Boolean);
+  return { rows, total: count(page.total) ?? rows.length, page: int(page.current_page) ?? 1, lastPage: int(page.last_page) ?? 1 };
 }
 
 /** `data.plan_options` (GET …/plan-options), or null. An option that isn't feasible, or repeats another, can't be chosen. */

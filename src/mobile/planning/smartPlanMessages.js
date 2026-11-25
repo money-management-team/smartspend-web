@@ -29,7 +29,7 @@ export const SMART_PLAN_MESSAGES = {
     intensity: { easy: "Easy", balanced: "Balanced", intensive: "Intensive" },
     installments: "Open installments", noOpen: "No installment is open.", number: "Installment {{sequence}}", postponedTimes: "Postponed {{count}} times",
     showAll: "Show all {{count}}", showFewer: "Show fewer", resolved: "Earlier installments ({{count}})",
-    status: { confirmed: "Confirmed", skipped: "Skipped", missed: "Missed", cancelled: "Cancelled", partially_reversed: "Partly reversed", planned: "Open" },
+    status: { confirmed: "Confirmed", fulfilled: "Confirmed", skipped: "Skipped", missed: "Missed", cancelled: "Cancelled", partially_reversed: "Partly reversed", planned: "Open" },
     review: {
       confirm: { open: "Confirm…", title: "Confirm installment {{sequence}}", intro: "Confirming moves the amount from the account you choose into the goal.", send: "Confirm and move money" },
       postpone: { open: "Postpone…", title: "Postpone installment {{sequence}}", intro: "Postponing moves this installment's date. No money moves.", send: "Postpone" },
@@ -54,6 +54,19 @@ export const SMART_PLAN_MESSAGES = {
     estimate: "Estimate", affordability: { comfortable: "Comfortable", stretch: "A stretch", strained: "Strained", unaffordable: "Beyond your estimated room", unknown: "Affordability unknown" },
     notFeasible: "Not possible by the target date", duplicate: "Same schedule as another option",
     notAdvice: "An estimate, not a guarantee or financial advice.", createPlan: "Start this plan", createClosed: "Starting a plan isn't available in Mobile yet. Use the full version.",
+    history: {
+      show: "Show earlier plans", hide: "Hide earlier plans", loading: "Loading earlier plans", none: "This goal has no earlier plans.",
+      version: "Plan {{version}}", confirmed: "{{fulfilled}} of {{total}} installments confirmed",
+      status: { active: "Active", completed: "Completed", discontinued: "Discontinued", superseded: "Replaced" },
+      ending: { plan_superseded: "Replaced by a revised plan", plan_discontinued: "Discontinued", goal_archived: "Ended when the goal was archived", goal_achieved: "Ended when the goal reached its target", completed: "Completed", discontinued: "Discontinued", superseded: "Replaced" },
+      more: "This goal has {{count}} plans. Older ones are in the full version.",
+      note: "Each plan's own figures, not the goal's balance. Payments and reversals of earlier plans are in the full version.",
+      installments: {
+        show: "Show installments ({{count}})", hide: "Hide installments", loading: "Loading installments", none: "This plan has no installments to show.",
+        scheduled: "Scheduled", confirmed: "Confirmed amount", reversed: "Reversed", originally: "originally",
+        shown: "{{shown}} of {{total}} shown", more: "Show more", loadingMore: "Loading more",
+      },
+    },
   },
   ar: {
     title: "خطة الادخار الذكي",
@@ -73,7 +86,7 @@ export const SMART_PLAN_MESSAGES = {
     intensity: { easy: "سهلة", balanced: "متوازنة", intensive: "مكثّفة" },
     installments: "الأقساط المفتوحة", noOpen: "لا يوجد قسط مفتوح.", number: "القسط {{sequence}}", postponedTimes: "أُجّل {{count}} مرات",
     showAll: "اعرض الكل ({{count}})", showFewer: "اعرض أقل", resolved: "الأقساط السابقة ({{count}})",
-    status: { confirmed: "مؤكد", skipped: "متخطى", missed: "فائت", cancelled: "ملغى", partially_reversed: "معكوس جزئيًا", planned: "مفتوح" },
+    status: { confirmed: "مؤكد", fulfilled: "مؤكد", skipped: "متخطى", missed: "فائت", cancelled: "ملغى", partially_reversed: "معكوس جزئيًا", planned: "مفتوح" },
     review: {
       confirm: { open: "تأكيد…", title: "تأكيد القسط {{sequence}}", intro: "التأكيد ينقل المبلغ من الحساب الذي تختاره إلى الهدف.", send: "أكّد وانقل المال" },
       postpone: { open: "تأجيل…", title: "تأجيل القسط {{sequence}}", intro: "التأجيل يغيّر تاريخ هذا القسط فقط. لا يتحرك أي مال.", send: "أجّل" },
@@ -98,6 +111,19 @@ export const SMART_PLAN_MESSAGES = {
     estimate: "تقدير", affordability: { comfortable: "مريحة", stretch: "تتطلب جهدًا", strained: "مرهقة", unaffordable: "تتجاوز مساحتك التقديرية", unknown: "القدرة على التحمّل غير معروفة" },
     notFeasible: "غير ممكنة قبل التاريخ المستهدف", duplicate: "الجدول نفسه لخيار آخر",
     notAdvice: "تقدير، وليس ضمانًا ولا نصيحة مالية.", createPlan: "ابدأ هذه الخطة", createClosed: "بدء خطة غير متاح في نسخة الجوال بعد. استخدم النسخة الكاملة.",
+    history: {
+      show: "اعرض الخطط السابقة", hide: "أخفِ الخطط السابقة", loading: "جارٍ تحميل الخطط السابقة", none: "لا توجد خطط سابقة لهذا الهدف.",
+      version: "الخطة {{version}}", confirmed: "أُكّد {{fulfilled}} من {{total}} أقساط",
+      status: { active: "نشطة", completed: "مكتملة", discontinued: "موقوفة", superseded: "مستبدلة" },
+      ending: { plan_superseded: "استُبدلت بخطة معدّلة", plan_discontinued: "أُوقفت", goal_archived: "انتهت عند أرشفة الهدف", goal_achieved: "انتهت عند بلوغ الهدف مبلغه المستهدف", completed: "مكتملة", discontinued: "موقوفة", superseded: "مستبدلة" },
+      more: "لهذا الهدف {{count}} خطط. الأقدم منها في النسخة الكاملة.",
+      note: "أرقام كل خطة الخاصة بها، وليست رصيد الهدف. دفعات الخطط السابقة وعكسها في النسخة الكاملة.",
+      installments: {
+        show: "اعرض الأقساط ({{count}})", hide: "أخفِ الأقساط", loading: "جارٍ تحميل الأقساط", none: "لا توجد أقساط لعرضها في هذه الخطة.",
+        scheduled: "المجدول", confirmed: "المبلغ المؤكد", reversed: "المعكوس", originally: "في الأصل",
+        shown: "معروض {{shown}} من {{total}}", more: "اعرض المزيد", loadingMore: "جارٍ تحميل المزيد",
+      },
+    },
   },
 };
 

@@ -17,7 +17,7 @@ It does not create, edit, archive, contribute to, withdraw from, pause, resume, 
         all inside RequireAuth > IdentityBoundary > MobileAppShell, like Home, Accounts and Activity
 
 data/readApi.js        the only file that makes the Planning requests, all GET (adds readBudgets/readBudget/readGoals/readGoal/readRules/readRule)
-data/readPlanApi.js    the one Smart Savings read (GET /savings-goals/{id}/plan), in its own file (§8)
+data/readPlanApi.js    the Smart Savings reads (GET /savings-goals/{id}/plan, and later …/plans, …/plan-options, …/confirmation-preview), in their own file (§8)
 models/planning.js     paginator reader, percentage reader, state reader
 models/budgets.js, goals.js, recurring.js, plan.js   filters, one row, a page, one record
 planning/              PagedListView + usePagedList + useListScreen (the three lists), RecordScreen (the three record pages),

@@ -13,6 +13,7 @@ import { formatDay } from "../money/format.js";
 import Money from "../money/Money.jsx";
 import "./smartPlanMessages.js";
 import InstallmentReview from "./smart/InstallmentReview.jsx";
+import PlanHistory from "./smart/PlanHistory.jsx";
 import { RHYTHMS, buildPlanDetail, buildPlanOptions } from "./smart/planModel.js";
 import Chevron from "../ui/Chevron.jsx";
 import ErrorPanel from "../ui/ErrorPanel.jsx";
@@ -27,6 +28,7 @@ const OPEN_SHOWN = 4;
  * with Smart Savings on (planning/smartSavingsGate.js), and it only ever reads:
  *
  *   GET …/plan                         the plan: rhythm, amounts, health, installments, versions
+ *   GET …/plans                        the goal's earlier plans, once asked for (smart/PlanHistory.jsx)
  *   GET …/plan-options                 for a goal with no plan, once asked for, per rhythm
  *   GET …/confirmation-preview         when a confirm review opens
  *
@@ -96,7 +98,7 @@ export default function SmartPlanSection({ goal, locale }) {
   let body;
 
   if (resource.loading) body = <Skeleton lines={2} label={t(`${P}.loading`)} />;
-  else if (noPlan) body = <><p className="sm-text sm-muted" data-sm-plan="none">{t(`${P}.none`)}</p>{goal.status === "active" && <PlanOptions goal={goal} locale={locale} />}</>;
+  else if (noPlan) body = <><p className="sm-text sm-muted" data-sm-plan="none">{t(`${P}.none`)}</p>{goal.status === "active" && <PlanOptions goal={goal} locale={locale} />}<PlanHistory goal={goal} locale={locale} /></>;
   else if (resource.status === "error" || !plan) body = <ErrorPanel error={resource.error ?? MALFORMED} onRetry={resource.reload} retrying={resource.refreshing} compact />;
   else {
     const open = plan.installments.filter((item) => item.open);
@@ -152,6 +154,7 @@ export default function SmartPlanSection({ goal, locale }) {
             </ul>
           </details>
         )}
+        <PlanHistory goal={goal} locale={locale} />
         <p className="sm-text sm-muted sm-fine">{t(`${P}.readOnly`)}</p>
         <Link className="sm-link-row" to={getGoalSmartPlanPath(goal.id)}>
           <span>{t(`${P}.openFull`)}</span>

@@ -230,6 +230,200 @@ if (!ON) {
       assert.deepEqual(api.violations, []);
     });
 
+    // GET …/plans: the goal's plan history (docs/savings-goals/plan-management.md). Read only, and only once asked for.
+    const historyPlan = (id, over = {}) => ({
+      id, savings_goal_id: 1, status: "superseded", plan_version: id, intensity: "easy", frequency: "monthly", interval: 1, installment_amount: "120.0000",
+      start_date: "2026-01-05", expected_completion_date: "2026-12-05", installments_summary: { total: 12, fulfilled: 3, open: 0, cancelled: 9 },
+      closed_reason: "plan_superseded", accepted_at: "2026-01-01T09:00:00.000000Z", completed_at: null, discontinued_at: null, superseded_at: "2026-04-01T09:00:00.000000Z", ...over,
+    });
+    const historyPage = (plans, { page = 1, lastPage = 1, total = plans.length } = {}) => ({ savings_plans: { current_page: page, data: plans, last_page: lastPage, per_page: 10, total } });
+    const withHistory = (history, extra = {}) => {
+      const base = backend(extra);
+      return (call) => (/^\/savings-goals\/1\/plans$/.test(call.path) ? (typeof history === "function" ? history(call) : { body: envelope(history) }) : base(call));
+    };
+
+    it("the strings of the plan history have the same keys in both languages", async () => {
+      const { SMART_PLAN_MESSAGES } = await import("../src/mobile/planning/smartPlanMessages.js");
+      const flat = (value, prefix = "") => Object.entries(value).flatMap(([key, item]) => (item && typeof item === "object" ? flat(item, `${prefix}${key}.`) : [`${prefix}${key}`])).sort();
+      assert.deepEqual(flat(SMART_PLAN_MESSAGES.en.history), flat(SMART_PLAN_MESSAGES.ar.history));
+    });
+
+    it("earlier plans are read only when asked for, with GET …/plans, and show each plan's own figures", async () => {
+      const history = historyPage([
+        historyPlan(3, { status: "active", closed_reason: null, superseded_at: null }),
+        historyPlan(2),
+        historyPlan(1, { status: "discontinued", closed_reason: "plan_discontinued", superseded_at: null, discontinued_at: "2026-01-20T09:00:00.000000Z", installments_summary: { total: 12, fulfilled: 0, open: 0, cancelled: 12 } }),
+        historyPlan(9, { savings_goal_id: 2 }),
+        historyPlan(8, { status: "draft" }),
+      ], { lastPage: 2, total: 14 });
+      await open("/m/planning/goals/1", withHistory(history));
+      assert.equal(api.calls.some((call) => /\/plans$/.test(call.path)), false, "the goal's page reads no history by itself");
+      const toggle = q("[data-sm-action='plan-history']");
+      assert.equal(toggle.getAttribute("aria-expanded"), "false");
+
+      await click(toggle);
+      await settle();
+      const call = api.calls.find((item) => /\/plans$/.test(item.path));
+      assert.equal(call.path, "/savings-goals/1/plans");
+      assert.deepEqual(call.query, { per_page: "10" });
+      assert.equal(q("[data-sm-action='plan-history']").getAttribute("aria-expanded"), "true");
+      // The active plan is the section above; another goal's row and an unknown status are dropped.
+      assert.deepEqual(qa("[data-sm-history-plan]").map((row) => [row.dataset.smHistoryPlan, row.dataset.smStatus]), [["2", "superseded"], ["1", "discontinued"]]);
+      const replaced = text(q("[data-sm-history-plan='2']"));
+      for (const words of [/Plan 2/, /Replaced/, /120\.00/, /Every 1 × month/, /Easy/, /3 of 12 installments confirmed/, /Replaced by a revised plan/]) assert.match(replaced, words);
+      assert.match(text(q("[data-sm-history-plan='1']")), /0 of 12 installments confirmed/);
+      assert.match(text(q("[data-sm-history='more']")), /14 plans/);
+      assert.ok(api.calls.every((item) => item.method === "GET"));
+      assert.deepEqual(api.violations, []);
+
+      await click(q("[data-sm-action='plan-history']"));
+      assert.equal(q("[data-sm-action='plan-history']").getAttribute("aria-expanded"), "false");
+      assert.equal(api.calls.filter((item) => /\/plans$/.test(item.path)).length, 1, "closing and the cached page send nothing more");
+    });
+
+    it("a goal with no active plan can still open its history; a goal with none says so", async () => {
+      await open("/m/planning/goals/1", withHistory(historyPage([historyPlan(1, { status: "completed", closed_reason: "goal_achieved", superseded_at: null, completed_at: "2026-06-01T09:00:00.000000Z" })]), { noPlan: true }));
+      await click(q("[data-sm-action='plan-history']"));
+      await settle();
+      assert.equal(q("[data-sm-history-plan='1']").dataset.smStatus, "completed");
+      assert.match(text(q("[data-sm-history-plan='1']")), /Ended when the goal reached its target/);
+      assert.equal(q("[data-sm-history='more']"), null);
+
+      await view.unmount();
+      api.restore();
+      await open("/m/planning/goals/1", withHistory(historyPage([])));
+      await click(q("[data-sm-action='plan-history']"));
+      await settle();
+      assert.equal(q("[data-sm-history='empty']").textContent, "This goal has no earlier plans.");
+    });
+
+    it("a history read that fails, or is not this goal's shape, shows an error with a Retry that is the same GET", async () => {
+      let answer = failure(500, "boom");
+      await open("/m/planning/goals/1", withHistory(() => answer));
+      await click(q("[data-sm-action='plan-history']"));
+      await settle();
+      const panel = () => q("[data-sm-section='plan-history']");
+      assert.equal(panel().querySelector("[data-sm-error]").dataset.smError, "server");
+      assert.equal(q("[data-sm-plan]").dataset.smPlan, "active", "the plan above stands");
+
+      answer = { body: envelope({ savings_plans: { data: "nope" } }) };
+      await click(qa("button", panel()).find((item) => item.textContent.trim() === "Try again"));
+      await settle();
+      assert.equal(panel().querySelector("[data-sm-error]").dataset.smError, "malformed");
+      assert.deepEqual(api.calls.filter((item) => /\/plans$/.test(item.path)).map((item) => item.path), ["/savings-goals/1/plans", "/savings-goals/1/plans"]);
+      assert.deepEqual(api.violations, []);
+    });
+
+    // GET …/plans/{plan}/installments (docs/savings-goals/plan-management.md, F5.2): one earlier plan's installments, read only.
+    const planInstallment = (id, over = {}) => ({
+      id, savings_plan_id: 2, sequence: id - 20, planned_date: `2026-0${Math.min(9, id - 20)}-05`, original_planned_date: null, postponed_count: 0, amount: "120.0000", status: "cancelled",
+      lock_version: 1, reversal_state: "none", fulfilled_amount: null, effective_amount: null, reversed_amount: null, shortfall_amount: null, resolution_reason: null, ...over,
+    });
+    const installmentsPage = (items, { planId = 2, page = 1, lastPage = 1, total = items.length } = {}) => ({
+      savings_plan: { id: planId, savings_goal_id: 1, status: "superseded", plan_version: 2, currency_code: "ILS", can_manage: true },
+      installments: { current_page: page, data: items, last_page: lastPage, per_page: 10, total },
+    });
+    const withInstallments = () => withHistory(historyPage([historyPlan(2), historyPlan(1, { status: "discontinued", closed_reason: "plan_discontinued" })]), {});
+    const openHistory = async (installments) => {
+      const base = withInstallments();
+      await open("/m/planning/goals/1", (call) => (/^\/savings-goals\/1\/plans\/\d+\/installments$/.test(call.path) ? installments(call) : base(call)));
+      await click(q("[data-sm-action='plan-history']"));
+      await settle();
+    };
+    const row = (planId) => q(`[data-sm-history-plan='${planId}']`);
+    const installmentCalls = () => api.calls.filter((call) => /\/installments$/.test(call.path));
+
+    it("an earlier plan's installments are read only once its row is opened, and only that plan's", async () => {
+      await openHistory(() => ({ body: envelope(installmentsPage([
+        planInstallment(21, { status: "fulfilled", fulfilled_amount: "120.0000", effective_amount: "120.0000" }),
+        planInstallment(22, { status: "fulfilled", fulfilled_amount: "120.0000", effective_amount: "80.0000", reversed_amount: "40.0000", reversal_state: "partially_reversed", postponed_count: 1, original_planned_date: "2026-01-20" }),
+        planInstallment(23, { status: "skipped" }),
+        planInstallment(24, { status: "cancelled", resolution_reason: "plan_superseded" }),
+        planInstallment(29, { savings_plan_id: 1 }),
+      ], { total: 4 })) })); // the backend's total is this plan's own; a stray row of another plan is not in it
+      assert.deepEqual(installmentCalls(), [], "opening the history reads no installments");
+      const toggle = row(2).querySelector("[data-sm-action='plan-installments']");
+      assert.match(toggle.textContent, /Show installments \(12\)/);
+      assert.equal(toggle.getAttribute("aria-expanded"), "false");
+
+      await click(toggle);
+      await settle();
+      assert.deepEqual(installmentCalls().map((call) => [call.path, call.query]), [["/savings-goals/1/plans/2/installments", { per_page: "10" }]]);
+      assert.equal(row(1).querySelector("[data-sm-list='plan-installments']"), null, "the other plan stays closed and unread");
+      const rows = qa("[data-sm-list='plan-installments'] [data-sm-installment]", row(2));
+      assert.deepEqual(rows.map((item) => [item.dataset.smInstallment, item.dataset.smStatus]), [["21", "fulfilled"], ["22", "partially_reversed"], ["23", "skipped"], ["24", "cancelled"]], "another plan's row is dropped");
+      assert.match(text(rows[0]), /Installment 1/);
+      assert.match(text(rows[0]), /Confirmed · Scheduled 120\.00/);
+      assert.match(text(rows[1]), /Partly reversed/);
+      assert.match(text(rows[1]), /Confirmed amount 80\.00/);
+      assert.match(text(rows[1]), /Reversed 40\.00/);
+      assert.match(text(rows[1]), /Postponed 1 times · originally/);
+      assert.doesNotMatch(text(rows[2]), /Confirmed amount/);
+      assert.match(text(rows[3]), /Replaced by a revised plan/);
+      assert.match(text(row(2)), /4 of 4 shown/);
+      assert.equal(row(2).querySelector("[data-sm-action='plan-installments-more']"), null, "one page: no Show more");
+      // Read only: nothing in the list can act on an installment.
+      assert.equal(qa("[data-sm-list='plan-installments'] button", row(2)).length, 0);
+      assert.ok(api.calls.every((call) => call.method === "GET"));
+      assert.deepEqual(api.violations, []);
+    });
+
+    it("Show more reads the next page with page=2, appends it without repeats, and stops at the last page", async () => {
+      await openHistory((call) => ({ body: envelope(call.query.page === "2"
+        ? installmentsPage([planInstallment(30), planInstallment(31)], { page: 2, lastPage: 2, total: 12 })
+        : installmentsPage(Array.from({ length: 10 }, (_, index) => planInstallment(21 + index)), { lastPage: 2, total: 12 })) }));
+      await click(row(2).querySelector("[data-sm-action='plan-installments']"));
+      await settle();
+      assert.equal(qa("[data-sm-list='plan-installments'] [data-sm-installment]", row(2)).length, 10);
+      assert.match(text(row(2)), /10 of 12 shown/);
+      assert.equal(installmentCalls().length, 1, "the next page waits for Show more");
+
+      await click(row(2).querySelector("[data-sm-action='plan-installments-more']"));
+      await settle();
+      assert.deepEqual(installmentCalls().map((call) => call.query), [{ per_page: "10" }, { per_page: "10", page: "2" }]);
+      assert.deepEqual(qa("[data-sm-list='plan-installments'] [data-sm-installment]", row(2)).map((item) => item.dataset.smInstallment), ["21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "31"], "30 is on both pages and shown once");
+      assert.match(text(row(2)), /11 of 12 shown/);
+      assert.equal(row(2).querySelector("[data-sm-action='plan-installments-more']"), null);
+      assert.deepEqual(api.violations, []);
+    });
+
+    it("a plan with no installments says so", async () => {
+      await openHistory(() => ({ body: envelope(installmentsPage([])) }));
+      await click(row(2).querySelector("[data-sm-action='plan-installments']"));
+      await settle();
+      assert.equal(row(2).querySelector("[data-sm-installments='empty']").textContent, "This plan has no installments to show.");
+    });
+
+    it("a failed or another plan's first page is an error whose Retry is the same GET; a failed next page retries that page only", async () => {
+      let first = failure(500, "boom");
+      let second = failure(503, "busy");
+      await openHistory((call) => (call.query.page === "2" ? second : first));
+      await click(row(2).querySelector("[data-sm-action='plan-installments']"));
+      await settle();
+      assert.equal(row(2).querySelector("[data-sm-error]").dataset.smError, "server");
+
+      first = { body: envelope(installmentsPage([planInstallment(21)], { planId: 7 })) };
+      await click(qa("button", row(2)).find((item) => item.textContent.trim() === "Try again"));
+      await settle();
+      assert.equal(row(2).querySelector("[data-sm-error]").dataset.smError, "malformed", "a page about another plan is refused");
+
+      first = { body: envelope(installmentsPage([planInstallment(21)], { lastPage: 2, total: 2 })) };
+      await click(qa("button", row(2)).find((item) => item.textContent.trim() === "Try again"));
+      await settle();
+      await click(row(2).querySelector("[data-sm-action='plan-installments-more']"));
+      await settle();
+      assert.ok(row(2).querySelector("[data-sm-error]"), "the next page's failure is shown");
+      assert.equal(qa("[data-sm-list='plan-installments'] [data-sm-installment]", row(2)).length, 1, "the first page stays");
+
+      second = { body: envelope(installmentsPage([planInstallment(22)], { page: 2, lastPage: 2, total: 2 })) };
+      await click(qa("button", row(2)).find((item) => item.textContent.trim() === "Try again"));
+      await settle();
+      assert.equal(qa("[data-sm-list='plan-installments'] [data-sm-installment]", row(2)).length, 2);
+      assert.deepEqual(installmentCalls().map((call) => call.query.page ?? "1"), ["1", "1", "1", "2", "2"]);
+      assert.ok(api.calls.every((call) => call.method === "GET"));
+      assert.deepEqual(api.violations, []);
+    });
+
     it("an archived goal has no plan section and no plan request", async () => {
       await open("/m/planning/goals/1", { goals: [goal(1, { status: "archived", archived_at: "2026-09-01T00:00:00Z" })], plans: { 1: activePlan(1) } });
 

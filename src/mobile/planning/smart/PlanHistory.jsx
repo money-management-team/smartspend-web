@@ -1,0 +1,159 @@
+import { useCallback, useId, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+
+import { keys } from "../../data/loaders.js";
+import { sessionWorkspace } from "../../data/readApi.js";
+import { PLAN_INSTALLMENTS_PER_PAGE, readPlanHistory, readPlanInstallments } from "../../data/readPlanApi.js";
+import { useResource } from "../../data/useResource.js";
+import { MOBILE_NAMESPACE } from "../../i18n/messages.js";
+import { formatDay } from "../../money/format.js";
+import Money from "../../money/Money.jsx";
+import ErrorPanel from "../../ui/ErrorPanel.jsx";
+import Skeleton from "../../ui/Skeleton.jsx";
+import { usePagedList } from "../usePagedList.js";
+import { buildPlanHistory, buildPlanInstallmentsPage } from "./planModel.js";
+
+const MALFORMED = Object.freeze({ code: "MALFORMED_RESPONSE" });
+const P = "planning.goals.plan";
+const H = `${P}.history`;
+const I = `${H}.installments`;
+
+// One read per page, keyed by goal, plan and page (usePagedList); `signature` is "goalId:planId".
+const installmentsKey = (signature, page) => {
+  const [goalId, planId] = signature.split(":");
+  return keys.goalPlanInstallments(goalId, planId, page);
+};
+
+/*
+ * One earlier plan's installments (GET …/plans/{plan}/installments), mounted only once its row is opened: the
+ * first page then, the next only on "Show more". Read only: no installment here can be confirmed, postponed,
+ * skipped or reversed, and its payments (funding legs) are not read.
+ */
+function PlanInstallments({ goal, plan, locale }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const [pages, setPages] = useState(1);
+  const loaderFor = useCallback((page) => async (signal) => (await readPlanInstallments(goal.id, plan.id, page, signal)).data, [goal.id, plan.id]);
+  const build = useCallback((data) => buildPlanInstallmentsPage(data, plan.id), [plan.id]);
+  const list = usePagedList({ keyOf: installmentsKey, signature: `${goal.id}:${plan.id}`, pages, perPage: PLAN_INSTALLMENTS_PER_PAGE, loaderFor, build });
+  const day = (value) => (value ? <bdi>{formatDay(value, locale, "UTC")}</bdi> : "—");
+
+  if (list.loading) return <Skeleton lines={2} label={t(`${I}.loading`)} />;
+  if (list.failed) return <ErrorPanel error={list.error?.code ? list.error : MALFORMED} onRetry={list.reload} retrying={list.refreshing} compact />;
+  if (list.items.length === 0) return <p className="sm-text sm-muted" data-sm-installments="empty">{t(`${I}.none`)}</p>;
+
+  return (
+    <div className="sm-plan-earlier-panel" data-sm-installments="ready">
+      <ul className="sm-list" data-sm-list="plan-installments">
+        {list.items.map((item) => (
+          <li key={item.id} className="sm-row" data-sm-installment={item.id} data-sm-status={item.state ?? "unknown"}>
+            <span className="sm-row-main">
+              <span className="sm-row-title">{t(`${P}.number`, { sequence: item.sequence ?? "?" })} · {day(item.date)}</span>
+              <span className="sm-row-meta">
+                {t(`${P}.status.${item.state}`, { defaultValue: item.state ?? "—" })}
+                {item.scheduled && <> · {t(`${I}.scheduled`)} <Money plain value={item.scheduled} currency={goal.currency} /></>}
+              </span>
+              {item.confirmed && item.status === "fulfilled" && <span className="sm-row-meta">{t(`${I}.confirmed`)} <Money plain value={item.confirmed} currency={goal.currency} /></span>}
+              {item.reversed && <span className="sm-row-meta">{t(`${I}.reversed`)} <Money plain value={item.reversed} currency={goal.currency} /></span>}
+              {item.postponedCount ? <span className="sm-row-meta">{t(`${P}.postponedTimes`, { count: item.postponedCount })}{item.originalDate && <> · {t(`${I}.originally`)} {day(item.originalDate)}</>}</span> : null}
+              {item.reason && <span className="sm-row-meta">{t(`${H}.ending.${item.reason}`)}</span>}
+            </span>
+          </li>
+        ))}
+      </ul>
+      {list.total !== null && <p className="sm-text sm-muted sm-fine" data-sm-installments-shown={list.items.length}>{t(`${I}.shown`, { shown: list.items.length, total: list.total })}</p>}
+      {list.moreError ? (
+        <ErrorPanel error={list.moreError?.code ? list.moreError : MALFORMED} onRetry={() => list.retryPage(list.moreErrorPage)} compact />
+      ) : list.canLoadMore || list.loadingMore ? (
+        <button type="button" className="sm-button sm-button-quiet sm-button-small" disabled={list.loadingMore} aria-busy={list.loadingMore || undefined} onClick={() => setPages(pages + 1)} data-sm-action="plan-installments-more">
+          {t(list.loadingMore ? `${I}.loadingMore` : `${I}.more`)}
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+function PlanInstallmentsToggle({ goal, plan, locale }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
+  return (
+    <>
+      <button type="button" className="sm-button sm-button-quiet sm-button-small" aria-expanded={open} aria-controls={panelId} onClick={() => setOpen(!open)} data-sm-action="plan-installments">
+        {t(open ? `${I}.hide` : `${I}.show`, { count: plan.total ?? 0 })}
+      </button>
+      <div id={panelId} hidden={!open}>{open && <PlanInstallments goal={goal} plan={plan} locale={locale} />}</div>
+    </>
+  );
+}
+
+/*
+ * A goal's earlier plans (GET …/plans, first page, newest first): completed, discontinued and replaced plans,
+ * each with its own figures. Read only, and read only once the person opens it, so the goal's page makes no
+ * extra request by itself. The active plan is left out: the section above shows it. Each plan's installments open
+ * from its row (PlanInstallments, read only). Older pages of plans, funding and reversals are in the full version.
+ */
+export default function PlanHistory({ goal, locale }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
+  const loader = useMemo(() => async (signal) => (await readPlanHistory(goal.id, signal)).data, [goal.id]);
+  const resource = useResource(keys.goalPlanHistory(goal.id), loader, { enabled: open });
+  const history = useMemo(() => (resource.data === undefined ? null : buildPlanHistory(resource.data, goal.id)), [resource.data, goal.id]);
+  const timeZone = sessionWorkspace()?.timezone;
+  const day = (value, zone) => {
+    const text = value ? formatDay(value, locale, zone) : null;
+    return text ? <bdi>{text}</bdi> : "—";
+  };
+
+  let body = null;
+  if (open) {
+    if (resource.loading) body = <Skeleton lines={2} label={t(`${H}.loading`)} />;
+    else if (resource.status === "error" || !history) body = <ErrorPanel error={resource.error ?? MALFORMED} onRetry={resource.reload} retrying={resource.refreshing} compact />;
+    else {
+      const earlier = history.plans.filter((plan) => plan.status !== "active");
+      body = earlier.length === 0 ? (
+        <p className="sm-text sm-muted" data-sm-history="empty">{t(`${H}.none`)}</p>
+      ) : (
+        <>
+          <ul className="sm-list" data-sm-list="plan-history">
+            {earlier.map((plan) => (
+              <li key={plan.id} className="sm-row" data-sm-history-plan={plan.id} data-sm-status={plan.status}>
+                <span className="sm-row-main">
+                  <span className="sm-row-title">
+                    {t(`${H}.version`, { version: plan.planVersion ?? "?" })}
+                    {" · "}
+                    <span className="sm-chip" data-sm-tone={plan.status === "completed" ? "calm" : "neutral"}>{t(`${H}.status.${plan.status}`)}</span>
+                  </span>
+                  <span className="sm-row-meta">{day(plan.acceptedAt, timeZone)} → {day(plan.endedAt, timeZone)}</span>
+                  {(plan.installmentAmount || plan.frequency) && (
+                    <span className="sm-row-meta">
+                      {plan.installmentAmount && <><Money plain value={plan.installmentAmount} currency={goal.currency} />{" "}</>}
+                      {plan.frequency && t(`${P}.every`, { count: plan.interval ?? 1, unit: t(`${P}.unit.${plan.frequency}`, { defaultValue: plan.frequency }) })}
+                      {plan.intensity && <> · {t(`${P}.intensity.${plan.intensity}`, { defaultValue: plan.intensity })}</>}
+                    </span>
+                  )}
+                  {plan.total !== null && <span className="sm-row-meta">{t(`${H}.confirmed`, { fulfilled: plan.fulfilled ?? 0, total: plan.total })}</span>}
+                  {plan.ending && <span className="sm-row-meta">{t(`${H}.ending.${plan.ending}`)}</span>}
+                  <PlanInstallmentsToggle goal={goal} plan={plan} locale={locale} />
+                </span>
+              </li>
+            ))}
+          </ul>
+          {history.more && <p className="sm-text sm-muted sm-fine" data-sm-history="more">{t(`${H}.more`, { count: history.total })}</p>}
+        </>
+      );
+    }
+  }
+
+  return (
+    <div className="sm-plan-earlier" data-sm-section="plan-history">
+      <button type="button" className="sm-button sm-button-quiet sm-button-small" aria-expanded={open} aria-controls={panelId} onClick={() => setOpen(!open)} data-sm-action="plan-history">
+        {t(open ? `${H}.hide` : `${H}.show`)}
+      </button>
+      <div id={panelId} className="sm-plan-earlier-panel" hidden={!open}>
+        {body}
+        {open && <p className="sm-text sm-muted sm-fine">{t(`${H}.note`)}</p>}
+      </div>
+    </div>
+  );
+}

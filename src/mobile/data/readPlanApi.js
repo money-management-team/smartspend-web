@@ -1,9 +1,12 @@
 import { savingsPlansApi } from "../../features/Dashboards/User/api/savingsPlansApi.js";
 
 /*
- * The Smart Savings requests Mobile can make. All three are GETs:
+ * The Smart Savings requests Mobile can make. All five are GETs:
  *
  *   GET /savings-goals/{id}/plan            the goal's active plan: installments, health, versions
+ *   GET /savings-goals/{id}/plans           every plan the goal has had (first page), once asked for
+ *   GET /savings-goals/{id}/plans/{plan}/installments
+ *                                           an earlier plan's installments, page by page, once opened
  *   GET /savings-goals/{id}/plan-options    options for a goal with no plan (frequency, interval)
  *   GET /savings-goals/{id}/planned-contributions/{iid}/confirmation-preview
  *                                           what confirming one installment would move; moves nothing
@@ -25,3 +28,19 @@ export const readGoalPlan = (goalId, signal) => savingsPlansApi.getActive(goalId
 export const readPlanOptions = (goalId, { frequency, interval }, signal) => savingsPlansApi.getOptions(goalId, { frequency, interval }, { signal });
 
 export const readConfirmationPreview = (goalId, installmentId, signal) => savingsPlansApi.getConfirmationPreview(goalId, installmentId, { signal });
+
+/*
+ * GET /savings-goals/{id}/plans: every plan the goal has had, newest first (docs/savings-goals/plan-management.md,
+ * "Plan history"). Read only. Mobile reads the first page only, and only once the person asks for it.
+ */
+export const PLAN_HISTORY_PER_PAGE = 10;
+export const readPlanHistory = (goalId, signal) => savingsPlansApi.listHistory(goalId, { per_page: PLAN_HISTORY_PER_PAGE }, { signal });
+
+/*
+ * GET /savings-goals/{id}/plans/{plan}/installments: one earlier plan's installments in schedule order, a page at a
+ * time (docs/savings-goals/plan-management.md, F5.2). Read only; Mobile asks for it only when a plan is opened and
+ * for a next page only when "Show more" is pressed.
+ */
+export const PLAN_INSTALLMENTS_PER_PAGE = 10;
+export const readPlanInstallments = (goalId, planId, page, signal) =>
+  savingsPlansApi.listPlanInstallments(goalId, planId, { per_page: PLAN_INSTALLMENTS_PER_PAGE, ...(page > 1 ? { page } : {}) }, { signal });
