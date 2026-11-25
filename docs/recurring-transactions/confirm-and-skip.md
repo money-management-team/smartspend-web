@@ -108,3 +108,7 @@ Both writes stay closed in `src/mobile/data/writeGate.js`: they are classified `
 - the list and details pages sending the shown occurrence;
 - no resend after a 409 or a failed occurrence;
 - Mobile's payloads and eligibility, with both writes still closed.
+
+## Mobile: stale occurrence
+
+On Mobile a 409 `recurring_occurrence_not_next` or `recurring_occurrence_not_open` is classified as a certain rejection (`CERTAIN_409` in `src/mobile/forms/useWorkflowSubmit.js`): the backend raises it before anything is posted or skipped. The form shows `forms.outcome.recurringStale`, every cached read is dropped so the rule is read again, and nothing is resent. Any other 409 stays an unknown outcome. Both writes are still closed (`APPROVED = []`). Tests: `tests/recurringOccurrence.test.mjs`.

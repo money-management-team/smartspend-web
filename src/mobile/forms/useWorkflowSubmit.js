@@ -60,8 +60,11 @@ const READS_CHANGED_BY = Object.freeze({
 const REJECTED = new Set(["VALIDATION_ERROR", "FORBIDDEN", "NOT_FOUND", "RATE_LIMITED", "WRITE_CLOSED", "NO_WORKSPACE", "STORAGE_UNAVAILABLE"]);
 
 // A 409 whose machine-readable code says nothing was done: archiving an account that an active savings plan is funded
-// from (ArchiveAccountAction refuses before it changes anything). Any other 409 stays unknown.
-const CERTAIN_409 = new Set(["account_funds_active_savings_plan"]);
+// from (ArchiveAccountAction refuses before it changes anything), and a recurring confirm or skip that names an occurrence
+// that is no longer the rule's earliest open one (RecurringOccurrenceConflictException, raised before anything is posted).
+// Any other 409 stays unknown.
+const STALE_OCCURRENCE = new Set(["recurring_occurrence_not_next", "recurring_occurrence_not_open"]);
+const CERTAIN_409 = new Set(["account_funds_active_savings_plan", ...STALE_OCCURRENCE]);
 
 /*
  * The assistant answers a provider failure with { status: false, message, error: { code, retryable } } and a 429, 502 or 503
@@ -157,7 +160,9 @@ export function useWorkflowSubmit() {
       const nameTaken = outcome.kind === "rejected" && pendingWrite.current?.operation === "account.create" && Array.isArray(outcome.error?.errors?.name);
       // The assistant's failed attempt is stored in the conversation (AiChatService::failAssistant), so it is read again like a write that happened.
       const storedFailure = outcome.kind === "rejected" && outcome.code === "AI_FAILED";
-      if ((nameTaken || storedFailure || (outcome.kind !== "rejected" && outcome.kind !== "possibleDuplicate")) && !store.isDisposed()) store.drop(READS_CHANGED_BY[pendingWrite.current?.operation] ?? (() => true));
+      // The occurrence the review showed is out of date: the cached rule still names it, so every read is taken again (nothing is resent).
+      const staleOccurrence = outcome.kind === "rejected" && STALE_OCCURRENCE.has(outcome.error?.serverCode);
+      if ((nameTaken || storedFailure || staleOccurrence || (outcome.kind !== "rejected" && outcome.kind !== "possibleDuplicate")) && !store.isDisposed()) store.drop(READS_CHANGED_BY[pendingWrite.current?.operation] ?? (() => true));
       if (outcome.kind === "confirmed" || outcome.kind === "rejected") {
         // Read before clearing: nothing left to protect either way.
         if (pendingWrite.current) clearPendingWrite(pendingWrite.current.operation);

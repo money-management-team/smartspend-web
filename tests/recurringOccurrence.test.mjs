@@ -36,6 +36,7 @@ const { WORKFLOWS, RECORD_PICKERS } = await import("../src/mobile/forms/workflow
 const { buildWrite } = await import("../src/mobile/forms/writePayloads.js");
 const gate = await import("../src/mobile/data/writeGate.js");
 const { sendWorkflowWrite } = await import("../src/mobile/data/writeApi.js");
+const { classifyWriteOutcome } = await import("../src/mobile/forms/useWorkflowSubmit.js");
 
 const pathOf = (call) => new URL(call.url, "http://localhost").pathname;
 const posts = (calls) => calls.filter((call) => call.method === "POST");
@@ -280,5 +281,21 @@ describe("Mobile: the recurring confirm and skip forms name the occurrence", () 
       gate.setWriteApprovalsForTests(null);
     }
     assert.deepEqual(calls, []);
+  });
+
+  // RecurringOccurrenceConflictException: raised before anything is posted or skipped, so the outcome is certain.
+  for (const serverCode of ["recurring_occurrence_not_next", "recurring_occurrence_not_open"]) {
+    it(`a 409 ${serverCode} is a certain rejection, not an unknown outcome`, () => {
+      const error = new ApiError("An earlier date is still open.", { status: 409, code: "CONFLICT", serverCode });
+      const outcome = classifyWriteOutcome(error);
+      assert.equal(outcome.kind, "rejected");
+      assert.equal(outcome.code, "CONFLICT");
+      assert.equal(outcome.error, error);
+    });
+  }
+
+  it("any other recurring 409 stays an unknown outcome", () => {
+    assert.equal(classifyWriteOutcome(new ApiError("x", { status: 409, code: "CONFLICT", serverCode: "recurring_something_else" })).kind, "unknown");
+    assert.equal(classifyWriteOutcome(new ApiError("x", { status: 409, code: "CONFLICT" })).kind, "unknown");
   });
 });

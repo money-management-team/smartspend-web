@@ -26,7 +26,7 @@ const walk = (dir) => readdirSync(dir).flatMap((name) => (statSync(path.join(dir
 const sources = walk(MOBILE).filter((file) => /\.(js|jsx)$/.test(file));
 
 // Comments may mention what is forbidden ("create/update/archive are not imported"); the code must not use it.
-const code = (file) => readFileSync(file, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+const code = (file) => readFileSync(file, "utf8").replace(/\r\n/g, "\n").replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
 const find = (pattern, files = sources) => files.filter((file) => pattern.test(code(file))).map(rel);
 
 describe("the source", () => {

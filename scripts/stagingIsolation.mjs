@@ -237,7 +237,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     const dist = resolve(arg ?? "dist");
     ok = existsSync(dist) ? report("STAGING_BUILD", checkBuildOutput({ files: readTextTree(dist) }, { apiBase: process.env.STAGING_API_BASE_URL ?? "" })) : (console.error("  FAIL  the build directory does not exist"), false);
   } else if (command === "verify") {
-    const workflow = report("STAGING_WORKFLOW", checkStagingWorkflow(readFileSync(join(root, ".github/workflows/deploy-staging.yml"), "utf8")));
+    const workflow = report("STAGING_WORKFLOW", checkStagingWorkflow(readFileSync(join(root, ".github/workflows/deploy-staging.yml"), "utf8").replace(/\r\n/g, "\n")));
     const production = readFileSync(join(root, PRODUCTION.workflow), "utf8");
     const unchanged = sha256Lf(production) === PRODUCTION.workflowSha256;
     if (!unchanged) console.error("  FAIL  the production workflow has changed");

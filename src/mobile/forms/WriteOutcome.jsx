@@ -23,11 +23,13 @@ export default function WriteOutcome({ outcome, operation, outcomeRef, backTo, t
   // active savings plan (409 account_funds_active_savings_plan: certain, nothing was archived).
   const nameTaken = kind === "rejected" && operation === "account.create" && Array.isArray(outcome.error?.errors?.name);
   const fundsPlan = kind === "rejected" && outcome.error?.serverCode === "account_funds_active_savings_plan";
+  // A recurring confirm or skip for an occurrence that is no longer the next open one: certain, nothing was posted or skipped.
+  const staleOccurrence = kind === "rejected" && ["recurring_occurrence_not_next", "recurring_occurrence_not_open"].includes(outcome.error?.serverCode);
   // The assistant: a limit (per minute or per day) is a refusal before anything ran; a provider failure is a stored, failed attempt.
   const aiFailed = kind === "rejected" && outcome.code === "AI_FAILED";
   const aiLimit = kind === "rejected" && typeof operation === "string" && operation.startsWith("ai.") && (outcome.code === "RATE_LIMITED" || (aiFailed && outcome.error?.status === 429));
   const retryAfter = Number.parseInt(outcome.error?.retryAfter, 10);
-  const bodyKey = kind === "rejected" ? (aiLimit ? "aiRateLimited" : aiFailed ? "aiFailed" : fundsPlan ? "accountFundsPlan" : nameTaken ? "accountNameTaken" : outcome.code === "RATE_LIMITED" ? "rateLimited" : outcome.code === "NO_WORKSPACE" ? "noWorkspace" : outcome.code === "WRITE_CLOSED" ? "closed" : "rejectedBody") : `${kind}Body`;
+  const bodyKey = kind === "rejected" ? (aiLimit ? "aiRateLimited" : aiFailed ? "aiFailed" : fundsPlan ? "accountFundsPlan" : staleOccurrence ? "recurringStale" : nameTaken ? "accountNameTaken" : outcome.code === "RATE_LIMITED" ? "rateLimited" : outcome.code === "NO_WORKSPACE" ? "noWorkspace" : outcome.code === "WRITE_CLOSED" ? "closed" : "rejectedBody") : `${kind}Body`;
   const refused = kind === "rejected";
 
   return (

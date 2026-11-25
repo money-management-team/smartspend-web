@@ -16,7 +16,7 @@ import { PRODUCTION, STAGING_SECRETS, STAGING_VARS, checkBuildOutput, checkStagi
  */
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
-const read = (path) => readFileSync(join(ROOT, path), "utf8");
+const read = (path) => readFileSync(join(ROOT, path), "utf8").replace(/\r\n/g, "\n"); // the same on an LF or a CRLF checkout
 const workflow = read(".github/workflows/deploy-staging.yml");
 const production = read(PRODUCTION.workflow);
 
