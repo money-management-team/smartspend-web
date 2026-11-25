@@ -143,9 +143,39 @@ export function buildPlanInstallmentsPage(data, planId) {
       state,
       confirmed: money(raw.effective_amount ?? raw.fulfilled_amount),
       reason: CLOSED_REASONS.includes(raw.resolution_reason) ? raw.resolution_reason : null,
+      // Its payments can be read (GET …/funding-legs): a split payment (the full version's isMultiAccountInstallment:
+      // confirmed, no single goal movement), and only for the plan's owner (`can_manage`; anyone else gets a 403).
+      payments: raw.status === "fulfilled" && raw.fulfilled_goal_movement_id == null && plan.can_manage === true,
     };
   }).filter(Boolean);
   return { rows, total: count(page.total) ?? rows.length, page: int(page.current_page) ?? 1, lastPage: int(page.last_page) ?? 1 };
+}
+
+/*
+ * GET …/funding-legs for this installment: `{ current, history }`, each a confirmation `{ key, confirmedAt, legs }`
+ * and each leg `{ key, account, amount, currency, effective, reversedAt }`. It throws (a malformed answer) when the
+ * response is about another installment or has no history list, the full version's readFundingLegs rule. Only what
+ * is shown is kept: the account's name (never its id), the leg's own amount and whether it was reversed. Transfer
+ * and movement ids and the `reversal` block are dropped. Nothing is added up: the installment's own amounts are
+ * on its row.
+ */
+export function buildFundingLegs(data, installmentId) {
+  if (!isRecord(data) || idText(data.installment?.id) !== String(installmentId) || !Array.isArray(data.history)) {
+    throw Object.assign(new Error("Not this installment's payments."), { code: "MALFORMED_RESPONSE" });
+  }
+  const legsOf = (cycle) => (Array.isArray(cycle.funding_legs) ? cycle.funding_legs : []).filter(isRecord).map((leg, index) => ({
+    key: idText(leg.id) ?? `leg-${index}`,
+    account: textOrNull(leg.account_name, 80),
+    amount: money(leg.amount),
+    currency: isCurrencyCode(leg.currency_code) ? leg.currency_code : null,
+    effective: leg.is_effective === true,
+    reversedAt: moment(leg.reversed_at),
+  }));
+  const cycleOf = (cycle, index) => ({ key: int(cycle.confirmation_version) ?? `cycle-${index}`, confirmedAt: moment(cycle.confirmed_at), legs: legsOf(cycle) });
+  return {
+    current: isRecord(data.current_confirmation) ? cycleOf(data.current_confirmation, 0) : null,
+    history: data.history.filter(isRecord).map(cycleOf),
+  };
 }
 
 /** `data.plan_options` (GET …/plan-options), or null. An option that isn't feasible, or repeats another, can't be chosen. */

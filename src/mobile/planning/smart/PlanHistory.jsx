@@ -1,21 +1,103 @@
-import { useCallback, useId, useState } from "react";
+import { useCallback, useId, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { keys } from "../../data/loaders.js";
 import { sessionWorkspace } from "../../data/readApi.js";
-import { PLAN_HISTORY_PER_PAGE, PLAN_INSTALLMENTS_PER_PAGE, readPlanHistory, readPlanInstallments } from "../../data/readPlanApi.js";
+import { PLAN_HISTORY_PER_PAGE, PLAN_INSTALLMENTS_PER_PAGE, readFundingLegs, readPlanHistory, readPlanInstallments } from "../../data/readPlanApi.js";
+import { useResource } from "../../data/useResource.js";
 import { MOBILE_NAMESPACE } from "../../i18n/messages.js";
 import { formatDay } from "../../money/format.js";
 import Money from "../../money/Money.jsx";
 import ErrorPanel from "../../ui/ErrorPanel.jsx";
 import Skeleton from "../../ui/Skeleton.jsx";
 import { usePagedList } from "../usePagedList.js";
-import { buildPlanHistoryPage, buildPlanInstallmentsPage } from "./planModel.js";
+import { buildFundingLegs, buildPlanHistoryPage, buildPlanInstallmentsPage } from "./planModel.js";
 
 const MALFORMED = Object.freeze({ code: "MALFORMED_RESPONSE" });
 const P = "planning.goals.plan";
 const H = `${P}.history`;
 const I = `${H}.installments`;
+const F = `${I}.payments`;
+
+function readLegs(data, installmentId) {
+  try {
+    return { legs: buildFundingLegs(data, installmentId), error: null };
+  } catch (error) {
+    return { legs: null, error };
+  }
+}
+
+function PaymentLegs({ legs, goal, locale, timeZone, t }) {
+  return (
+    <ul className="sm-list" data-sm-list="funding-legs">
+      {legs.map((leg) => (
+        <li key={leg.key} className="sm-row" data-sm-leg={leg.key} data-sm-leg-state={leg.effective ? "effective" : "reversed"}>
+          <span className="sm-row-main">
+            <span className="sm-row-title"><bdi>{leg.account ?? t(`${F}.account`)}</bdi></span>
+            <span className="sm-row-meta">
+              <Money plain value={leg.amount ?? undefined} currency={leg.currency ?? goal.currency} />
+              {" · "}
+              {leg.effective ? t(`${F}.inGoal`) : leg.reversedAt ? <>{t(`${F}.reversedOn`)} <bdi>{formatDay(leg.reversedAt, locale, timeZone)}</bdi></> : t(`${F}.reversed`)}
+            </span>
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/*
+ * The payments behind one split installment (GET …/funding-legs), read once its "Show payments" is opened: the
+ * current confirmation's accounts and amounts, then earlier confirmations. Read only: Mobile shows no way to
+ * reverse a payment, and nothing here uses the response's reversal fields or adds amounts up.
+ */
+function InstallmentPayments({ goal, installment, locale }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const loader = useMemo(() => async (signal) => (await readFundingLegs(goal.id, installment.id, signal)).data, [goal.id, installment.id]);
+  const resource = useResource(keys.installmentFundingLegs(goal.id, installment.id), loader);
+  const read = useMemo(() => (resource.data === undefined ? null : readLegs(resource.data, installment.id)), [resource.data, installment.id]);
+  const timeZone = sessionWorkspace()?.timezone;
+  const when = (value) => (value ? <bdi>{formatDay(value, locale, timeZone)}</bdi> : "—");
+
+  if (resource.loading) return <Skeleton lines={2} label={t(`${F}.loading`)} />;
+  if (resource.status === "error" || !read?.legs) return <ErrorPanel error={resource.error ?? read?.error ?? MALFORMED} onRetry={resource.reload} retrying={resource.refreshing} compact />;
+  const { current, history } = read.legs;
+  if ((!current || current.legs.length === 0) && history.every((cycle) => cycle.legs.length === 0)) {
+    return <p className="sm-text sm-muted" data-sm-payments="empty">{t(`${F}.none`)}</p>;
+  }
+
+  return (
+    <div className="sm-plan-earlier-panel" data-sm-payments="ready">
+      {current && current.legs.length > 0 && (
+        <div data-sm-payments-cycle="current">
+          <p className="sm-row-meta">{t(`${F}.paidOn`)} {when(current.confirmedAt)}</p>
+          <PaymentLegs legs={current.legs} goal={goal} locale={locale} timeZone={timeZone} t={t} />
+        </div>
+      )}
+      {history.filter((cycle) => cycle.legs.length > 0).map((cycle) => (
+        <div key={cycle.key} data-sm-payments-cycle="earlier">
+          <p className="sm-row-meta">{t(`${F}.earlier`)} {when(cycle.confirmedAt)}</p>
+          <PaymentLegs legs={cycle.legs} goal={goal} locale={locale} timeZone={timeZone} t={t} />
+        </div>
+      ))}
+      <p className="sm-text sm-muted sm-fine">{t(`${F}.note`)}</p>
+    </div>
+  );
+}
+
+function InstallmentPaymentsToggle({ goal, installment, locale }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const [open, setOpen] = useState(false);
+  const panelId = useId();
+  return (
+    <>
+      <button type="button" className="sm-button sm-button-quiet sm-button-small" aria-expanded={open} aria-controls={panelId} onClick={() => setOpen(!open)} data-sm-action="installment-payments">
+        {t(open ? `${F}.hide` : `${F}.show`)}
+      </button>
+      <div id={panelId} hidden={!open}>{open && <InstallmentPayments goal={goal} installment={installment} locale={locale} />}</div>
+    </>
+  );
+}
 
 // One read per page, keyed by goal, plan and page (usePagedList); `signature` is "goalId:planId".
 const installmentsKey = (signature, page) => {
@@ -55,6 +137,7 @@ function PlanInstallments({ goal, plan, locale }) {
               {item.reversed && <span className="sm-row-meta">{t(`${I}.reversed`)} <Money plain value={item.reversed} currency={goal.currency} /></span>}
               {item.postponedCount ? <span className="sm-row-meta">{t(`${P}.postponedTimes`, { count: item.postponedCount })}{item.originalDate && <> · {t(`${I}.originally`)} {day(item.originalDate)}</>}</span> : null}
               {item.reason && <span className="sm-row-meta">{t(`${H}.ending.${item.reason}`)}</span>}
+              {item.payments && <InstallmentPaymentsToggle goal={goal} installment={item} locale={locale} />}
             </span>
           </li>
         ))}

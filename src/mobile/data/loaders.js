@@ -85,6 +85,7 @@ export const keys = {
   goalPlan: (id) => `goalPlan:${id}`,
   goalPlanHistory: (id, page) => `goalPlanHistory:${id}:${page}`,
   goalPlanInstallments: (goalId, planId, page) => `goalPlanInstallments:${goalId}:${planId}:${page}`,
+  installmentFundingLegs: (goalId, installmentId) => `installmentFundingLegs:${goalId}:${installmentId}`,
   rules: (signature, page) => `rules:${signature}:${page}`,
   rule: (id) => `rule:${id}`,
   occurrences: (id, status, page) => `occurrences:${id}:${status || "all"}:${page}`,

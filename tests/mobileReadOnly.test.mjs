@@ -191,9 +191,9 @@ describe("the facade", () => {
 
     assert.deepEqual(Object.keys(readApi).sort(), ["ACTIVITY_PER_PAGE", "BUDGETS_PER_PAGE", "DASHBOARD_PERIOD", "DASHBOARD_PERIODS", "DEBTS_PER_PAGE", "EXPORTS_PER_PAGE", "GOALS_PER_PAGE", "IMPORTS_PER_PAGE", "MOVEMENTS_PER_PAGE", "NOTIFICATIONS_PER_PAGE", "PAYMENTS_PER_PAGE", "RULES_PER_PAGE", "TRANSFERS_PER_PAGE", "isAccountId", "planningWorkspaceId", "readAccount", "readAccountMovements", "readAccounts", "readAlerts", "readBudget", "readBudgets", "readCalendarMonth", "readCategories", "readCategory", "readCategoryList", "readDashboard", "readDebt", "readDebtPayments", "readDebtSummary", "readDebts", "readExport", "readExportFile", "readExports", "readGoal", "readGoalMovements", "readGoals", "readImport", "readImportRows", "readImports", "readNotifications", "readReport", "readRule", "readRuleOccurrences", "readRules", "readTransaction", "readTransactions", "readTransfer", "readTransfers", "readUnreadCount", "sessionWorkspace"]);
     const plan = await import("../src/mobile/data/readPlanApi.js");
-    assert.deepEqual(Object.keys(plan).sort(), ["PLAN_HISTORY_PER_PAGE", "PLAN_INSTALLMENTS_PER_PAGE", "readConfirmationPreview", "readGoalPlan", "readPlanHistory", "readPlanInstallments", "readPlanOptions"]);
+    assert.deepEqual(Object.keys(plan).sort(), ["PLAN_HISTORY_PER_PAGE", "PLAN_INSTALLMENTS_PER_PAGE", "readConfirmationPreview", "readFundingLegs", "readGoalPlan", "readPlanHistory", "readPlanInstallments", "readPlanOptions"]);
     const planUses = [...code(path.join(MOBILE, "data/readPlanApi.js")).matchAll(/savingsPlansApi\.(\w+)\(/g)].map((match) => match[1]).sort();
-    assert.deepEqual(planUses, ["getActive", "getConfirmationPreview", "getOptions", "listHistory", "listPlanInstallments"], "the plan facade reads only");
+    assert.deepEqual(planUses, ["getActive", "getConfirmationPreview", "getFundingLegs", "getOptions", "listHistory", "listPlanInstallments"], "the plan facade reads only");
     const assist = await import("../src/mobile/data/readAssistApi.js");
     assert.ok(Object.keys(assist).every((name) => /^read[A-Z]|_PER_PAGE$/.test(name)), "the assistant facade exports reads only");
     const write = await import("../src/mobile/data/writeApi.js");

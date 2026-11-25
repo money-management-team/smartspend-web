@@ -1,12 +1,14 @@
 import { savingsPlansApi } from "../../features/Dashboards/User/api/savingsPlansApi.js";
 
 /*
- * The Smart Savings requests Mobile can make. All five are GETs:
+ * The Smart Savings requests Mobile can make. All six are GETs:
  *
  *   GET /savings-goals/{id}/plan            the goal's active plan: installments, health, versions
  *   GET /savings-goals/{id}/plans           every plan the goal has had (first page), once asked for
  *   GET /savings-goals/{id}/plans/{plan}/installments
  *                                           an earlier plan's installments, page by page, once opened
+ *   GET /savings-goals/{id}/planned-contributions/{iid}/funding-legs
+ *                                           a split installment's payments, once opened (owner only)
  *   GET /savings-goals/{id}/plan-options    options for a goal with no plan (frequency, interval)
  *   GET /savings-goals/{id}/planned-contributions/{iid}/confirmation-preview
  *                                           what confirming one installment would move; moves nothing
@@ -43,6 +45,14 @@ export const readPlanHistory = (goalId, page, signal) =>
  * time (docs/savings-goals/plan-management.md, F5.2). Read only; Mobile asks for it only when a plan is opened and
  * for a next page only when "Show more" is pressed.
  */
+/*
+ * GET /savings-goals/{id}/planned-contributions/{installment}/funding-legs: the payments behind one split
+ * installment (docs/savings-goals/api.md). Read only and owner only (403 otherwise). Mobile asks for it only when
+ * the person opens an installment's payments, and shows the accounts and amounts; it never uses the response's
+ * `reversal` block (eligibility, leg ids, lock version), which only the full version's reversal needs.
+ */
+export const readFundingLegs = (goalId, installmentId, signal) => savingsPlansApi.getFundingLegs(goalId, installmentId, { signal });
+
 export const PLAN_INSTALLMENTS_PER_PAGE = 10;
 export const readPlanInstallments = (goalId, planId, page, signal) =>
   savingsPlansApi.listPlanInstallments(goalId, planId, { per_page: PLAN_INSTALLMENTS_PER_PAGE, ...(page > 1 ? { page } : {}) }, { signal });

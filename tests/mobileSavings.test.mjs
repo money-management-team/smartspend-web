@@ -426,8 +426,8 @@ if (!ON) {
       assert.match(text(rows[3]), /Replaced by a revised plan/);
       assert.match(text(row(2)), /4 of 4 shown/);
       assert.equal(row(2).querySelector("[data-sm-action='plan-installments-more']"), null, "one page: no Show more");
-      // Read only: nothing in the list can act on an installment.
-      assert.equal(qa("[data-sm-list='plan-installments'] button", row(2)).length, 0);
+      // Read only: nothing in the list can act on an installment; the only buttons show a split payment's details.
+      assert.deepEqual(qa("[data-sm-list='plan-installments'] button", row(2)).map((button) => button.dataset.smAction), ["installment-payments", "installment-payments"]);
       assert.ok(api.calls.every((call) => call.method === "GET"));
       assert.deepEqual(api.violations, []);
     });
@@ -485,6 +485,113 @@ if (!ON) {
       assert.equal(qa("[data-sm-list='plan-installments'] [data-sm-installment]", row(2)).length, 2);
       assert.deepEqual(installmentCalls().map((call) => call.query.page ?? "1"), ["1", "1", "1", "2", "2"]);
       assert.ok(api.calls.every((call) => call.method === "GET"));
+      assert.deepEqual(api.violations, []);
+    });
+
+    // GET …/planned-contributions/{iid}/funding-legs (docs/savings-goals/api.md): a split installment's payments, read only, owner only.
+    const leg = (id, name, amount, over = {}) => ({ id, account_id: id + 4, account_name: name, amount, currency_code: "ILS", transfer_id: 500 + id, goal_movement_id: 600 + id, is_effective: true, reversed_at: null, ...over });
+    const fundingLegs = ({ installmentId = 21, current = [leg(41, "Main bank", "70.0000"), leg(42, "Wallet", "50.0000")], history = [] } = {}) => ({
+      installment: { id: installmentId, status: "fulfilled" },
+      current_confirmation: current ? { confirmation_version: 3, confirmation_legs: current.length, is_multi_leg: true, confirmed_at: "2026-01-05T09:00:00.000000Z", funding_legs: current } : null,
+      funding_legs: current ?? [],
+      history,
+      reversal: { eligible: true, effective_leg_ids: [41, 42], expected_lock_version: 7 },
+    });
+    const paidInstallments = (canManage = true) => {
+      const page = installmentsPage([
+        planInstallment(21, { status: "fulfilled", fulfilled_amount: "120.0000", effective_amount: "120.0000", fulfilled_goal_movement_id: null }),
+        planInstallment(22, { status: "fulfilled", fulfilled_amount: "120.0000", effective_amount: "120.0000", fulfilled_goal_movement_id: 77 }),
+        planInstallment(23, { status: "skipped" }),
+      ]);
+      page.savings_plan.can_manage = canManage;
+      return { body: envelope(page) };
+    };
+    const openPayments = async (legs, canManage = true) => {
+      const base = withInstallments();
+      await open("/m/planning/goals/1", (call) => (/\/funding-legs$/.test(call.path) ? legs(call) : /\/plans\/\d+\/installments$/.test(call.path) ? paidInstallments(canManage) : base(call)));
+      await click(q("[data-sm-action='plan-history']"));
+      await settle();
+      await click(row(2).querySelector("[data-sm-action='plan-installments']"));
+      await settle();
+    };
+    const paymentsOf = (id) => q(`[data-sm-list='plan-installments'] [data-sm-installment='${id}']`);
+    const legCalls = () => api.calls.filter((call) => /\/funding-legs$/.test(call.path));
+
+    it("a split payment's accounts and amounts are read only when its payments are opened, and nothing else is offered", async () => {
+      await openPayments(() => ({ body: envelope(fundingLegs({
+        current: [leg(41, "Main bank", "70.0000", { is_effective: false, reversed_at: "2026-02-01T09:00:00.000000Z" }), leg(42, "Wallet", "50.0000")],
+        history: [{ confirmation_version: 2, confirmation_legs: 1, is_multi_leg: false, confirmed_at: "2025-12-20T09:00:00.000000Z", funding_legs: [leg(31, "Savings box", "120.0000", { is_effective: false, reversed_at: "2025-12-28T09:00:00.000000Z" })] }],
+      })) }));
+      assert.ok(paymentsOf(21).querySelector("[data-sm-action='installment-payments']"), "a split payment offers its payments");
+      assert.equal(paymentsOf(22).querySelector("[data-sm-action='installment-payments']"), null, "a single-account payment does not (its movement is in the goal's activity)");
+      assert.equal(paymentsOf(23).querySelector("[data-sm-action='installment-payments']"), null, "a skipped installment has no payment");
+      assert.deepEqual(legCalls(), [], "nothing is read before it is opened");
+
+      await click(paymentsOf(21).querySelector("[data-sm-action='installment-payments']"));
+      await settle();
+      assert.deepEqual(legCalls().map((call) => call.path), ["/savings-goals/1/planned-contributions/21/funding-legs"]);
+      const current = paymentsOf(21).querySelector("[data-sm-payments-cycle='current']");
+      assert.match(text(current), /Paid on Jan 5, 2026/);
+      assert.deepEqual(qa("[data-sm-leg]", current).map((item) => [item.dataset.smLeg, item.dataset.smLegState]), [["41", "reversed"], ["42", "effective"]]);
+      assert.match(text(current.querySelector("[data-sm-leg='41']")), /Main bank.*70\.00.*Reversed on Feb 1, 2026/);
+      assert.match(text(current.querySelector("[data-sm-leg='42']")), /Wallet.*50\.00.*In the goal/);
+      const earlier = paymentsOf(21).querySelector("[data-sm-payments-cycle='earlier']");
+      assert.match(text(earlier), /Earlier confirmation, paid on Dec 20, 2025/);
+      assert.match(text(earlier), /Savings box.*120\.00.*Reversed on Dec 28, 2025/);
+      // Shown: names and amounts. Not shown: account, transfer or movement ids; no total worked out; no way to reverse.
+      const shown = text(paymentsOf(21).querySelector("[data-sm-payments='ready']"));
+      for (const id of ["35", "45", "46", "531", "541", "542", "631", "641", "642", "lock"]) assert.ok(!new RegExp(`\\b${id}\\b`, "i").test(shown), `${id} is not shown`);
+      assert.equal(qa("button", paymentsOf(21).querySelector("[data-sm-payments='ready']")).length, 0, "no reversal or other action");
+      assert.match(shown, /reversing one is done in the full version/);
+
+      await click(paymentsOf(21).querySelector("[data-sm-action='installment-payments']"));
+      await click(paymentsOf(21).querySelector("[data-sm-action='installment-payments']"));
+      await settle();
+      assert.equal(legCalls().length, 1, "closing and reopening reads the cached payments");
+      assert.ok(api.calls.every((call) => call.method === "GET"));
+      assert.deepEqual(api.violations, []);
+    });
+
+    it("someone who doesn't own the plan (can_manage false) is not offered payments, which the backend would refuse", async () => {
+      await openPayments(() => ({ body: envelope(fundingLegs()) }), false);
+      assert.equal(qa("[data-sm-action='installment-payments']").length, 0);
+      assert.deepEqual(legCalls(), []);
+    });
+
+    it("a payment with no recorded legs says so", async () => {
+      await openPayments(() => ({ body: envelope(fundingLegs({ current: null })) }));
+      await click(paymentsOf(21).querySelector("[data-sm-action='installment-payments']"));
+      await settle();
+      assert.equal(paymentsOf(21).querySelector("[data-sm-payments='empty']").textContent, "No payment details are recorded for this installment.");
+    });
+
+    it("a refusal (403) is said in place with no Retry, since asking again can't change it", async () => {
+      await openPayments(() => failure(403, "Forbidden"));
+      await click(paymentsOf(21).querySelector("[data-sm-action='installment-payments']"));
+      await settle();
+      assert.equal(paymentsOf(21).querySelector("[data-sm-error]").dataset.smError, "forbidden");
+      assert.equal(qa("button", paymentsOf(21).querySelector("[data-sm-error]")).length, 0);
+      assert.ok(paymentsOf(22), "the installments around it stand");
+      assert.equal(legCalls().length, 1);
+    });
+
+    it("a failed or another installment's answer is an error whose Retry is the same GET", async () => {
+      let answer = failure(500, "boom");
+      await openPayments(() => answer);
+      await click(paymentsOf(21).querySelector("[data-sm-action='installment-payments']"));
+      await settle();
+      assert.equal(paymentsOf(21).querySelector("[data-sm-error]").dataset.smError, "server");
+
+      answer = { body: envelope(fundingLegs({ installmentId: 99 })) };
+      await click(qa("button", paymentsOf(21)).find((item) => item.textContent.trim() === "Try again"));
+      await settle();
+      assert.equal(paymentsOf(21).querySelector("[data-sm-error]").dataset.smError, "malformed", "payments of another installment are refused");
+
+      answer = { body: envelope(fundingLegs()) };
+      await click(qa("button", paymentsOf(21)).find((item) => item.textContent.trim() === "Try again"));
+      await settle();
+      assert.equal(qa("[data-sm-leg]", paymentsOf(21)).length, 2);
+      assert.deepEqual(legCalls().map((call) => call.path), Array(3).fill("/savings-goals/1/planned-contributions/21/funding-legs"));
       assert.deepEqual(api.violations, []);
     });
 
