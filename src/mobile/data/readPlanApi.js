@@ -31,10 +31,12 @@ export const readConfirmationPreview = (goalId, installmentId, signal) => saving
 
 /*
  * GET /savings-goals/{id}/plans: every plan the goal has had, newest first (docs/savings-goals/plan-management.md,
- * "Plan history"). Read only. Mobile reads the first page only, and only once the person asks for it.
+ * "Plan history"). Read only. Mobile reads the first page once the person asks for it, and a next page only when
+ * "Show more" is pressed (`page` from 2).
  */
 export const PLAN_HISTORY_PER_PAGE = 10;
-export const readPlanHistory = (goalId, signal) => savingsPlansApi.listHistory(goalId, { per_page: PLAN_HISTORY_PER_PAGE }, { signal });
+export const readPlanHistory = (goalId, page, signal) =>
+  savingsPlansApi.listHistory(goalId, { per_page: PLAN_HISTORY_PER_PAGE, ...(page > 1 ? { page } : {}) }, { signal });
 
 /*
  * GET /savings-goals/{id}/plans/{plan}/installments: one earlier plan's installments in schedule order, a page at a

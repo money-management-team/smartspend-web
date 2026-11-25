@@ -59,7 +59,7 @@ export const SMART_PLAN_MESSAGES = {
       version: "Plan {{version}}", confirmed: "{{fulfilled}} of {{total}} installments confirmed",
       status: { active: "Active", completed: "Completed", discontinued: "Discontinued", superseded: "Replaced" },
       ending: { plan_superseded: "Replaced by a revised plan", plan_discontinued: "Discontinued", goal_archived: "Ended when the goal was archived", goal_achieved: "Ended when the goal reached its target", completed: "Completed", discontinued: "Discontinued", superseded: "Replaced" },
-      more: "This goal has {{count}} plans. Older ones are in the full version.",
+      loadMore: "Show older plans", loadingMore: "Loading older plans",
       note: "Each plan's own figures, not the goal's balance. Payments and reversals of earlier plans are in the full version.",
       installments: {
         show: "Show installments ({{count}})", hide: "Hide installments", loading: "Loading installments", none: "This plan has no installments to show.",
@@ -116,7 +116,7 @@ export const SMART_PLAN_MESSAGES = {
       version: "الخطة {{version}}", confirmed: "أُكّد {{fulfilled}} من {{total}} أقساط",
       status: { active: "نشطة", completed: "مكتملة", discontinued: "موقوفة", superseded: "مستبدلة" },
       ending: { plan_superseded: "استُبدلت بخطة معدّلة", plan_discontinued: "أُوقفت", goal_archived: "انتهت عند أرشفة الهدف", goal_achieved: "انتهت عند بلوغ الهدف مبلغه المستهدف", completed: "مكتملة", discontinued: "موقوفة", superseded: "مستبدلة" },
-      more: "لهذا الهدف {{count}} خطط. الأقدم منها في النسخة الكاملة.",
+      loadMore: "اعرض الخطط الأقدم", loadingMore: "جارٍ تحميل الخطط الأقدم",
       note: "أرقام كل خطة الخاصة بها، وليست رصيد الهدف. دفعات الخطط السابقة وعكسها في النسخة الكاملة.",
       installments: {
         show: "اعرض الأقساط ({{count}})", hide: "أخفِ الأقساط", loading: "جارٍ تحميل الأقساط", none: "لا توجد أقساط لعرضها في هذه الخطة.",

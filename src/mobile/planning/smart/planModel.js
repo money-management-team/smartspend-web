@@ -87,16 +87,19 @@ const moment = (value) => (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.tes
 const count = (value) => (Number.isSafeInteger(value) && value >= 0 ? value : null);
 
 /*
- * `data.savings_plans` (GET …/plans, a Laravel paginator) for this goal, or null when the shape is wrong:
- * `{ plans, total, more }`. A row of another goal, or with a status the history doesn't know, is dropped.
- * Each plan's figures are the plan's own (what it agreed, how many installments were confirmed), never
- * the goal's balance; `financial_summary` is not shown, so nothing here depends on its attribution.
+ * One page of `data.savings_plans` (GET …/plans, a Laravel paginator) for this goal: `{ rows, total, page,
+ * lastPage }`. It throws (a malformed answer) when the shape is wrong, the full version's readPlanHistory rule;
+ * a row of another goal, or with a status the history doesn't know, is dropped. Each plan's figures are the
+ * plan's own (what it agreed, how many installments were confirmed), never the goal's balance;
+ * `financial_summary` is not shown, so nothing here depends on its attribution.
  */
-export function buildPlanHistory(data, goalId) {
+export function buildPlanHistoryPage(data, goalId) {
   const page = isRecord(data) ? data.savings_plans : null;
-  if (!isRecord(page) || !Array.isArray(page.data)) return null;
+  if (!isRecord(page) || !Array.isArray(page.data)) {
+    throw Object.assign(new Error("Not a page of plans."), { code: "MALFORMED_RESPONSE" });
+  }
 
-  const plans = page.data.filter((plan) => isRecord(plan) && idText(plan.id) && idText(plan.savings_goal_id) === String(goalId) && HISTORY_STATUSES.includes(plan.status)).map((plan) => {
+  const rows = page.data.filter((plan) => isRecord(plan) && idText(plan.id) && idText(plan.savings_goal_id) === String(goalId) && HISTORY_STATUSES.includes(plan.status)).map((plan) => {
     const summary = isRecord(plan.installments_summary) ? plan.installments_summary : {};
     return {
       id: idText(plan.id),
@@ -115,10 +118,7 @@ export function buildPlanHistory(data, goalId) {
       total: count(summary.total),
     };
   });
-  const total = count(page.total) ?? plans.length;
-  const lastPage = int(page.last_page) ?? 1;
-  const current = int(page.current_page) ?? 1;
-  return { plans, total, more: current < lastPage };
+  return { rows, total: count(page.total) ?? rows.length, page: int(page.current_page) ?? 1, lastPage: int(page.last_page) ?? 1 };
 }
 
 /*

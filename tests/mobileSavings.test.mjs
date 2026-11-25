@@ -272,13 +272,77 @@ if (!ON) {
       const replaced = text(q("[data-sm-history-plan='2']"));
       for (const words of [/Plan 2/, /Replaced/, /120\.00/, /Every 1 × month/, /Easy/, /3 of 12 installments confirmed/, /Replaced by a revised plan/]) assert.match(replaced, words);
       assert.match(text(q("[data-sm-history-plan='1']")), /0 of 12 installments confirmed/);
-      assert.match(text(q("[data-sm-history='more']")), /14 plans/);
+      assert.match(q("[data-sm-action='plan-history-more']").textContent, /Show older plans/, "last_page 2: more can be read");
       assert.ok(api.calls.every((item) => item.method === "GET"));
       assert.deepEqual(api.violations, []);
 
       await click(q("[data-sm-action='plan-history']"));
       assert.equal(q("[data-sm-action='plan-history']").getAttribute("aria-expanded"), "false");
-      assert.equal(api.calls.filter((item) => /\/plans$/.test(item.path)).length, 1, "closing and the cached page send nothing more");
+      await click(q("[data-sm-action='plan-history']"));
+      await settle();
+      assert.equal(qa("[data-sm-history-plan]").length, 2, "reopened, the plans are still there");
+      assert.equal(api.calls.filter((item) => /\/plans$/.test(item.path)).length, 1, "closing and reopening send nothing more");
+    });
+
+    it("Show older plans reads page=2, page=3…, appends without repeats and stops at the paginator's last page", async () => {
+      const pagesOf = {
+        1: historyPage([historyPlan(9, { status: "active", closed_reason: null, superseded_at: null }), historyPlan(8), historyPlan(7)], { lastPage: 3, total: 7 }),
+        2: historyPage([historyPlan(7), historyPlan(6), historyPlan(5, { savings_goal_id: 2 }), historyPlan(4, { status: "draft" })], { page: 2, lastPage: 3, total: 7 }),
+        3: historyPage([historyPlan(3, { status: "discontinued", closed_reason: "goal_archived", superseded_at: null, discontinued_at: "2026-02-01T09:00:00.000000Z" })], { page: 3, lastPage: 3, total: 7 }),
+      };
+      await open("/m/planning/goals/1", withHistory((call) => ({ body: envelope(pagesOf[call.query.page ?? "1"]) })));
+      await click(q("[data-sm-action='plan-history']"));
+      await settle();
+      const shown = () => qa("[data-sm-history-plan]").map((row) => row.dataset.smHistoryPlan);
+      const historyCalls = () => api.calls.filter((call) => /\/plans$/.test(call.path)).map((call) => call.query);
+      assert.deepEqual(shown(), ["8", "7"]);
+      assert.deepEqual(historyCalls(), [{ per_page: "10" }], "the next page waits for Show older plans");
+
+      await click(q("[data-sm-action='plan-history-more']"));
+      await settle();
+      assert.deepEqual(shown(), ["8", "7", "6"], "7 is on both pages and shown once; another goal's plan and an unknown status are dropped");
+      await click(q("[data-sm-action='plan-history-more']"));
+      await settle();
+      assert.deepEqual(shown(), ["8", "7", "6", "3"]);
+      assert.match(text(q("[data-sm-history-plan='3']")), /Ended when the goal was archived/);
+      assert.deepEqual(historyCalls(), [{ per_page: "10" }, { per_page: "10", page: "2" }, { per_page: "10", page: "3" }]);
+      assert.equal(q("[data-sm-action='plan-history-more']"), null, "page 3 of 3: everything is loaded");
+      assert.ok(api.calls.every((call) => call.method === "GET"));
+      assert.deepEqual(api.violations, []);
+    });
+
+    it("a failed older page keeps the plans shown and retries that page only; installments of a plan from it still open", async () => {
+      let second = failure(503, "busy");
+      const base = withHistory((call) => (call.query.page === "2" ? second : { body: envelope(historyPage([historyPlan(2)], { lastPage: 2, total: 2 })) }));
+      await open("/m/planning/goals/1", (call) => (/\/plans\/1\/installments$/.test(call.path)
+        ? { body: envelope({ savings_plan: { id: 1, savings_goal_id: 1, status: "discontinued" }, installments: { current_page: 1, last_page: 1, total: 1, data: [{ id: 50, savings_plan_id: 1, sequence: 1, planned_date: "2026-01-05", amount: "120.0000", status: "cancelled" }] } }) }
+        : base(call)));
+      await click(q("[data-sm-action='plan-history']"));
+      await settle();
+      await click(q("[data-sm-action='plan-history-more']"));
+      await settle();
+      const panel = q("[data-sm-section='plan-history']");
+      assert.equal(panel.querySelector("[data-sm-error]").dataset.smError, "server");
+      assert.deepEqual(qa("[data-sm-history-plan]").map((row) => row.dataset.smHistoryPlan), ["2"], "the first page stays");
+      assert.equal(q("[data-sm-action='plan-history-more']"), null, "the failed page is retried from its error, not skipped");
+
+      second = { body: envelope({ savings_plans: { data: "nope" } }) };
+      await click(qa("button", panel).find((item) => item.textContent.trim() === "Try again"));
+      await settle();
+      assert.equal(panel.querySelector("[data-sm-error]").dataset.smError, "malformed");
+      assert.deepEqual(qa("[data-sm-history-plan]").map((row) => row.dataset.smHistoryPlan), ["2"]);
+
+      second = { body: envelope(historyPage([historyPlan(1, { status: "discontinued", closed_reason: "plan_discontinued", superseded_at: null })], { page: 2, lastPage: 2, total: 2 })) };
+      await click(qa("button", panel).find((item) => item.textContent.trim() === "Try again"));
+      await settle();
+      assert.equal(panel.querySelector("[data-sm-error]"), null);
+      assert.deepEqual(qa("[data-sm-history-plan]").map((row) => row.dataset.smHistoryPlan), ["2", "1"]);
+      assert.deepEqual(api.calls.filter((call) => /\/plans$/.test(call.path)).map((call) => call.query.page ?? "1"), ["1", "2", "2", "2"], "only the failed page was asked again");
+
+      await click(q("[data-sm-history-plan='1'] [data-sm-action='plan-installments']"));
+      await settle();
+      assert.deepEqual(qa("[data-sm-history-plan='1'] [data-sm-installment]").map((row) => row.dataset.smInstallment), ["50"]);
+      assert.deepEqual(api.violations, []);
     });
 
     it("a goal with no active plan can still open its history; a goal with none says so", async () => {
@@ -287,7 +351,7 @@ if (!ON) {
       await settle();
       assert.equal(q("[data-sm-history-plan='1']").dataset.smStatus, "completed");
       assert.match(text(q("[data-sm-history-plan='1']")), /Ended when the goal reached its target/);
-      assert.equal(q("[data-sm-history='more']"), null);
+      assert.equal(q("[data-sm-action='plan-history-more']"), null, "one page: nothing more to read");
 
       await view.unmount();
       api.restore();

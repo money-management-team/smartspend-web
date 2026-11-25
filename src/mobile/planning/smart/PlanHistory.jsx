@@ -1,17 +1,16 @@
-import { useCallback, useId, useMemo, useState } from "react";
+import { useCallback, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { keys } from "../../data/loaders.js";
 import { sessionWorkspace } from "../../data/readApi.js";
-import { PLAN_INSTALLMENTS_PER_PAGE, readPlanHistory, readPlanInstallments } from "../../data/readPlanApi.js";
-import { useResource } from "../../data/useResource.js";
+import { PLAN_HISTORY_PER_PAGE, PLAN_INSTALLMENTS_PER_PAGE, readPlanHistory, readPlanInstallments } from "../../data/readPlanApi.js";
 import { MOBILE_NAMESPACE } from "../../i18n/messages.js";
 import { formatDay } from "../../money/format.js";
 import Money from "../../money/Money.jsx";
 import ErrorPanel from "../../ui/ErrorPanel.jsx";
 import Skeleton from "../../ui/Skeleton.jsx";
 import { usePagedList } from "../usePagedList.js";
-import { buildPlanHistory, buildPlanInstallmentsPage } from "./planModel.js";
+import { buildPlanHistoryPage, buildPlanInstallmentsPage } from "./planModel.js";
 
 const MALFORMED = Object.freeze({ code: "MALFORMED_RESPONSE" });
 const P = "planning.goals.plan";
@@ -86,35 +85,43 @@ function PlanInstallmentsToggle({ goal, plan, locale }) {
   );
 }
 
+const historyKey = (goalId, page) => keys.goalPlanHistory(goalId, page);
+
 /*
- * A goal's earlier plans (GET …/plans, first page, newest first): completed, discontinued and replaced plans,
- * each with its own figures. Read only, and read only once the person opens it, so the goal's page makes no
- * extra request by itself. The active plan is left out: the section above shows it. Each plan's installments open
- * from its row (PlanInstallments, read only). Older pages of plans, funding and reversals are in the full version.
+ * The pages of a goal's plan history (GET …/plans, newest first), one read per page (usePagedList): the first
+ * once the history is first opened, each next one only on "Show more", until the paginator's last page. A plan
+ * on two pages is shown once. A failed next page keeps the plans already shown and retries that page only.
  */
-export default function PlanHistory({ goal, locale }) {
+function PlanHistoryList({ goal, locale }) {
   const { t } = useTranslation(MOBILE_NAMESPACE);
-  const [open, setOpen] = useState(false);
-  const panelId = useId();
-  const loader = useMemo(() => async (signal) => (await readPlanHistory(goal.id, signal)).data, [goal.id]);
-  const resource = useResource(keys.goalPlanHistory(goal.id), loader, { enabled: open });
-  const history = useMemo(() => (resource.data === undefined ? null : buildPlanHistory(resource.data, goal.id)), [resource.data, goal.id]);
+  const [pages, setPages] = useState(1);
+  const loaderFor = useCallback((page) => async (signal) => (await readPlanHistory(goal.id, page, signal)).data, [goal.id]);
+  const build = useCallback((data) => buildPlanHistoryPage(data, goal.id), [goal.id]);
+  const list = usePagedList({ keyOf: historyKey, signature: String(goal.id), pages, perPage: PLAN_HISTORY_PER_PAGE, loaderFor, build });
   const timeZone = sessionWorkspace()?.timezone;
   const day = (value, zone) => {
     const text = value ? formatDay(value, locale, zone) : null;
     return text ? <bdi>{text}</bdi> : "—";
   };
 
-  let body = null;
-  if (open) {
-    if (resource.loading) body = <Skeleton lines={2} label={t(`${H}.loading`)} />;
-    else if (resource.status === "error" || !history) body = <ErrorPanel error={resource.error ?? MALFORMED} onRetry={resource.reload} retrying={resource.refreshing} compact />;
-    else {
-      const earlier = history.plans.filter((plan) => plan.status !== "active");
-      body = earlier.length === 0 ? (
-        <p className="sm-text sm-muted" data-sm-history="empty">{t(`${H}.none`)}</p>
+  if (list.loading) return <Skeleton lines={2} label={t(`${H}.loading`)} />;
+  if (list.failed) return <ErrorPanel error={list.error?.code ? list.error : MALFORMED} onRetry={list.reload} retrying={list.refreshing} compact />;
+
+  // The active plan is the section above.
+  const earlier = list.items.filter((plan) => plan.status !== "active");
+  const more = list.moreError ? (
+    <ErrorPanel error={list.moreError?.code ? list.moreError : MALFORMED} onRetry={() => list.retryPage(list.moreErrorPage)} compact />
+  ) : list.canLoadMore || list.loadingMore ? (
+    <button type="button" className="sm-button sm-button-quiet sm-button-small" disabled={list.loadingMore} aria-busy={list.loadingMore || undefined} onClick={() => setPages(pages + 1)} data-sm-action="plan-history-more">
+      {t(list.loadingMore ? `${H}.loadingMore` : `${H}.loadMore`)}
+    </button>
+  ) : null;
+
+  return (
+    <>
+      {earlier.length === 0 ? (
+        !more && <p className="sm-text sm-muted" data-sm-history="empty">{t(`${H}.none`)}</p>
       ) : (
-        <>
           <ul className="sm-list" data-sm-list="plan-history">
             {earlier.map((plan) => (
               <li key={plan.id} className="sm-row" data-sm-history-plan={plan.id} data-sm-status={plan.status}>
@@ -139,19 +146,35 @@ export default function PlanHistory({ goal, locale }) {
               </li>
             ))}
           </ul>
-          {history.more && <p className="sm-text sm-muted sm-fine" data-sm-history="more">{t(`${H}.more`, { count: history.total })}</p>}
-        </>
-      );
-    }
-  }
+      )}
+      {more}
+    </>
+  );
+}
+
+/*
+ * A goal's earlier plans: completed, discontinued and replaced plans, each with its own figures. Read only, and
+ * read only once the person opens it, so the goal's page makes no extra request by itself. Once opened the list
+ * stays mounted while hidden, so its pages and any opened installments are kept. Each plan's installments open
+ * from its row (PlanInstallments, read only). Funding and reversals are in the full version.
+ */
+export default function PlanHistory({ goal, locale }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const [open, setOpen] = useState(false);
+  const [opened, setOpened] = useState(false);
+  const panelId = useId();
+  const toggle = () => {
+    setOpened(true);
+    setOpen(!open);
+  };
 
   return (
     <div className="sm-plan-earlier" data-sm-section="plan-history">
-      <button type="button" className="sm-button sm-button-quiet sm-button-small" aria-expanded={open} aria-controls={panelId} onClick={() => setOpen(!open)} data-sm-action="plan-history">
+      <button type="button" className="sm-button sm-button-quiet sm-button-small" aria-expanded={open} aria-controls={panelId} onClick={toggle} data-sm-action="plan-history">
         {t(open ? `${H}.hide` : `${H}.show`)}
       </button>
       <div id={panelId} className="sm-plan-earlier-panel" hidden={!open}>
-        {body}
+        {opened && <PlanHistoryList goal={goal} locale={locale} />}
         {open && <p className="sm-text sm-muted sm-fine">{t(`${H}.note`)}</p>}
       </div>
     </div>
