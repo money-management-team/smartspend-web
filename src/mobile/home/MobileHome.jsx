@@ -1,0 +1,516 @@
+import { useMemo, useRef, useState } from "react";
+import { LuArrowDownRight, LuArrowUpRight, LuCamera, LuEye, LuEyeOff, LuMic, LuPencilLine, LuRefreshCw, LuSlidersHorizontal } from "react-icons/lu";
+import { useTranslation } from "react-i18next";
+import { Link, useSearchParams } from "react-router-dom";
+
+import { useAuthContext } from "../../contexts/auth/useAuthContext";
+import { PATH } from "../../routes/Path.js";
+import AccountIcon from "../accounts/AccountIcon.jsx";
+import { typeKey } from "../accounts/typeKey.js";
+import TypeIcon from "../activity/TypeIcon.jsx";
+import { dashboardLoader, keys, loadAlerts, loadDashboard } from "../data/loaders.js";
+import { DASHBOARD_PERIODS } from "../data/readApi.js";
+import { newEntryPath } from "../forms/actionRoutes.js";
+import { isCalendarDay, todayIn } from "../forms/validation.js";
+import { useMoneyHidden, useMoneyHiddenToggle } from "../money/privacyContext.js";
+import { useDevicePreferences } from "../preferences/deviceStore.js";
+import { ArrangeSheet, PeriodPicker } from "./HomeControls.jsx";
+import { useResource } from "../data/useResource.js";
+import { MOBILE_NAMESPACE } from "../i18n/messages.js";
+import { currencyName } from "../money/decimal.js";
+import { formatDay, formatDayMonth, formatToday } from "../money/format.js";
+import Money from "../money/Money.jsx";
+import { buildAlertsModel, buildHomeModel } from "../models/home.js";
+import { MOBILE_ACCOUNTS, MOBILE_ACTIVITY, MOBILE_ATTENTION, MOBILE_BUDGETS, MOBILE_GOALS, MOBILE_PREFIX, MOBILE_RECEIPT_NEW, MOBILE_VOICE_NEW, accountDetailPath, activityDetailPath, budgetDetailPath, goalDetailPath } from "../navigation.js";
+import PlanChip from "../planning/PlanChip.jsx";
+import Progress from "../planning/Progress.jsx";
+import { TONES, toneOf } from "../planning/tones.js";
+import Chevron from "../ui/Chevron.jsx";
+import IconButton from "../ui/IconButton.jsx";
+import ErrorPanel from "../ui/ErrorPanel.jsx";
+import Skeleton from "../ui/Skeleton.jsx";
+import StaleNotice from "../ui/StaleNotice.jsx";
+
+const ACCOUNT_PREVIEW = 4;
+const MALFORMED = Object.freeze({ code: "MALFORMED_RESPONSE" });
+const isZero = (value) => typeof value === "string" && /^-?0+(\.0+)?$/.test(value);
+
+function Unavailable({ children }) {
+  return (
+    <p className="sm-text sm-muted" data-sm-section="unavailable">{children}</p>
+  );
+}
+
+function Card({ id, title, children, className = "", action }) {
+  return (
+    <section className={`sm-card ${className}`.trim()} aria-labelledby={id}>
+      <div className="sm-card-head">
+        <h2 id={id} className="sm-card-title">{title}</h2>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+/*
+ * The balance, the screen's one strong surface. In one currency it is one
+ * figure; in several, the primary currency leads and each other currency sits
+ * on its own line below. Currencies are never added together.
+ */
+function BalanceCard({ section, locale }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+
+  return (
+    <Card id="sm-home-balance" title={t(section.multi ? "home.balance.titleMulti" : "home.balance.title")} className="sm-hero">
+      {section.state === "ready" && (
+        <ul className="sm-balance-list">
+          {section.rows.map((row, index) => (
+            <li key={row.currency} className={`sm-balance-row${index === 0 ? " sm-balance-lead" : ""}`} data-sm-currency={row.currency}>
+              <span className="sm-balance-label">
+                <span className="sm-balance-code" dir="ltr">{row.currency}</span>
+                <span className="sm-balance-name">{currencyName(row.currency, locale)}</span>
+                {section.multi && row.currency === section.primary && <span className="sm-chip">{t("home.balance.primary")}</span>}
+              </span>
+              <Money className="sm-hero-money" value={row.balance} currency={row.currency} />
+            </li>
+          ))}
+        </ul>
+      )}
+      {section.state === "ready" && <p className="sm-hero-note">{t(section.multi ? "home.balance.noteMulti" : "home.balance.note")}</p>}
+      {section.state === "empty" && <p className="sm-hero-note">{t("home.balance.empty")}</p>}
+      {section.state === "unavailable" && <p className="sm-hero-note" data-sm-section="unavailable">{t("home.balance.unavailable")}</p>}
+    </Card>
+  );
+}
+
+function PeriodChip({ period, locale, timeZone }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const range = period.from && period.to ? t("home.period.range", { from: formatDayMonth(period.from, locale, timeZone), to: formatDayMonth(period.to, locale, timeZone) }) : null;
+
+  return (
+    <p className="sm-period" data-sm-period={period.preset ?? "unknown"}>
+      <span className="sm-chip">{period.preset && period.preset !== "custom" ? t(`home.periods.${period.preset}`, { defaultValue: t("home.period.unconfirmed") }) : period.preset === "custom" ? t("home.periods.custom") : t("home.period.unconfirmed")}</span>
+      {range && <span className="sm-muted">{range}</span>}
+    </p>
+  );
+}
+
+/* Money in and out for the period, per currency. A currency with nothing in or out says so in one line. */
+function SummaryCard({ balances, period, locale, timeZone }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+
+  return (
+    <Card id="sm-home-summary" title={t("home.summary.title")}>
+      <PeriodChip period={period} locale={locale} timeZone={timeZone} />
+      {balances.state === "ready" ? (
+        <div className="sm-summary-list">
+          {balances.rows.map((row) => {
+            const quiet = balances.multi && isZero(row.income) && isZero(row.expense) && isZero(row.net);
+            return (
+              <div key={row.currency} className="sm-summary-block" data-sm-currency={row.currency} data-sm-quiet={quiet ? "true" : undefined}>
+                {balances.multi && <p className="sm-subhead" dir="ltr">{row.currency}</p>}
+                {quiet ? (
+                  <p className="sm-text sm-muted sm-fine" data-sm-note="no-activity">{t("home.summary.noActivity", { currency: row.currency })}</p>
+                ) : (
+                  <dl className="sm-flow">
+                    <div className="sm-flow-tile" data-sm-flow="in">
+                      <dt><span className="sm-flow-icon" aria-hidden="true"><LuArrowUpRight /></span>{t("home.summary.income")}</dt>
+                      <dd><Money plus value={row.income} currency={row.currency} /></dd>
+                    </div>
+                    <div className="sm-flow-tile" data-sm-flow="out">
+                      <dt><span className="sm-flow-icon" aria-hidden="true"><LuArrowDownRight /></span>{t("home.summary.expense")}</dt>
+                      <dd><Money value={row.expense} currency={row.currency} /></dd>
+                    </div>
+                    <div className="sm-flow-net">
+                      <dt>{t("home.summary.net")}</dt>
+                      <dd><Money plus value={row.net} currency={row.currency} /></dd>
+                    </div>
+                  </dl>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <Unavailable>{t(balances.state === "empty" ? "home.summary.empty" : "home.summary.unavailable")}</Unavailable>
+      )}
+      <p className="sm-text sm-muted sm-fine">{t("home.period.note")}</p>
+    </Card>
+  );
+}
+
+/* One account as a compact tile: the same three things a list row reads (name, type, balance), in that order. */
+function AccountTile({ account }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const kind = account.isGoal ? "savings_goal" : account.type;
+  const name = account.name ?? t("accounts.untitled");
+  const content = (
+    <>
+      <AccountIcon account={account} />
+      <span className="sm-row-main">
+        <span className="sm-row-title sm-user-text">{name}</span>
+        <span className="sm-row-meta">{t(`types.${typeKey(kind)}`)}{account.archived ? ` · ${t("accounts.archived")}` : ""}</span>
+      </span>
+      <span className="sm-tile-amount"><Money value={account.balance} currency={account.currency} /></span>
+    </>
+  );
+
+  return account.id ? <Link className="sm-account-tile" to={accountDetailPath(account.id)}>{content}</Link> : <div className="sm-account-tile">{content}</div>;
+}
+
+function AccountsCard({ section }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const shown = section.items.slice(0, ACCOUNT_PREVIEW);
+
+  return (
+    <Card
+      id="sm-home-accounts"
+      title={t("home.accounts.title")}
+      className="sm-home-accounts"
+      action={section.state === "ready" ? <Link className="sm-card-link" to={MOBILE_ACCOUNTS}>{t("home.accounts.all")}</Link> : null}
+    >
+      {section.state === "ready" && (
+        <ul className="sm-tile-row" aria-label={t("home.accounts.title")}>
+          {shown.map((account, index) => (
+            <li key={account.id ?? `row-${index}`}><AccountTile account={account} /></li>
+          ))}
+        </ul>
+      )}
+      {section.state === "empty" && (
+        <>
+          <p className="sm-text">{t("home.accounts.empty")}</p>
+          <Link className="sm-link-row" to={PATH.USER.ACCOUNTS}>
+            <span>{t("home.accounts.openFull")}</span>
+            <Chevron />
+          </Link>
+        </>
+      )}
+      {section.state === "unavailable" && <Unavailable>{t("home.accounts.unavailable")}</Unavailable>}
+    </Card>
+  );
+}
+
+function RecentCard({ section, locale, timeZone }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+
+  return (
+    <Card
+      id="sm-home-recent"
+      title={t("home.recent.title")}
+      action={
+        <Link className="sm-card-link" to={MOBILE_ACTIVITY}>
+          {t("home.recent.viewAll")}
+        </Link>
+      }
+    >
+      {section.state === "ready" && (
+        <ul className="sm-list sm-tx-list">
+          {section.items.map((item, index) => {
+            const date = formatDay(item.occurredAt, locale, timeZone);
+            const incoming = item.type === "income";
+            const content = (
+              <>
+                <TypeIcon transaction={{ type: item.type, direction: incoming ? "income" : item.type === "expense" ? "expense" : null }} />
+                <span className="sm-row-main">
+                  <span className="sm-row-title sm-user-text">{item.title ?? t(`types.${typeKey(item.type)}`)}</span>
+                  <span className="sm-row-meta">
+                    {item.category && item.category !== item.title ? item.category : t(`types.${typeKey(item.type)}`)}
+                    {date ? <> · <bdi>{date}</bdi></> : null}
+                    {item.reversed ? ` · ${t("movements.reversed")}` : ""}
+                  </span>
+                </span>
+                <span className="sm-row-end">
+                  <span className="sm-row-amount">
+                    <Money plain plus={incoming} value={item.amount} currency={item.currency} />
+                  </span>
+                  {item.id && <Chevron />}
+                </span>
+              </>
+            );
+
+            return (
+              <li key={item.id ?? `row-${index}`} data-sm-type={item.type ?? "unknown"}>
+                {item.id ? (
+                  <Link className="sm-row" to={activityDetailPath(item.id)} state={{ from: MOBILE_PREFIX }}>
+                    {content}
+                  </Link>
+                ) : (
+                  <div className="sm-row sm-row-static">{content}</div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {section.state === "empty" && <Unavailable>{t("home.recent.empty")}</Unavailable>}
+      {section.state === "unavailable" && <Unavailable>{t("home.recent.unavailable")}</Unavailable>}
+    </Card>
+  );
+}
+
+/*
+ * Budgets and savings goals on Home, from GET /dashboard `planning` (models/home.js buildPlanning).
+ * Every figure, remaining amount and percentage is the backend's, in the one currency it reports
+ * planning in (the primary one); in a multi-currency workspace the card says so instead of implying
+ * that this is everything. The rows link to the existing Budget and Goal pages.
+ */
+const PLAN_CARDS = {
+  budgets: {
+    id: "sm-home-budgets",
+    keyPrefix: "home.budgetsCard",
+    listPath: MOBILE_BUDGETS,
+    detailPath: budgetDetailPath,
+    untitled: "planning.budgets.untitled",
+    spoken: "planning.budgets.percentSpoken",
+    totals: [["spent", "totalSpent"], ["limit", "totalLimit"], ["remaining", "totalRemaining"]],
+    rowFigures: [["spent", "spent"], ["remaining", "remaining"]],
+  },
+  goals: {
+    id: "sm-home-goals",
+    keyPrefix: "home.goalsCard",
+    listPath: MOBILE_GOALS,
+    detailPath: goalDetailPath,
+    untitled: "planning.goals.untitled",
+    spoken: "planning.goals.percentSpoken",
+    totals: [["saved", "totalSaved"], ["target", "totalTarget"], ["remaining", "totalRemaining"]],
+    rowFigures: [["saved", "saved"], ["remaining", "remaining"]],
+  },
+};
+
+function PlanCard({ kind, section, multi }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const card = PLAN_CARDS[kind];
+  const k = (key, options) => t(`${card.keyPrefix}.${key}`, options);
+  const allLink = section.state !== "unavailable" ? <Link className="sm-card-link" to={card.listPath}>{k("all")}</Link> : null;
+  const primaryNote = multi && section.currency ? <p className="sm-text sm-muted sm-fine" data-sm-note="primary-only">{k("primaryOnly", { currency: section.currency })}</p> : null;
+
+  return (
+    <Card id={card.id} title={k("title")} className="sm-home-plan" action={allLink}>
+      {section.state === "ready" && (
+        <>
+          <p className="sm-home-plan-meta">
+            <span>{k("active", { count: section.count })}</span>
+            {kind === "budgets" && section.byStatus.map((entry) => (
+              <span key={entry.status} className="sm-chip sm-plan-chip" data-sm-tone={TONES[entry.status] ?? "neutral"} data-sm-state={entry.status}>
+                {t(`planning.state.${entry.status}`)} <bdi dir="ltr">{entry.count}</bdi>
+              </span>
+            ))}
+            {kind === "goals" && section.achievedCount > 0 && (
+              <span className="sm-chip sm-plan-chip" data-sm-tone="calm" data-sm-state="achieved">{k("achieved", { count: section.achievedCount })}</span>
+            )}
+          </p>
+          <dl className="sm-home-plan-totals" data-sm-currency={section.currency}>
+            {card.totals.map(([label, field]) => (
+              <div key={label} className="sm-home-plan-total" data-sm-total={label}>
+                <dt>{k(label)}</dt>
+                <dd><Money value={section[field]} currency={section.currency} /></dd>
+              </div>
+            ))}
+          </dl>
+          {section.items.length > 0 && (
+            <ul className="sm-list sm-home-plan-list">
+              {section.items.map((item) => (
+                <li key={item.id}>
+                  <Link className="sm-row sm-home-plan-row" to={card.detailPath(item.id)} state={{ from: MOBILE_PREFIX }} data-sm-plan-row={item.id}>
+                    <span className="sm-row-main">
+                      <span className="sm-home-plan-row-head">
+                        <span className="sm-row-title sm-user-text">{item.name ?? t(card.untitled)}</span>
+                        <PlanChip state={item.progress.status} known={item.progress.statusKnown} />
+                      </span>
+                      <Progress percent={item.progress.percent} tone={toneOf(item.progress.status, item.progress.statusKnown)} spoken={item.progress.percent ? t(card.spoken, { value: item.progress.percent.text }) : ""} />
+                      <span className="sm-plan-figures">
+                        {card.rowFigures.map(([label, field]) => (
+                          <span key={label}>{k(label)} <Money plain value={item.progress[field]} currency={section.currency} /></span>
+                        ))}
+                      </span>
+                    </span>
+                    <Chevron />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+          {section.count > section.items.length && <p className="sm-text sm-muted sm-fine" data-sm-note="shown-of">{k("shownOf", { shown: section.items.length, count: section.count })}</p>}
+          {primaryNote}
+        </>
+      )}
+      {section.state === "empty" && (
+        <>
+          <Unavailable>{k("empty", { currency: section.currency })}</Unavailable>
+          {primaryNote}
+        </>
+      )}
+      {section.state === "unavailable" && <Unavailable>{k("unavailable")}</Unavailable>}
+    </Card>
+  );
+}
+
+function AttentionCard({ alerts }) {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+  const model = useMemo(() => buildAlertsModel(alerts.data), [alerts.data]);
+
+  if (alerts.loading) return null;
+
+  if (alerts.status === "error" || (alerts.data !== undefined && !model)) {
+    return (
+      <Card id="sm-home-attention" title={t("home.attention.title")}>
+        <ErrorPanel error={alerts.error ?? MALFORMED} onRetry={alerts.reload} retrying={alerts.refreshing} compact />
+      </Card>
+    );
+  }
+
+  // Nothing to attend to is not a section: it only appears when the backend has something to say.
+  if (!model || model.count === 0) return null;
+
+  return (
+    <Card id="sm-home-attention" title={t("home.attention.title")} className="sm-attention">
+      <p className="sm-text">{t("home.attention.count", { count: model.count })}</p>
+      <ul className="sm-list">
+        {model.items.map((alert, index) => (
+          <li key={index} className="sm-alert" data-sm-severity={alert.severity}>
+            <span className="sm-chip sm-chip-severity">{t(`home.attention.${alert.severity}`)}</span>
+            <span className="sm-user-text">{alert.message}</span>
+          </li>
+        ))}
+      </ul>
+      <Link className="sm-link-row" to={MOBILE_ATTENTION} data-sm-action="open-attention">
+        <span>{t("attentionCenter.openAll")}</span>
+        <Chevron />
+      </Link>
+    </Card>
+  );
+}
+
+/* The same three expense entry points as the Add sheet (shell/MobileAppShell.jsx), surfaced directly on Home. */
+function QuickAddExpense() {
+  const { t } = useTranslation(MOBILE_NAMESPACE);
+
+  return (
+    <section className="sm-home-quick" aria-labelledby="sm-home-quick-add">
+      <h2 className="sm-add-section-label" id="sm-home-quick-add">{t("add.expenseHeading")}</h2>
+      <div className="sm-add-choices" role="group" aria-labelledby="sm-home-quick-add">
+        <Link className="sm-add-choice" to={newEntryPath("expense")} state={{ from: MOBILE_PREFIX }} data-sm-action="home-add-manual">
+          <span className="sm-add-choice-icon" aria-hidden="true"><LuPencilLine /></span>
+          <span className="sm-add-choice-label">{t("add.manual")}</span>
+          <span className="sm-add-choice-hint">{t("add.manualHint")}</span>
+        </Link>
+        <Link className="sm-add-choice" to={MOBILE_RECEIPT_NEW} state={{ from: MOBILE_PREFIX }} data-sm-action="home-add-scan">
+          <span className="sm-add-choice-icon" aria-hidden="true"><LuCamera /></span>
+          <span className="sm-add-choice-label">{t("add.scan")}</span>
+          <span className="sm-add-choice-hint">{t("add.scanHint")}</span>
+        </Link>
+        <Link className="sm-add-choice" to={MOBILE_VOICE_NEW} state={{ from: MOBILE_PREFIX }} data-sm-action="home-add-voice">
+          <span className="sm-add-choice-icon" aria-hidden="true"><LuMic /></span>
+          <span className="sm-add-choice-label">{t("add.voice")}</span>
+          <span className="sm-add-choice-hint">{t("add.voiceHint")}</span>
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+/*
+ * Mobile Home: read-only, from GET /dashboard (this month, or the period chosen) and GET
+ * /financial-alerts. Every figure is the backend's, in the currency it
+ * reported it in, and nothing is added up across currencies.
+ *
+ * Order (preferences/deviceStore.js HOME_BLOCKS): who and when, the balance,
+ * the three ways to record an expense, the period with what came in and went
+ * out, budgets and savings goals (the dashboard's `planning`), the accounts,
+ * the latest activity, what needs attention. Arrange Home still reorders and
+ * hides the cards; the balance, when it leads, keeps the entry points directly
+ * under it.
+ */
+function readPeriod(params) {
+  const period = DASHBOARD_PERIODS.includes(params.get("period")) ? params.get("period") : "month";
+  if (period !== "custom") return { period };
+  const from = params.get("from") ?? "";
+  const to = params.get("to") ?? "";
+  return isCalendarDay(from) && isCalendarDay(to) && from <= to ? { period, from, to } : { period: "month" };
+}
+
+export default function MobileHome() {
+  const { t, i18n } = useTranslation(MOBILE_NAMESPACE);
+  const { user, workspace } = useAuthContext();
+  const [params, setParams] = useSearchParams();
+  // The period in the address: a documented one, or a valid custom range; anything else is this month.
+  const chosen = readPeriod(params);
+  const loader = useMemo(() => (chosen.period === "month" ? loadDashboard : dashboardLoader(chosen.period, chosen.from, chosen.to)), [chosen.period, chosen.from, chosen.to]);
+  const dashboard = useResource(keys.dashboardFor(chosen.period, chosen.from, chosen.to), loader);
+  const alerts = useResource(keys.alerts, loadAlerts);
+  const prefs = useDevicePreferences();
+  const hidden = useMoneyHidden();
+  const setHidden = useMoneyHiddenToggle();
+  const [arranging, setArranging] = useState(false);
+  const arrangeRef = useRef(null);
+  const choosePeriod = (next) => setParams(next.period === "month" ? {} : next.period === "custom" ? { period: "custom", from: next.from, to: next.to } : { period: next.period });
+  const picker = <PeriodPicker key={`${chosen.period}:${chosen.from ?? ""}:${chosen.to ?? ""}`} value={chosen} onChange={choosePeriod} />;
+  const locale = i18n.resolvedLanguage?.startsWith("ar") ? "ar" : "en";
+  const timeZone = user?.timezone ?? workspace?.timezone;
+  const model = useMemo(() => (dashboard.data === undefined ? null : buildHomeModel(dashboard.data)), [dashboard.data]);
+  const name = typeof user?.name === "string" ? user.name.trim() : "";
+  const today = formatToday(todayIn(timeZone), locale);
+
+  if (dashboard.loading) {
+    return (
+      <section className="sm-page" data-sm-screen="home" data-sm-state="loading" aria-busy="true">
+        {picker}
+        <Skeleton lines={5} label={t("home.loading")} />
+      </section>
+    );
+  }
+
+  if (dashboard.status === "error" || !model) {
+    return (
+      <section className="sm-page" data-sm-screen="home" data-sm-state="error">
+        {picker}
+        <ErrorPanel error={dashboard.error ?? MALFORMED} onRetry={dashboard.reload} retrying={dashboard.refreshing} />
+      </section>
+    );
+  }
+
+  const blocks = {
+    balances: <BalanceCard key="balances" section={model.balances} locale={locale} />,
+    summary: (
+      <div key="summary" className="sm-home-period-block">
+        {picker}
+        <SummaryCard balances={model.balances} period={model.period} locale={locale} timeZone={timeZone} />
+      </div>
+    ),
+    budgets: <PlanCard key="budgets" kind="budgets" section={model.planning.budgets} multi={model.balances.multi === true} />,
+    goals: <PlanCard key="goals" kind="goals" section={model.planning.goals} multi={model.balances.multi === true} />,
+    accounts: <AccountsCard key="accounts" section={model.accounts} />,
+    recent: <RecentCard key="recent" section={model.recent} locale={locale} timeZone={timeZone} />,
+    attention: <AttentionCard key="attention" alerts={alerts} />,
+  };
+  const shown = prefs.homeOrder.filter((id) => !prefs.homeHidden.includes(id));
+  const leadIsBalance = shown[0] === "balances";
+  const rest = leadIsBalance ? shown.slice(1) : shown;
+
+  return (
+    <section className="sm-page sm-home" data-sm-screen="home" data-sm-state={dashboard.stale ? "stale" : "ready"} data-sm-stale={dashboard.stale ? "true" : undefined} data-sm-period={chosen.period}>
+      <div className="sm-home-head">
+        <div className="sm-greeting">
+          {today && <p className="sm-home-date">{today}</p>}
+          <p className="sm-home-hello">{name ? t("home.hello", { name }) : t("home.helloNoName")}</p>
+        </div>
+        <div className="sm-icon-actions">
+          {setHidden && (
+            <IconButton label={t(hidden ? "home.showAmounts" : "home.hideAmounts")} icon={hidden ? LuEyeOff : LuEye} aria-pressed={hidden} onClick={() => setHidden(!hidden)} data-sm-action="toggle-amounts" />
+          )}
+          <IconButton label={t(dashboard.refreshing ? "home.refreshing" : "home.refresh")} icon={LuRefreshCw} spinning={dashboard.refreshing} onClick={dashboard.reload} disabled={dashboard.refreshing} aria-busy={dashboard.refreshing} />
+          <IconButton label={t("home.arrange")} icon={LuSlidersHorizontal} buttonRef={arrangeRef} onClick={() => setArranging(true)} data-sm-action="arrange" />
+        </div>
+      </div>
+
+      {dashboard.stale && <StaleNotice error={dashboard.error} updatedAt={dashboard.updatedAt} onRetry={dashboard.reload} retrying={dashboard.refreshing} />}
+
+      {leadIsBalance && blocks.balances}
+      <QuickAddExpense />
+      {rest.map((id) => blocks[id])}
+      {shown.length === 0 && <p className="sm-text sm-muted" data-sm-note="all-hidden">{t("home.allHidden")}</p>}
+      <ArrangeSheet open={arranging} onClose={() => setArranging(false)} returnFocusRef={arrangeRef} />
+    </section>
+  );
+}

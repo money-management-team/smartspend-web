@@ -1191,6 +1191,15 @@
         "next": "Next page",
         "first": "Go to the first page"
       },
+      "possibleDuplicateDialog": {
+        "title": "This might be a duplicate",
+        "description": "An entry already on this account looks like the same payment. If it's a separate payment, you can record it anyway.",
+        "matchedHeading": "The entry it resembles",
+        "recordedAt": "Recorded",
+        "cancel": "Cancel",
+        "confirm": "Record it anyway",
+        "confirming": "Recording..."
+      },
       "reverseDialog": {
         "title": "Reverse “{{name}}”?",
         "description": "Reversing is not deleting. It cancels this transaction's effect on your balances.",
@@ -1224,6 +1233,7 @@
         "noChanges": "Change at least one field to correct this transaction."
       },
       "errors": {
+        "storageUnavailable": "This device can't remember that a request is in progress right now, so it can't be sent safely. Enable storage for this site (leaving private browsing can be enough) and try again.",
         "forbidden": "You don't have access to this transaction, account or category.",
         "notFound": "This transaction isn't available. It may not exist, or it isn't in your workspaces.",
         "alreadyReversed": "This transaction has already been reversed. The page shows its current state.",
@@ -1553,11 +1563,13 @@
         "alreadyArchived": "This recurring transaction is already archived.",
         "archivedLocked": "This recurring transaction is archived and can no longer be changed.",
         "conflict": "This recurring transaction changed in the meantime. Refresh and try again.",
+        "occurrenceNotNext": "An earlier date of this recurring transaction is still open, so nothing was changed. Refresh to see the date to act on first.",
+        "occurrenceNotOpen": "This date was already settled, so nothing was changed. Refresh to see the rule as it is now.",
         "insufficientBalance": "Insufficient balance in the account.",
         "validation": "Check the highlighted fields and try again.",
         "unknownOutcome": "We couldn't confirm whether the occurrence was posted. Close this dialog to refresh, and check the occurrence history before trying again.",
         "unknownActionOutcome": "We couldn't confirm whether this was applied. Close this dialog to refresh before trying again.",
-        "failedOccurrenceHint": "The occurrence was not posted and no money moved. It stays open: fix the problem (for example, add funds to the account), then confirm it again.",
+        "failedOccurrenceHint": "The occurrence was not posted and no money moved. This date is now recorded as failed and the schedule moved on to the next date. Close this dialog to refresh, and fix the problem (for example, add funds to the account) before confirming the next date.",
         "noOpenOccurrenceHint": "There is no open occurrence to act on right now.",
         "insufficientBalanceHint": "No money moved. Add funds to the account, then confirm again.",
         "notPostedHint": "The occurrence was not posted and no money moved."

@@ -8,6 +8,7 @@ import { LuTriangleAlert, LuX } from "react-icons/lu";
 import CaptureStep from "./components/CaptureStep/CaptureStep";
 import Ledger from "./components/Ledger/Ledger";
 import OperationsIntro from "./components/OperationsIntro/OperationsIntro";
+import PossibleDuplicateDialog from "./components/PossibleDuplicateDialog/PossibleDuplicateDialog";
 import ReverseTransactionDialog from "./components/ReverseTransactionDialog/ReverseTransactionDialog";
 import ReviewOperationDialog from "./components/ReviewOperationDialog/ReviewOperationDialog";
 import {
@@ -25,9 +26,12 @@ import {
   filtersToSearchParams,
   getTodayInputValue,
   getTransactionTitle,
+  isPossibleDuplicateError,
   isTransactionEntity,
   parseTransactionPage,
+  possibleDuplicateMatch,
   readFilters,
+  storageUnavailableError,
   toOccurredAt,
 } from "./transactionHelpers";
 
@@ -270,6 +274,10 @@ export default function FinancialOperations() {
 
   const [draft, setDraft] = useState(null);
   const [notice, setNotice] = useState(null);
+  // Set when income/expense answers 409 possible_duplicate: { operation,
+  // payload, idempotencyKey, matched, isConfirming, error }. Replaces
+  // ReviewOperationDialog (not stacked on top of it) until the person decides.
+  const [duplicate, setDuplicate] = useState(null);
 
   /*
    * One Idempotency-Key per logical operation, kept at page level: a double
@@ -284,7 +292,33 @@ export default function FinancialOperations() {
     setDraft({ ...operation, account_id: selectedAccountId });
   };
 
-  // Called by ReviewOperationDialog; errors are shown inside the dialog.
+  const postOperation = (operation, payload, idempotencyKey) =>
+    operation.type === "income"
+      ? transactionsApi.createIncome(payload, idempotencyKey)
+      : transactionsApi.createExpense(payload, idempotencyKey);
+
+  const finishRecording = (operation, response) => {
+    const created = response?.data?.transaction;
+
+    setDraft(null);
+    setDuplicate(null);
+    operation.onRecorded?.();
+    setNotice({
+      text: t(
+        operation.type === "income"
+          ? "dashboard.financialOperations.messages.incomeCreated"
+          : "dashboard.financialOperations.messages.expenseCreated",
+      ),
+      transactionId: isTransactionEntity(created) ? created.id : null,
+    });
+    // Balances and the list come back from the backend; nothing is
+    // recalculated here.
+    refreshAfterMutation();
+  };
+
+  // Called by ReviewOperationDialog; errors are shown inside the dialog,
+  // except a possible-duplicate 409, which replaces it with
+  // PossibleDuplicateDialog instead of throwing.
   const recordOperation = async (operation) => {
     const payload = {
       account_id: Number(operation.account_id),
@@ -301,34 +335,65 @@ export default function FinancialOperations() {
     let response;
 
     try {
-      response =
-        operation.type === "income"
-          ? await transactionsApi.createIncome(payload, idempotencyKey)
-          : await transactionsApi.createExpense(payload, idempotencyKey);
-      attempt.settle(null);
+      // A brand-new key that could not be written to storage must not be
+      // sent: a reload right after would leave no way to recognize a retry
+      // of this exact request, risking a second record.
+      if (!attempt.isProtected()) throw storageUnavailableError();
+      response = await postOperation(operation, payload, idempotencyKey);
     } catch (error) {
+      if (isPossibleDuplicateError(error)) {
+        const matched = possibleDuplicateMatch(error);
+        if (matched) {
+          /*
+           * Not settled: nothing was recorded (the backend's posting
+           * transaction rolled back before any ledger entry existed), so
+           * `idempotencyKey` is still exactly what a resend must carry. Not
+           * calling attempt.settle() also means a Cancel here, followed by
+           * an unedited resubmission from the (remounted) review dialog,
+           * still gets this same key from attempt.keyFor() — the fingerprint
+           * it remembers is untouched.
+           */
+          setDuplicate({ operation, payload, idempotencyKey, matched, isConfirming: false, error: null });
+          return;
+        }
+      }
+
       attempt.settle(error);
       // The outcome is unknown: refresh so the list shows it if it was saved.
       if (UNKNOWN_OUTCOME.includes(error?.code)) refreshAfterMutation();
       throw error;
     }
 
-    const created = response?.data?.transaction;
-
-    setDraft(null);
-    operation.onRecorded?.();
-    setNotice({
-      text: t(
-        operation.type === "income"
-          ? "dashboard.financialOperations.messages.incomeCreated"
-          : "dashboard.financialOperations.messages.expenseCreated",
-      ),
-      transactionId: isTransactionEntity(created) ? created.id : null,
-    });
-    // Balances and the list come back from the backend; nothing is
-    // recalculated here.
-    refreshAfterMutation();
+    attempt.settle(null);
+    finishRecording(operation, response);
   };
+
+  // Called by PossibleDuplicateDialog's Confirm; resends the SAME payload and
+  // key, only adding the flag the backend documents for this exact case.
+  const confirmSeparateTransaction = async () => {
+    if (!duplicate || duplicate.isConfirming) return;
+
+    const { operation, payload, idempotencyKey } = duplicate;
+    setDuplicate((current) => current && { ...current, isConfirming: true, error: null });
+
+    let response;
+
+    try {
+      response = await postOperation(operation, { ...payload, confirm_possible_duplicate: true }, idempotencyKey);
+    } catch (error) {
+      attempt.settle(error);
+      if (UNKNOWN_OUTCOME.includes(error?.code)) refreshAfterMutation();
+      setDuplicate((current) => current && { ...current, isConfirming: false, error });
+      return;
+    }
+
+    attempt.settle(null);
+    finishRecording(operation, response);
+  };
+
+  // Called by PossibleDuplicateDialog's Cancel: nothing is sent, and the
+  // review dialog (still holding `draft`) is shown again, unchanged.
+  const cancelDuplicate = () => setDuplicate(null);
 
   /* ---------- Filters ---------- */
 
@@ -474,13 +539,23 @@ export default function FinancialOperations() {
         onReverse={setReverseTarget}
       />
 
-      {draft && (
+      {draft && !duplicate && (
         <ReviewOperationDialog
           draft={draft}
           account={selectedAccount}
           categories={options.categories}
           onConfirm={recordOperation}
           onClose={() => setDraft(null)}
+        />
+      )}
+
+      {duplicate && (
+        <PossibleDuplicateDialog
+          matched={duplicate.matched}
+          isConfirming={duplicate.isConfirming}
+          error={duplicate.error}
+          onCancel={cancelDuplicate}
+          onConfirm={confirmSeparateTransaction}
         />
       )}
 

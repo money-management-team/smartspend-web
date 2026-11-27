@@ -8,7 +8,7 @@
 
 | Param | Value |
 | --- | --- |
-| `id_workspace` | Session workspace id (omitted when unknown). **Not `workspace_id`**, unlike most endpoints |
+| `workspace_id` | Session workspace id (omitted when unknown). `FinancialAlertController` reads `workspace_id`; the old `id_workspace` is not a parameter of this endpoint and the backend ignores it, which returned the alerts of every workspace the user manages (fixed; `tests/financialAlerts.test.mjs`) |
 
 ## Response (`data`)
 

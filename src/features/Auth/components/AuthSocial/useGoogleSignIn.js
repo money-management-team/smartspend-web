@@ -12,6 +12,10 @@ export default function useGoogleSignIn({
   acceptedPolicies = false,
   onError,
   onAccepted,
+  // Desktop defaults. Mobile passes its own destination and the two hooks around the sign-in request.
+  destination = getPostAuthPath,
+  onAttempt,
+  onFailure,
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -40,6 +44,7 @@ export default function useGoogleSignIn({
     setBusy(true);
     setNeedsConsent(false);
     onError("");
+    onAttempt?.();
     try {
       await loginWithGoogle(idToken, {
         acceptedPolicies: consent,
@@ -48,8 +53,9 @@ export default function useGoogleSignIn({
       });
       if (!mounted.current || controller.signal.aborted) return;
       intent.current = null;
-      navigate(getPostAuthPath(location.state), { replace: true });
+      navigate(destination(location.state), { replace: true });
     } catch (error) {
+      onFailure?.();
       if (
         !mounted.current ||
         controller.signal.aborted ||

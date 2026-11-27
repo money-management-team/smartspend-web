@@ -5,15 +5,48 @@ import { transformWithOxc } from "vite";
 /*
  * Node module hooks for tests only:
  * - .jsx is compiled with Vite's own transform (automatic JSX runtime);
- * - `import.meta.env` is replaced by a fixed test object;
+ * - `import.meta.env` is replaced by a fixed test object (Smart Savings off unless SMARTSPEND_TEST_SMART_SAVINGS=true);
  * - .css and image imports become empty modules;
  * - .json imported the Vite way (no import attribute) becomes a default export;
  * - extensionless relative imports resolve like Vite does (.jsx, .js, /index).
  */
+// SMARTSPEND_TEST_SMART_SAVINGS=true lets a test run (in its own process) with the Smart Savings build flag on; it is off otherwise.
+const TEST_ENV = `({ DEV: false, PROD: false, MODE: "test"${process.env.SMARTSPEND_TEST_SMART_SAVINGS === "true" ? ', VITE_SMART_SAVINGS_ENABLED: "true"' : ""} })`;
 const SUFFIXES = ["", ".jsx", ".js", "/index.jsx", "/index.js"];
 const STUBBED = /\.(css|png|jpe?g|svg|webp|woff2?|ttf)$/i;
 
+// Vite answers this virtual module in a real build (scripts/mobileEntryPlugin.mjs).
+// Tests see Mobile switched off, which is also what the route table must do by default.
+const MOBILE_ENTRY = "virtual:smartspend-mobile";
+// The Mobile PWA module (scripts/mobilePwa.mjs): off in tests, as in every build but a local/staging one.
+const MOBILE_PWA = "virtual:smartspend-mobile-pwa";
+const MOBILE_PWA_SOURCE = 'export const MOBILE_PWA = false; export const PWA_VERSION = ""; export const PWA_SW_PATH = "/smartspend-mobile-sw.js"; export const PWA_SCOPE = "/m"; export const PWA_LEGACY_SCOPE = "/m/"; export const PWA_CACHE_PREFIX = "sm-pwa-";';
+
+/*
+ * Windows drive letters: started from a working directory spelled "f:\..." (Git
+ * Bash does that), Node gives the test file and its relative imports
+ * file:///f:/... URLs, while packages that CommonJS code requires (react, from
+ * react-dom) are found as F:\... paths. Node keys modules by URL, so the same
+ * file loaded twice under two spellings: two copies of React, and every hook
+ * failed with "Cannot read properties of null (reading 'useContext')". One
+ * spelling for every resolved file URL makes it one module again. This is a
+ * test-harness fix only; the app is built by Vite, which is not affected.
+ */
+const sameDrive = (result) => (result?.url && /^file:\/\/\/[a-z]:/.test(result.url) ? { ...result, url: `file:///${result.url[8].toUpperCase()}${result.url.slice(9)}` } : result);
+
 export async function resolve(specifier, context, nextResolve) {
+  return sameDrive(await resolveRaw(specifier, context, nextResolve));
+}
+
+async function resolveRaw(specifier, context, nextResolve) {
+  if (specifier === MOBILE_PWA) {
+    return { url: `data:text/javascript,${encodeURIComponent(MOBILE_PWA_SOURCE)}`, format: "module", shortCircuit: true };
+  }
+
+  if (specifier === MOBILE_ENTRY) {
+    return { url: "data:text/javascript,export const MobileEntry = null;", format: "module", shortCircuit: true };
+  }
+
   if (!/^\.{1,2}\//.test(specifier) || /\.[a-z0-9]+$/i.test(specifier)) {
     return nextResolve(specifier, context);
   }
@@ -53,7 +86,7 @@ export async function load(url, context, nextLoad) {
     const { code } = await transformWithOxc(source, filename, {
       lang: isJsx ? "jsx" : "js",
       jsx: { runtime: "automatic" },
-      define: { "import.meta.env": '({ DEV: false, PROD: false, MODE: "test" })' },
+      define: { "import.meta.env": TEST_ENV },
     });
     return { format: "module", source: code, shortCircuit: true };
   }

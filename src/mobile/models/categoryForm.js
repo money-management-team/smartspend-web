@@ -1,0 +1,161 @@
+import { CATEGORY_TYPES, NAME_MAX, normalizeCategory } from "./categories.js";
+import { idText, isRecord } from "./values.js";
+
+/*
+ * What a category write may say, what counts as proof it happened, and what an
+ * answer (or the lack of one) means. Pure: no React, no requests, no storage.
+ *
+ * Fields (docs/categories/api.md): POST sends workspace_id, name, type (color and
+ * icon are optional there and are not offered in Mobile); PATCH sends only the
+ * fields that changed, and Mobile changes only `name`. The type is chosen when a
+ * category is created and is NOT editable here: changing it changes what the
+ * category's existing transactions mean, and Mobile does not take that decision
+ * (the full version asks for an explicit confirmation of it). `is_active` is never
+ * sent, and there is no archive or delete.
+ */
+
+/** "required" | "tooLong" | null. The name is trimmed first; its length is counted in characters, like the backend's max of 255. */
+export function validateName(value) {
+  const name = typeof value === "string" ? value.trim() : "";
+  if (!name) return "required";
+  return [...name].length > NAME_MAX ? "tooLong" : null;
+}
+
+/*
+ * The colour and icon a category may carry: StoreCategoryRequest / UpdateCategoryRequest take an optional `color`
+ * (#RRGGBB, max 20) and `icon` (max 50) on both refs. Mobile offers the same presets the full version's form does
+ * (Categories/categoryHelpers.js) and no free text, so what is sent is always one of these or nothing.
+ */
+export const CATEGORY_COLORS = Object.freeze(["#3366FF", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#14B8A6", "#64748B"]);
+export const CATEGORY_ICONS = Object.freeze(["wallet", "briefcase", "gift", "piggy-bank", "utensils", "coffee", "shopping-cart", "shirt", "car", "plane", "home", "zap", "receipt", "smartphone", "heart-pulse", "graduation-cap", "gamepad", "tag"]);
+
+export const validateColor = (value) => (!value || CATEGORY_COLORS.includes(String(value).toUpperCase()) ? null : "invalid");
+export const validateIcon = (value) => (!value || CATEGORY_ICONS.includes(value) ? null : "invalid");
+
+export const validateType = (value) => (CATEGORY_TYPES.includes(value) ? null : "required");
+
+/** The session workspace as the backend expects it in the body, or null when it is not a plain id (then nothing is sent). */
+export function workspaceIdForBody(workspace) {
+  const value = workspace?.id;
+  if (typeof value === "number") return Number.isSafeInteger(value) && value > 0 ? value : null;
+  if (typeof value !== "string" || !idText(value)) return null;
+
+  const parsed = parseInt(value, 10);
+  return Number.isSafeInteger(parsed) ? parsed : null;
+}
+
+/** A create: the name and type, plus a colour and an icon only when one was chosen. */
+export function buildCreatePayload({ workspaceId, name, type, color = "", icon = "" }) {
+  return { workspace_id: workspaceId, name: String(name).trim(), type, ...(color ? { color: String(color).toUpperCase() } : {}), ...(icon ? { icon } : {}) };
+}
+
+/**
+ * An edit: only what changed among name, colour and icon (UpdateCategoryRequest is partial). The type is never sent: the
+ * backend refuses to change it once a transaction uses the category (422), and Mobile never changes what existing
+ * transactions mean. A colour or icon that was cleared is sent as null (both are nullable).
+ *
+ * @param {{ name: string, color?: string, icon?: string }} next
+ * @param {{ name: string | null, color: string | null, icon: string | null }} original
+ */
+export function buildUpdatePayload(next, original = null) {
+  const payload = {};
+  const name = String(next.name).trim();
+  if (!original || name !== String(original.name ?? "").trim()) payload.name = name;
+  if (original) {
+    const color = next.color ? String(next.color).toUpperCase() : null;
+    if (color !== (original.color ? original.color.toUpperCase() : null)) payload.color = color;
+    const icon = next.icon || null;
+    if (icon !== (original.icon ?? null)) payload.icon = icon;
+  }
+  return payload;
+}
+
+/*
+ * Proof that a create happened: the answer carries a category with an id, the
+ * name and type that were sent, that is not a system category, and (when it says)
+ * in the workspace it was sent for. Anything less is not "created": the request
+ * may well have been processed, so the caller treats it as unknown. Returns the
+ * server's category, or null.
+ */
+export function confirmCreate(data, sent) {
+  const category = normalizeCategory(isRecord(data) ? data.category : null);
+
+  if (!category) return null;
+  if (category.name !== sent.name.trim() || category.type !== sent.type) return null;
+  if (category.system !== false || category.active === false) return null;
+  if (category.workspaceId && String(category.workspaceId) !== String(sent.workspaceId)) return null;
+  if (sent.color && category.color?.toUpperCase() !== String(sent.color).toUpperCase()) return null;
+  if (sent.icon && category.icon !== sent.icon) return null;
+
+  return category;
+}
+
+/** Proof that an edit happened: the same category, now with what was sent (the name, and a colour or icon when they were sent, null meaning cleared). */
+export function confirmUpdate(data, categoryId, sent) {
+  const category = normalizeCategory(isRecord(data) ? data.category : null);
+  const fields = typeof sent === "string" ? { name: sent } : sent;
+  if (!category || category.id !== String(categoryId) || category.active !== true) return null;
+  if (Object.hasOwn(fields, "name") && category.name !== String(fields.name).trim()) return null;
+  if (Object.hasOwn(fields, "color") && (category.color?.toUpperCase() ?? null) !== (fields.color ? String(fields.color).toUpperCase() : null)) return null;
+  if (Object.hasOwn(fields, "icon") && category.icon !== (fields.icon ?? null)) return null;
+  return category;
+}
+
+/*
+ * Proof that an archive happened: the same category, now inactive (POST /categories/{id}/archive answers the category with
+ * is_active false; ArchiveCategoryAction, identical on develop @ fd87531 and 6b696d72). Anything else is not "archived".
+ */
+export function confirmArchive(data, categoryId) {
+  const category = normalizeCategory(isRecord(data) ? data.category : null);
+  return category && category.id === String(categoryId) && category.active === false ? category : null;
+}
+
+/*
+ * What an error means for the write that caused it, for each operation.
+ *
+ * "rejected" is claimed only where the documented contract says the server
+ * refused the request (docs/categories/api.md): a 422 is its validation of the
+ * fields (name, type), a 403 is "system category, or one you can't manage", and,
+ * for a rename only, a 404 is "doesn't exist or isn't yours". Checked against the
+ * backend source (develop @ fd87531, Create/UpdateCategoryAction): a duplicate name,
+ * including the losing side of a race, is that 422, so a create refused this way may
+ * follow its own first copy (see useCategoryMutation.js).
+ *
+ * Everything else is "unknown", because nothing documented says the write did not
+ * happen: 400, 408, 409 (no category meaning is documented), 429 (a rate limit may
+ * sit before or after the work), 401 (where the token is checked is not verified),
+ * a 404 for a create, 5xx, no answer (network, timeout, abort), an answer that is
+ * not the envelope, a failure envelope with a success status.
+ *
+ *   identity   the signed-in identity changed: the screen is gone, nothing is claimed
+ *   rejected   the server refused it, by the contract: the person may change and send again
+ *   unknown    it may or may not have happened: shown as such, never sent again by itself
+ */
+const REJECTED_BY_CONTRACT = {
+  create: { 403: "FORBIDDEN", 422: "VALIDATION_ERROR" },
+  update: { 403: "FORBIDDEN", 404: "NOT_FOUND", 422: "VALIDATION_ERROR" },
+};
+
+export function classifyOutcome(error, operation) {
+  if (error?.code === "IDENTITY_CHANGED") return { kind: "identity" };
+  // The write gate refused before anything was sent (data/writeGate.js): certainly not applied.
+  if (error?.name === "WriteClosedError") return { kind: "rejected", code: "WRITE_CLOSED", error };
+
+  const status = Number.isInteger(error?.status) ? error.status : 0;
+  const code = REJECTED_BY_CONTRACT[operation]?.[status];
+  if (error?.name === "ApiError" && code && error.code === code) return { kind: "rejected", code, error };
+
+  return { kind: "unknown", code: error?.code ?? error?.name ?? "UNKNOWN", status };
+}
+
+/** Field messages from a 422: the first message of each field Mobile has an input for. */
+export function fieldErrorsOf(error) {
+  const errors = isRecord(error?.errors) ? error.errors : {};
+  const pick = (field) => {
+    const value = errors[field];
+    const text = Array.isArray(value) ? value.find((item) => typeof item === "string") : typeof value === "string" ? value : null;
+    return text ? text.slice(0, 300) : null;
+  };
+
+  return { name: pick("name"), type: pick("type"), color: pick("color"), icon: pick("icon") };
+}

@@ -8,6 +8,7 @@
     "build": "node scripts/generateLegalPages.mjs && vite build",
     "legal:generate": "node scripts/generateLegalPages.mjs",
     "lint": "eslint .",
+    "staging:verify": "node scripts/stagingIsolation.mjs verify",
     "test": "node --import ./tests/helpers/register.mjs --test \"tests/**/*.test.mjs\"",
     "preview": "vite preview"
   },

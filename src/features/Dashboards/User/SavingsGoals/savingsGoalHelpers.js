@@ -358,6 +358,8 @@ const isAlreadyArchivedConflict = (error) => /already|archived/i.test(collectErr
  * target date…).
  */
 export function getGoalErrorMessage(error, t, context = "load") {
+  if (error?.code === "STORAGE_UNAVAILABLE") return t("dashboard.transactions.errors.storageUnavailable");
+
   const isMovement = MOVEMENT_CONTEXTS.includes(context);
 
   if (error?.code === "FORBIDDEN") {

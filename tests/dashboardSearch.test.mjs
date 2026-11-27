@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test, before, after } from "node:test";
-import { createServer } from "vite";
+import { createIsolatedServer as createServer } from "./helpers/isolatedVite.mjs";
 import react from "@vitejs/plugin-react";
 
 let server, i18n, buildSearchEntries, searchEntries, normalizeSearchText, PATH;

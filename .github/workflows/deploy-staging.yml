@@ -1,0 +1,228 @@
+name: Deploy SmartSpend Frontend (staging)
+
+# Staging only. Manual (workflow_dispatch), in the GitHub environment "staging", reading ONLY STAGING_* secrets and variables.
+# It is separate from the production deploy workflow, which this file never references, and it cannot deploy a production branch.
+# Nothing here is a default for production: every value comes from the staging environment, and a missing one stops the run.
+# See docs/mobile/STAGING-INFRASTRUCTURE.md for what must exist on the host and in GitHub before this can run.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "staging/* or integration/* branch, or a full commit hash (never a production branch)"
+        required: true
+        default: "integration/mobile"
+        type: string
+      pwa:
+        description: "Also build the Mobile PWA (installable, offline). Staging only."
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: smartspend-frontend-staging
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy frontend to staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: staging
+
+    env:
+      STAGING_REF: ${{ inputs.ref }}
+      STAGING_API_BASE_URL: ${{ vars.STAGING_API_BASE_URL }}
+      STAGING_WEB_ORIGIN: ${{ vars.STAGING_WEB_ORIGIN }}
+      STAGING_REMOTE_BASE: ${{ vars.STAGING_REMOTE_BASE }}
+      VITE_API_BASE_URL: ${{ vars.STAGING_API_BASE_URL }}
+      VITE_GOOGLE_CLIENT_ID: ${{ vars.STAGING_GOOGLE_CLIENT_ID }}
+      VITE_MOBILE_ENABLED: "true"
+      VITE_MOBILE_PWA: ${{ inputs.pwa && 'true' || 'false' }}
+      VITE_SMART_SAVINGS_ENABLED: "true"
+
+    steps:
+      - name: Check the requested revision
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          case "$STAGING_REF" in
+            development|develop|main|master|production|release)
+              echo "ERROR: staging is never built from a production branch."
+              exit 1
+              ;;
+          esac
+
+          case "$STAGING_REF" in
+            *..*|*//*)
+              echo "ERROR: the revision must not contain '..' or '//'."
+              exit 1
+              ;;
+          esac
+
+          if ! printf '%s' "$STAGING_REF" | grep -Eq '^((staging|integration)/[A-Za-z0-9._/-]+|[0-9a-f]{40})$'; then
+            echo "ERROR: the revision must be a staging/* or integration/* branch, or a full commit hash."
+            exit 1
+          fi
+
+      - name: Checkout the requested revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Staging isolation preflight
+        shell: bash
+        env:
+          STAGING_SSH_KEY: ${{ secrets.STAGING_SSH_KEY }}
+          STAGING_KNOWN_HOSTS: ${{ secrets.STAGING_KNOWN_HOSTS }}
+          STAGING_SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+          STAGING_SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+          STAGING_SSH_PORT: ${{ secrets.STAGING_SSH_PORT }}
+        run: |
+          set -euo pipefail
+
+          # Fails closed: a missing or production-looking value stops the run before anything is built or sent.
+          node scripts/stagingIsolation.mjs preflight
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build staging frontend
+        run: npm run build -- --mode staging
+
+      - name: Add the staging host files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # The single-page app must answer every path with index.html, and index.html must never be cached.
+          cat > dist/.htaccess <<'HTACCESS'
+          RewriteEngine On
+          RewriteCond %{REQUEST_FILENAME} !-f
+          RewriteCond %{REQUEST_FILENAME} !-d
+          RewriteRule ^ /index.html [L]
+          <FilesMatch "^index\.html$">
+            Header set Cache-Control "no-cache"
+          </FilesMatch>
+          <FilesMatch "\.(js|css|woff2|png|svg)$">
+            Header set Cache-Control "public, max-age=31536000, immutable"
+          </FilesMatch>
+          HTACCESS
+          sed -i 's/^          //' dist/.htaccess
+
+          REVISION="$(git rev-parse HEAD)"
+          printf '%s\n' "$REVISION" > "dist/deploy-revision-$REVISION.txt"
+          echo "STAGING_REVISION=$REVISION" >> "$GITHUB_ENV"
+
+      - name: Verify the build is a staging build
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          node scripts/stagingIsolation.mjs build dist
+
+      - name: Configure SSH
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.STAGING_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.STAGING_KNOWN_HOSTS }}
+        run: |
+          set -euo pipefail
+
+          install -m 700 -d ~/.ssh
+
+          printf '%s\n' "$SSH_PRIVATE_KEY" \
+            > ~/.ssh/smartspend_staging_actions
+
+          chmod 600 ~/.ssh/smartspend_staging_actions
+
+          printf '%s\n' "$SSH_KNOWN_HOSTS" \
+            > ~/.ssh/known_hosts
+
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Test the staging host connection
+        shell: bash
+        env:
+          STAGING_SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+          STAGING_SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+          STAGING_SSH_PORT: ${{ secrets.STAGING_SSH_PORT }}
+        run: |
+          set -euo pipefail
+
+          ssh \
+            -i ~/.ssh/smartspend_staging_actions \
+            -p "$STAGING_SSH_PORT" \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            -o ConnectTimeout=15 \
+            "$STAGING_SSH_USER@$STAGING_SSH_HOST" \
+            'echo STAGING_SSH=OK'
+
+      - name: Prepare the incoming staging release
+        shell: bash
+        env:
+          STAGING_SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+          STAGING_SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+          STAGING_SSH_PORT: ${{ secrets.STAGING_SSH_PORT }}
+        run: |
+          set -euo pipefail
+
+          ssh \
+            -i ~/.ssh/smartspend_staging_actions \
+            -p "$STAGING_SSH_PORT" \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            "$STAGING_SSH_USER@$STAGING_SSH_HOST" \
+            "rm -rf '$STAGING_REMOTE_BASE/incoming/$STAGING_REVISION' && \
+             mkdir -p '$STAGING_REMOTE_BASE/incoming/$STAGING_REVISION' && \
+             chmod 700 '$STAGING_REMOTE_BASE/incoming/$STAGING_REVISION'"
+
+      - name: Upload the staging build
+        shell: bash
+        env:
+          STAGING_SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+          STAGING_SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+          STAGING_SSH_PORT: ${{ secrets.STAGING_SSH_PORT }}
+        run: |
+          set -euo pipefail
+
+          rsync \
+            -az \
+            --delete \
+            -e "ssh -i ~/.ssh/smartspend_staging_actions -p $STAGING_SSH_PORT -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes" \
+            dist/ \
+            "$STAGING_SSH_USER@$STAGING_SSH_HOST:$STAGING_REMOTE_BASE/incoming/$STAGING_REVISION/"
+
+      - name: Deploy staging frontend
+        shell: bash
+        env:
+          STAGING_SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
+          STAGING_SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+          STAGING_SSH_PORT: ${{ secrets.STAGING_SSH_PORT }}
+        run: |
+          set -euo pipefail
+
+          ssh \
+            -i ~/.ssh/smartspend_staging_actions \
+            -p "$STAGING_SSH_PORT" \
+            -o IdentitiesOnly=yes \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            "$STAGING_SSH_USER@$STAGING_SSH_HOST" \
+            "$STAGING_REMOTE_BASE/deploy.sh '$STAGING_REVISION'"

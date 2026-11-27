@@ -5,6 +5,22 @@ on:
     branches:
       - development
   workflow_dispatch:
+    # The Mobile release (/m) is opt-in per manual run and needs its own
+    # repository variable as the recorded approval. A push always deploys
+    # Desktop only. See docs/mobile/RELEASE-AND-ROLLBACK.md.
+    inputs:
+      mobile_release:
+        description: "Ship the Mobile experience (/m). Needs the repository variable SMARTSPEND_MOBILE_RELEASE_APPROVED=true."
+        type: boolean
+        default: false
+      mobile_pwa:
+        description: "Also ship the installable Mobile PWA. Needs mobile_release and the repository variable SMARTSPEND_MOBILE_PWA_RELEASE_APPROVED=true."
+        type: boolean
+        default: false
+      mobile_pwa_retire:
+        description: "Rollback: ship the retire worker that removes an installed Mobile PWA. Not with mobile_pwa."
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -16,6 +32,11 @@ concurrency:
 jobs:
   deploy:
     name: Build and deploy frontend
+    # Production is built from `development` only. A manual run (workflow_dispatch)
+    # from any other branch is skipped instead of deploying that branch.
+    # NOTE: a workflow edited on an unmerged branch does not protect the copy
+    # that is deployed from `development` until this change is itself merged.
+    if: github.ref == 'refs/heads/development'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -29,6 +50,11 @@ jobs:
       # docs/savings-goals/smart-plans.md ("Release gate").
       VITE_SMART_SAVINGS_ENABLED: "true"
       SMARTSPEND_SMART_SAVINGS_RELEASE_APPROVED: "true"
+      # The Mobile experience is off here, whatever a repository variable or
+      # the runner environment says. Only the "Resolve Mobile release" step can
+      # turn it on, for a manual run with mobile_release and the recorded
+      # approval, and only for the build step (docs/mobile/RELEASE-AND-ROLLBACK.md).
+      VITE_MOBILE_ENABLED: "false"
 
     steps:
       - name: Checkout development
@@ -68,8 +94,79 @@ jobs:
             exit 1
           fi
 
+          if [ "$VITE_MOBILE_ENABLED" != "false" ]; then
+            echo "ERROR: Mobile must stay off in this workflow unless an approved release is resolved below."
+            exit 1
+          fi
+
+          if grep -Eqs '^[[:space:]]*(export[[:space:]]+)?VITE_MOBILE_ENABLED[[:space:]]*=' .env .env.production; then
+            echo "ERROR: A tracked env file sets VITE_MOBILE_ENABLED."
+            exit 1
+          fi
+
           echo "SMART_SAVINGS=ON"
           echo "PRODUCTION_VARIABLES=OK"
+
+      # Decides Mobile for this run, fail-closed. A push, or a manual run
+      # without the inputs, resolves everything to "false". Each input needs its
+      # own repository variable set to exactly "true" (the recorded approval);
+      # an input without it fails the run instead of deploying Desktop alone.
+      - name: Resolve Mobile release
+        id: mobile
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          ASK_MOBILE: ${{ inputs.mobile_release }}
+          ASK_PWA: ${{ inputs.mobile_pwa }}
+          ASK_RETIRE: ${{ inputs.mobile_pwa_retire }}
+          MOBILE_APPROVAL: ${{ vars.SMARTSPEND_MOBILE_RELEASE_APPROVED }}
+          PWA_APPROVAL: ${{ vars.SMARTSPEND_MOBILE_PWA_RELEASE_APPROVED }}
+        run: |
+          set -euo pipefail
+
+          mobile=false
+          pwa=false
+          retire=false
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            if [ "${ASK_MOBILE:-}" = "true" ]; then
+              if [ "${MOBILE_APPROVAL:-}" != "true" ]; then
+                echo "ERROR: mobile_release was asked for, but SMARTSPEND_MOBILE_RELEASE_APPROVED is not \"true\"."
+                exit 1
+              fi
+              mobile=true
+            fi
+
+            if [ "${ASK_PWA:-}" = "true" ]; then
+              if [ "$mobile" != "true" ]; then
+                echo "ERROR: mobile_pwa needs mobile_release."
+                exit 1
+              fi
+              if [ "${PWA_APPROVAL:-}" != "true" ]; then
+                echo "ERROR: mobile_pwa was asked for, but SMARTSPEND_MOBILE_PWA_RELEASE_APPROVED is not \"true\"."
+                exit 1
+              fi
+              pwa=true
+            fi
+
+            if [ "${ASK_RETIRE:-}" = "true" ]; then
+              if [ "$pwa" = "true" ]; then
+                echo "ERROR: mobile_pwa_retire cannot be combined with mobile_pwa."
+                exit 1
+              fi
+              retire=true
+            fi
+          fi
+
+          {
+            echo "mobile=$mobile"
+            echo "pwa=$pwa"
+            echo "retire=$retire"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "MOBILE_RELEASE=$mobile"
+          echo "MOBILE_PWA=$pwa"
+          echo "MOBILE_PWA_RETIRE=$retire"
 
       - name: Install dependencies
         run: npm ci
@@ -77,15 +174,47 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Step env takes precedence over the job's pinned "false"; every value
+      # here is "false" unless the step above resolved an approved release.
       - name: Build production frontend
+        env:
+          VITE_MOBILE_ENABLED: ${{ steps.mobile.outputs.mobile }}
+          SMARTSPEND_MOBILE_RELEASE_APPROVED: ${{ steps.mobile.outputs.mobile }}
+          VITE_MOBILE_PWA: ${{ steps.mobile.outputs.pwa }}
+          SMARTSPEND_MOBILE_PWA_RELEASE_APPROVED: ${{ steps.mobile.outputs.pwa }}
+          SMARTSPEND_MOBILE_PWA_RETIRE: ${{ steps.mobile.outputs.retire }}
         run: npm run build
 
       - name: Validate build
         shell: bash
+        env:
+          MOBILE_RELEASE: ${{ steps.mobile.outputs.mobile }}
+          MOBILE_PWA: ${{ steps.mobile.outputs.pwa }}
+          MOBILE_PWA_RETIRE: ${{ steps.mobile.outputs.retire }}
         run: |
           set -euo pipefail
 
           test -f dist/index.html
+
+          # The PWA files exist exactly when the PWA release was resolved; a
+          # retire build has only the retire worker.
+          if [ "$MOBILE_PWA" = "true" ]; then
+            test -f dist/smartspend-mobile-sw.js
+            test -f dist/m/manifest.webmanifest
+            test -f dist/m/icon-192.png
+            test -f dist/m/icon-512.png
+            test -f dist/m/apple-touch-icon.png
+          else
+            test ! -e dist/m/manifest.webmanifest
+            if [ "$MOBILE_PWA_RETIRE" = "true" ]; then
+              test -f dist/smartspend-mobile-sw.js
+            else
+              test ! -e dist/smartspend-mobile-sw.js
+              test ! -e dist/m
+            fi
+          fi
+
+          echo "MOBILE_RELEASE=$MOBILE_RELEASE MOBILE_PWA=$MOBILE_PWA MOBILE_PWA_RETIRE=$MOBILE_PWA_RETIRE"
 
           grep -R -F \
             "https://smartspend-api.anasalharazeen.com/api" \

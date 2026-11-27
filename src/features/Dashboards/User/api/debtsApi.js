@@ -74,13 +74,20 @@ export const debtsApi = {
   get: (debtId, options = {}) =>
     apiRequest(debtPath(debtId), { signal: options.signal }),
 
-  // No Idempotency-Key: the backend doesn't require one for POST /debts, even
-  // when `account_id` makes it post an opening movement.
-  create: (payload) =>
-    apiRequest("/debts", {
+  // The Idempotency-Key is required (StoreDebtRequest): a retry of the same
+  // submission returns the debt the first request recorded instead of
+  // recording it (and, with `account_id`, posting its opening movement) twice.
+  create: (payload, idempotencyKey) => {
+    if (!idempotencyKey) {
+      throw new Error("POST /debts requires an Idempotency-Key.");
+    }
+
+    return apiRequest("/debts", {
       method: "POST",
+      headers: { "Idempotency-Key": idempotencyKey },
       body: pickPayload(payload, CREATE_FIELDS),
-    }),
+    });
+  },
 
   // Partial update (PATCH; PUT is also accepted by the backend but not used):
   // send only the fields that changed. The backend recalculates

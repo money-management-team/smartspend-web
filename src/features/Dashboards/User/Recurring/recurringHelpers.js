@@ -83,10 +83,24 @@ export const isOverdueOccurrence = (occurrence) => isTrue(occurrence?.is_overdue
 export const isOpenOccurrence = (occurrence) => isTrue(occurrence?.is_open);
 
 /*
+ * The id of the open occurrence a confirm or skip acts on: the rule's
+ * `schedule.next_occurrence.id`, i.e. the date the person is shown. The
+ * backend requires it (`occurrence_id`) and refuses the request unless that
+ * occurrence is still the earliest open one. Null when the rule's schedule
+ * names no open occurrence, and then nothing can be confirmed or skipped.
+ */
+export function getNextOccurrenceId(rule) {
+  const { next } = getSchedule(rule);
+  if (!next || next.is_open === false) return null;
+  const id = Number(next.id);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
+}
+
+/*
  * What the UI offers for each status. The backend has the final say: every
  * action still handles its rejection (422 / 409).
- * - active: edit, pause, archive; confirm / skip while an occurrence is open
- *   (or when the response didn't say, so the backend decides).
+ * - active: edit, pause, archive; confirm / skip only while the schedule
+ *   names an open occurrence (its id is what the request sends).
  * - paused: edit, resume, archive. Nothing is confirmed or skipped while
  *   paused.
  * - completed: read-only apart from archiving it.
@@ -94,8 +108,7 @@ export const isOpenOccurrence = (occurrence) => isTrue(occurrence?.is_open);
  */
 export function getRuleActions(rule) {
   const status = getRuleStatus(rule);
-  const { known, openCount, next } = getSchedule(rule);
-  const hasOpenOccurrence = !known || (openCount == null ? next != null : openCount > 0);
+  const hasOpenOccurrence = getNextOccurrenceId(rule) != null;
 
   return {
     canEdit: status === "active" || status === "paused",
@@ -390,10 +403,14 @@ export const isNoOpenOccurrenceError = (error) =>
  * paused or archived, nothing open, insufficient balance…).
  */
 export function getRecurringErrorMessage(error, t, context = "load") {
+  if (error?.code === "STORAGE_UNAVAILABLE") return t("dashboard.transactions.errors.storageUnavailable");
   if (error?.code === "FORBIDDEN") return t("dashboard.recurring.errors.forbidden");
   if (error?.code === "NOT_FOUND") return t("dashboard.recurring.errors.notFound");
 
   if (error?.code === "CONFLICT") {
+    // The named occurrence is no longer the one to act on; nothing changed (backend RecurringOccurrenceConflictException).
+    if (error.serverCode === "recurring_occurrence_not_next") return t("dashboard.recurring.errors.occurrenceNotNext");
+    if (error.serverCode === "recurring_occurrence_not_open") return t("dashboard.recurring.errors.occurrenceNotOpen");
     if (context === "archive") return t("dashboard.recurring.errors.alreadyArchived");
     if (context === "save") return t("dashboard.recurring.errors.archivedLocked");
     return error.message || t("dashboard.recurring.errors.conflict");

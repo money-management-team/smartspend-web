@@ -8,6 +8,7 @@ import { getDebtDetailsPath } from "../../../../routes/Path";
 import { ApiError } from "../api/apiClient";
 import { resolveWorkspaceId } from "../api/dashboardApi";
 import { debtsApi } from "../api/debtsApi";
+import { createSubmissionAttempt, storageUnavailableError } from "../FinancialOperations/transactionHelpers";
 import DebtFilters from "./components/DebtFilters/DebtFilters";
 import DebtForm from "./components/DebtForm/DebtForm";
 import DebtList from "./components/DebtList/DebtList";
@@ -56,6 +57,8 @@ export default function Debts() {
   // Set when a create failed with an unknown outcome; both requests are
   // refetched when the form closes, so a debt that was recorded shows up.
   const staleRef = useRef(false);
+  // The open create form's Idempotency-Key (see openForm).
+  const createAttemptRef = useRef(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -127,7 +130,22 @@ export default function Debts() {
   // Called by DebtForm; errors are shown in the form.
   const handleSave = async (payload) => {
     const workspaceId = await resolveWorkspaceId();
-    const response = await debtsApi.create({ ...payload, workspace_id: workspaceId });
+    const attempt = (createAttemptRef.current ??= createSubmissionAttempt("debt-create"));
+    const idempotencyKey = attempt.key(payload);
+    let response;
+
+    try {
+      // A brand-new key that could not be written to storage must not be
+      // sent: a reload right after would leave no way to recognize a retry
+      // of this exact request, risking a second debt record.
+      if (!attempt.isProtected()) throw storageUnavailableError();
+      response = await debtsApi.create({ ...payload, workspace_id: workspaceId }, idempotencyKey);
+      attempt.settle(null);
+    } catch (requestError) {
+      attempt.settle(requestError);
+      throw requestError;
+    }
+
     const createdDebt = response?.data?.debt;
 
     staleRef.current = false;
@@ -151,7 +169,11 @@ export default function Debts() {
 
   /* ---------- Render ---------- */
 
-  const openForm = () => setIsFormOpen(true);
+  // Each opening of the form is one submission intent with its own key.
+  const openForm = () => {
+    createAttemptRef.current = createSubmissionAttempt("debt-create");
+    setIsFormOpen(true);
+  };
 
   return (
     <div className="debts-page">

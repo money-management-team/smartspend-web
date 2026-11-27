@@ -1,0 +1,348 @@
+/*
+ * A fake backend for the Mobile screens. Fictional data only, no network.
+ *
+ * It replaces globalThis.fetch (the one thing apiClient's apiRequest calls) and
+ * is strict: a request with any method but GET is recorded as a violation AND
+ * throws on the spot, so a test that makes one fails where it happened. The
+ * other ways a page could talk to a server (XMLHttpRequest, sendBeacon,
+ * WebSocket, EventSource) are trapped the same way, so a screen cannot get
+ * around the check by not using fetch.
+ */
+
+const safeJson = (text) => {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+};
+
+export const envelope = (data) => ({ status: true, message: "ok", data });
+export const failure = (status, message = "failed", code) => ({ status, body: { status: false, message, ...(code ? { code } : {}), errors: {} } });
+
+/*
+ * The only writes a test may allow (S04B4): a new category and a category's
+ * rename. Anything else that is not a GET stays a violation, allowed or not.
+ */
+export const CATEGORY_WRITES = Object.freeze([
+  { method: "POST", path: /^\/categories$/ },
+  { method: "PATCH", path: /^\/categories\/[1-9]\d{0,14}$/ },
+]);
+
+/*
+ * The form writes a test of the (closed) send path may allow, one rule each, so
+ * a test names exactly the request it expects. Tests open the gate for them with
+ * setWriteApprovalsForTests; the product's gate stays closed.
+ */
+export const FORM_WRITES = Object.freeze({
+  expense: { method: "POST", path: /^\/transactions\/expense$/ },
+  income: { method: "POST", path: /^\/transactions\/income$/ },
+  accountCreate: { method: "POST", path: /^\/accounts$/ },
+  accountUpdate: { method: "PATCH", path: /^\/accounts\/[1-9]\d*$/ },
+  accountArchive: { method: "POST", path: /^\/accounts\/[1-9]\d*\/archive$/ },
+  categoryArchive: { method: "POST", path: /^\/categories\/[1-9]\d*\/archive$/ },
+  aiConversationCreate: { method: "POST", path: /^\/ai\/conversations$/ },
+  aiMessage: { method: "POST", path: /^\/ai\/conversations\/[1-9]\d*\/messages$/ },
+  aiConversationDelete: { method: "DELETE", path: /^\/ai\/conversations\/[1-9]\d*$/ },
+  aiMessageFeedback: { method: "POST", path: /^\/ai\/messages\/[1-9]\d*\/feedback$/ },
+  aiInsightFeedback: { method: "POST", path: /^\/ai\/insights\/[1-9]\d*\/feedback$/ },
+  aiInsightsRefresh: { method: "POST", path: /^\/ai\/insights\/refresh$/ },
+  aiInsightDismiss: { method: "POST", path: /^\/ai\/insights\/[1-9]\d*\/dismiss$/ },
+  aiSettings: { method: "PUT", path: /^\/ai\/settings$/ },
+  aiDataDelete: { method: "DELETE", path: /^\/ai\/data$/ },
+  correct: { method: "PATCH", path: /^\/transactions\/[1-9]\d*$/ },
+  reverse: { method: "POST", path: /^\/transactions\/[1-9]\d*\/reverse$/ },
+  transfer: { method: "POST", path: /^\/transfers$/ },
+  receiptUpload: { method: "POST", path: /^\/ai\/expense-captures$/ },
+  receiptSave: { method: "PATCH", path: /^\/ai\/expense-captures\/[1-9]\d*$/ },
+  receiptConfirm: { method: "POST", path: /^\/ai\/expense-captures\/[1-9]\d*\/confirm$/ },
+  voiceUpload: { method: "POST", path: /^\/ai\/voice-expense-captures$/ },
+  budget: { method: "POST", path: /^\/budgets$/ },
+  // Smart Savings installment postpone (data/writePlanApi.js), for tests of its closed send path only.
+  installmentPostpone: { method: "POST", path: /^\/savings-goals\/[1-9]\d*\/planned-contributions\/[1-9]\d*\/postpone$/ },
+  installmentSkip: { method: "POST", path: /^\/savings-goals\/[1-9]\d*\/planned-contributions\/[1-9]\d*\/skip$/ },
+  installmentConfirm: { method: "POST", path: /^\/savings-goals\/[1-9]\d*\/planned-contributions\/[1-9]\d*\/confirm$/ },
+  notificationRead: { method: "PATCH", path: /^\/notifications\/[1-9]\d*\/read$/ },
+  notificationsReadAll: { method: "POST", path: /^\/notifications\/read-all$/ },
+  notificationPreferences: { method: "PATCH", path: /^\/notifications\/preferences$/ },
+  // Account recovery (auth/useAuthWrite.js). The first two are public and carry no Authorization; the resend is the signed-in user's.
+  authForgotPassword: { method: "POST", path: /^\/auth\/forgot-password$/ },
+  authResetPassword: { method: "POST", path: /^\/auth\/reset-password$/ },
+  emailResend: { method: "POST", path: /^\/auth\/email\/verification-notification$/ },
+});
+
+/**
+ * @param {(call) => unknown} handler
+ * @param {{ allowWrites?: { method: string, path: RegExp }[] }} options `allowWrites` must be rules from CATEGORY_WRITES or FORM_WRITES
+ */
+export function installFakeApi(handler, { allowWrites = [] } = {}) {
+  const known = [...CATEGORY_WRITES, ...Object.values(FORM_WRITES)];
+  if (allowWrites.some((rule) => !known.includes(rule))) throw new Error("Only the listed category and form writes can be allowed.");
+  const calls = [];
+  const violations = [];
+  const pending = [];
+  const original = { fetch: globalThis.fetch, XMLHttpRequest: globalThis.XMLHttpRequest, WebSocket: globalThis.WebSocket, EventSource: globalThis.EventSource, sendBeacon: globalThis.navigator?.sendBeacon };
+
+  globalThis.fetch = (url, init = {}) => {
+    const method = String(init.method ?? "GET").toUpperCase();
+    const parsed = new URL(String(url), "http://localhost");
+    const call = {
+      method,
+      path: parsed.pathname.replace(/^\/api/, ""),
+      query: Object.fromEntries(parsed.searchParams),
+      headers: init.headers ?? {},
+      auth: init.headers?.Authorization ?? null,
+      hasBody: init.body !== undefined,
+      body: typeof init.body === "string" ? safeJson(init.body) : init.body,
+      signal: init.signal,
+    };
+
+    calls.push(call);
+
+    const allowed = method !== "GET" && allowWrites.some((rule) => rule.method === method && rule.path.test(call.path));
+    if (!allowed && (method !== "GET" || call.hasBody)) {
+      violations.push(`${method} ${call.path}`);
+      throw new Error(`FORBIDDEN: Mobile sent ${method} ${call.path}`);
+    }
+
+    return new Promise((resolve, reject) => {
+      const respond = (outcome) => {
+        if (call.signal?.aborted) {
+          reject(Object.assign(new Error("aborted"), { name: "AbortError" }));
+          return;
+        }
+
+        if (outcome instanceof Error) {
+          reject(outcome);
+          return;
+        }
+
+        const status = outcome?.status ?? 200;
+        const body = outcome && "body" in outcome ? outcome.body : outcome;
+        resolve(new Response(typeof body === "string" ? body : JSON.stringify(body), { status, headers: outcome?.headers ?? {} }));
+      };
+
+      let outcome;
+      try {
+        outcome = handler(call);
+      } catch (error) {
+        reject(error);
+        return;
+      }
+
+      if (outcome && typeof outcome.then === "function") {
+        const entry = { call, settle: respond };
+        pending.push(entry);
+        outcome.then((value) => respond(value), reject);
+      } else {
+        respond(outcome ?? { status: 404, body: { status: false, message: "not found", errors: {} } });
+      }
+    });
+  };
+
+  const trap = (name) =>
+    class {
+      constructor(...args) {
+        violations.push(`${name}(${args.join(", ")})`);
+        throw new Error(`FORBIDDEN: Mobile used ${name}`);
+      }
+    };
+
+  globalThis.XMLHttpRequest = trap("XMLHttpRequest");
+  globalThis.WebSocket = trap("WebSocket");
+  globalThis.EventSource = trap("EventSource");
+  Object.defineProperty(globalThis.navigator, "sendBeacon", {
+    configurable: true,
+    writable: true,
+    value: (...args) => {
+      violations.push(`sendBeacon(${args[0]})`);
+      throw new Error("FORBIDDEN: Mobile used sendBeacon");
+    },
+  });
+
+  return {
+    calls,
+    violations,
+    /** Requests of the last `n` (or all) calls, as "GET /path". */
+    summary: () => calls.map((call) => `${call.method} ${call.path}`),
+    reset() {
+      calls.length = 0;
+      violations.length = 0;
+    },
+    /** For the tests that provoke a violation on purpose: returns them and clears the list. */
+    takeViolations() {
+      return violations.splice(0);
+    },
+    /** Puts the globals back, then fails if anything forbidden happened, even if a screen swallowed the error. */
+    restore() {
+      globalThis.fetch = original.fetch;
+      globalThis.XMLHttpRequest = original.XMLHttpRequest;
+      globalThis.WebSocket = original.WebSocket;
+      globalThis.EventSource = original.EventSource;
+      if (original.sendBeacon) globalThis.navigator.sendBeacon = original.sendBeacon;
+      else delete globalThis.navigator.sendBeacon;
+
+      if (violations.length) throw new Error(`Mobile made forbidden requests: ${violations.join(", ")}`);
+    },
+  };
+}
+
+/* ---------- Fictional data ---------- */
+
+export const account = (over = {}) => ({
+  id: 1,
+  workspace_id: 1,
+  name: "Everyday wallet",
+  type: "cash",
+  currency_code: "ILS",
+  opening_balance: "100.0000",
+  current_balance: "1234.5000",
+  allow_negative_balance: false,
+  savings_goal: null,
+  color: null,
+  icon: null,
+  status: "active",
+  created_at: "2026-01-05T09:00:00Z",
+  updated_at: "2026-01-05T09:00:00Z",
+  archived_at: null,
+  ...over,
+});
+
+export const currencyRow = (code, over = {}) => ({
+  currency_code: code,
+  accounts_count: 1,
+  current_balance: "1234.5000",
+  income: "2000.0000",
+  expense: "765.5000",
+  net: "1234.5000",
+  ...over,
+});
+
+export const dashboard = (over = {}) => ({
+  period: { preset: "month", date_from: "2026-10-01", date_to: "2026-10-31", timezone: "UTC" },
+  scope: { workspace_id: 1, workspace_ids: [1], is_multi_currency: false, primary_currency_code: "ILS" },
+  totals: { currency_code: "ILS", accounts_count: 1, active_accounts_count: 1, current_balance: "1234.5000", income: "2000.0000", expense: "765.5000", net: "1234.5000" },
+  summary_by_currency: [currencyRow("ILS")],
+  accounts: [account()],
+  recent_transactions: [
+    { id: 11, type: "expense", status: "posted", description: "Groceries", amount: "45.2500", currency_code: "ILS", occurred_at: "2026-10-20T10:00:00Z", category: { name: "Food" } },
+    { id: 12, type: "income", status: "posted", description: "Freelance payment", amount: "300.0000", currency_code: "ILS", occurred_at: "2026-10-18T08:30:00Z", category: null },
+  ],
+  ...over,
+});
+
+export const multiCurrencyDashboard = () =>
+  dashboard({
+    scope: { workspace_id: 1, workspace_ids: [1], is_multi_currency: true, primary_currency_code: "ILS" },
+    totals: { currency_code: "ILS", accounts_count: 3, active_accounts_count: 3, current_balance: "1234.5000", income: "2000.0000", expense: "765.5000", net: "1234.5000" },
+    summary_by_currency: [
+      currencyRow("USD", { current_balance: "500.2500", income: "900.0000", expense: "399.7500", net: "500.2500" }),
+      currencyRow("ILS"),
+      currencyRow("EUR", { current_balance: "-20.5000", income: "0.0000", expense: "20.5000", net: "-20.5000" }),
+    ],
+    accounts: [
+      account({ id: 3, name: "Dollar savings", type: "savings", currency_code: "USD", current_balance: "500.2500" }),
+      account({ id: 1 }),
+      account({ id: 4, name: "Euro card", type: "bank", currency_code: "EUR", current_balance: "-20.5000" }),
+    ],
+  });
+
+export const movement = (id, accountId, signedAmount, over = {}) => ({
+  id,
+  workspace_id: 1,
+  type: signedAmount.startsWith("-") ? "expense" : "income",
+  status: "posted",
+  description: signedAmount.startsWith("-") ? "Coffee" : "Salary",
+  occurred_at: "2026-10-1" + (id % 9) + "T10:00:00Z",
+  reversal_of_id: null,
+  ledger_entries: [
+    { id: id * 10, workspace_id: 1, transaction_id: id, account_id: accountId, currency_code: "ILS", signed_amount: signedAmount, entry_role: "main", account: { id: accountId, name: "Everyday wallet" } },
+  ],
+  ...over,
+});
+
+export const movementPage = (rows, { page = 1, perPage = 20, total = rows.length } = {}) => ({
+  transactions: {
+    data: rows,
+    total,
+    current_page: page,
+    per_page: perPage,
+    last_page: Math.max(1, Math.ceil(total / perPage)),
+    from: rows.length ? (page - 1) * perPage + 1 : null,
+    to: rows.length ? (page - 1) * perPage + rows.length : null,
+  },
+});
+
+/** The routes a healthy backend answers for the Mobile screens. */
+export function healthyBackend({ dashboardData = dashboard(), alerts = { generated_at: "2026-10-26T00:00:00Z", alerts: [] }, accounts = [account()], detail, movements = movementPage([]) } = {}) {
+  return (call) => {
+    if (call.path === "/dashboard") return { body: envelope(dashboardData) };
+    if (call.path === "/financial-alerts") return { body: envelope(alerts) };
+    if (call.path === "/accounts") return { body: envelope({ accounts }) };
+    if (/^\/accounts\/\d+$/.test(call.path)) {
+      const found = detail ?? accounts.find((item) => `/accounts/${item.id}` === call.path);
+      return found ? { body: envelope({ account: found }) } : failure(404, "Not found");
+    }
+    if (call.path === "/transactions") return { body: envelope(movements) };
+    return failure(404, "Not found");
+  };
+}
+
+/* ---------- Transactions (Activity) ---------- */
+
+export const tx = (id, over = {}) => ({
+  id,
+  workspace_id: 1,
+  type: "expense",
+  status: "posted",
+  amount: "45.2500",
+  currency_code: "ILS",
+  description: `Payment ${id}`,
+  reference_number: null,
+  occurred_at: "2026-10-20T10:00:00.000000Z",
+  posted_at: "2026-10-20T10:00:05.000000Z",
+  category: { id: 4, name: "Food" },
+  category_id: 4,
+  transfer_id: null,
+  reversal_of_id: null,
+  related_transaction_id: null,
+  ledger_entries: [{ id: id * 10, workspace_id: 1, transaction_id: id, account_id: 1, currency_code: "ILS", signed_amount: "-45.2500", entry_role: "expense", account: { id: 1, name: "Everyday wallet" } }],
+  creator: { id: 1, name: "Alex Example" },
+  ...over,
+});
+
+/*
+ * A backend that behaves like GET /transactions on a fixed set of transactions:
+ * it filters (type, status, account_id, category_id, date_from, date_to), sorts
+ * by occurred_at, and pages with a Laravel-shaped paginator. A test can wrap it
+ * to delay or fail particular requests.
+ */
+export function transactionsBackend(all, { categories = [{ id: 4, name: "Food", type: "expense" }, { id: 5, name: "Salary", type: "income" }], accounts = [account()] } = {}) {
+  return (call) => {
+    if (call.path === "/transactions") {
+      const q = call.query;
+      let rows = all.filter((row) => (!q.type || row.type === q.type) && (!q.status || row.status === q.status) && (!q.category_id || String(row.category_id) === q.category_id) && (!q.account_id || row.ledger_entries.some((entry) => String(entry.account_id) === q.account_id)));
+      const day = (row) => (row.occurred_at ?? "").slice(0, 10);
+      if (q.date_from) rows = rows.filter((row) => day(row) >= q.date_from);
+      if (q.date_to) rows = rows.filter((row) => day(row) <= q.date_to);
+      rows = [...rows].sort((a, b) => (q.sort_dir === "asc" ? 1 : -1) * (a.occurred_at ?? "").localeCompare(b.occurred_at ?? ""));
+      const perPage = Number(q.per_page ?? 20);
+      const page = Number(q.page ?? 1);
+      return { body: envelope(movementPage(rows.slice((page - 1) * perPage, page * perPage), { page, perPage, total: rows.length })) };
+    }
+    const one = /^\/transactions\/(\d+)$/.exec(call.path);
+    if (one) {
+      const found = all.find((row) => String(row.id) === one[1]);
+      return found ? { body: envelope({ transaction: found }) } : failure(404, "Not found");
+    }
+    if (call.path === "/categories") return { body: envelope({ categories }) };
+    if (call.path === "/accounts") return { body: envelope({ accounts }) };
+    if (/^\/accounts\/\d+$/.test(call.path)) {
+      const found = accounts.find((item) => `/accounts/${item.id}` === call.path);
+      return found ? { body: envelope({ account: found }) } : failure(404, "Not found");
+    }
+    if (call.path === "/dashboard") return { body: envelope(dashboard()) };
+    if (call.path === "/financial-alerts") return { body: envelope({ alerts: [] }) };
+    return failure(404, "Not found");
+  };
+}

@@ -6,8 +6,9 @@ import {
   LuUndo2,
 } from "react-icons/lu";
 
-import { createIdempotencyKey, getApiErrorMessage } from "../api/apiClient";
+import { createIdempotencyKey, getApiErrorMessage, getStoredAuthSession, getStoredWorkspace } from "../api/apiClient";
 import { parseDateValue } from "../utils/formatters";
+import { clearPendingWrite, hashFingerprint, readPendingWrite, writePendingWrite } from "./pendingWriteStorage";
 
 export const TYPE_FILTERS = ["all", "expense", "income", "transfer"];
 export const TRANSACTION_STATUSES = [
@@ -308,39 +309,135 @@ export const toOccurredAt = (dateInput) =>
 // attempt may use a fresh key. Anything else (network error, timeout, 5xx,
 // 409 still processing, 429) leaves the outcome unknown: the key is kept so a
 // retry of the same payload can't move money twice.
+//
+// STORAGE_UNAVAILABLE (pendingWriteStorage.js: the key could not be written
+// to localStorage) belongs here too: nothing was sent when it fires — the
+// caller refuses the request before it exists (see isProtected() below) — so
+// a retry is exactly as safe as a fresh start, the same as a 422 or a 404.
 const DEFINITIVE_REJECTIONS = [
   "VALIDATION_ERROR",
   "FORBIDDEN",
   "NOT_FOUND",
   "UNAUTHENTICATED",
   "REQUEST_FAILED",
+  "STORAGE_UNAVAILABLE",
 ];
 
+/** Thrown by a caller that finds isProtected() false, instead of sending. */
+export function storageUnavailableError() {
+  return Object.assign(
+    new Error(
+      "This device can't remember that a request is in progress right now, so it can't be sent safely. Enable storage for this site (leaving private browsing can be enough) and try again.",
+    ),
+    { code: "STORAGE_UNAVAILABLE" },
+  );
+}
+
 /*
- * One Idempotency-Key per logical operation. `keyFor(payload)` returns the
+ * One Idempotency-Key per logical operation, now surviving a reload too
+ * (pendingWriteStorage.js: a hash of the payload and the key itself only —
+ * never the payload, never the bearer token). `keyFor(payload)` returns the
  * current key while the payload is unchanged (double click, retry after a
- * timeout) and a new key once the payload changes. `settle(error)` ends the
- * operation after success (no error) or a definitive rejection.
+ * timeout, or the same entry retyped after a reload) and a new key once the
+ * payload changes — including right after a reload: a DIFFERENT payload
+ * never reuses a stored slot's key, it simply mints and persists its own,
+ * the same as any other change ever has. `settle(error)` ends the operation,
+ * clearing the stored entry too, after success or a definitive rejection.
+ *
+ * isProtected() is false only when the key just minted could not be written
+ * to storage; the caller must refuse to send it (storageUnavailableError())
+ * rather than send a write that a reload could then make unrecoverable.
  */
 export function createIdempotentAttempt(prefix) {
   let attempt = null;
+  let protectedState = true;
+
+  const identity = () => {
+    const { user } = getStoredAuthSession();
+    return { userId: user?.id ?? null, workspaceId: getStoredWorkspace()?.id ?? null };
+  };
 
   return {
-    keyFor(payload) {
-      const fingerprint = JSON.stringify(payload);
+    /**
+     * `payload` decides the IN-MEMORY comparison (unchanged meaning: the
+     * same payload reuses the key; a different one mints a new one) and, by
+     * default, what gets hashed for the stored entry too.
+     *
+     * `persistBasis` (default: `payload`) lets a caller keep that in-memory
+     * comparison coarse — createSubmissionAttempt hashes only `prefix` here,
+     * so its key is NOT renewed by edits within one form-opening, exactly as
+     * documented below — while still binding the STORED entry to the actual
+     * values the caller passes as `persistBasis`. Without this, a coarse
+     * caller's persisted entry would match ANY later entry of the same
+     * prefix after a reload, handing a stale key to a genuinely different,
+     * unrelated submission just because both reload into no in-memory
+     * attempt at all.
+     */
+    keyFor(payload, persistBasis = payload) {
+      const currentFingerprint = JSON.stringify(payload);
 
-      if (attempt?.fingerprint !== fingerprint) {
-        attempt = { fingerprint, key: createIdempotencyKey(prefix) };
+      if (attempt?.fingerprint === currentFingerprint) {
+        return attempt.key;
       }
 
+      const { userId, workspaceId } = identity();
+      const hash = hashFingerprint(JSON.stringify(persistBasis));
+
+      // A fresh instance (first call, or right after settle()/reset()): a
+      // stored entry whose hash matches is a deliberate retry of the exact
+      // same request after a reload, not a new intent — reuse its key.
+      if (!attempt) {
+        const stored = readPendingWrite({ userId, workspaceId, prefix, hash });
+        if (stored) {
+          attempt = { fingerprint: currentFingerprint, key: stored.key };
+          protectedState = true;
+          return attempt.key;
+        }
+      }
+
+      const key = createIdempotencyKey(prefix);
+      attempt = { fingerprint: currentFingerprint, key };
+      protectedState = writePendingWrite({ userId, workspaceId, prefix, key, hash });
       return attempt.key;
     },
+    isProtected() {
+      return protectedState;
+    },
     settle(error) {
-      if (!error || DEFINITIVE_REJECTIONS.includes(error?.code)) attempt = null;
+      if (!error || DEFINITIVE_REJECTIONS.includes(error?.code)) {
+        if (attempt) clearPendingWrite({ ...identity(), prefix });
+        attempt = null;
+        protectedState = true;
+      }
     },
     reset() {
+      if (attempt) clearPendingWrite({ ...identity(), prefix });
       attempt = null;
+      protectedState = true;
     },
+  };
+}
+
+/*
+ * One Idempotency-Key per submission intent: one opening of a create form.
+ * Like the debt payment form's key (debtHelpers.createPaymentAttempt), it is
+ * NOT renewed when the details change, so a retry after an unknown outcome
+ * (timeout, network, 5xx, 409) reuses it and the backend replays the first
+ * record or refuses a different payload — never a second one. It is renewed
+ * only after a success or a definitive rejection, when nothing was created.
+ * Create one when the form opens; a new opening is a new intent.
+ */
+export function createSubmissionAttempt(prefix) {
+  const attempt = createIdempotentAttempt(prefix);
+
+  return {
+    // `payload` only binds the STORED entry (persistBasis), never the
+    // in-memory comparison (still just `prefix`): editing fields before a
+    // retry still reuses the same key, as documented above and unchanged
+    // from before persistence existed.
+    key: (payload) => attempt.keyFor(prefix, { prefix, payload }),
+    isProtected: () => attempt.isProtected(),
+    settle: (error) => attempt.settle(error),
   };
 }
 
@@ -360,11 +457,38 @@ export const isAlreadyReversedError = (error) =>
   error?.code === "CONFLICT" && /revers/i.test(collectErrorText(error));
 
 /*
+ * A 409 from income, expense or correction is not always the same thing: a key
+ * still processing, a key reused with different values, an already-reversed
+ * record, and this specific, named case (smartspend-backend
+ * PossibleDuplicateTransactionException, config/finance.php
+ * manual_duplicate_guard — off by default) all answer 409. Only the backend's
+ * own machine-readable `code` on the body tells them apart; the status alone
+ * never does.
+ */
+export const isPossibleDuplicateError = (error) =>
+  error?.serverCode === "possible_duplicate";
+
+/**
+ * The transaction a possible-duplicate 409's body says this looks like
+ * (smartspend-backend bootstrap/app.php: `data.matched_transaction`), or null
+ * when the body isn't that documented shape — so a caller never shows a
+ * confirmation dialog around data it can't actually read.
+ */
+export function possibleDuplicateMatch(error) {
+  const matched = error?.payload?.data?.matched_transaction;
+  // A genuine JSON integer (TransactionController), never converted.
+  return matched && typeof matched === "object" && Number.isFinite(matched.id)
+    ? matched
+    : null;
+}
+
+/*
  * Transaction wording for codes where the generic message would mislead.
  * 422 keeps the backend's own message: it is the financial/domain reason.
  * `context` is "create", "correct" or "reverse" (409 means different things).
  */
 export function getTransactionErrorMessage(error, t, context = "create") {
+  if (error?.code === "STORAGE_UNAVAILABLE") return t("dashboard.transactions.errors.storageUnavailable");
   if (error?.code === "FORBIDDEN") return t("dashboard.transactions.errors.forbidden");
   if (error?.code === "NOT_FOUND") return t("dashboard.transactions.errors.notFound");
 

@@ -24,6 +24,7 @@ import { transactionsApi } from "../api/transactionsApi";
 import { ApiError } from "../api/apiClient";
 import { getDisplayLocale, isNegativeMoney } from "../Accounts/accountHelpers";
 import CorrectTransactionForm from "../FinancialOperations/components/CorrectTransactionForm/CorrectTransactionForm";
+import PossibleDuplicateDialog from "../FinancialOperations/components/PossibleDuplicateDialog/PossibleDuplicateDialog";
 import ReverseTransactionDialog from "../FinancialOperations/components/ReverseTransactionDialog/ReverseTransactionDialog";
 import TransactionStatusBadge from "../FinancialOperations/components/TransactionStatusBadge/TransactionStatusBadge";
 import {
@@ -33,9 +34,11 @@ import {
   getTransactionAccounts,
   getTransactionErrorMessage,
   getTransactionTitle,
+  isPossibleDuplicateError,
   isReversalRecord,
   isTransactionEntity,
   isTransferTransaction,
+  possibleDuplicateMatch,
   renderTransactionIcon,
   sameId,
   translateEnum,
@@ -68,6 +71,10 @@ export default function TransactionDetails() {
   });
   const [isCorrecting, setIsCorrecting] = useState(false);
   const [isReversing, setIsReversing] = useState(false);
+  // Set when a correction answers 409 possible_duplicate: { payload,
+  // idempotencyKey, matched, isConfirming, error }. Replaces
+  // CorrectTransactionForm (not stacked on top of it) until decided.
+  const [duplicate, setDuplicate] = useState(null);
   // A dialog failed because the data is stale (e.g. already reversed):
   // refetch once it closes, so its error message stays readable.
   const [refreshOnClose, setRefreshOnClose] = useState(false);
@@ -130,22 +137,10 @@ export default function TransactionDetails() {
    * replacement with a NEW id. From then on the replacement is "the"
    * transaction, so the page moves to its URL.
    */
-  const handleCorrect = async (payload, idempotencyKey) => {
-    let response;
-
-    try {
-      response = await transactionsApi.correct(
-        transaction.id,
-        payload,
-        idempotencyKey,
-      );
-    } catch (requestError) {
-      handleRequestError(requestError);
-      throw requestError;
-    }
-
+  const finishCorrection = (response) => {
     const replacement = response?.data?.transaction;
     setIsCorrecting(false);
+    setDuplicate(null);
     setRefreshOnClose(false);
 
     if (
@@ -171,6 +166,66 @@ export default function TransactionDetails() {
       setReloadKey((key) => key + 1);
     }
   };
+
+  // Called by CorrectTransactionForm; errors are shown inside the form,
+  // except a possible-duplicate 409, which replaces it with
+  // PossibleDuplicateDialog instead of throwing.
+  const handleCorrect = async (payload, idempotencyKey) => {
+    let response;
+
+    try {
+      response = await transactionsApi.correct(
+        transaction.id,
+        payload,
+        idempotencyKey,
+      );
+    } catch (requestError) {
+      if (isPossibleDuplicateError(requestError)) {
+        const matched = possibleDuplicateMatch(requestError);
+        if (matched) {
+          // Not settled against handleRequestError: nothing was recorded
+          // (the reversal-and-repost transaction rolled back before either
+          // happened), so no refresh-on-close is needed, and `idempotencyKey`
+          // is still exactly what a resend must carry.
+          setDuplicate({ payload, idempotencyKey, matched, isConfirming: false, error: null });
+          return;
+        }
+      }
+
+      handleRequestError(requestError);
+      throw requestError;
+    }
+
+    finishCorrection(response);
+  };
+
+  // Called by PossibleDuplicateDialog's Confirm; resends the SAME payload and
+  // key, only adding the flag the backend documents for this exact case.
+  const confirmSeparateCorrection = async () => {
+    if (!duplicate || duplicate.isConfirming) return;
+
+    const { payload, idempotencyKey } = duplicate;
+    setDuplicate((current) => current && { ...current, isConfirming: true, error: null });
+
+    let response;
+
+    try {
+      response = await transactionsApi.correct(
+        transaction.id,
+        { ...payload, confirm_possible_duplicate: true },
+        idempotencyKey,
+      );
+    } catch (requestError) {
+      setDuplicate((current) => current && { ...current, isConfirming: false, error: requestError });
+      return;
+    }
+
+    finishCorrection(response);
+  };
+
+  // Called by PossibleDuplicateDialog's Cancel: nothing is sent, and the
+  // correction form is shown again, unchanged.
+  const cancelDuplicateCorrection = () => setDuplicate(null);
 
   const handleReverse = async (reason) => {
     let response;
@@ -645,11 +700,21 @@ export default function TransactionDetails() {
         </section>
       )}
 
-      {isCorrecting && canChange && (
+      {isCorrecting && canChange && !duplicate && (
         <CorrectTransactionForm
           transaction={transaction}
           onSave={handleCorrect}
           onClose={closeDialog(setIsCorrecting)}
+        />
+      )}
+
+      {duplicate && (
+        <PossibleDuplicateDialog
+          matched={duplicate.matched}
+          isConfirming={duplicate.isConfirming}
+          error={duplicate.error}
+          onCancel={cancelDuplicateCorrection}
+          onConfirm={confirmSeparateCorrection}
         />
       )}
 

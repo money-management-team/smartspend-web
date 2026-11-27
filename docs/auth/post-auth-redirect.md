@@ -31,6 +31,12 @@ The destination lives in the router's history state, so it survives a refresh of
 - **Registration:** a new account lands on the dashboard (its page is reached from the sign-in page, which doesn't carry the destination).
 - **Home page CTAs** such as the AI section button point at a protected page; signed-out visitors sign in and arrive there.
 
+## Mobile (`/m/signin`)
+
+Mobile has its own destination rule, `mobileDestination` (`src/mobile/auth/destination.js`): a remembered address that `getSafeRedirectPath` accepts **and** that is under `/m/*` (never `/m/signin` or `/m/register`), else Mobile Home `/m`. Email/password (`MobileSignIn`) and Google (`GoogleSignIn`, through `useGoogleSignIn`'s `destination` option) both use it. Desktop sign-in is unchanged: `getPostAuthPath`, default `/dashboard`.
+
+The presentation gate (`PresentationGate`) sits above the routes and, for a signed-in visitor whose mode is "desktop" (an explicit choice, or "auto" on a non-touch browser), redirects every Mobile address to the dashboard. Signing in from a Mobile page is therefore treated as the choice of Mobile: `claimMobile()` stores it before the sign-in request resolves (the session appearing is what triggers the gate) and the failure path restores the previous value exactly. Registration is not covered by this.
+
 ## Safety
 
 `getSafeRedirectPath` accepts a value only if it is a same-origin application path:
@@ -43,6 +49,6 @@ Anything rejected falls back to `PATH.USER.DASHBOARD`. The value is read from hi
 
 ## Tests
 
-`tests/postAuthRedirect.test.mjs` covers path, query and hash preservation, the fallback, external and protocol-relative rejection, and guest-only pages. The full browser flow (deep link, sign-in, expired session, a forged external target) was exercised against a mocked API.
+`tests/mobilePostLoginRedirect.test.mjs` covers the Mobile and Desktop sign-in destinations in all presentation modes. `tests/postAuthRedirect.test.mjs` covers path, query and hash preservation, the fallback, external and protocol-relative rejection, and guest-only pages. The full browser flow (deep link, sign-in, expired session, a forged external target) was exercised against a mocked API.
 
 Google sign-in on the published domain still needs one manual check: open a protected deep link in a private window and sign in with Google.

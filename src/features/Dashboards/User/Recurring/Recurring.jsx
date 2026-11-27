@@ -7,6 +7,7 @@ import Loading from "../../../../components/Loading/Loading";
 import { getRecurringDetailsPath, getTransactionDetailsPath } from "../../../../routes/Path";
 import { ApiError } from "../api/apiClient";
 import { recurringTransactionsApi } from "../api/recurringTransactionsApi";
+import { createSubmissionAttempt, storageUnavailableError } from "../FinancialOperations/transactionHelpers";
 import RecurringActionDialog from "./components/RecurringActionDialog/RecurringActionDialog";
 import RecurringFilters from "./components/RecurringFilters/RecurringFilters";
 import RecurringForm from "./components/RecurringForm/RecurringForm";
@@ -15,6 +16,7 @@ import RecurringOperationRow from "./components/RecurringOperationRow/RecurringO
 import RecurringSection from "./components/RecurringSection/RecurringSection";
 import {
   getRecurringErrorMessage,
+  getNextOccurrenceId,
   getRuleActions,
   hasActiveRecurringFilters,
   isRuleEntity,
@@ -31,8 +33,9 @@ const ACTION_REQUESTS = {
   pause: (rule) => recurringTransactionsApi.pause(rule.id),
   resume: (rule) => recurringTransactionsApi.resume(rule.id),
   archive: (rule) => recurringTransactionsApi.archive(rule.id),
-  confirm: (rule) => recurringTransactionsApi.confirmNext(rule.id),
-  skip: (rule, reason) => recurringTransactionsApi.skipNext(rule.id, reason),
+  // Confirm and skip name the occurrence the dialog showed (schedule.next_occurrence.id).
+  confirm: (rule) => recurringTransactionsApi.confirmNext(rule.id, getNextOccurrenceId(rule)),
+  skip: (rule, reason) => recurringTransactionsApi.skipNext(rule.id, getNextOccurrenceId(rule), reason),
 };
 
 // Which action each row button opens, checked against the rule's status.
@@ -60,7 +63,7 @@ export default function Recurring() {
   const requestKey = `${filterKey}:${reloadKey}`;
   const [result, setResult] = useState({ key: null, page: null, error: null });
 
-  // { rule: null, presetType } to create, { rule } to edit.
+  // { rule: null, presetType, attempt } to create, { rule } to edit.
   const [formState, setFormState] = useState(null);
   // { action, rule }
   const [actionState, setActionState] = useState(null);
@@ -113,13 +116,27 @@ export default function Recurring() {
     if (saveRequestRef.current) return saveRequestRef.current;
 
     const ruleBeingEdited = formState?.rule;
+    const attempt = formState?.attempt;
     const saveRequest = (async () => {
       let response;
 
       try {
-        response = ruleBeingEdited
-          ? await recurringTransactionsApi.update(ruleBeingEdited.id, payload)
-          : await recurringTransactionsApi.create(payload);
+        if (ruleBeingEdited) {
+          response = await recurringTransactionsApi.update(ruleBeingEdited.id, payload);
+        } else {
+          const idempotencyKey = attempt.key(payload);
+          try {
+            // A brand-new key that could not be written to storage must not
+            // be sent: a reload right after would leave no way to recognize
+            // a retry of this exact request, risking a second rule.
+            if (!attempt.isProtected()) throw storageUnavailableError();
+            response = await recurringTransactionsApi.create(payload, idempotencyKey);
+            attempt.settle(null);
+          } catch (createError) {
+            attempt.settle(createError);
+            throw createError;
+          }
+        }
       } catch (requestError) {
         // Gone, or archived meanwhile: the list is out of date.
         if (["NOT_FOUND", "CONFLICT"].includes(requestError?.code)) reload();
@@ -181,7 +198,9 @@ export default function Recurring() {
     if (getRuleActions(rule).canEdit) setFormState({ rule });
   };
 
-  const openCreateForm = (presetType) => setFormState({ rule: null, presetType });
+  // Each opening of the create form is one submission intent with its own key.
+  const openCreateForm = (presetType) =>
+    setFormState({ rule: null, presetType, attempt: createSubmissionAttempt("recurring-create") });
 
   /* ---------- Render ---------- */
 

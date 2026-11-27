@@ -31,6 +31,7 @@ import RecurringBadge from "../Recurring/components/RecurringBadge/RecurringBadg
 import RecurringForm from "../Recurring/components/RecurringForm/RecurringForm";
 import RecurringOccurrences from "../Recurring/components/RecurringOccurrences/RecurringOccurrences";
 import {
+  getNextOccurrenceId,
   getRecurringErrorMessage,
   getRuleActions,
   getRuleCurrency,
@@ -47,12 +48,13 @@ import { formatDate, formatDateTime, formatMoney } from "../utils/formatters";
 import "./RecurringDetails.css";
 
 // Request of each dialog action. Only "confirm" moves money.
+// Confirm and skip name the occurrence the page showed (schedule.next_occurrence.id).
 const ACTION_REQUESTS = {
-  pause: (ruleId) => recurringTransactionsApi.pause(ruleId),
-  resume: (ruleId) => recurringTransactionsApi.resume(ruleId),
-  archive: (ruleId) => recurringTransactionsApi.archive(ruleId),
-  confirm: (ruleId) => recurringTransactionsApi.confirmNext(ruleId),
-  skip: (ruleId, reason) => recurringTransactionsApi.skipNext(ruleId, reason),
+  pause: (rule) => recurringTransactionsApi.pause(rule.id),
+  resume: (rule) => recurringTransactionsApi.resume(rule.id),
+  archive: (rule) => recurringTransactionsApi.archive(rule.id),
+  confirm: (rule) => recurringTransactionsApi.confirmNext(rule.id, getNextOccurrenceId(rule)),
+  skip: (rule, reason) => recurringTransactionsApi.skipNext(rule.id, getNextOccurrenceId(rule), reason),
 };
 
 /*
@@ -211,7 +213,7 @@ export default function RecurringDetails() {
   // Called by RecurringActionDialog; errors are shown inside the dialog.
   const handleAction = async (reason) => {
     const action = dialog;
-    const response = await ACTION_REQUESTS[action](rule.id, reason);
+    const response = await ACTION_REQUESTS[action](rule, reason);
 
     staleRef.current = false;
     applyRule(response?.data?.recurring_transaction);

@@ -107,7 +107,7 @@ Plurals use `_one` / `_other` in both files, like the rest of the project. Amoun
   - whitelisted fields on create/update;
   - no body on pause/resume/confirm;
   - no `Idempotency-Key` anywhere;
-  - `id_workspace` for alerts;
+  - `workspace_id` for alerts (it was `id_workspace` until the alerts fix);
   - the special 422 on insufficient balance;
   - occurrences advancing and being cancelled on archive.
 

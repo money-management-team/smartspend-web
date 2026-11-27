@@ -88,12 +88,20 @@ export const savingsGoalsApi = {
   listActivity: (goalId, query = {}, options = {}) =>
     apiRequest(`${goalPath(goalId)}/activity`, { query, signal: options.signal }),
 
-  // The backend creates the goal's dedicated savings account.
-  create: (payload) =>
-    apiRequest("/savings-goals", {
+  // The backend creates the goal's dedicated savings account. The
+  // Idempotency-Key is required (StoreSavingsGoalRequest): a retry of the same
+  // submission returns the goal it created instead of a second goal and account.
+  create: (payload, idempotencyKey) => {
+    if (!idempotencyKey) {
+      throw new Error("POST /savings-goals requires an Idempotency-Key.");
+    }
+
+    return apiRequest("/savings-goals", {
       method: "POST",
+      headers: { "Idempotency-Key": idempotencyKey },
       body: pickPayload(payload, CREATE_FIELDS),
-    }),
+    });
+  },
 
   // Partial update: send only the fields that changed. A new target can flip
   // the lifecycle status (achieved ↔ active); the response says which. An

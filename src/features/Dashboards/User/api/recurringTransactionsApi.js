@@ -2,6 +2,17 @@ import { apiRequest, toMoneyString } from "./apiClient";
 
 const rulePath = (ruleId) => `/recurring-transactions/${encodeURIComponent(ruleId)}`;
 
+// A confirm or skip must name its occurrence (a positive integer id). Without
+// one nothing is sent: the backend would refuse it, and guessing "the next one"
+// is exactly what let a repeated request act on the following period.
+function requireOccurrenceId(occurrenceId, action) {
+  const id = typeof occurrenceId === "string" && /^[1-9]\d*$/.test(occurrenceId) ? Number(occurrenceId) : occurrenceId;
+  if (!Number.isSafeInteger(id) || id < 1) {
+    throw new Error(`POST /recurring-transactions/{id}/${action} requires the occurrence's id.`);
+  }
+  return id;
+}
+
 // Fields each write may carry. `user_id`, `status`, `next_due_date` and
 // `last_processed_at` are never sent: the backend owns them. An update never
 // sends the fields that define the rule's structure (account, category,
@@ -76,12 +87,20 @@ export const recurringTransactionsApi = {
   get: (ruleId, options = {}) =>
     apiRequest(rulePath(ruleId), { signal: options.signal }),
 
-  // No Idempotency-Key: creating a rule moves no money.
-  create: (payload) =>
-    apiRequest("/recurring-transactions", {
+  // Creating a rule moves no money, but the rule posts every period, so the
+  // Idempotency-Key is required (StoreRecurringTransactionRequest): a retry of
+  // the same submission returns the rule it created instead of a second one.
+  create: (payload, idempotencyKey) => {
+    if (!idempotencyKey) {
+      throw new Error("POST /recurring-transactions requires an Idempotency-Key.");
+    }
+
+    return apiRequest("/recurring-transactions", {
       method: "POST",
+      headers: { "Idempotency-Key": idempotencyKey },
       body: pickPayload(payload, CREATE_FIELDS),
-    }),
+    });
+  },
 
   // Partial update of the editable fields only. A new amount applies to
   // open, unposted occurrences; posted transactions keep theirs.
@@ -107,25 +126,32 @@ export const recurringTransactionsApi = {
     apiRequest(`${rulePath(ruleId)}/resume`, { method: "POST" }),
 
   /*
-   * MOVES REAL MONEY: posts the rule's oldest open occurrence as a real
-   * transaction. No body (the occurrence is chosen by the backend, never by
-   * the client) and no client Idempotency-Key: the backend derives the key
-   * from the occurrence itself (`recurring:{ruleId}:{dueDate}`, returned as
-   * `occurrence.idempotency_key`), so the same occurrence can never be posted
-   * twice. See docs/recurring-transactions/confirm-and-skip.md.
+   * MOVES REAL MONEY: posts the occurrence the person was shown
+   * (`occurrenceId`, the rule's `schedule.next_occurrence.id`) as a real
+   * transaction. The backend requires `occurrence_id` and refuses, changing
+   * nothing, unless it is still the rule's earliest open occurrence (409
+   * `recurring_occurrence_not_next` / `recurring_occurrence_not_open`). No
+   * client Idempotency-Key: the backend derives the key from the occurrence
+   * (`recurring:{ruleId}:{dueDate}`), and because the request names the
+   * occurrence, a repeat gets the same result instead of posting the
+   * following period. See docs/recurring-transactions/confirm-and-skip.md.
    *
    * A 422 may carry `data.occurrence` (status "failed", `failure_reason`,
    * `attempts`) instead of field errors.
    */
-  confirmNext: (ruleId) =>
-    apiRequest(`${rulePath(ruleId)}/confirm-next`, { method: "POST" }),
+  confirmNext: (ruleId, occurrenceId) =>
+    apiRequest(`${rulePath(ruleId)}/confirm-next`, {
+      method: "POST",
+      body: { occurrence_id: requireOccurrenceId(occurrenceId, "confirm-next") },
+    }),
 
-  // Moves no money: the oldest open occurrence is marked "skipped" (kept in
-  // history, `reason` stored as `failure_reason`). The body is optional.
-  skipNext: (ruleId, reason) =>
+  // Moves no money: the named open occurrence is marked "skipped" (kept in
+  // history, `reason` stored as `failure_reason`). `occurrenceId` is required,
+  // `reason` optional; a repeat returns the same skipped occurrence.
+  skipNext: (ruleId, occurrenceId, reason) =>
     apiRequest(`${rulePath(ruleId)}/skip-next`, {
       method: "POST",
-      body: reason ? { reason } : undefined,
+      body: { occurrence_id: requireOccurrenceId(occurrenceId, "skip-next"), ...(reason ? { reason } : {}) },
     }),
 
   // Query: occurrence_status (scheduled | due | posted | skipped | failed |

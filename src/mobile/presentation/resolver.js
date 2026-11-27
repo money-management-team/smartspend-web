@@ -1,0 +1,147 @@
+import { PATH, getAccountDetailsPath, getBudgetDetailsPath, getCategoryDetailsPath, getRecurringDetailsPath, getSavingsGoalDetailsPath, getTransactionDetailsPath } from "../../routes/Path.js";
+import { isWriteOpen } from "../data/writeGate.js";
+import { MOBILE_ACCOUNTS, MOBILE_BUDGETS, MOBILE_CATEGORIES, MOBILE_CATEGORY_NEW, MOBILE_ENTER, MOBILE_FORGOT_PASSWORD, MOBILE_GOALS, MOBILE_PREFIX, MOBILE_RECURRING, MOBILE_RESET_PASSWORD, MOBILE_SCREENS } from "../navigation.js";
+
+/*
+ * Maps a location to the presentation that should show it. Pure: no React, no
+ * storage, no window. A canonical Desktop URL stays canonical; the resolver
+ * only decides whether to send the visitor to the Mobile equivalent (or back).
+ *
+ * Rules:
+ * - Mobile off, or the visitor signed out: never redirect. The existing route
+ *   guards own the signed-out flow, and they remember the canonical URL.
+ * - Protected paths are never touched: emailed links (their query is a
+ *   signature), authentication pages, static documents, the API.
+ * - Mode "mobile": a canonical page with a Mobile equivalent that is marked
+ *   `fromCanonical` goes to it. Anything else stays where it is, so a page
+ *   without a Mobile screen keeps showing the Desktop page.
+ * - Mode "desktop": a Mobile URL goes back to its canonical page (Accounts, an
+ *   account's page, a transaction's page and Planning's lists and pages
+ *   included); an unknown Mobile URL goes to the dashboard.
+ *   /m/enter is the one exception: it is how someone in this mode asks to
+ *   switch to Mobile, so it stays.
+ * - Pathname, query and hash are carried across unchanged.
+ * - Idempotent: resolveLocation(resolveLocation(x)) equals resolveLocation(x),
+ *   so the result of one redirect is never redirected again.
+ */
+
+// Whole path segments only: "/signin" matches "/signin/company", not "/signing".
+const matchesPrefix = (pathname, prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`);
+
+export const PROTECTED_PREFIXES = Object.freeze([
+  PATH.AUTH.VERIFY_EMAIL,
+  PATH.AUTH.RESET_PASSWORD,
+  PATH.AUTH.SIGNIN,
+  PATH.AUTH.REGISTER,
+  PATH.AUTH.ACCOUNT_TYPE,
+  PATH.AUTH.FORGOT_PASSWORD,
+  PATH.AUTH.PASSWORD_CHANGED,
+  PATH.AUTH.VERIFY_CODE,
+  PATH.USER.WHATSAPP_REVIEW_LINK.replace("/:draftId", ""),
+  "/api",
+]);
+
+export const normalizePathname = (pathname) => {
+  const text = typeof pathname === "string" && pathname.startsWith("/") ? pathname : "/";
+  return text.replace(/\/+$/, "") || "/";
+};
+
+// A file such as /privacy.html or /terms.html is served by the host, not routed.
+const isStaticDocument = (pathname) => /\.[a-z0-9]{1,8}$/i.test(pathname.split("/").pop() ?? "");
+
+export const isMobilePath = (pathname) => matchesPrefix(normalizePathname(pathname), MOBILE_PREFIX);
+
+export function isProtectedPath(pathname) {
+  const path = normalizePathname(pathname);
+  return isStaticDocument(path) || PROTECTED_PREFIXES.some((prefix) => matchesPrefix(path, prefix));
+}
+
+export const toPath = ({ pathname, search = "", hash = "" }) => `${pathname}${search}${hash}`;
+
+/*
+ * The one emailed link Mobile takes over: the reset link (`/reset-password?token=…&identifier=…`, ResetPasswordNotification).
+ * It is the exception to "protected paths are never touched", and it applies whether or not anyone is signed in (the link is
+ * opened from a mail app), so it is also decided before the session has been restored. All of these must hold:
+ *   - Mobile is built in, and this device's presentation is Mobile (a stored choice, or Automatic on a phone)
+ *   - the Mobile reset operation is OPEN. While it is closed (the default) the link keeps opening the full version's page,
+ *     so a closed gate can never strand someone who is trying to recover their account, and the page that would have to
+ *     send them back to the full version cannot loop with this rule
+ * The whole query goes across unchanged: the Mobile page reads it once and removes it from the address bar.
+ * (The verification link is not handled: the backend addresses it to its own API, so the app never receives it.)
+ */
+export function getHandoff(location, { enabled, mode }) {
+  if (!enabled || mode !== "mobile") return null;
+  if (normalizePathname(location.pathname) !== PATH.AUTH.RESET_PASSWORD) return null;
+  if (!isWriteOpen("auth.resetPassword")) return null;
+  return { pathname: MOBILE_RESET_PASSWORD, search: location.search ?? "", hash: location.hash ?? "" };
+}
+
+/**
+ * @param {{ pathname: string, search?: string, hash?: string }} location
+ * @param {{ enabled: boolean, authenticated: boolean, mode: "mobile" | "desktop" }} context
+ * @returns {{ pathname: string, search: string, hash: string } | null} where to go, or null to stay
+ */
+export function getRedirect(location, { enabled, authenticated, mode }) {
+  const handoff = getHandoff(location, { enabled, mode });
+  if (handoff) return handoff;
+
+  if (!enabled || !authenticated) return null;
+
+  const { search = "", hash = "" } = location;
+  const pathname = normalizePathname(location.pathname);
+
+  if (isProtectedPath(pathname)) return null;
+
+  if (mode === "mobile") {
+    const screen = MOBILE_SCREENS.find((item) => item.fromCanonical && item.canonical === pathname);
+    return screen ? { pathname: screen.mobile, search, hash } : null;
+  }
+
+  if (mode === "desktop" && isMobilePath(pathname)) {
+    if (pathname === MOBILE_ENTER) return null;
+
+    // The recovery pages go to their full-version twins; the reset link's query is the one thing that must survive the trip.
+    if (pathname === MOBILE_RESET_PASSWORD) return { pathname: PATH.AUTH.RESET_PASSWORD, search, hash };
+    if (pathname === MOBILE_FORGOT_PASSWORD) return { pathname: PATH.AUTH.FORGOT_PASSWORD, search: "", hash: "" };
+
+    const screen = MOBILE_SCREENS.find((item) => item.mobile === pathname);
+    if (screen) return { pathname: screen.canonical, search, hash };
+
+    if (pathname === MOBILE_ACCOUNTS) return { pathname: PATH.USER.ACCOUNTS, search, hash };
+
+    const account = /^\/m\/accounts\/([1-9]\d{0,14})$/.exec(pathname);
+    if (account) return { pathname: getAccountDetailsPath(account[1]), search, hash };
+
+    const transaction = /^\/m\/activity\/([1-9]\d{0,14})$/.exec(pathname);
+    if (transaction) return { pathname: getTransactionDetailsPath(transaction[1]), search, hash };
+
+    // Planning's lists and pages go back to the Desktop page of the same thing; an id is digits only, as in every Mobile address.
+    const planning = [
+      [MOBILE_BUDGETS, PATH.USER.BUDGETS, getBudgetDetailsPath],
+      [MOBILE_GOALS, PATH.USER.SAVINGS_GOALS, getSavingsGoalDetailsPath],
+      [MOBILE_RECURRING, PATH.USER.RECURRING, getRecurringDetailsPath],
+    ];
+    for (const [mobile, list, details] of planning) {
+      if (pathname === mobile) return { pathname: list, search, hash };
+
+      const record = pathname.startsWith(`${mobile}/`) ? /^[1-9]\d{0,14}$/.exec(pathname.slice(mobile.length + 1)) : null;
+      if (record) return { pathname: details(record[0]), search, hash };
+    }
+
+    // Categories: the list (and the new-category form, which Desktop has as a dialog on the list), a category, its rename form.
+    if (pathname === MOBILE_CATEGORIES || pathname === MOBILE_CATEGORY_NEW) return { pathname: PATH.USER.CATEGORIES, search: pathname === MOBILE_CATEGORY_NEW ? "" : search, hash };
+
+    const category = pathname.startsWith(`${MOBILE_CATEGORIES}/`) ? /^([1-9]\d{0,14})(\/edit)?$/.exec(pathname.slice(MOBILE_CATEGORIES.length + 1)) : null;
+    if (category) return { pathname: getCategoryDetailsPath(category[1]), search: category[2] ? "" : search, hash };
+
+    return { pathname: PATH.USER.DASHBOARD, search: "", hash: "" };
+  }
+
+  return null;
+}
+
+/** Where the visitor ends up: the redirect target, or the location itself. */
+export function resolveLocation(location, context) {
+  const { search = "", hash = "" } = location;
+  return getRedirect(location, context) ?? { pathname: location.pathname, search, hash };
+}

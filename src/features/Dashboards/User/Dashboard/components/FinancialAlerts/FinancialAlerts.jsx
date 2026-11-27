@@ -46,7 +46,9 @@ const toCount = (value) => {
  * budgets when asked. They are not stored notifications, so there is nothing
  * to mark as read or dismiss; the list is simply fetched again.
  *
- * `workspaceId` is sent as `id_workspace` (this endpoint's name for it).
+ * `workspaceId` is sent as `workspace_id`, the name FinancialAlertController reads.
+ * (`id_workspace` is ignored by the backend, which then returns the alerts of
+ * every workspace the user manages.)
  * "compact" (dashboard) shows the first alerts and links to the full list;
  * "full" (Notifications page, Financial alerts tab) shows every alert.
  */
@@ -64,7 +66,7 @@ export default function FinancialAlerts({ workspaceId, variant = "compact" }) {
 
     financialAlertsApi
       .list(
-        { id_workspace: workspaceId ?? undefined },
+        { workspace_id: workspaceId ?? undefined },
         { signal: controller.signal },
       )
       .then((response) => {

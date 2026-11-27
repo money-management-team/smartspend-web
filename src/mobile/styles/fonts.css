@@ -1,0 +1,19 @@
+/*
+ * SmartSpend Mobile typography: the approved identity (landing Edition 03.2,
+ * docs/auth/design-system.md): IBM Plex Sans Arabic for Arabic, Plus Jakarta
+ * Sans for English, every figure, and Latin inside Arabic. Bundled locally,
+ * no CDN. Only @font-face lives here (tests/mobileBoundaries.test.mjs);
+ * every rule that uses these families is in mobile.css, scoped to .sm-root.
+ * The landing declares the same faces for itself; declaring them here too
+ * keeps Mobile independent of that stylesheet (and of dev-mode CSS loading).
+ * The families are Mobile-owned (sm- prefix): they never redefine the
+ * landing's faces, and tests/mobileBundle.test.mjs can tell them apart.
+ */
+@font-face {font-family:'sm-plex-arabic';src:url('../../assets/fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2') format('woff2');font-weight:400;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face {font-family:'sm-plex-arabic';src:url('../../assets/fonts/ibm-plex-sans-arabic-arabic-500-normal.woff2') format('woff2');font-weight:500;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face {font-family:'sm-plex-arabic';src:url('../../assets/fonts/ibm-plex-sans-arabic-arabic-600-normal.woff2') format('woff2');font-weight:600;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face {font-family:'sm-plex-arabic';src:url('../../assets/fonts/ibm-plex-sans-arabic-arabic-700-normal.woff2') format('woff2');font-weight:700;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face {font-family:'sm-jakarta';src:url('../../assets/fonts/plus-jakarta-sans-latin-400-normal.woff2') format('woff2');font-weight:400;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face {font-family:'sm-jakarta';src:url('../../assets/fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2');font-weight:500;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face {font-family:'sm-jakarta';src:url('../../assets/fonts/plus-jakarta-sans-latin-600-normal.woff2') format('woff2');font-weight:600;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face {font-family:'sm-jakarta';src:url('../../assets/fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2');font-weight:700;font-display:swap;unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}

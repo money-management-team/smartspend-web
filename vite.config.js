@@ -3,6 +3,9 @@ import react from '@vitejs/plugin-react'
 import process from 'node:process'
 import { resolveDevApiTarget } from './scripts/devApiTarget.mjs'
 import { readCommittableEnvFiles, resolveSmartSavingsBuild } from './scripts/smartSavingsBuildFlag.mjs'
+import { resolveMobileBuild } from './scripts/mobileBuildFlag.mjs'
+import { mobileEntryPlugin } from './scripts/mobileEntryPlugin.mjs'
+import { resolveMobilePwa, resolvePwaRetire } from './scripts/mobilePwa.mjs'
 
 // https://vite.dev/config/
 export default defineConfig(({ command, mode }) => {
@@ -42,8 +45,47 @@ export default defineConfig(({ command, mode }) => {
     )
   }
 
+  // The Mobile experience is off unless VITE_MOBILE_ENABLED is exactly
+  // "true"; a production build with it on also needs a release approval in
+  // the build environment. See scripts/mobileBuildFlag.mjs.
+  const mobile = resolveMobileBuild({
+    command,
+    mode,
+    env,
+    processEnv: process.env,
+    committableFiles: readCommittableEnvFiles(process.cwd(), mode),
+  })
+
+  if (mobile.invalid) {
+    console.warn('[smartspend] VITE_MOBILE_ENABLED is not exactly "true" or "false": Mobile stays OFF.')
+  }
+
+  if (mobile.enabled) {
+    console.info(
+      `[smartspend] Mobile: ON (${command}, ${mode}`
+      + `${mobile.approved ? ', release approved' : ''})`,
+    )
+  }
+
+  // The Mobile PWA: in a production-mode build only with Mobile on and the PWA
+  // release approved in the shell environment (scripts/mobilePwa.mjs).
+  const pwa = resolveMobilePwa({ mobileEnabled: mobile.enabled, command, mode, env, processEnv: process.env })
+
+  if (pwa.refusedInProduction) {
+    console.warn('[smartspend] VITE_MOBILE_PWA is ignored in this production build (needs Mobile on and SMARTSPEND_MOBILE_PWA_RELEASE_APPROVED=true): the Mobile PWA stays OFF.')
+  }
+
+  if (pwa.enabled && mode === 'production') {
+    console.info('[smartspend] Mobile PWA: ON (production, release approved)')
+  }
+
+  // Rolling an origin back from the PWA: a static retire worker only (scripts/mobilePwa.mjs).
+  const retire = resolvePwaRetire({ pwaEnabled: pwa.enabled, command, env: process.env })
+
   return {
-    plugins: [react()],
+    // The Mobile code enters the build only through this plugin, and only
+    // when the flag resolved to on (see scripts/mobileEntryPlugin.mjs).
+    plugins: [react(), mobileEntryPlugin(mobile.enabled, { pwa: pwa.enabled, retire: retire.enabled })],
     build: {
       // Pages are lazy-loaded (see routes/Routes.jsx), but the stylesheet stays
       // one file in source order. Many page and component stylesheets share
