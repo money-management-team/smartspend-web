@@ -43,6 +43,8 @@ describe("the source", () => {
       // The one write facade: every call checks the write gate first (all closed), then uses the app's own wrapper.
       "src/mobile/data/writeApi.js": ["accountsApi", "apiClient", "aiCopilotApi", "aiExpenseCapturesApi", "aiVoiceExpenseCapturesApi", "authApi", "budgetsApi", "categoriesApi", "debtsApi", "notificationsApi", "plannedSavingsApi", "recurringTransactionsApi", "reportExportsApi", "savingsGoalsApi", "transactionsApi", "transfersApi", "whatsappApi"],
       "src/mobile/identity/guard.js": ["apiClient"],
+      // The Smart Savings write facade (flag-gated): every call checks the write gate first (all closed); pinned below.
+      "src/mobile/data/writePlanApi.js": ["savingsPlansApi"],
     });
   });
 
@@ -116,8 +118,18 @@ describe("the source", () => {
     const used = [...code(path.join(MOBILE, "data/readApi.js")).matchAll(/\b(debtsApi|transfersApi|notificationsApi|calendarApi|importsApi|reportExportsApi)\.(\w+)\(/g)].map((match) => `${match[1]}.${match[2]}`);
     assert.deepEqual([...new Set(used)].sort(), ["calendarApi.get", "debtsApi.get", "debtsApi.list", "debtsApi.listPayments", "debtsApi.summary", "importsApi.get", "importsApi.list", "importsApi.preview", "notificationsApi.list", "notificationsApi.unreadCount", "reportExportsApi.download", "reportExportsApi.get", "reportExportsApi.list", "transfersApi.get", "transfersApi.list"]);
     // Budgets, goals, plans and recurring rules are read in the two facade files and nowhere else.
-    const facades = ["src/mobile/data/readApi.js", "src/mobile/data/readPlanApi.js", "src/mobile/data/writeApi.js"];
+    const facades = ["src/mobile/data/readApi.js", "src/mobile/data/readPlanApi.js", "src/mobile/data/writeApi.js", "src/mobile/data/writePlanApi.js"];
     assert.deepEqual(find(/from\s*["'][^"']*(recurringTransactions|savingsGoalsApi|savingsPlansApi|budgetsApi)[^"']*["']/i).sort(), facades);
+  });
+
+  it("sends one Smart Savings write, postpone, from its own flag-gated facade, behind the gate, and from one screen", () => {
+    const FACADE = "src/mobile/data/writePlanApi.js";
+    const source = code(path.join(ROOT, FACADE));
+    const calls = [...source.matchAll(/\b(\w+Api)\.(\w+)\s*\(/g)].map((match) => `${match[1]}.${match[2]}`);
+    assert.deepEqual([...new Set(calls)].sort(), ["savingsPlansApi.postpone"], "no confirm, skip, plan change or reversal");
+    assert.match(source, /export function sendPlanWrite\(write, key\) \{\n  assertWriteOpen\(write\.operation\);/, "the gate is checked before anything else");
+    // Only the installment review sends it, and that is loaded behind the Smart Savings flag (planning/smartSavingsGate.js).
+    assert.deepEqual(find(/from\s*["'][^"']*data\/writePlanApi(?:\.js)?["']/), ["src/mobile/planning/smart/InstallmentReview.jsx"]);
   });
 
   it("does not use the shared money helpers: formatMoney (rounds, shows bad data as 0.00) and the float-free sums are not needed and not imported", () => {

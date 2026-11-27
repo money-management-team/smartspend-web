@@ -183,6 +183,14 @@ export const MOBILE_WRITES = Object.freeze({
   "goal.create": write("POST /savings-goals", false, "client", "key-fix-pending"),
   "goal.update": write("PATCH /savings-goals/{id}", false, "none", "same-result"),
   "goal.plannedContribution": write("POST /savings-goals/{id}/planned-contributions", false, "none", "duplicates"),
+  // Smart Savings installment postpone (PostponeSavingsInstallmentAction; docs/savings-goals/smart-plans.md). Moves no money
+  // (`result.money_moved: false`). The key is required. The request names the plan version and the installment's lock version it
+  // was reviewed against; both are checked under row locks and a successful postpone increments lock_version, so a copy of an
+  // applied postpone is a coded 409 version conflict that changes nothing; a completed key replayed within 24 h returns the first
+  // result. On develop @ fd87531 run() completes the key after the postpone commits, so a 500 (or an uncoded 409 for a key still
+  // processing) can answer a postpone that happened: Mobile reports both as an unknown outcome. Sent only from the Smart Savings
+  // facade (data/writePlanApi.js), which a build without the flag does not contain.
+  "installment.postpone": write("POST /savings-goals/{id}/planned-contributions/{iid}/postpone", false, "client", "once-only"),
   // Key required since fix/financial-idempotency-p0 @ 6b696d72 (0d798c57); a copy returns the first rule.
   "recurring.create": write("POST /recurring-transactions", false, "client", "key-fix-pending"),
   "recurring.update": write("PATCH /recurring-transactions/{id}", false, "none", "same-result"),

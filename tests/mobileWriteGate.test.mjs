@@ -47,7 +47,8 @@ describe("the gate", () => {
     // receipt.upload / voice.upload have no forms/workflows.js entry: assist/MobileReceiptNew.jsx and
     // MobileVoiceNew.jsx send them directly (assist/useCaptureUpload.js), never through DraftForm's review step.
     // notifications.markRead / markAllRead are one tap each on the notifications screen (notifications/useNotificationWrite.js).
-    assert.deepEqual(Object.keys(gate.MOBILE_WRITES).sort(), ["category.create", "category.update", "receipt.upload", "voice.upload", "notifications.markRead", "notifications.markAllRead", "notifications.preferences", "ai.message", "ai.messageFeedback", "ai.insightFeedback", "ai.insightsRefresh", "ai.insightDismiss", "auth.forgotPassword", "auth.resetPassword", "email.resend", ...formWrites].sort());
+    // installment.postpone is the Smart Savings installment review (planning/smart/InstallmentReview.jsx via data/writePlanApi.js).
+    assert.deepEqual(Object.keys(gate.MOBILE_WRITES).sort(), ["category.create", "category.update", "receipt.upload", "voice.upload", "notifications.markRead", "notifications.markAllRead", "notifications.preferences", "ai.message", "ai.messageFeedback", "ai.insightFeedback", "ai.insightsRefresh", "ai.insightDismiss", "auth.forgotPassword", "auth.resetPassword", "email.resend", "installment.postpone", ...formWrites].sort());
     const DEDUP = ["unique-index", "key-atomic", "key-fix-pending", "once-only", "same-result", "next-open", "duplicates", "unverified"];
     for (const [operation, write] of Object.entries(gate.MOBILE_WRITES)) {
       assert.equal(gate.isWriteOpen(operation), false, operation);
@@ -144,6 +145,8 @@ const EXPECTED_DEDUP = {
   "goal.create": "key-fix-pending",
   "goal.update": "same-result",
   "goal.plannedContribution": "duplicates",
+  // Smart Savings (data/writePlanApi.js): both versions are checked under row locks and an applied postpone bumps lock_version, so a copy is a 409.
+  "installment.postpone": "once-only",
   "recurring.create": "key-fix-pending",
   "recurring.update": "same-result",
   "recurring.skipNext": "next-open",

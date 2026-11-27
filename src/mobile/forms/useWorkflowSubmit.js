@@ -74,11 +74,18 @@ const CERTAIN_409 = new Set(["account_funds_active_savings_plan", ...STALE_OCCUR
  */
 const isAiFailure = (error) => [429, 502, 503].includes(error?.status) && typeof error?.payload?.error?.code === "string";
 
-export function classifyWriteOutcome(error) {
+const NO_CODES = Object.freeze(new Set());
+
+/*
+ * `certain409`: the caller's own 409 codes that the backend raises before it changes anything (a Smart Savings
+ * version conflict, for one: planning/smart/InstallmentReview.jsx). Only exact machine-readable codes count; a 409
+ * with no code, or any other, stays unknown, and no message text is ever read to decide.
+ */
+export function classifyWriteOutcome(error, certain409 = NO_CODES) {
   const code = error?.code ?? error?.name ?? "UNKNOWN";
   if (code === "UNAUTHENTICATED") return { kind: "identity", code };
   if (isAiFailure(error)) return { kind: "rejected", code: "AI_FAILED", error };
-  if (error?.status === 409 && CERTAIN_409.has(error?.serverCode)) return { kind: "rejected", code: "CONFLICT", error };
+  if (error?.status === 409 && typeof error?.serverCode === "string" && (CERTAIN_409.has(error.serverCode) || certain409.has(error.serverCode))) return { kind: "rejected", code: "CONFLICT", error };
   if (error?.name === "WriteClosedError") return { kind: "rejected", code: "WRITE_CLOSED", error };
   if (isPossibleDuplicateError(error)) {
     const matched = possibleDuplicateMatch(error);
@@ -130,7 +137,19 @@ export function classifyWriteOutcome(error) {
  *     so the cached reads are dropped (not after a certain refusal, and not
  *     while a possible-duplicate is still being decided: nothing was written).
  */
-export function useWorkflowSubmit() {
+/*
+ * Options, for a write sent from a flag-gated facade (the defaults are the forms' own):
+ *   send          the facade function (sendWorkflowWrite unless given); it must check the gate first
+ *   certain409    exact 409 codes that are certain refusals for this write (see classifyWriteOutcome)
+ *   refreshAfter  (outcome) => true for a certain refusal after which the screen's reads are out of date, so they are
+ *                 dropped and read again (a version conflict: the review is about a state that no longer exists)
+ *   readsChanged  (key) => true for the cached reads this write may have changed (instead of READS_CHANGED_BY, else all);
+ *                 a write sent from inside a record's page leaves that record's own read, which it cannot change, in place
+ * Each must be stable (a module function or constant, or memoised on its inputs).
+ */
+const NEVER = () => false;
+
+export function useWorkflowSubmit({ send = sendWorkflowWrite, certain409 = NO_CODES, refreshAfter = NEVER, readsChanged = null } = {}) {
   const guard = useIdentityGuard();
   const store = useResourceStore();
   const busy = useRef(false);
@@ -162,7 +181,8 @@ export function useWorkflowSubmit() {
       const storedFailure = outcome.kind === "rejected" && outcome.code === "AI_FAILED";
       // The occurrence the review showed is out of date: the cached rule still names it, so every read is taken again (nothing is resent).
       const staleOccurrence = outcome.kind === "rejected" && STALE_OCCURRENCE.has(outcome.error?.serverCode);
-      if ((nameTaken || storedFailure || staleOccurrence || (outcome.kind !== "rejected" && outcome.kind !== "possibleDuplicate")) && !store.isDisposed()) store.drop(READS_CHANGED_BY[pendingWrite.current?.operation] ?? (() => true));
+      const staleReview = outcome.kind === "rejected" && refreshAfter(outcome);
+      if ((nameTaken || storedFailure || staleOccurrence || staleReview || (outcome.kind !== "rejected" && outcome.kind !== "possibleDuplicate")) && !store.isDisposed()) store.drop(readsChanged ?? READS_CHANGED_BY[pendingWrite.current?.operation] ?? (() => true));
       if (outcome.kind === "confirmed" || outcome.kind === "rejected") {
         // Read before clearing: nothing left to protect either way.
         if (pendingWrite.current) clearPendingWrite(pendingWrite.current.operation);
@@ -174,7 +194,7 @@ export function useWorkflowSubmit() {
 
       setState({ phase: outcome.kind, code: outcome.code ?? null, error: outcome.error ?? null, data: outcome.data ?? null, matched: outcome.matched ?? null });
     },
-    [store],
+    [store, refreshAfter, readsChanged],
   );
 
   const submit = useCallback(
@@ -206,17 +226,17 @@ export function useWorkflowSubmit() {
         }
         pendingWrite.current = write;
         guard.assert();
-        const response = await sendWorkflowWrite(write, key.current);
+        const response = await send(write, key.current);
         guard.assert();
         outcome = (sessionWorkspace()?.id ?? null) !== workspace ? { kind: "changed", code: "WORKSPACE_CHANGED" } : { kind: "confirmed", data: response?.data ?? null };
       } catch (error) {
-        outcome = guard.check() ? classifyWriteOutcome(error) : { kind: "identity" };
+        outcome = guard.check() ? classifyWriteOutcome(error, certain409) : { kind: "identity" };
       }
 
       settle(outcome);
       return outcome;
     },
-    [guard, settle],
+    [guard, settle, send, certain409],
   );
 
   // Called by the form's Confirm (separate transaction): resends
@@ -232,16 +252,16 @@ export function useWorkflowSubmit() {
 
     try {
       guard.assert();
-      const response = await sendWorkflowWrite(write, key.current);
+      const response = await send(write, key.current);
       guard.assert();
       outcome = (sessionWorkspace()?.id ?? null) !== workspace ? { kind: "changed", code: "WORKSPACE_CHANGED" } : { kind: "confirmed", data: response?.data ?? null };
     } catch (error) {
-      outcome = guard.check() ? classifyWriteOutcome(error) : { kind: "identity" };
+      outcome = guard.check() ? classifyWriteOutcome(error, certain409) : { kind: "identity" };
     }
 
     confirming.current = false;
     settle(outcome);
-  }, [guard, settle, state.phase]);
+  }, [guard, settle, state.phase, send, certain409]);
 
   // Called by the form's Cancel: nothing is sent. The key and pendingWrite
   // are kept (see the hook's own comment above), so an unedited resubmission

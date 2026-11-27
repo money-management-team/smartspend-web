@@ -90,7 +90,9 @@ export default function SmartPlanSection({ goal, locale }) {
   const resource = useResource(keys.goalPlan(goal.id), loader);
   const plan = useMemo(() => (resource.data === undefined ? null : buildPlanDetail(resource.data, goal.id, goal.currency)), [resource.data, goal.id, goal.currency]);
   const noPlan = resource.status === "error" && resource.error?.code === "NOT_FOUND";
-  const [review, setReview] = useState(null); // { kind, installment }
+  // { kind, installment, installments, planVersion, targetDate }: the state the review is about, kept as it was when it
+  // opened, so the review (and a write's answer) stays on screen while the plan is read again after a write.
+  const [review, setReview] = useState(null);
   const [showAll, setShowAll] = useState(false);
   const openerRef = useRef(null);
   const today = todayIn(sessionWorkspace()?.timezone);
@@ -134,7 +136,7 @@ export default function SmartPlanSection({ goal, locale }) {
                 <span className="sm-row-meta"><Money plain value={item.amount ?? undefined} currency={goal.currency} />{item.overdue && <> · <span className="sm-chip" data-sm-tone="warn">{t(`${P}.overdue`)}</span></>}{item.postponedCount ? <> · {t(`${P}.postponedTimes`, { count: item.postponedCount })}</> : null}</span>
                 <span className="sm-installment-actions">
                   {["confirm", "postpone", "skip"].map((kind) => (
-                    <button key={kind} type="button" className="sm-button sm-button-quiet sm-button-small" disabled={kind === "confirm" && plan.health.executable === false} onClick={(event) => { openerRef.current = event.currentTarget; setReview({ kind, installment: item }); }} data-sm-action={`review-${kind}`}>{t(`${P}.review.${kind}.open`)}</button>
+                    <button key={kind} type="button" className="sm-button sm-button-quiet sm-button-small" disabled={kind === "confirm" && plan.health.executable === false} onClick={(event) => { openerRef.current = event.currentTarget; setReview({ kind, installment: item, installments: plan.installments, planVersion: plan.planVersion, targetDate: plan.targetDate }); }} data-sm-action={`review-${kind}`}>{t(`${P}.review.${kind}.open`)}</button>
                   ))}
                 </span>
               </span>
@@ -160,7 +162,6 @@ export default function SmartPlanSection({ goal, locale }) {
           <span>{t(`${P}.openFull`)}</span>
           <Chevron />
         </Link>
-        {review && <InstallmentReview kind={review.kind} goalId={goal.id} installment={review.installment} installments={plan.installments} currency={goal.currency} targetDate={plan.targetDate} today={today} locale={locale} onClose={() => setReview(null)} returnFocusRef={openerRef} />}
       </div>
     );
   }
@@ -169,6 +170,7 @@ export default function SmartPlanSection({ goal, locale }) {
     <section className="sm-card" aria-labelledby="sm-goal-plan" data-sm-section="smart-plan">
       <h2 id="sm-goal-plan" className="sm-card-title">{t(`${P}.title`)}</h2>
       {body}
+      {review && <InstallmentReview kind={review.kind} goalId={goal.id} installment={review.installment} installments={review.installments} planVersion={review.planVersion} currency={goal.currency} targetDate={review.targetDate} today={today} locale={locale} onClose={() => setReview(null)} returnFocusRef={openerRef} />}
     </section>
   );
 }

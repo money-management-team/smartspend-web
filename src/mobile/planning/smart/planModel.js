@@ -250,3 +250,93 @@ export function postponeBounds(installment, installments, targetDate, today) {
   const max = [next ? addDays(next.date, -1) : null, targetDate].filter(Boolean).sort()[0] ?? null;
   return { min, max, available: !min || !max || min <= max };
 }
+
+const CALENDAR_DAY = /^\d{4}-\d{2}-\d{2}$/;
+const isCalendarDay = (value) => CALENDAR_DAY.test(value) && new Date(`${value}T00:00:00Z`).toISOString().slice(0, 10) === value;
+
+/** What is wrong with a postponement date against its bounds ("required" | "date" | "bounds"), or null. */
+export function postponeDateError(date, bounds) {
+  if (!date) return "required";
+  if (!isCalendarDay(date)) return "date";
+  if (!bounds.available || (bounds.min && date < bounds.min) || (bounds.max && date > bounds.max)) return "bounds";
+  return null;
+}
+
+export const POSTPONE_REASON_MAX = 500;
+
+/*
+ * The write of a postponement, exactly as the review showed it, or `{ problem }` and nothing to send:
+ *   "notOpen"   the installment is not open (status `planned`)
+ *   "versions"  the plan or the installment has no version to name (so the backend could not check what was reviewed)
+ *   "date"      the date is missing, not a day, or outside the bounds (postponeBounds)
+ *   "reason"    the reason is longer than 500 characters
+ * The versions are the ones read with the plan, never a default. The reason is trimmed and left out when empty.
+ */
+export function buildPostponeWrite({ goalId, installment, planVersion, date, reason, bounds }) {
+  if (!installment?.open) return { problem: "notOpen" };
+  if (!Number.isSafeInteger(planVersion) || !Number.isSafeInteger(installment.lockVersion)) return { problem: "versions" };
+  if (postponeDateError(date, bounds)) return { problem: "date" };
+  const text = typeof reason === "string" ? reason.trim() : "";
+  if (text.length > POSTPONE_REASON_MAX) return { problem: "reason" };
+  return {
+    write: {
+      operation: "installment.postpone",
+      ids: { goalId: String(goalId), installmentId: String(installment.id) },
+      input: { expected_plan_version: planVersion, expected_lock_version: installment.lockVersion, new_date: date, ...(text ? { reason: text } : {}) },
+    },
+  };
+}
+
+/*
+ * Coded 409s of a postponement that the backend raises before it changes anything (the full version's
+ * classifyPlanWriteError and its error codes). Any other 409, with or without a code, is an unknown outcome.
+ */
+export const POSTPONE_DATE_CODES = Object.freeze(["savings_installment_beyond_target_date", "savings_installment_schedule_conflict"]);
+export const POSTPONE_LIMIT_CODES = Object.freeze(["savings_installment_postpone_limit_reached"]);
+export const POSTPONE_STALE_CODES = Object.freeze([
+  "savings_plan_version_conflict",
+  "savings_installment_version_conflict",
+  "savings_installment_not_open",
+  "savings_installment_not_in_active_plan",
+  "savings_plan_not_active",
+  "savings_goal_not_active",
+]);
+export const POSTPONE_CERTAIN_409 = Object.freeze(new Set([...POSTPONE_DATE_CODES, ...POSTPONE_LIMIT_CODES, ...POSTPONE_STALE_CODES]));
+
+/** A certain refusal after which the review is about a state that no longer exists: the plan is read again. */
+export const isStalePostpone = (outcome) => outcome?.code === "NOT_FOUND" || POSTPONE_STALE_CODES.includes(outcome?.error?.serverCode);
+
+const dayIn = (value) => (typeof value === "string" && CALENDAR_DAY.test(value.slice(0, 10)) ? value.slice(0, 10) : null);
+
+/*
+ * What a postponement's outcome (forms/useWorkflowSubmit.js state) means for the person: `{ key, values, blocked }`.
+ * `blocked`: nothing more may be sent from this review (a new review, after the plan is read again, is needed).
+ * Only codes decide; no message text is read.
+ */
+export function describePostpone(state) {
+  const error = state.error;
+  switch (state.phase) {
+    case "confirmed": {
+      const date = dayIn(state.data?.installment?.planned_date);
+      return { key: date ? "done" : "doneNoDate", values: { date }, blocked: true };
+    }
+    case "unknown":
+      return { key: "unknown", values: {}, blocked: true };
+    case "changed":
+      return { key: "changed", values: {}, blocked: true };
+    case "rejected": {
+      const code = error?.serverCode;
+      if (state.code === "CONFLICT" && POSTPONE_DATE_CODES.includes(code)) return { key: "date", values: { date: dayIn(error?.payload?.latest_allowed_date ?? error?.payload?.target_date) }, blocked: false };
+      if (state.code === "CONFLICT" && POSTPONE_LIMIT_CODES.includes(code)) return { key: "limit", values: {}, blocked: true };
+      if (isStalePostpone({ code: state.code, error })) return { key: "stale", values: {}, blocked: true };
+      if (state.code === "VALIDATION_ERROR") return { key: "invalid", values: {}, blocked: false };
+      if (state.code === "FORBIDDEN") return { key: "forbidden", values: {}, blocked: true };
+      if (state.code === "RATE_LIMITED") return { key: "rateLimited", values: {}, blocked: false };
+      if (state.code === "WRITE_CLOSED") return { key: "closed", values: {}, blocked: true };
+      if (state.code === "STORAGE_UNAVAILABLE") return { key: "storage", values: {}, blocked: false };
+      return { key: "rejected", values: {}, blocked: true };
+    }
+    default:
+      return null;
+  }
+}

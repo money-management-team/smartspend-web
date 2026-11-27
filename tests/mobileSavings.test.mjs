@@ -4,7 +4,7 @@ import path from "node:path";
 import { after, afterEach, beforeEach, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { envelope, failure, installFakeApi } from "./helpers/mobileApi.mjs";
+import { FORM_WRITES, envelope, failure, installFakeApi } from "./helpers/mobileApi.mjs";
 import { TOKEN_A, USER_A, dom, mountMobile, q, qa, resetEnvironment, settle, storeSession } from "./helpers/mobileHarness.mjs";
 import { activePlan, goal, planningBackend } from "./helpers/planningFixture.mjs";
 import { change, click } from "./helpers/dom.mjs";
@@ -24,6 +24,8 @@ const ON = process.env.SMARTSPEND_TEST_SMART_SAVINGS === "true";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
 const gate = await import("../src/mobile/planning/smartSavingsGate.js");
+const writeGate = await import("../src/mobile/data/writeGate.js");
+const { sendPlanWrite } = await import("../src/mobile/data/writePlanApi.js");
 const desktop = await import("../src/features/Dashboards/User/SavingsGoals/smartSavingsFlag.js");
 
 let api;
@@ -593,6 +595,262 @@ if (!ON) {
       assert.equal(qa("[data-sm-leg]", paymentsOf(21)).length, 2);
       assert.deepEqual(legCalls().map((call) => call.path), Array(3).fill("/savings-goals/1/planned-contributions/21/funding-legs"));
       assert.deepEqual(api.violations, []);
+    });
+
+    /*
+     * Installment postpone (installment.postpone, data/writePlanApi.js): wired and CLOSED. The send button stays disabled
+     * while the gate is closed; the send path is exercised only with the test switch (setWriteApprovalsForTests) and the
+     * fake backend's one allowed rule. Dates are in 2030 so the bounds don't depend on today.
+     */
+    const POSTPONE_PATH = "/savings-goals/1/planned-contributions/900/postpone";
+    const futurePlan = (over = {}) => {
+      const plan = activePlan(1);
+      Object.assign(plan.savings_plan, { plan_version: 2, installments: [
+        { id: 900, sequence: 3, planned_date: "2030-03-05", amount: "250.0000", status: "planned", lock_version: 4 },
+        { id: 901, sequence: 4, planned_date: "2030-04-05", amount: "250.0000", status: "planned", lock_version: 1 },
+      ] }, over);
+      plan.savings_goal.target_date = "2031-06-30";
+      return plan;
+    };
+    const postponed = { body: envelope({ installment: { id: 900, sequence: 3, planned_date: "2030-03-20", status: "planned", lock_version: 5 }, result: { money_moved: false } }) };
+    const conflict = (code, extra = {}) => ({ status: 409, body: { status: false, message: "Conflict.", ...(code ? { code } : {}), ...extra, errors: {} } });
+    // `answer(call, n)`: the n-th postpone's answer (1-based).
+    const openPostpone = async ({ answer = () => postponed, plan = futurePlan(), approve = true } = {}) => {
+      let n = 0;
+      const base = planningBackend({ goals: [goal(1)], plans: { 1: plan } });
+      api = installFakeApi((call) => (call.method === "POST" ? answer(call, ++n) : base(call)), { allowWrites: [FORM_WRITES.installmentPostpone] });
+      if (approve) writeGate.setWriteApprovalsForTests(["installment.postpone"]);
+      // A pending write's key is kept per (user, workspace): without a workspace it can't be kept, and nothing is sent.
+      storeSession({ token: TOKEN_A, user: USER_A, workspace: { id: 1, timezone: "UTC" } });
+      view = await mountMobile({ entry: "/m/planning/goals/1" });
+      await click(q("[data-sm-installment='900'] [data-sm-action='review-postpone']"));
+    };
+    const dialog = () => q("[role='dialog']");
+    const fill = async (date = "2030-03-20", reason) => {
+      await change(q("[data-sm-input='new-date']", dialog()), date);
+      if (reason !== undefined) await change(q("[data-sm-input='reason']", dialog()), reason);
+    };
+    const send = async () => {
+      await click(q("[data-sm-action='send']", dialog()));
+      await settle();
+    };
+    const posts = () => api.calls.filter((call) => call.method === "POST");
+    const planReads = () => api.calls.filter((call) => call.method === "GET" && call.path === "/savings-goals/1/plan").length;
+    const outcome = () => q("[data-sm-postpone-outcome]", dialog());
+    const reopen = async () => {
+      await click(q("[data-sm-action='keep']", dialog()));
+      await settle();
+      await click(q("[data-sm-installment='900'] [data-sm-action='review-postpone']"));
+    };
+    afterEach(() => writeGate.setWriteApprovalsForTests(null));
+
+    it("closed (the shipped gate): the send button stays disabled, nothing is sent, and the facade refuses before any request", async () => {
+      await openPostpone({ approve: false });
+      await fill("2030-03-20", "Trip");
+      assert.equal(q("[data-sm-action='send']", dialog()).disabled, true);
+      assert.equal(q("[data-sm-note='write-closed']", dialog()).dataset.smWrite, "installment.postpone");
+      await send();
+      assert.equal(writeGate.isWriteOpen("installment.postpone"), false);
+      assert.throws(() => sendPlanWrite({ operation: "installment.postpone", ids: { goalId: "1", installmentId: "900" }, input: { expected_plan_version: 2, expected_lock_version: 4, new_date: "2030-03-20" } }, "mobile-installment-postpone-key"), (error) => error.name === "WriteClosedError" && error.operation === "installment.postpone");
+      assert.deepEqual(posts(), [], "no POST at all");
+      assert.ok(api.calls.every((call) => call.method === "GET"));
+      assert.deepEqual(api.violations, []);
+    });
+
+    it("the test switch opens postpone only: no other write becomes available", () => {
+      writeGate.setWriteApprovalsForTests(["installment.postpone"]);
+      for (const operation of Object.keys(writeGate.MOBILE_WRITES)) assert.equal(writeGate.isWriteOpen(operation), operation === "installment.postpone", operation);
+    });
+
+    it("opened by the test switch: one POST with exactly the reviewed versions, the date, the trimmed reason and a key; then the plan is read again", async () => {
+      await openPostpone();
+      assert.equal(q("[data-sm-note='write-closed']", dialog()), null);
+      await fill("2030-03-20", "  Trip abroad  ");
+      const readsBefore = planReads();
+      await send();
+      assert.equal(posts().length, 1);
+      const [call] = posts();
+      assert.equal(call.path, POSTPONE_PATH);
+      assert.deepEqual(call.body, { expected_plan_version: 2, expected_lock_version: 4, new_date: "2030-03-20", reason: "Trip abroad" });
+      assert.match(call.headers["Idempotency-Key"], /^mobile-installment-postpone-[A-Za-z0-9._:-]{8,}$/);
+      assert.equal(outcome().dataset.smPostponeOutcome, "done");
+      assert.match(outcome().textContent, /Installment 3 moved to Mar 20, 2030\. No money moved\./);
+      assert.equal(q("[data-sm-action='send']", dialog()).disabled, true, "one decision per review");
+      assert.ok(planReads() > readsBefore, "the plan is read again after the change");
+      assert.deepEqual(api.violations, []);
+    });
+
+    it("an empty reason is left out of the body", async () => {
+      await openPostpone();
+      await fill("2030-03-20", "   ");
+      await send();
+      assert.deepEqual(posts()[0].body, { expected_plan_version: 2, expected_lock_version: 4, new_date: "2030-03-20" });
+    });
+
+    it("a second tap while the first is on its way sends nothing", async () => {
+      let release;
+      await openPostpone({ answer: () => new Promise((resolve) => { release = resolve; }) });
+      await fill();
+      await click(q("[data-sm-action='send']", dialog()));
+      await click(q("[data-sm-action='send']", dialog()));
+      await settle(5);
+      assert.equal(posts().length, 1);
+      assert.equal(q("[data-sm-action='send']", dialog()).disabled, true);
+      assert.equal(outcome().dataset.smPostponeOutcome, "sending");
+      release(postponed);
+      await settle();
+      assert.equal(posts().length, 1);
+      assert.equal(outcome().dataset.smPostponeOutcome, "done");
+    });
+
+    for (const [name, answer] of [
+      ["a 500 (the postpone may have committed)", failure(500, "boom")],
+      ["a network failure", new Error("offline")],
+      ["a 409 with no code (a key still processing, or reused)", conflict(null)],
+      ["a 409 with a code that is not one of postpone's own", conflict("idempotency_key_reused")],
+    ]) {
+      it(`${name} is an unknown outcome: nothing is resent, the plan is read again, and only an identical retry reuses the key`, async () => {
+        await openPostpone({ answer: (call, n) => (n === 1 ? answer : postponed) });
+        await fill("2030-03-20", "Trip");
+        const readsBefore = planReads();
+        await send();
+        assert.equal(outcome().dataset.smPostponeOutcome, "unknown");
+        assert.equal(outcome().getAttribute("role"), "alert");
+        assert.match(outcome().textContent, /couldn't confirm whether the installment was postponed/);
+        assert.equal(q("[data-sm-action='send']", dialog()).disabled, true, "no further decision from this review");
+        await settle();
+        assert.equal(posts().length, 1, "never retried by itself");
+        assert.ok(planReads() > readsBefore, "the plan and installment are read again");
+        const firstKey = posts()[0].headers["Idempotency-Key"];
+
+        // A deliberate retry from a fresh review of the same, unchanged state: the identical request with the same key.
+        await reopen();
+        await fill("2030-03-20", "Trip");
+        await send();
+        assert.equal(posts().length, 2);
+        assert.equal(posts()[1].headers["Idempotency-Key"], firstKey, "the same key, never a fresh one");
+        assert.deepEqual(posts()[1].body, posts()[0].body);
+        assert.equal(outcome().dataset.smPostponeOutcome, "done");
+        assert.deepEqual(api.violations, []);
+      });
+    }
+
+    it("after an unknown outcome, a different date is a different request with its own key", async () => {
+      await openPostpone({ answer: (call, n) => (n === 1 ? failure(503, "busy") : postponed) });
+      await fill("2030-03-20");
+      await send();
+      await reopen();
+      await fill("2030-03-25");
+      await send();
+      assert.notEqual(posts()[1].headers["Idempotency-Key"], posts()[0].headers["Idempotency-Key"]);
+      assert.equal(posts()[1].body.new_date, "2030-03-25");
+    });
+
+    for (const code of ["savings_installment_version_conflict", "savings_plan_version_conflict", "savings_installment_not_open", "savings_plan_not_active"]) {
+      it(`a coded ${code} changed nothing: the plan is read again, a new review is needed, and no earlier attempt is called failed`, async () => {
+        await openPostpone({ answer: () => conflict(code) });
+        await fill();
+        const readsBefore = planReads();
+        await send();
+        assert.equal(outcome().dataset.smPostponeOutcome, "stale");
+        assert.match(outcome().textContent, /this request changed nothing\. If an earlier attempt went through, the plan now shows it/);
+        assert.doesNotMatch(outcome().textContent, /failed|wasn't postponed/i);
+        assert.equal(q("[data-sm-action='send']", dialog()).disabled, true, "the review is out of date");
+        await settle();
+        assert.equal(posts().length, 1, "nothing is resent");
+        assert.ok(planReads() > readsBefore, "the plan is read again");
+      });
+    }
+
+    it("a 404 (installment gone) is the same: a certain refusal, re-read, new review", async () => {
+      await openPostpone({ answer: () => failure(404, "Not found") });
+      await fill();
+      await send();
+      assert.equal(outcome().dataset.smPostponeOutcome, "stale");
+      assert.equal(q("[data-sm-action='send']", dialog()).disabled, true);
+    });
+
+    it("a date the backend refuses is said with its own limit, nothing changed, and a corrected date is a new request", async () => {
+      await openPostpone({ answer: (call, n) => (n === 1 ? conflict("savings_installment_schedule_conflict", { latest_allowed_date: "2030-03-28" }) : postponed) });
+      await fill("2030-03-30");
+      await send();
+      assert.equal(outcome().dataset.smPostponeOutcome, "date");
+      assert.match(outcome().textContent, /latest date allowed is Mar 28, 2030\. Nothing was changed\./);
+      assert.equal(q("[data-sm-action='send']", dialog()).disabled, false, "the person can choose another date");
+      await fill("2030-03-27");
+      await send();
+      assert.equal(posts().length, 2);
+      assert.notEqual(posts()[1].headers["Idempotency-Key"], posts()[0].headers["Idempotency-Key"], "a refused request's key is not reused");
+      assert.equal(outcome().dataset.smPostponeOutcome, "done");
+    });
+
+    it("the postpone limit is final for this review; a 422 shows the backend's field messages and allows a fix", async () => {
+      await openPostpone({ answer: () => conflict("savings_installment_postpone_limit_reached", { max_postponements: 2 }) });
+      await fill();
+      await send();
+      assert.equal(outcome().dataset.smPostponeOutcome, "limit");
+      assert.equal(q("[data-sm-action='send']", dialog()).disabled, true);
+
+      await view.unmount();
+      api.restore();
+      await openPostpone({ answer: () => ({ status: 422, body: { status: false, message: "Invalid.", errors: { new_date: ["The new date must be after the current date."] } } }) });
+      await fill();
+      await send();
+      assert.equal(outcome().dataset.smPostponeOutcome, "invalid");
+      assert.match(outcome().textContent, /The new date must be after the current date\./);
+      assert.equal(q("[data-sm-action='send']", dialog()).disabled, false);
+    });
+
+    it("an invalid date, a missing version or a closed installment is refused before any request", async () => {
+      await openPostpone();
+      await fill("2030-04-10"); // past the next installment
+      await send();
+      assert.equal(q("[data-sm-postpone-problem]", dialog()).dataset.smPostponeProblem, "date");
+      assert.equal(q("[data-sm-error]", dialog()).dataset.smError, "bounds");
+      await fill("2030-02-30");
+      await send();
+      assert.equal(q("[data-sm-postpone-problem]", dialog()).dataset.smPostponeProblem, "date");
+      assert.deepEqual(posts(), []);
+
+      await view.unmount();
+      api.restore();
+      await openPostpone({ plan: futurePlan({ plan_version: null }) });
+      await fill();
+      await send();
+      assert.equal(q("[data-sm-postpone-problem]", dialog()).dataset.smPostponeProblem, "versions");
+      assert.equal(q("[data-sm-action='send']", dialog()).disabled, true);
+      assert.deepEqual(posts(), []);
+
+      const { buildPostponeWrite, postponeBounds } = await import("../src/mobile/planning/smart/planModel.js");
+      const installment = { id: "900", sequence: 3, date: "2030-03-05", open: false, lockVersion: 4 };
+      const bounds = postponeBounds(installment, [], null, "2030-01-01");
+      assert.deepEqual(buildPostponeWrite({ goalId: 1, installment, planVersion: 2, date: "2030-03-20", reason: "", bounds }), { problem: "notOpen" });
+      assert.deepEqual(buildPostponeWrite({ goalId: 1, installment: { ...installment, open: true, lockVersion: null }, planVersion: 2, date: "2030-03-20", reason: "", bounds }), { problem: "versions" });
+      assert.deepEqual(buildPostponeWrite({ goalId: 1, installment: { ...installment, open: true }, planVersion: 2, date: "2030-03-20", reason: "x".repeat(501), bounds }), { problem: "reason" });
+    });
+
+    it("only exact codes decide: classifyWriteOutcome never reads the message, and an uncoded 409 is unknown", async () => {
+      const { classifyWriteOutcome } = await import("../src/mobile/forms/useWorkflowSubmit.js");
+      const { POSTPONE_CERTAIN_409 } = await import("../src/mobile/planning/smart/planModel.js");
+      const { ApiError } = await import("../src/features/Dashboards/User/api/apiClient.js");
+      const err = (serverCode, message = "x") => new ApiError(message, { status: 409, code: "CONFLICT", serverCode });
+      assert.equal(classifyWriteOutcome(err("savings_installment_version_conflict"), POSTPONE_CERTAIN_409).kind, "rejected");
+      assert.equal(classifyWriteOutcome(err(null, "savings_installment_version_conflict: this installment changed"), POSTPONE_CERTAIN_409).kind, "unknown", "a code named in the message is not a code");
+      assert.equal(classifyWriteOutcome(err("savings_installment_version_conflict")).kind, "unknown", "the codes count only for the write that names them");
+      assert.equal(classifyWriteOutcome(new ApiError("", { status: 500, code: "SERVER_ERROR" }), POSTPONE_CERTAIN_409).kind, "unknown");
+    });
+
+    it("the postpone strings have the same keys in English and Arabic, and the outcome is said in Arabic", async () => {
+      const { SMART_PLAN_MESSAGES } = await import("../src/mobile/planning/smartPlanMessages.js");
+      for (const section of ["postponeOutcome", "postponeProblem"]) assert.deepEqual(Object.keys(SMART_PLAN_MESSAGES.en[section]).sort(), Object.keys(SMART_PLAN_MESSAGES.ar[section]).sort(), section);
+      await view?.unmount();
+      view = null;
+      await resetEnvironment("ar");
+      storeSession({ token: TOKEN_A, user: USER_A });
+      await openPostpone({ answer: () => failure(500, "boom") });
+      await fill();
+      await send();
+      assert.match(outcome().textContent, /تعذّر التأكد مما إذا كان القسط قد أُجّل/);
     });
 
     it("an archived goal has no plan section and no plan request", async () => {
