@@ -172,3 +172,20 @@ The order is a recommendation for gathering evidence. It does not approve anythi
 - A new registered write needs a row here in the same commit (the test enforces it).
 - A change to a write's classification in `writeGate.js` needs the row, its tier and its notes updated in the same commit, and voids any approval for it.
 - When the first write is approved, the "Not approved" cell of that row changes to "Approved, see approvals/<operation>.md" **in the same commit that adds it to `APPROVED`**, and the guard test is updated in that commit by a person who has read this file's rules.
+
+## 6. Owner decisions recorded
+
+### 2026-11-27: conditional approval of the first-release evidence
+
+The project owner stated, on 2026-11-27: **"موافق على الاعتماد المشروط"** ("I approve the conditional approval"). Recorded here as a **conditional** decision, for **this release only**:
+
+- **Accepted:** isolated local evidence (backend code identical to production `a82197f`, local MySQL 8.4.13, fictional data) **in place of hosted staging** for the nine writes listed in [approvals/local-evidence-exception.md](approvals/local-evidence-exception.md) section 4. This is the owners' written decision allowed by rule 3 for HTTP 408 and replaces the staging requirement of tiers 1 to 4 for these writes only.
+- **Accepted risks, with their existing mitigations:** HTTP 408 / Chrome's automatic resend (not reproduced; keyed writes are replayed by the backend, unkeyed tier 2 creates are refused by their unique rule and the page says the record may be the person's own), and tier 2 lost answers for `account.create`, `budget.create`, `category.create` (no duplicate possible; honest wording and a fresh list, `d1943e4`).
+- **Conditions (all must hold):**
+1. The production MySQL version is confirmed and recorded in [approvals/local-evidence-exception.md](approvals/local-evidence-exception.md) section 1 (BE-05).
+2. The production backend runs `a82197f` with the P0 code unchanged; any change to it voids this decision for the affected writes.
+3. The installed PWA is tested on real iOS (Safari / WebKit) and Android (Chrome) devices before the public release.
+4. Each of the nine writes is signed by an approver and an independent reviewer (not the tester) in its `approvals/<operation>.md`.
+5. Ledger and balances are monitored for the first week after activation.
+- **Not decided here, still PENDING:** each write's signature (approver and reviewer) and the activation itself. Every row in section 3 stays "Not approved" and `APPROVED` stays `Object.freeze([])` until a write's file is signed; opening a write is then the separate reviewed commit of rule 5.
+- **Out of scope:** `account.update`, `budget.update` and every untested write stay excluded.

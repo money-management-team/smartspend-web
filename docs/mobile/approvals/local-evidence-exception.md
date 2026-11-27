@@ -1,6 +1,6 @@
 # Owner decision draft: local isolated evidence in place of staging
 
-**Status: PENDING. Nothing here is approved, and no write is open (`APPROVED = Object.freeze([])`).** This file is a draft for the owners to accept, change or reject. It does not change any rule in [WRITE-APPROVAL-REGISTER.md](../WRITE-APPROVAL-REGISTER.md); if accepted, the register is amended in the same reviewed commit that records the decision.
+**Status: CONDITIONALLY ACCEPTED by the project owner on 2026-11-27 ("موافق على الاعتماد المشروط"), for this release only. No write is open (`APPROVED = Object.freeze([])`); per-write signatures and activation are still PENDING.** Recorded in [WRITE-APPROVAL-REGISTER.md](../WRITE-APPROVAL-REGISTER.md) section 6. It does not change any rule in [WRITE-APPROVAL-REGISTER.md](../WRITE-APPROVAL-REGISTER.md); if accepted, the register is amended in the same reviewed commit that records the decision.
 
 ## 1. The exception asked for
 
@@ -12,7 +12,14 @@ The register requires per-write **staging** evidence on the backend commit and d
 
 Conditions proposed: (a) the production MySQL version is confirmed (BE-05) and recorded here; (b) any change to the production backend commit voids the exception for the affected writes; (c) the first release is watched (ledger vs balances) for the first week.
 
-Owner decision: **PENDING** (name, role, date).
+Owner decision: **ACCEPTED WITH CONDITIONS**: project owner, 2026-11-27, for this release only. Conditions (all must hold):
+1. The production MySQL version is confirmed and recorded in [approvals/local-evidence-exception.md](#1-the-exception-asked-for) section 1 (BE-05).
+2. The production backend runs `a82197f` with the P0 code unchanged; any change to it voids this decision for the affected writes.
+3. The installed PWA is tested on real iOS (Safari / WebKit) and Android (Chrome) devices before the public release.
+4. Each of the nine writes is signed by an approver and an independent reviewer (not the tester) in its `approvals/<operation>.md`.
+5. Ledger and balances are monitored for the first week after activation.
+
+Production MySQL version: **PENDING confirmation** (to be recorded here).
 
 ## 2. What the evidence covers
 
@@ -30,7 +37,7 @@ The test-only switch works only when Vite's mode is literally "test" and throws 
 - **Shown:** a 408 or a lost answer reaches the page as "not confirmed"; Mobile never resends by itself; for keyed writes (expense, income, transfer, goal create / contribution / withdrawal) an identical resend carries the same key and the backend replays it: one record.
 - **Not shown:** Chrome's own automatic resend of a POST after a 408 or a dropped reused connection. Every test POST used a fresh connection, so Chrome had nothing to retry. The allowed "satisfied" sentence cannot be used.
 - **Mitigation:** keyed writes are protected by replay (above). Unkeyed tier 2 creates (account, budget, category) are protected by their unique rule: a resend cannot create a second record, it is refused, and the page now says the record may be the person's own and offers to check the list (`d1943e4`).
-- Owner decision needed: **PENDING**: proceed without the 408 evidence for the writes in section 4, for the reason above, or require it first.
+- Owner decision: **ACCEPTED** (2026-11-27, conditional): proceed without the 408 evidence for the writes in section 4, on the mitigations above.
 
 ## 4. Writes proposed for the first release
 
@@ -48,16 +55,16 @@ The test-only switch works only when Vite's mode is literally "test" and throws 
 | `category.create` | 2 | API + browser | yes, if the tier 2 decision below is accepted |
 | everything else | | not tested | **excluded** |
 
-Tier 1 also asks for a pilot of the NOTIFICATION-PILOT.md shape; none was run. Owner decision: **PENDING** (run it or waive it).
+Tier 1 also asks for a pilot of the NOTIFICATION-PILOT.md shape; none was run. Not needed for this release: the two tier 1 writes (`account.update`, `budget.update`) are excluded.
 
 ## 5. Tier 2 lost answers: the cost to accept
 
 - **What can happen:** the first request created the account or budget, its answer was lost; a retry (by the person, or silently by the browser) is refused as "already exists".
 - **What cannot happen:** a second account or budget with the same unique key.
 - **What the person sees (since `d1943e4`):** "may be the account/budget you added … Nothing new was recorded by this request", a "Check your accounts / budgets" link, and the list read again from the server.
-- Owner decision needed: **PENDING**: accept this cost for `account.create`, `budget.create` and `category.create` (the category form shows the same honest wording and reads its list again, shown in run 2).
+- Owner decision: **ACCEPTED** (2026-11-27, conditional): this cost is accepted for `account.create`, `budget.create` and `category.create` (the category form shows the same honest wording and reads its list again, shown in run 2).
 
-## 6. Remaining risks for every launch write (accepted only by the decisions above)
+## 6. Remaining risks for every launch write (accepted by the owner's conditional decision of 2026-11-27)
 
 1. **Chrome's automatic resend after a 408 or a dropped reused connection** was not reproduced (every test POST used a fresh connection). Keyed writes are replayed by the backend on a resend (shown); unkeyed tier 2 creates are refused by their unique rule, so a silent resend can turn a created record into an "already exists" answer (wording handled since `d1943e4`).
 2. **Tier 2 lost answers** (`account.create`, `budget.create`, `category.create`): no replay; a retry after a lost answer is refused although the first copy was created. No duplicate can be created; the person is told it may be theirs and the list is read again.

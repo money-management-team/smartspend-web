@@ -28,7 +28,7 @@
 - How we would stop: rebuild without the operation in `APPROVED` (or with Mobile off) and redeploy through the production workflow.
 
 ## HTTP 408
-- PENDING owner decision, see [local-evidence-exception.md](local-evidence-exception.md) section 3. The 408 evidence (HTTP-408-EVIDENCE.md) is **not satisfied**: Chrome's own automatic resend was not reproduced.
+- The 408 evidence (HTTP-408-EVIDENCE.md) is **not satisfied** (Chrome's own automatic resend was not reproduced). The owner decided on 2026-11-27 to proceed without it, conditionally, for this release: [local-evidence-exception.md](local-evidence-exception.md) section 3 and [WRITE-APPROVAL-REGISTER.md](../WRITE-APPROVAL-REGISTER.md) section 6. This write's own decision below is still PENDING.
 
 ## Decision
 - [ ] Approved   [ ] Approved with conditions (list)   [ ] Rejected   — **PENDING**
