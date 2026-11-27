@@ -1,12 +1,16 @@
 /*
- * The Mobile PWA (manifest + service worker), local and staging only.
+ * The Mobile PWA (manifest + service worker).
  *
  *   VITE_MOBILE_PWA   only the exact string "true" asks for it, and only in a
  *                     build where Mobile itself is on.
- *   production mode   NEVER: `vite build` in mode "production" (the Hostinger
- *                     workflow) resolves the PWA to off whatever the variable
- *                     says, and warns. There is no approval switch; shipping it
- *                     to production needs a change to this file.
+ *   production mode   `vite build` in mode "production" (the Hostinger
+ *                     workflow) builds it only for an approved release: Mobile
+ *                     on (which already needs SMARTSPEND_MOBILE_RELEASE_APPROVED,
+ *                     scripts/mobileBuildFlag.mjs) AND
+ *                     SMARTSPEND_MOBILE_PWA_RELEASE_APPROVED exactly "true" in
+ *                     the shell environment (an env file cannot approve it).
+ *                     Asked for without both, it resolves to off and warns, so
+ *                     an ordinary production build never ships a worker.
  *
  * When on, the build emits these files and nothing else:
  *   smartspend-mobile-sw.js the worker; scope /m, so it controls /m and /m/... (a Desktop,
@@ -30,7 +34,7 @@
  */
 
 export const PWA_FLAG = "VITE_MOBILE_PWA";
-// Rollback of a staging origin that once ran the PWA build (see resolvePwaRetire).
+// Rollback of an origin that once ran the PWA build (see resolvePwaRetire).
 export const PWA_RETIRE_FLAG = "SMARTSPEND_MOBILE_PWA_RETIRE";
 export const PWA_ENTRY_ID = "virtual:smartspend-mobile-pwa";
 export const PWA_SCOPE = "/m";
@@ -40,17 +44,23 @@ export const PWA_LEGACY_SW_PATH = "/m/sw.js";
 export const PWA_LEGACY_SCOPE = "/m/";
 export const PWA_CACHE_PREFIX = "sm-pwa-";
 
+// The production approval of the PWA, read from the shell environment only (never from an env file).
+export const PWA_APPROVAL = "SMARTSPEND_MOBILE_PWA_RELEASE_APPROVED";
+
 /** @returns {{ enabled: boolean, refusedInProduction: boolean }} */
-export function resolveMobilePwa({ mobileEnabled, command, mode, env }) {
+export function resolveMobilePwa({ mobileEnabled, command, mode, env, processEnv = {} }) {
   const asked = env?.[PWA_FLAG] === "true";
   const production = mode === "production" && command === "build";
-  if (asked && production) return { enabled: false, refusedInProduction: true };
+  if (asked && production) {
+    const approved = processEnv?.[PWA_APPROVAL] === "true";
+    return approved && mobileEnabled ? { enabled: true, refusedInProduction: false } : { enabled: false, refusedInProduction: true };
+  }
   return { enabled: Boolean(asked && mobileEnabled && mode !== "production"), refusedInProduction: false };
 }
 
 /*
- * The retire worker, for rolling a staging origin back from a PWA build to any
- * non-PWA build, flag-off included. A flag-off build has no Mobile code, so it
+ * The retire worker, for rolling an origin (staging, or production after an
+ * approved PWA release) back from a PWA build to any non-PWA build, flag-off included. A flag-off build has no Mobile code, so it
  * cannot unregister the worker an earlier build installed; but the browser
  * itself re-fetches the worker whenever an in-scope page opens. With
  * SMARTSPEND_MOBILE_PWA_RETIRE=true the build emits, as static files and
@@ -59,16 +69,16 @@ export function resolveMobilePwa({ mobileEnabled, command, mode, env }) {
  * unregisters itself and reloads the Mobile pages it controlled. The JS and CSS
  * bundles are not touched (tests/mobilePwa.test.mjs compares them).
  *
- * Like the PWA, it is refused in a production-mode build: production has never
- * run the PWA, so it has nothing to retire, and production gets no worker file.
- * The variable is the build shell's, not a VITE_ one, so it never reaches the
- * page code.
+ * It is allowed in a production-mode build as well: an approved release can put
+ * the PWA on production, and rolling that back must not wait for a release
+ * approval. It adds two static files and changes nothing else. The variable is
+ * the build shell's, not a VITE_ one, so it never reaches the page code.
+ * `refusedInProduction` stays in the result for its callers and is always false.
  *
  * @returns {{ enabled: boolean, refusedInProduction: boolean }}
  */
-export function resolvePwaRetire({ pwaEnabled, command, mode, env }) {
+export function resolvePwaRetire({ pwaEnabled, command, env }) {
   const asked = env?.[PWA_RETIRE_FLAG] === "true";
-  if (asked && mode === "production" && command === "build") return { enabled: false, refusedInProduction: true };
   return { enabled: Boolean(asked && !pwaEnabled && command === "build"), refusedInProduction: false };
 }
 

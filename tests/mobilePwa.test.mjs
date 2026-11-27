@@ -3,26 +3,32 @@ import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import { JSDOM } from "jsdom";
 
-import { PWA_CACHE_PREFIX, PWA_ICONS, PWA_LEGACY_SW_PATH, PWA_SCOPE, PWA_SW_PATH, pwaEntrySource, pwaManifest, resolveMobilePwa, resolvePwaRetire, retireSwSource, swSource } from "../scripts/mobilePwa.mjs";
+import { PWA_APPROVAL, PWA_CACHE_PREFIX, PWA_ICONS, PWA_LEGACY_SW_PATH, PWA_SCOPE, PWA_SW_PATH, pwaEntrySource, pwaManifest, resolveMobilePwa, resolvePwaRetire, retireSwSource, swSource } from "../scripts/mobilePwa.mjs";
 import { mobileEntryPlugin } from "../scripts/mobileEntryPlugin.mjs";
 
 const { registerWorker, releaseHead, removeWorker, syncPwa } = await import("../src/mobile/pwa/worker.js");
 
 /*
- * The Mobile PWA: when it may exist (never in a production build), what its
+ * The Mobile PWA: when it may exist (in a production build only for an approved release), what its
  * worker intercepts (never /api, never a write, never a Desktop page), how a
  * build without it cleans up after one with it, and what the build emits.
  */
 
 describe("when the PWA may exist", () => {
-  const resolve = (env, { mobile = true, command = "build", mode = "staging" } = {}) => resolveMobilePwa({ mobileEnabled: mobile, command, mode, env });
+  const resolve = (env, { mobile = true, command = "build", mode = "staging", processEnv = {} } = {}) => resolveMobilePwa({ mobileEnabled: mobile, command, mode, env, processEnv });
 
-  it("only the exact string, only with Mobile on, and never in a production build", () => {
+  it("only the exact string, only with Mobile on, and in a production build only with the PWA approval", () => {
     assert.deepEqual(resolve({ VITE_MOBILE_PWA: "true" }), { enabled: true, refusedInProduction: false });
     assert.equal(resolve({ VITE_MOBILE_PWA: "true" }, { command: "serve", mode: "development" }).enabled, true);
     for (const value of ["TRUE", "1", "yes", " true", undefined, ""]) assert.equal(resolve({ VITE_MOBILE_PWA: value }).enabled, false, String(value));
     assert.equal(resolve({ VITE_MOBILE_PWA: "true" }, { mobile: false }).enabled, false, "no PWA without Mobile");
-    assert.deepEqual(resolve({ VITE_MOBILE_PWA: "true", SMARTSPEND_MOBILE_RELEASE_APPROVED: "true" }, { mode: "production" }), { enabled: false, refusedInProduction: true }, "no approval switch opens it in production");
+    assert.deepEqual(resolve({ VITE_MOBILE_PWA: "true" }, { mode: "production" }), { enabled: false, refusedInProduction: true }, "production without the approval stays off");
+    assert.deepEqual(resolve({ VITE_MOBILE_PWA: "true" }, { mode: "production", processEnv: { SMARTSPEND_MOBILE_RELEASE_APPROVED: "true" } }), { enabled: false, refusedInProduction: true }, "the Mobile approval alone does not approve the PWA");
+    assert.deepEqual(resolve({ VITE_MOBILE_PWA: "true", [PWA_APPROVAL]: "true" }, { mode: "production" }), { enabled: false, refusedInProduction: true }, "an env file cannot approve it: only the shell environment counts");
+    for (const value of ["TRUE", "1", "yes", "true ", ""]) assert.equal(resolve({ VITE_MOBILE_PWA: "true" }, { mode: "production", processEnv: { [PWA_APPROVAL]: value } }).enabled, false, `approval ${JSON.stringify(value)}`);
+    assert.deepEqual(resolve({ VITE_MOBILE_PWA: "true" }, { mode: "production", processEnv: { [PWA_APPROVAL]: "true" } }), { enabled: true, refusedInProduction: false }, "an approved PWA release");
+    assert.deepEqual(resolve({ VITE_MOBILE_PWA: "true" }, { mode: "production", mobile: false, processEnv: { [PWA_APPROVAL]: "true" } }), { enabled: false, refusedInProduction: true }, "approved, but Mobile is off");
+    assert.deepEqual(resolve({}, { mode: "production", processEnv: { [PWA_APPROVAL]: "true" } }), { enabled: false, refusedInProduction: false }, "an approval alone asks for nothing");
   });
 
   it("the virtual module says off, and the plugin emits nothing, unless it is on", () => {
@@ -272,11 +278,12 @@ describe("registration and rollback in the page", () => {
   });
 });
 
-describe("retiring the PWA from a staging origin (the rollback a flag-off build can't do itself)", () => {
-  it("is asked for with the exact string, only in a build without the PWA, and never in production", () => {
+describe("retiring the PWA from an origin (the rollback a flag-off build can't do itself)", () => {
+  it("is asked for with the exact string, only in a build without the PWA, production included", () => {
     const env = { SMARTSPEND_MOBILE_PWA_RETIRE: "true" };
     assert.deepEqual(resolvePwaRetire({ pwaEnabled: false, command: "build", mode: "staging", env }), { enabled: true, refusedInProduction: false });
-    assert.deepEqual(resolvePwaRetire({ pwaEnabled: false, command: "build", mode: "production", env }), { enabled: false, refusedInProduction: true });
+    assert.deepEqual(resolvePwaRetire({ pwaEnabled: false, command: "build", mode: "production", env }), { enabled: true, refusedInProduction: false }, "rolling back a production PWA needs no release approval");
+    assert.equal(resolvePwaRetire({ pwaEnabled: false, command: "build", mode: "production", env: {} }).enabled, false, "never without the variable");
     assert.equal(resolvePwaRetire({ pwaEnabled: true, command: "build", mode: "staging", env }).enabled, false, "a PWA build has its real worker");
     assert.equal(resolvePwaRetire({ pwaEnabled: false, command: "build", mode: "staging", env: { SMARTSPEND_MOBILE_PWA_RETIRE: "TRUE" } }).enabled, false);
     assert.equal(resolvePwaRetire({ pwaEnabled: false, command: "serve", mode: "development", env }).enabled, false);

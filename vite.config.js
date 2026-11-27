@@ -67,20 +67,20 @@ export default defineConfig(({ command, mode }) => {
     )
   }
 
-  // The Mobile PWA: local and staging only, never in a production-mode build
-  // (scripts/mobilePwa.mjs).
-  const pwa = resolveMobilePwa({ mobileEnabled: mobile.enabled, command, mode, env })
+  // The Mobile PWA: in a production-mode build only with Mobile on and the PWA
+  // release approved in the shell environment (scripts/mobilePwa.mjs).
+  const pwa = resolveMobilePwa({ mobileEnabled: mobile.enabled, command, mode, env, processEnv: process.env })
 
   if (pwa.refusedInProduction) {
-    console.warn('[smartspend] VITE_MOBILE_PWA is ignored in a production build: the Mobile PWA stays OFF.')
+    console.warn('[smartspend] VITE_MOBILE_PWA is ignored in this production build (needs Mobile on and SMARTSPEND_MOBILE_PWA_RELEASE_APPROVED=true): the Mobile PWA stays OFF.')
   }
 
-  // Rolling a staging origin back from the PWA: a static retire worker only (scripts/mobilePwa.mjs).
-  const retire = resolvePwaRetire({ pwaEnabled: pwa.enabled, command, mode, env: process.env })
-
-  if (retire.refusedInProduction) {
-    console.warn('[smartspend] SMARTSPEND_MOBILE_PWA_RETIRE is ignored in a production build: no worker file is emitted.')
+  if (pwa.enabled && mode === 'production') {
+    console.info('[smartspend] Mobile PWA: ON (production, release approved)')
   }
+
+  // Rolling an origin back from the PWA: a static retire worker only (scripts/mobilePwa.mjs).
+  const retire = resolvePwaRetire({ pwaEnabled: pwa.enabled, command, env: process.env })
 
   return {
     // The Mobile code enters the build only through this plugin, and only

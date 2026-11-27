@@ -37,11 +37,11 @@ export function mobileEntrySource(enabled, root) {
 }
 
 /*
- * `pwa` (scripts/mobilePwa.mjs) is only ever true in a non-production build with
- * Mobile on. Then the worker (at the root, so its scope can be /m), and the
+ * `pwa` (scripts/mobilePwa.mjs) is only ever true with Mobile on, and in a
+ * production-mode build only for an approved PWA release. Then the worker (at the root, so its scope can be /m), and the
  * manifest and icons (under m/) are emitted; otherwise nothing is, and
  * "virtual:smartspend-mobile-pwa" says MOBILE_PWA = false.
- * `retire` (never with `pwa`, never in production) emits only the retire
+ * `retire` (never with `pwa`) emits only the retire
  * worker, at the current worker's address and at the first builds' (m/sw.js),
  * whatever the Mobile flag says: the rollback path.
  */

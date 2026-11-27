@@ -11,9 +11,9 @@ The Mobile PWA is for local and staging builds only. It is built from these file
 |---|---|
 | Mobile off (all production today) | Nothing of the PWA. `tests/mobileBundle.test.mjs` checks for `smartspend-mobile-sw.js`, `m/sw.js`, `sm-pwa-`, `getRegistrations` and `apple-touch-icon`. |
 | Mobile on, PWA not asked for | No worker file, no manifest, no registration code. Only the clean-up path, which removes an earlier worker. |
-| `VITE_MOBILE_PWA=true` in a **production-mode** build | Refused with a warning; nothing is emitted. There is no approval switch: the Hostinger workflow builds in production mode, so it cannot produce a PWA. |
+| `VITE_MOBILE_PWA=true` in a **production-mode** build | Built only for an approved release: Mobile on (with `SMARTSPEND_MOBILE_RELEASE_APPROVED=true`) **and** `SMARTSPEND_MOBILE_PWA_RELEASE_APPROVED=true`, both in the shell (an env file cannot approve). Otherwise refused with a warning and nothing is emitted. The Hostinger workflow sets these only for a manual run with its `mobile_pwa` input and the repository variables (RELEASE-AND-ROLLBACK.md). |
 | `VITE_MOBILE_ENABLED=true VITE_MOBILE_PWA=true vite build --mode staging` (or `vite` in development) | `smartspend-mobile-sw.js` (at the root, scope `/m`), `m/manifest.webmanifest`, `m/icon-192.png`, `m/icon-512.png`, `m/icon-maskable-512.png`, `m/apple-touch-icon.png`, plus the registration code. |
-| `SMARTSPEND_MOBILE_PWA_RETIRE=true vite build --mode staging` (any non-PWA build, Mobile on or off) | Only a static **retire worker**, at `smartspend-mobile-sw.js` and at `m/sw.js` (the first builds' address). The JS and CSS are byte-identical to the same build without it (151 files against 150; only `m/sw.js` differs). Refused in a production-mode build, with a warning, and nothing is emitted. |
+| `SMARTSPEND_MOBILE_PWA_RETIRE=true vite build --mode staging` (any non-PWA build, Mobile on or off) | Only a static **retire worker**, at `smartspend-mobile-sw.js` and at `m/sw.js` (the first builds' address). The JS and CSS are byte-identical to the same build without it (151 files against 150; only `m/sw.js` differs). Also allowed in a production-mode build, without an approval, to roll back a production PWA (workflow input `mobile_pwa_retire`). |
 
 The bundler removes the registration code from non-PWA builds because the build constant `MOBILE_PWA` alone selects `registerWorker` or `removeWorker`. This was checked on all four builds by searching their JavaScript for `m/sw.js`, `updateViaCache` and `manifest.webmanifest`.
 
@@ -43,12 +43,12 @@ The bundler removes the registration code from non-PWA builds because the build 
 ### Evidence
 
 **Unit tests** (`tests/mobilePwa.test.mjs`, 14 tests) run the worker's source against a fake service-worker global. They cover:
-- the flag rules, including the production refusal and that no approval switch can override it;
+- the flag rules, including that a production build needs Mobile on and the shell-only PWA approval (the Mobile approval alone, an env file or a near-miss value never opens it);
 - what the plugin emits;
 - the worker leaving the API, writes, other origins and non-Mobile pages alone;
 - asset-only caching, the offline page, cache clean-up and skip-waiting only on request;
 - registration and rollback in the page;
-- the retire option's rules (exact string, never with the PWA, never in production) and the retire worker against fake globals (only `sm-pwa-*` caches deleted, unregistered, pages reloaded, no fetch handler).
+- the retire option's rules (exact string, never with the PWA, production included) and the retire worker against fake globals (only `sm-pwa-*` caches deleted, unregistered, pages reloaded, no fetch handler).
 
 **Real browser.** Headless Chrome 156 on a local origin, using the staging PWA build and then a non-PWA build on the same origin (scratchpad `pwatest.mjs`):
 

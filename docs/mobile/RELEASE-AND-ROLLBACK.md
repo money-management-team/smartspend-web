@@ -8,7 +8,7 @@
 - Every Mobile write is closed in source (`data/writeGate.js`), whatever the flag.
 - **Branch:** `integration/mobile` is backed up on `origin` (at `c7c4319` when this was written, 2026-11-13). It is **not merged** into `development` (which is an ancestor of the branch; the branch is 55 commits ahead) and **nothing from it is deployed**. Only a push to `development` deploys.
 - Branch guards that live only on this unmerged branch do not protect production today.
-- **Production workflow (`deploy-hostinger.yml`):** pins `VITE_MOBILE_ENABLED` off and fails if it is not; pins Smart Savings **on** with its approval (released 2026-10-24, `docs/savings-goals/smart-plans.md`). It runs lint and a build, no tests.
+- **Production workflow (`deploy-hostinger.yml`):** pins `VITE_MOBILE_ENABLED` off at job level and fails if it is not; pins Smart Savings **on** with its approval (released 2026-10-24, `docs/savings-goals/smart-plans.md`). It runs lint and a build, no tests. A push to `development` always builds Desktop only. Mobile can only be shipped by a **manual run** (`workflow_dispatch`, from `development`) — see "Approved Mobile release" below. Nothing on this branch is in `development` yet, so none of it applies to production until it is merged.
 - **CI (`ci.yml`):** lint and `npm test` on pull requests and on `integration/**` pushes. No secrets, no deployment. It was added after the last full local run on Windows and **has not yet run on GitHub's Linux runner**; treat its first result as the first Linux evidence for the suite. It is deliberately not a step of the deploy workflow, so a test failure cannot block an unrelated production release.
 - **Last local verification (Windows, Node, 2026-11-14, on top of `b1996e2`):** `npm test` 1,968 / 1,968 (342 suites), `npm run lint` clean. The suite includes the flag-off, flag-on and PWA bundle builds (`mobileBundle.test.mjs`). A flag-off production-mode build has no Mobile chunk; a production-mode build that asks for the PWA warns and emits no worker; `APPROVED` is still `Object.freeze([])`.
 - **PWA readiness (local and staging only, never production):** the worker covers `/m` and `/m/` (script `/smartspend-mobile-sw.js`, scope `/m`), with 192/512/maskable/Apple icons, theme colour and `viewport-fit`. In headless Chrome: installability errors none, offline reload of `/m` and `/m/` shows the offline page, update waits for the Reload tap, rollback with the retire worker leaves nothing behind (30 of 30 checks; `PWA-AND-DEVICE-QA.md`). Real devices, the real host and screen readers remain unverified.
@@ -42,11 +42,35 @@ Mobile is **not ready for production**. Open items, by who can close them. None 
 6. No release approval (`SMARTSPEND_MOBILE_RELEASE_APPROVED`), no per-write opening approval, Decision B (`funding-preview`) and the WhatsApp consent wording are pending.
 
 **Known frontend limits (not blockers, tracked for a later phase):**
-- The PWA is never built for production, so no user can install Mobile yet.
+- The PWA has never been built for production, so no user can install Mobile yet; the approved path now exists ("Approved Mobile release" above).
 - Offline, a screen that was never opened or prefetched shows the "download failed" state with a Reload button; only the prefetched screens (Activity, Planning, More, Accounts, a transaction) work offline.
 - A HEIC/HEIF receipt is refused in the picker (it is never uploaded), because the backend accepts only jpeg, png and webp. A HEIC photo renamed to `.jpg` is not detected on the device; the backend's file guard still refuses it.
 - Mobile now sends `workspace_id` to `/financial-alerts`: `FinancialAlertController` (`fix/financial-idempotency-p0 @ 6b696d72`) reads `workspace_id`, and `id_workspace` appears nowhere in the backend. The full version's dashboard alerts card (`FinancialAlerts.jsx`) had the same mismatch and now sends `workspace_id` too (regression test `tests/financialAlerts.test.mjs`); it no longer returns the alerts of every workspace the user manages.
 - The PWA icons (192, 512, maskable 512, Apple touch 180), the theme colour and `viewport-fit` exist in PWA builds only, which are never built for production. No CSP or Permissions-Policy is defined in the repository.
+
+## Approved Mobile release (workflow inputs)
+
+The production workflow decides Mobile in its "Resolve Mobile release" step, fail-closed, and hands the result only to the build step (step `env` takes precedence over the job's pinned `"false"`). Inputs default to off.
+
+| Input | Also needs (repository variable, exactly `true`) | Build gets |
+|---|---|---|
+| none (a push, or a manual run with the defaults) | — | Mobile off, no PWA, no worker |
+| `mobile_release` | `SMARTSPEND_MOBILE_RELEASE_APPROVED` | `VITE_MOBILE_ENABLED=true` + the Mobile approval |
+| `mobile_pwa` (with `mobile_release`) | `SMARTSPEND_MOBILE_PWA_RELEASE_APPROVED` as well | the PWA: worker, manifest, icons |
+| `mobile_pwa_retire` (not with `mobile_pwa`) | — | the retire worker only (rollback) |
+
+- An input without its variable **fails the run**; it never deploys Desktop alone in its place. A near-miss value (`TRUE`, `1`, `true `) is no approval. `tests/mobileBuildFlag.test.mjs` runs the step's script with bash for every case.
+- After the build, "Validate build" checks that the PWA files exist exactly when the PWA was resolved, and that a Desktop-only build has no `dist/m` and no worker.
+- The variables are the recorded approval: set them only after the decision in WRITE-APPROVAL-REGISTER.md rule 6, and unset them after the release. They approve the presentation only; every Mobile write stays closed (`APPROVED = Object.freeze([])`).
+- Rollback: run again with no Mobile input (Mobile off) and, if the PWA had shipped, with `mobile_pwa_retire`; keep the retire worker deployed until visitors have returned.
+
+### Hosting the release must have (outside this repository)
+
+The repository ships no server configuration (no `public/.htaccess`; the fallback lives on the host's `deploy.sh`/web server). Before the first Mobile run, confirm on the host:
+- `/m`, `/m/` and every `/m/*` path serve `index.html` (SPA fallback), but `/m/manifest.webmanifest` and `/m/*.png` are served as files;
+- `/smartspend-mobile-sw.js` served as `text/javascript` with `Cache-Control: no-cache`; `index.html` `no-cache`; `/assets/*` immutable; the manifest as `application/manifest+json`;
+- HTTPS on the web origin (a worker needs it); CORS on the API allows that origin; security headers unchanged;
+- the Google client ID allows the origin serving `/m/signin`.
 
 ## Before a controlled rollout
 
@@ -66,7 +90,7 @@ Mobile is **not ready for production**. Open items, by who can close them. None 
 ## Rollback
 
 - **Mobile:** rebuild with `VITE_MOBILE_ENABLED` unset. Every `/m/*` URL then reaches the app's NotFound through the catch-all route, and canonical `/dashboard/*` URLs are untouched. Deep links to `/m/*` do not break the app.
-- **The PWA has never been built for production:** a production-mode build refuses it (`scripts/mobilePwa.mjs`).
+- **The PWA has never been built for production.** A production-mode build makes it only for an approved release (`scripts/mobilePwa.mjs`; workflow input `mobile_pwa`). To roll a production PWA back, run the workflow with `mobile_pwa_retire`.
   - If a staging origin ever ran the PWA build, the next non-PWA build removes the `/m/` worker and its caches on the first Mobile page load. This was tested in Chrome; see PWA-AND-DEVICE-QA.md.
   - On such an origin, `/smartspend-mobile-sw.js` (and `/m/sw.js` from the first builds) must then not be served as a real file from an old deploy.
   - **Flag-off rollback (resolved for staging):** a flag-off build has no Mobile code, so it cannot remove that worker itself. Build it with `SMARTSPEND_MOBILE_PWA_RETIRE=true` (build shell only; refused in production mode). That adds one static file, `m/sw.js`, a retire worker that deletes the `sm-pwa-*` caches and unregisters itself, and changes nothing else in the output. Verified in Chrome on the final source: the worker and its cache were gone on the first Mobile visit after the switch, and a control run without the option kept them (PWA-AND-DEVICE-QA.md). Serve it as JavaScript with `no-cache`, and keep it deployed until visitors have returned. Not yet verified on a real staging host or a device.

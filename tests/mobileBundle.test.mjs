@@ -85,7 +85,7 @@ before(() => {
   on = build("on", { VITE_MOBILE_ENABLED: "true" }, ["--mode", "preview"]);
   // Mobile on AND Smart Savings on, in a local preview build (the production workflow pins Smart Savings off).
   onWithPlans = build("on-plans", { VITE_MOBILE_ENABLED: "true", VITE_SMART_SAVINGS_ENABLED: "true" }, ["--mode", "preview"]);
-  // Mobile on AND the PWA asked for, in a local preview build (a production-mode build refuses the PWA: tests/mobilePwa.test.mjs).
+  // Mobile on AND the PWA asked for, in a local preview build (a production-mode build needs the PWA approval: tests/mobilePwa.test.mjs).
   pwa = build("pwa", { VITE_MOBILE_ENABLED: "true", VITE_MOBILE_PWA: "true" }, ["--mode", "preview"]);
 });
 

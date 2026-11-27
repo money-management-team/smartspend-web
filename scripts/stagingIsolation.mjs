@@ -31,8 +31,8 @@ export const PRODUCTION = Object.freeze({
   // Where the production deploy puts things on the host (from deploy-hostinger.yml). A staging base must be none of these, and not inside or around one.
   deployRoots: Object.freeze(["/home/u316277277/deploy/smartspend-web", "/home/u316277277/deploy/smartspend"]),
   workflow: ".github/workflows/deploy-hostinger.yml",
-  // SHA-256 of that workflow, LF line endings. Phase 2G.1 must leave it untouched; a deliberate production change updates this, in plain view.
-  workflowSha256: "8c4a15dc09ef4a118eb2ba00cc0eaf0510c43abac9842cdb6044ca71d42b0b28",
+  // SHA-256 of that workflow, LF line endings. A deliberate production change updates this, in plain view (last: the approved Mobile release inputs, docs/mobile/RELEASE-AND-ROLLBACK.md).
+  workflowSha256: "56063d3ba8a1d929c426c56614e2a47947ffad170930dd2978218eb50e1fe365",
   // Names the production workflow reads. A staging workflow must never read any of them.
   secretNames: Object.freeze(["HOSTINGER_SSH_KEY", "HOSTINGER_KNOWN_HOSTS"]),
   varNames: Object.freeze(["VITE_API_BASE_URL", "VITE_GOOGLE_CLIENT_ID"]),

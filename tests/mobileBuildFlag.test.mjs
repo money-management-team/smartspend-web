@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 
@@ -116,14 +117,73 @@ describe("tracked configuration keeps Mobile off", () => {
     assert.doesNotMatch(example, /^\s*VITE_MOBILE_ENABLED\s*=/m);
   });
 
-  it("the deploy workflow pins Mobile off, asserts it before building, and never approves a release", () => {
+  it("the deploy workflow pins Mobile off, asserts it before building, and never hard-codes an approval", () => {
     const workflow = read(".github/workflows/deploy-hostinger.yml");
-    assert.match(workflow, /^\s+VITE_MOBILE_ENABLED: "false"$/m);
+    assert.match(workflow, /^ {6}VITE_MOBILE_ENABLED: "false"$/m, "the job default is off");
     assert.match(workflow, /"\$VITE_MOBILE_ENABLED" != "false"/);
-    assert.doesNotMatch(workflow, new RegExp(APPROVAL));
-    assert.doesNotMatch(workflow, /VITE_MOBILE_ENABLED: "true"/);
+    assert.doesNotMatch(workflow, new RegExp(`${APPROVAL}: "true"`), "no literal Mobile approval");
+    assert.doesNotMatch(workflow, /SMARTSPEND_MOBILE_PWA_RELEASE_APPROVED: "true"/, "no literal PWA approval");
+    assert.doesNotMatch(workflow, /VITE_MOBILE_ENABLED: "true"|VITE_MOBILE_PWA: "true"/);
     assert.ok(workflow.indexOf("Mobile must stay off") < workflow.indexOf("npm run build"), "asserted before the build");
     assert.match(workflow, /VITE_MOBILE_ENABLED\[\[:space:\]\]\*=/, "tracked env files are checked");
+    // The approvals come only from repository variables, read by the resolve step alone.
+    assert.match(workflow, /MOBILE_APPROVAL: \$\{\{ vars\.SMARTSPEND_MOBILE_RELEASE_APPROVED \}\}/);
+    assert.match(workflow, /PWA_APPROVAL: \$\{\{ vars\.SMARTSPEND_MOBILE_PWA_RELEASE_APPROVED \}\}/);
+    assert.equal((workflow.match(/vars\.SMARTSPEND_MOBILE_/g) ?? []).length, 2, "read once each");
+    // The build step takes Mobile only from the resolve step's outputs.
+    const build = workflow.slice(workflow.indexOf("- name: Build production frontend"), workflow.indexOf("- name: Validate build"));
+    for (const [name, output] of [["VITE_MOBILE_ENABLED", "mobile"], [APPROVAL, "mobile"], ["VITE_MOBILE_PWA", "pwa"], ["SMARTSPEND_MOBILE_PWA_RELEASE_APPROVED", "pwa"], ["SMARTSPEND_MOBILE_PWA_RETIRE", "retire"]]) {
+      assert.match(build, new RegExp(`^ {10}${name}: \\$\\{\\{ steps\\.mobile\\.outputs\\.${output} \\}\\}$`, "m"), name);
+    }
+    assert.ok(workflow.indexOf("- name: Resolve Mobile release") < workflow.indexOf("npm run build"));
+  });
+
+  it("the resolve step turns Mobile on only for a manual run with the input and the recorded approval", (t) => {
+    const workflow = read(".github/workflows/deploy-hostinger.yml").replace(/\r\n/g, "\n");
+    const lines = workflow.slice(workflow.indexOf("- name: Resolve Mobile release")).split("\n");
+    const start = lines.findIndex((line) => line.trim() === "run: |") + 1;
+    const body = [];
+    for (const line of lines.slice(start)) {
+      if (line.trim() && !line.startsWith(" ".repeat(10))) break;
+      body.push(line.slice(10));
+    }
+    const script = body.join("\n");
+    const probe = spawnSync("bash", ["-c", "exit 0"], { encoding: "utf8" });
+    if (probe.error || probe.status !== 0) {
+      t.skip("bash is not available here (CI runs it)");
+      return;
+    }
+    const dir = mkdtempSync(path.join(tmpdir(), "smartspend-wf-"));
+    const run = (env) => {
+      const output = path.join(dir, "out");
+      writeFileSync(output, "");
+      const result = spawnSync("bash", ["-c", script], { encoding: "utf8", env: { PATH: process.env.PATH, GITHUB_OUTPUT: output, ...env } });
+      const outputs = Object.fromEntries(readFileSync(output, "utf8").split("\n").filter(Boolean).map((line) => line.split("=")));
+      return { status: result.status, outputs };
+    };
+    const OFF = { mobile: "false", pwa: "false", retire: "false" };
+    const dispatch = (over) => ({ EVENT_NAME: "workflow_dispatch", ASK_MOBILE: "false", ASK_PWA: "false", ASK_RETIRE: "false", ...over });
+    try {
+      // A push never ships Mobile, whatever the inputs and variables say.
+      assert.deepEqual(run({ EVENT_NAME: "push", ASK_MOBILE: "true", ASK_PWA: "true", MOBILE_APPROVAL: "true", PWA_APPROVAL: "true" }), { status: 0, outputs: OFF });
+      assert.deepEqual(run({ EVENT_NAME: "push" }), { status: 0, outputs: OFF });
+      // A manual run with the defaults is Desktop only, approvals or not.
+      assert.deepEqual(run(dispatch({ MOBILE_APPROVAL: "true", PWA_APPROVAL: "true" })), { status: 0, outputs: OFF });
+      // Asking without the approval fails the run; a near-miss value is no approval.
+      for (const approval of [undefined, "", "TRUE", "1", "yes", "true "]) {
+        assert.equal(run(dispatch({ ASK_MOBILE: "true", ...(approval === undefined ? {} : { MOBILE_APPROVAL: approval }) })).status, 1, `approval ${JSON.stringify(approval)}`);
+      }
+      assert.deepEqual(run(dispatch({ ASK_MOBILE: "true", MOBILE_APPROVAL: "true" })), { status: 0, outputs: { ...OFF, mobile: "true" } });
+      // The PWA needs Mobile and its own approval.
+      assert.equal(run(dispatch({ ASK_PWA: "true", MOBILE_APPROVAL: "true", PWA_APPROVAL: "true" })).status, 1, "PWA without Mobile");
+      assert.equal(run(dispatch({ ASK_MOBILE: "true", ASK_PWA: "true", MOBILE_APPROVAL: "true" })).status, 1, "PWA without its approval");
+      assert.deepEqual(run(dispatch({ ASK_MOBILE: "true", ASK_PWA: "true", MOBILE_APPROVAL: "true", PWA_APPROVAL: "true" })), { status: 0, outputs: { mobile: "true", pwa: "true", retire: "false" } });
+      // The retire rollback needs no approval and never comes with the PWA.
+      assert.deepEqual(run(dispatch({ ASK_RETIRE: "true" })), { status: 0, outputs: { ...OFF, retire: "true" } });
+      assert.equal(run(dispatch({ ASK_MOBILE: "true", ASK_PWA: "true", ASK_RETIRE: "true", MOBILE_APPROVAL: "true", PWA_APPROVAL: "true" })).status, 1);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it("the deploy workflow only runs for the development branch", () => {
