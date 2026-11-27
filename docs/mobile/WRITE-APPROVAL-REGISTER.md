@@ -127,6 +127,9 @@ Copy this block into `docs/mobile/approvals/<operation>.md` (create the folder w
 
 | Operation | Request | Moves money | Key | Server dedup | Status | Notes |
 |---|---|---|---|---|---|---|
+| `transaction.expense` | `POST /transactions/expense` | true | client | `key-atomic` | **Not approved** | Money. Key completed with the posting on production backend a82197f (P0 fix deployed); needs the tier 4 staging money cases |
+| `transaction.income` | `POST /transactions/income` | true | client | `key-atomic` | **Not approved** | Money. As expense |
+| `goal.create` | `POST /savings-goals` | false | client | `key-atomic` | **Not approved** | No money; key completed atomically on a82197f. A retry after the key's 24 h expiry may create a second goal |
 | `transaction.reverse` | `POST /transactions/{id}/reverse` | true | none | `once-only` | **Not approved** | Money. A lost answer cannot be told from 'already reversed' |
 | `transfer.create` | `POST /transfers` | true | client | `key-atomic` | **Not approved** | Money. Atomic on develop; the expiry gap is fixed only on the unmerged branch |
 | `transfer.reverse` | `POST /transfers/{id}/reverse` | true | none | `once-only` | **Not approved** | Money. As above |
@@ -143,11 +146,8 @@ Copy this block into `docs/mobile/approvals/<operation>.md` (create the folder w
 
 | Operation | Request | Moves money | Key | Server dedup | Status | Notes |
 |---|---|---|---|---|---|---|
-| `transaction.expense` | `POST /transactions/expense` | true | client | `key-fix-pending` | **Not approved** | Money. Blocked until the P0 fix is merged, deployed and confirmed |
-| `transaction.income` | `POST /transactions/income` | true | client | `key-fix-pending` | **Not approved** | Money. As above |
 | `transaction.correct` | `PATCH /transactions/{id}` | true | client | `key-fix-pending` | **Not approved** | Money. As above, plus the request hash omits date, description and reference on develop |
 | `debt.payment` | `POST /debts/{id}/payments` | true | client | `key-fix-pending` | **Not approved** | Money. As above |
-| `goal.create` | `POST /savings-goals` | false | client | `key-fix-pending` | **Not approved** | Key required only on the fix branch |
 | `recurring.create` | `POST /recurring-transactions` | false | client | `key-fix-pending` | **Not approved** | Key required only on the fix branch |
 | `debt.create` | `POST /debts` | false | client | `key-fix-pending` | **Not approved** | Key required only on the fix branch |
 | `installment.confirm` | `POST /savings-goals/{id}/planned-contributions/{iid}/confirm` | true | client | `key-fix-pending` | **Not approved** | Money (Smart Savings, flag-gated; `data/writePlanApi.js` only). One account only; sends the confirmation preview's versions, its `suggested_amount` exactly and the chosen account. `ConfirmSavingsInstallmentAction` completes the key outside the money's transaction on develop (BE-01). The versions make a copy of an applied confirmation a coded 409, but a lost answer is an unknown outcome. Blocked until the P0 fix is merged, deployed and confirmed; multi-account confirmation has no Mobile send path |

@@ -54,8 +54,8 @@ The comparison script is `formreq.mjs` in the session scratchpad. The payloads f
 
 | Value | Writes |
 |---|---|
-| `key-atomic` | transfer; goal contribution and withdrawal (via `TransferMoneyAction`); receipt, voice and WhatsApp confirm; receipt and voice upload |
-| `key-fix-pending` | expense, income, correction, debt payment; goal, debt and recurring-rule create (key required only on the fix branch). Atomic only on the unmerged fix branch |
+| `key-atomic` | transfer; goal contribution and withdrawal (via `TransferMoneyAction`); receipt, voice and WhatsApp confirm; receipt and voice upload; expense, income and goal create (atomic on production backend `a82197f`, 2026-11-27) |
+| `key-fix-pending` | correction, debt payment; debt and recurring-rule create; Smart Savings confirm. The fix is deployed (`a82197f`), but these keep this class until their own source re-check reclassifies them |
 | `once-only` | transaction, transfer and debt-payment reversal; account archive |
 | `unique-index` | category create and rename; account create (unique `workspace_id, name`); budget create (unique `active_uniqueness_key`) |
 | `same-result` | the record updates (`PATCH`/`PUT`) |

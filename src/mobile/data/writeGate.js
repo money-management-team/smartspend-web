@@ -74,12 +74,13 @@ export const MOBILE_WRITES = Object.freeze({
   // PostExpenseAction / PostIncomeAction (docs/mobile/TRANSACTION-CREATE.md). The key is required (StoreExpenseRequest /
   // StoreIncomeRequest, [A-Za-z0-9._:-]{8,255}), reserved per {workspace, user, "post_expense"|"post_income", key} with a
   // hash of the request: same key + same request replays the first transaction, same key + different request is a 409,
-  // a key still processing is a 409. On develop @ fd87531 the posting and IdempotencyService::complete are TWO
-  // transactions (run() without `atomic`), so a failure between them leaves the money posted and the key "processing",
-  // and a key older than 24 h is recycled even for these operations. Both are fixed only on 6b696d72 (`atomic: true`,
-  // FINANCIAL_OPERATIONS), which is unmerged and undeployed: hence "key-fix-pending", and these stay closed.
-  "transaction.expense": write("POST /transactions/expense", true, "client", "key-fix-pending"),
-  "transaction.income": write("POST /transactions/income", true, "client", "key-fix-pending"),
+  // a key still processing is a 409. Production backend a82197f (develop, the P0 fix merged as PR #6; confirmed deployed
+  // 2026-11-27) posts and completes the key in ONE transaction (PostExpenseAction / PostIncomeAction pass
+  // `atomic: true` to IdempotencyService::run) and never recycles an expired key for them (post_income / post_expense are
+  // in IdempotencyService::FINANCIAL_OPERATIONS): hence "key-atomic". Still closed until per-write staging evidence and
+  // a signed approval (docs/mobile/WRITE-APPROVAL-REGISTER.md, tier 4).
+  "transaction.expense": write("POST /transactions/expense", true, "client", "key-atomic"),
+  "transaction.income": write("POST /transactions/income", true, "client", "key-atomic"),
   // UpdateTransactionAction (docs/mobile/TRANSACTION-CHANGE.md): a correction is NOT an edit. It reverses the original and posts a
   // replacement (a new id, related_transaction_id = the original), both in ONE DB::transaction under row locks on the two accounts,
   // so the money is atomic on develop @ fd87531 and 6b696d72. What differs is the key: on develop run() completes it in a second
@@ -179,8 +180,9 @@ export const MOBILE_WRITES = Object.freeze({
   // @ fd87531, 409 DuplicateBudgetException on 6b696d72 @ 296602e0). No key.
   "budget.create": write("POST /budgets", false, "none", "unique-index"),
   "budget.update": write("PATCH /budgets/{id}", false, "none", "same-result"),
-  // Key required since fix/financial-idempotency-p0 @ 6b696d72 (12644a03); a copy returns the first goal.
-  "goal.create": write("POST /savings-goals", false, "client", "key-fix-pending"),
+  // Key required (production backend a82197f); CreateSavingsGoalAction completes it atomically (`atomic: true`), so a copy
+  // returns the first goal. Not a FINANCIAL_OPERATION: a retry more than 24 h later may create a second goal.
+  "goal.create": write("POST /savings-goals", false, "client", "key-atomic"),
   "goal.update": write("PATCH /savings-goals/{id}", false, "none", "same-result"),
   "goal.plannedContribution": write("POST /savings-goals/{id}/planned-contributions", false, "none", "duplicates"),
   // Smart Savings installment postpone (PostponeSavingsInstallmentAction; docs/savings-goals/smart-plans.md). Moves no money

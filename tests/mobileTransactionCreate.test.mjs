@@ -21,7 +21,7 @@ const { buildTransactionResult } = await import("../src/mobile/models/transactio
  * and in the entry's currency, the category must be active, of the entry's type and in the account's workspace, and an
  * expense may not exceed the balance unless the account allows a negative one (422 with the server's message).
  *
- * Both writes are "key-fix-pending" (the completion of the key is atomic only on the unmerged 6b696d72) and stay CLOSED
+ * Both writes are "key-atomic" (the key completes with the money on production backend a82197f) and stay CLOSED
  * in the product: APPROVED is empty. These tests open them only through the test runner's switch, against a fake
  * backend that follows those rules.
  */
@@ -173,9 +173,9 @@ afterEach(async () => {
 });
 
 describe("the registration", () => {
-  it("both are money writes with a client key, key-fix-pending, and closed by default", () => {
-    assert.deepEqual({ ...gate.MOBILE_WRITES["transaction.expense"] }, { endpoint: "POST /transactions/expense", moves: true, key: "client", serverDedup: "key-fix-pending" });
-    assert.deepEqual({ ...gate.MOBILE_WRITES["transaction.income"] }, { endpoint: "POST /transactions/income", moves: true, key: "client", serverDedup: "key-fix-pending" });
+  it("both are money writes with a client key, key-atomic on the production backend, and closed by default", () => {
+    assert.deepEqual({ ...gate.MOBILE_WRITES["transaction.expense"] }, { endpoint: "POST /transactions/expense", moves: true, key: "client", serverDedup: "key-atomic" });
+    assert.deepEqual({ ...gate.MOBILE_WRITES["transaction.income"] }, { endpoint: "POST /transactions/income", moves: true, key: "client", serverDedup: "key-atomic" });
     assert.equal(gate.isWriteOpen("transaction.expense"), false);
     assert.equal(gate.isWriteOpen("transaction.income"), false);
     assert.match(readFileSync(new URL("../src/mobile/data/writeGate.js", import.meta.url), "utf8"), /const APPROVED = Object\.freeze\(\[\]\);/);

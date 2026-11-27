@@ -121,8 +121,9 @@ const EXPECTED_DEDUP = {
   "ai.insightDismiss": "same-result",
   "ai.settings": "same-result",
   "ai.dataDelete": "same-result",
-  "transaction.expense": "key-fix-pending",
-  "transaction.income": "key-fix-pending",
+  // Atomic on production backend a82197f (PostExpenseAction / PostIncomeAction, atomic: true; FINANCIAL_OPERATIONS).
+  "transaction.expense": "key-atomic",
+  "transaction.income": "key-atomic",
   "transaction.correct": "key-fix-pending",
   "transaction.reverse": "once-only",
   "transfer.create": "key-atomic",
@@ -142,7 +143,8 @@ const EXPECTED_DEDUP = {
   "account.archive": "once-only",
   "budget.create": "unique-index",
   "budget.update": "same-result",
-  "goal.create": "key-fix-pending",
+  // CreateSavingsGoalAction completes its key atomically on production backend a82197f.
+  "goal.create": "key-atomic",
   "goal.update": "same-result",
   "goal.plannedContribution": "duplicates",
   // Smart Savings (data/writePlanApi.js): both versions are checked under row locks and an applied postpone bumps lock_version, so a copy is a 409.

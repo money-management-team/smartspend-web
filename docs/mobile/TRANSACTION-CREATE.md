@@ -43,7 +43,7 @@ Refs: `develop` @ `fd87531` and `fix/financial-idempotency-p0` @ `6b696d72` (rea
 | A failure between them | money posted, key stuck "processing": the client is refused (409) and cannot learn the outcome | taken back together; the key is released as failed |
 | A key older than 24 h | **recycled**, even for these operations: a completed entry re-sent with the same key a day later runs again | `post_income` / `post_expense` are in `FINANCIAL_OPERATIONS`: never recycled |
 
-Mobile limits the first gap by never reusing a key past 24 h (`data/pendingWriteStorage.js`) and by never resending by itself, but it cannot remove the "processing forever" case on develop. That is why the classification stays **`key-fix-pending`** (unlike `transfer.create`, whose completion is already atomic on develop) and why both operations stay closed until the fix is deployed.
+Mobile limits the first gap by never reusing a key past 24 h (`data/pendingWriteStorage.js`) and by never resending by itself, but it could not remove the "processing forever" case on the old develop (`fd87531`). The P0 fix is now deployed (production backend `a82197f`: `PostExpenseAction` / `PostIncomeAction` pass `atomic: true`, and both are `FINANCIAL_OPERATIONS`, so an expired key is never recycled), so both are classified **`key-atomic`** (2026-11-27). Both stay closed until their tier 4 staging evidence and signed approvals exist (WRITE-APPROVAL-REGISTER.md).
 
 ## What Mobile does
 
