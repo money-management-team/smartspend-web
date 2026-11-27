@@ -1,12 +1,12 @@
 # Approval: category.create            (registry: POST /categories, moves false, key none, dedup unique-index, tier 2)
 
-**Status: PENDING. Not approved.** Evidence partial (no browser run): not proposed for the first release unless the owners decide otherwise.
+**Status: PENDING. Not approved.** Proposed for the first Mobile release (tier 2: also needs the owners' lost-answer decision).
 
 ## Identity
 - Backend code the evidence was gathered on: local checkout of `fix/financial-idempotency-p0` @ `fee7272`; `app`, `config`, `routes`, `database` and `bootstrap` are byte-identical to production `a82197f` (`git diff fee7272 a82197f` empty for those paths, checked 2026-11-27).
 - Database: MySQL 8.4.13 on `127.0.0.1:3310`, database `smartspend_test_local_api`, own data directory, fictional users only (`@smartspend.test`), mail to the log, no provider keys.
 - Backend commit production runs: `a82197f` (reported by the owner, 2026-11-27). Production MySQL version: **unconfirmed** (BE-05).
-- Frontend commit tested: `7042c08` (real API and browser runs). The tier 2 wording change `d1943e4` is covered by mocked tests only (`tests/mobileWriteIntegration.test.mjs`).
+- Frontend commits tested: `7042c08` (real API run and first browser run, 2026-11-27); `bf45f52` (second browser run, 2026-11-27, includes the tier 2 wording of `d1943e4`).
 - Staging: **none**. This evidence stands in for staging only if the owners accept [local-evidence-exception.md](local-evidence-exception.md).
 
 ## Evidence: real local API through Mobile's send path (gate, facade, the app's API wrappers; test-only switch, one operation open at a time)
@@ -14,13 +14,16 @@
 - Every account's opening balance plus its ledger entries equals the balance the API showed; no multi-entry transaction is unbalanced; no idempotency key appears twice.
 
 ## Evidence: real browser (headless Chrome on the Mobile UI, Vite in mode "test", local fault proxy)
-- **Not run.**
+- One tap on Confirm: 1 POST, created.
+- Double tap on Confirm: exactly 1 POST reached the server; 1 category.
+- Answer lost after the server created it: the page said the category 'may or may not have been created … check your categories', nothing was resent; the same category sent again was refused (422 on name) with 'If the name is already taken, the category may already be in your list', and the list was read again: 1 category in the database.
+- Another fictional user reading this category: 404.
 
 ## Not covered
 - Staging (none exists); real iOS Safari / Android Chrome devices and the installed PWA; Chrome's own automatic resend (not reproduced: every POST used a fresh connection).
 
 ## Risk statement (plain language)
-- Medium (tier 2, no replay); the category form already says a taken name may be the person's own category and reads the list again. No browser run. Note: a new user may have no categories, and an expense needs one: without category.create, Mobile users would add categories in the full version.
+- Medium (tier 2, no replay). After a lost answer a retry, by the person or silently by the browser, is refused as 'name taken' although the first copy was created; the form says the category may already be in the list and reads it again (shown in the browser). No duplicate category can be created. A new user may have no categories, and an expense needs one.
 - How we would stop: rebuild without the operation in `APPROVED` (or with Mobile off) and redeploy through the production workflow.
 
 ## HTTP 408

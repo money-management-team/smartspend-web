@@ -6,7 +6,7 @@
 - Backend code the evidence was gathered on: local checkout of `fix/financial-idempotency-p0` @ `fee7272`; `app`, `config`, `routes`, `database` and `bootstrap` are byte-identical to production `a82197f` (`git diff fee7272 a82197f` empty for those paths, checked 2026-11-27).
 - Database: MySQL 8.4.13 on `127.0.0.1:3310`, database `smartspend_test_local_api`, own data directory, fictional users only (`@smartspend.test`), mail to the log, no provider keys.
 - Backend commit production runs: `a82197f` (reported by the owner, 2026-11-27). Production MySQL version: **unconfirmed** (BE-05).
-- Frontend commit tested: `7042c08` (real API and browser runs). The tier 2 wording change `d1943e4` is covered by mocked tests only (`tests/mobileWriteIntegration.test.mjs`).
+- Frontend commits tested: `7042c08` (real API run and first browser run, 2026-11-27); `bf45f52` (second browser run, 2026-11-27, includes the tier 2 wording of `d1943e4`).
 - Staging: **none**. This evidence stands in for staging only if the owners accept [local-evidence-exception.md](local-evidence-exception.md).
 
 ## Evidence: real local API through Mobile's send path (gate, facade, the app's API wrappers; test-only switch, one operation open at a time)
@@ -15,6 +15,7 @@
 
 ## Evidence: real browser (headless Chrome on the Mobile UI, Vite in mode "test", local fault proxy)
 - Answer lost: 'not confirmed'; the identical resend was refused 'An active budget already exists'; 1 budget in the database.
+- With the `d1943e4` wording (second run): the unknown outcome offers 'Check your budgets'; the resend is refused with 'may be the budget you added … Nothing new was recorded by this request' and the same link; 1 budget.
 
 ## Not covered
 - Staging (none exists); real iOS Safari / Android Chrome devices and the installed PWA; Chrome's own automatic resend (not reproduced: every POST used a fresh connection).

@@ -19,7 +19,8 @@ Owner decision: **PENDING** (name, role, date).
 | Run | Date | How | Result |
 |---|---|---|---|
 | Real API | 2026-11-27 | Node under the test runner, Mobile's own send path, test-only switch per operation | 30 / 30 checks |
-| Real browser | 2026-11-27 | Headless Chrome on the Mobile UI (sign-in, forms, Send), Vite in mode "test", local fault proxy (lost answer, 408 before / after the server) | every scenario as expected; database: one record per intent |
+| Real browser, run 1 (`7042c08`) | 2026-11-27 | Headless Chrome on the Mobile UI (sign-in, forms, Send), Vite in mode "test", local fault proxy (lost answer, 408 before / after the server): expense, income, transfer, account, budget, goal create | every scenario as expected; database: one record per intent |
+| Real browser, run 2 (`bf45f52`) | 2026-11-27 | Same setup: category create, goal contribution and withdrawal, the `d1943e4` tier 2 wording, ownership by a second fictional user | every scenario as expected; balances 455.0000 / 45.0000 equal the ledger; ownership 404 |
 | Mocked UI | 2026-11-27 | `tests/mobileWriteIntegration.test.mjs` and related suites at `d1943e4` | 29 / 29 and 211 / 211 |
 
 The test-only switch works only when Vite's mode is literally "test" and throws in every real build (`tests/mobileWriteGate.test.mjs` builds `production`, `preview`, `staging`, `development`); the production workflow builds in mode "production".
@@ -42,8 +43,9 @@ The test-only switch works only when Vite's mode is literally "test" and throws 
 | `account.create` | 2 | API + browser | yes, if the tier 2 decision below is accepted |
 | `budget.create` | 2 | API + browser | yes, if the tier 2 decision below is accepted |
 | `account.update`, `budget.update` | 1 | API only | only with a browser run, or an explicit owner waiver |
-| `goal.contribution`, `goal.withdrawal` | 4 | API only | only with a browser run, or an explicit owner waiver |
-| `category.create` | 2 | API only | only with a browser run, or an explicit owner waiver |
+| `goal.contribution` | 4 | API + browser | yes |
+| `goal.withdrawal` | 4 | API + browser | yes |
+| `category.create` | 2 | API + browser | yes, if the tier 2 decision below is accepted |
 | everything else | | not tested | **excluded** |
 
 Tier 1 also asks for a pilot of the NOTIFICATION-PILOT.md shape; none was run. Owner decision: **PENDING** (run it or waive it).
@@ -53,8 +55,15 @@ Tier 1 also asks for a pilot of the NOTIFICATION-PILOT.md shape; none was run. O
 - **What can happen:** the first request created the account or budget, its answer was lost; a retry (by the person, or silently by the browser) is refused as "already exists".
 - **What cannot happen:** a second account or budget with the same unique key.
 - **What the person sees (since `d1943e4`):** "may be the account/budget you added … Nothing new was recorded by this request", a "Check your accounts / budgets" link, and the list read again from the server.
-- Owner decision needed: **PENDING**: accept this cost for `account.create` and `budget.create` (and `category.create` if it is added).
+- Owner decision needed: **PENDING**: accept this cost for `account.create`, `budget.create` and `category.create` (the category form shows the same honest wording and reads its list again, shown in run 2).
 
-## 6. Still required before release, whatever is decided here
+## 6. Remaining risks for every launch write (accepted only by the decisions above)
+
+1. **Chrome's automatic resend after a 408 or a dropped reused connection** was not reproduced (every test POST used a fresh connection). Keyed writes are replayed by the backend on a resend (shown); unkeyed tier 2 creates are refused by their unique rule, so a silent resend can turn a created record into an "already exists" answer (wording handled since `d1943e4`).
+2. **Tier 2 lost answers** (`account.create`, `budget.create`, `category.create`): no replay; a retry after a lost answer is refused although the first copy was created. No duplicate can be created; the person is told it may be theirs and the list is read again.
+3. **Local rather than hosted staging:** the evidence comes from an isolated local backend whose code equals production `a82197f`, on MySQL 8.4.13; the production MySQL version is unconfirmed (BE-05) and the production host, proxy and network were not exercised.
+4. **No real-device tests:** no iOS Safari / WebKit or Android Chrome run, no installed PWA, no screen reader; only headless desktop Chrome at a 390 px mobile viewport.
+
+## 7. Still required before release, whatever is decided here
 
 Real iOS Safari and Android Chrome checks with the installed PWA (or an owner decision to do them right after release); `development` as the default branch (or the workflows on `main`); `Cache-Control: no-cache` for `index.html` on Hostinger; the release approval variables at release time.

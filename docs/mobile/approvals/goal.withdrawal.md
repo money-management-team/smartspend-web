@@ -1,12 +1,12 @@
 # Approval: goal.withdrawal            (registry: POST /savings-goals/{id}/withdrawals, moves true, key client, dedup key-atomic, tier 4)
 
-**Status: PENDING. Not approved.** Evidence partial (no browser run): not proposed for the first release unless the owners decide otherwise.
+**Status: PENDING. Not approved.** Proposed for the first Mobile release.
 
 ## Identity
 - Backend code the evidence was gathered on: local checkout of `fix/financial-idempotency-p0` @ `fee7272`; `app`, `config`, `routes`, `database` and `bootstrap` are byte-identical to production `a82197f` (`git diff fee7272 a82197f` empty for those paths, checked 2026-11-27).
 - Database: MySQL 8.4.13 on `127.0.0.1:3310`, database `smartspend_test_local_api`, own data directory, fictional users only (`@smartspend.test`), mail to the log, no provider keys.
 - Backend commit production runs: `a82197f` (reported by the owner, 2026-11-27). Production MySQL version: **unconfirmed** (BE-05).
-- Frontend commit tested: `7042c08` (real API and browser runs). The tier 2 wording change `d1943e4` is covered by mocked tests only (`tests/mobileWriteIntegration.test.mjs`).
+- Frontend commits tested: `7042c08` (real API run and first browser run, 2026-11-27); `bf45f52` (second browser run, 2026-11-27, includes the tier 2 wording of `d1943e4`).
 - Staging: **none**. This evidence stands in for staging only if the owners accept [local-evidence-exception.md](local-evidence-exception.md).
 
 ## Evidence: real local API through Mobile's send path (gate, facade, the app's API wrappers; test-only switch, one operation open at a time)
@@ -16,13 +16,16 @@
 - Every account's opening balance plus its ledger entries equals the balance the API showed; no multi-entry transaction is unbalanced; no idempotency key appears twice.
 
 ## Evidence: real browser (headless Chrome on the Mobile UI, Vite in mode "test", local fault proxy)
-- **Not run.**
+- One tap (15.0000): 1 POST, recorded.
+- Server posted then answered 408 (5.0000): 'not confirmed', nothing resent; the identical withdrawal sent again carried the same key and was replayed: 1 withdrawal.
+- More than is saved (9999.0000): refused 'available: 45.0000 ILS', nothing moved.
+- Another fictional user withdrawing from this goal: 404; balance unchanged.
 
 ## Not covered
 - Staging (none exists); real iOS Safari / Android Chrome devices and the installed PWA; Chrome's own automatic resend (not reproduced: every POST used a fresh connection).
 
 ## Risk statement (plain language)
-- Same-key replay was not run for withdrawals specifically (it was for contributions, the same TransferMoneyAction path). No browser run.
+- Low. A resend carries the same key and is replayed (shown in the browser after a 408); over-withdrawal and another user's withdrawal are refused.
 - How we would stop: rebuild without the operation in `APPROVED` (or with Mobile off) and redeploy through the production workflow.
 
 ## HTTP 408

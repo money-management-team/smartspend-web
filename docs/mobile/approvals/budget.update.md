@@ -1,6 +1,6 @@
 # Approval: budget.update            (registry: PATCH /budgets/{id}, moves false, key none, dedup same-result, tier 1)
 
-**Status: PENDING. Not approved.** Evidence partial (no browser run): not proposed for the first release unless the owners decide otherwise.
+**Status: PENDING. Not approved. Excluded from the first release** (API evidence only: no browser run and no tier 1 pilot).
 
 ## Identity
 - Backend code the evidence was gathered on: local checkout of `fix/financial-idempotency-p0` @ `fee7272`; `app`, `config`, `routes`, `database` and `bootstrap` are byte-identical to production `a82197f` (`git diff fee7272 a82197f` empty for those paths, checked 2026-11-27).
