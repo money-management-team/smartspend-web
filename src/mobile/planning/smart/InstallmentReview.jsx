@@ -232,7 +232,8 @@ export default function InstallmentReview({ kind, goalId, installment, installme
       <form className="sm-installment-review" onSubmit={check} noValidate data-sm-review={kind} data-sm-installment={installment.id}>
         <p className="sm-text sm-muted">{t(`${P}.review.${kind}.intro`)}</p>
         <dl className="sm-stats sm-stats-stacked">
-          {installment.date && <div className="sm-stat"><dt>{t(`${P}.due`)}</dt><dd><bdi>{formatDay(installment.date, locale, "UTC")}</bdi></dd></div>}
+          {/* A confirmation shows the due date from its preview (the server's current one), so it isn't repeated here. */}
+          {installment.date && kind !== "confirm" && <div className="sm-stat"><dt>{t(`${P}.due`)}</dt><dd><bdi>{formatDay(installment.date, locale, "UTC")}</bdi></dd></div>}
           {installment.amount && <div className="sm-stat"><dt>{t(`${P}.scheduled`)}</dt><dd><Money plain value={installment.amount} currency={currency ?? undefined} /></dd></div>}
         </dl>
         {kind === "confirm" && <ConfirmBody resource={resource} preview={preview} account={account} setAccount={setChosen} currency={currency} locale={locale} disabled={sent.sending || blocked} />}

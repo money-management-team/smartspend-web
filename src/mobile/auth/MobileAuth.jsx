@@ -279,7 +279,7 @@ export function MobileRegister() {
         <button type="submit" className="sm-button" disabled={busy} aria-busy={busy} data-sm-action="register">{t(busy ? "auth.register.busy" : "auth.register.submit")}</button>
       </form>
       <p className="sm-text sm-muted sm-fine">{t("auth.register.verifyNote")}</p>
-      <p className="sm-text">{t("auth.haveAccount")} <Link to={MOBILE_SIGNIN} state={location.state}>{t("auth.signin.link")}</Link></p>
+      <p className="sm-text sm-auth-switch">{t("auth.haveAccount")} <Link to={MOBILE_SIGNIN} state={location.state}>{t("auth.signin.link")}</Link></p>
     </AuthFrame>
   );
 }
