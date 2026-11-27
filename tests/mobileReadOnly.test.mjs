@@ -60,7 +60,8 @@ describe("the source", () => {
   it("names no write method of any wrapper outside the category write facade, and that one names exactly create and update of categories", () => {
     const WRITE = "src/mobile/data/writeApi.js";
     // MoneyPrivacy.jsx calls the device preference store's `update` (hide amounts), pinned by the store test below.
-    const others = sources.filter((file) => rel(file) !== WRITE && rel(file) !== "src/mobile/money/MoneyPrivacy.jsx");
+    // data/writePlanApi.js is the Smart Savings write facade, pinned call by call in its own test below.
+    const others = sources.filter((file) => rel(file) !== WRITE && rel(file) !== "src/mobile/data/writePlanApi.js" && rel(file) !== "src/mobile/money/MoneyPrivacy.jsx");
     // (`URL.createObjectURL` is the browser's own, for showing a chosen photo or a recording on this device.)
     // forms/DraftForm.jsx calls its own submission hook (`sent.submit`), which reaches the facade and its gate only.
     assert.deepEqual(find(/(?<!\bURL|\bsent)\.(create\w*|update|archive|correct|reverse|post|patch|put|confirm\w*|submit\w*)\s*\(/, others), []);
@@ -122,11 +123,11 @@ describe("the source", () => {
     assert.deepEqual(find(/from\s*["'][^"']*(recurringTransactions|savingsGoalsApi|savingsPlansApi|budgetsApi)[^"']*["']/i).sort(), facades);
   });
 
-  it("sends one Smart Savings write, postpone, from its own flag-gated facade, behind the gate, and from one screen", () => {
+  it("sends three Smart Savings writes (postpone, skip, single-account confirm) from its own flag-gated facade, behind the gate, and from one screen", () => {
     const FACADE = "src/mobile/data/writePlanApi.js";
     const source = code(path.join(ROOT, FACADE));
     const calls = [...source.matchAll(/\b(\w+Api)\.(\w+)\s*\(/g)].map((match) => `${match[1]}.${match[2]}`);
-    assert.deepEqual([...new Set(calls)].sort(), ["savingsPlansApi.postpone"], "no confirm, skip, plan change or reversal");
+    assert.deepEqual([...new Set(calls)].sort(), ["savingsPlansApi.confirm", "savingsPlansApi.postpone", "savingsPlansApi.skip"], "no multi-account confirmation, plan change or reversal");
     assert.match(source, /export function sendPlanWrite\(write, key\) \{\n  assertWriteOpen\(write\.operation\);/, "the gate is checked before anything else");
     // Only the installment review sends it, and that is loaded behind the Smart Savings flag (planning/smartSavingsGate.js).
     assert.deepEqual(find(/from\s*["'][^"']*data\/writePlanApi(?:\.js)?["']/), ["src/mobile/planning/smart/InstallmentReview.jsx"]);

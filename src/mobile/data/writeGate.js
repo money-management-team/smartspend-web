@@ -191,6 +191,19 @@ export const MOBILE_WRITES = Object.freeze({
   // processing) can answer a postpone that happened: Mobile reports both as an unknown outcome. Sent only from the Smart Savings
   // facade (data/writePlanApi.js), which a build without the flag does not contain.
   "installment.postpone": write("POST /savings-goals/{id}/planned-contributions/{iid}/postpone", false, "client", "once-only"),
+  // Smart Savings installment skip (SkipSavingsInstallmentAction): the postpone's shape and checks. Moves no money; the
+  // key is required; both versions are checked under row locks and an applied skip leaves the installment no longer
+  // open, so a copy is a coded 409 that changes nothing. On develop @ fd87531 the key is completed after the skip
+  // commits (the BE-01 pattern), so a 500 or an uncoded 409 can answer a skip that happened: an unknown outcome, never
+  // resent. A skip can't be undone. Sent only from data/writePlanApi.js.
+  "installment.skip": write("POST /savings-goals/{id}/planned-contributions/{iid}/skip", false, "client", "once-only"),
+  // Smart Savings single-account confirmation (ConfirmSavingsInstallmentAction): MOVES MONEY (one transfer from the
+  // chosen account into the goal). Sends the confirmation preview's versions, its suggested_amount exactly and the
+  // chosen account; the key is required. The versions make a copy of an applied confirmation a coded 409, but on
+  // develop @ fd87531 the money commits before the key is completed in a separate transaction (BE-01,
+  // docs/mobile/SMARTSPEND-CURRENT-STATUS-AND-REMAINING-WORK.md §8.1): atomic only on the unmerged, undeployed fix
+  // branch. Multi-account confirmation (confirm-accounts) has no Mobile send path. Sent only from data/writePlanApi.js.
+  "installment.confirm": write("POST /savings-goals/{id}/planned-contributions/{iid}/confirm", true, "client", "key-fix-pending"),
   // Key required since fix/financial-idempotency-p0 @ 6b696d72 (0d798c57); a copy returns the first rule.
   "recurring.create": write("POST /recurring-transactions", false, "client", "key-fix-pending"),
   "recurring.update": write("PATCH /recurring-transactions/{id}", false, "none", "same-result"),

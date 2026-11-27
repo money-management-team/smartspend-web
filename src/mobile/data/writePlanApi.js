@@ -8,14 +8,22 @@ import { MOBILE_WRITES, assertWriteOpen } from "./writeGate.js";
  * data/writeGate.js: the gate is checked before anything else and throws WriteClosedError without sending.
  *
  *   installment.postpone   POST /savings-goals/{id}/planned-contributions/{iid}/postpone
- *                          input: expected_plan_version, expected_lock_version, new_date, reason? (the wrapper
- *                          sends those fields only); the submission's key is required.
+ *                          input: expected_plan_version, expected_lock_version, new_date, reason?
+ *   installment.skip       POST /savings-goals/{id}/planned-contributions/{iid}/skip
+ *                          input: expected_plan_version, expected_lock_version, reason?
+ *   installment.confirm    POST /savings-goals/{id}/planned-contributions/{iid}/confirm   MOVES MONEY
+ *                          input: expected_plan_version, expected_lock_version, from_account_id, amount
+ *                          (all from the confirmation preview; one account only)
+ * The wrapper sends those fields only; the submission's key is required for each.
  *
  * Writes come from forms/useWorkflowSubmit.js (one key per submission intent, kept across a reload), which calls
- * sendPlanWrite in place of the general facade's sendWorkflowWrite.
+ * sendPlanWrite in place of the general facade's sendWorkflowWrite. No multi-account confirmation, plan change or
+ * reversal is sent from Mobile.
  */
 const SENDERS = {
   "installment.postpone": ({ ids, input }, key) => savingsPlansApi.postpone(ids.goalId, ids.installmentId, input, key),
+  "installment.skip": ({ ids, input }, key) => savingsPlansApi.skip(ids.goalId, ids.installmentId, input, key),
+  "installment.confirm": ({ ids, input }, key) => savingsPlansApi.confirm(ids.goalId, ids.installmentId, input, key),
 };
 
 export const PLAN_SENDABLE_OPERATIONS = Object.freeze(Object.keys(SENDERS));

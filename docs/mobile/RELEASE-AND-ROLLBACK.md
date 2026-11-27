@@ -15,7 +15,7 @@
 
 ## Write-safety readiness (Phase 2G, documents only)
 
-No write is approved and none is open (`APPROVED = Object.freeze([])`, 50 registered writes). Opening one needs per-write evidence and a named approval, not passing tests. The package:
+No write is approved and none is open (`APPROVED = Object.freeze([])`, 53 registered writes). Opening one needs per-write evidence and a named approval, not passing tests. The package:
 
 | Document | What it is |
 |---|---|

@@ -60,6 +60,8 @@ export const FORM_WRITES = Object.freeze({
   budget: { method: "POST", path: /^\/budgets$/ },
   // Smart Savings installment postpone (data/writePlanApi.js), for tests of its closed send path only.
   installmentPostpone: { method: "POST", path: /^\/savings-goals\/[1-9]\d*\/planned-contributions\/[1-9]\d*\/postpone$/ },
+  installmentSkip: { method: "POST", path: /^\/savings-goals\/[1-9]\d*\/planned-contributions\/[1-9]\d*\/skip$/ },
+  installmentConfirm: { method: "POST", path: /^\/savings-goals\/[1-9]\d*\/planned-contributions\/[1-9]\d*\/confirm$/ },
   notificationRead: { method: "PATCH", path: /^\/notifications\/[1-9]\d*\/read$/ },
   notificationsReadAll: { method: "POST", path: /^\/notifications\/read-all$/ },
   notificationPreferences: { method: "PATCH", path: /^\/notifications\/preferences$/ },

@@ -853,6 +853,306 @@ if (!ON) {
       assert.match(outcome().textContent, /تعذّر التأكد مما إذا كان القسط قد أُجّل/);
     });
 
+    /*
+     * Installment skip (installment.skip) and single-account confirmation (installment.confirm, MOVES MONEY), both through
+     * data/writePlanApi.js: wired and CLOSED. The send path is exercised only with the test switch and the fake backend's
+     * one allowed rule per write. The confirmation is built from the preview on screen, whose versions differ from the
+     * plan's here (7 / 9 against 2 / 4), so a request that used the plan's would be caught.
+     */
+    const CONFIRM_PATH = "/savings-goals/1/planned-contributions/900/confirm";
+    const SKIP_PATH = "/savings-goals/1/planned-contributions/900/skip";
+    const confirmPreview = (over = {}) => ({ confirmation: {
+      installment: { id: 900, planned_date: "2030-03-05", lock_version: 9 }, savings_plan: { plan_version: 7 }, savings_goal: { name: "Laptop" },
+      suggested_amount: "250.0000", confirmable: true, default_account_id: 1, warnings: [],
+      accounts: [
+        { id: 1, name: "Everyday wallet", available_balance: "1234.5000", covers_suggested_amount: true },
+        { id: 2, name: "Small cash", available_balance: "10.0000", covers_suggested_amount: false },
+        { id: 3, name: "Savings box", available_balance: "800.0000", covers_suggested_amount: true },
+      ],
+      ...over,
+    } });
+    const confirmed = { status: 201, body: envelope({ contribution: { id: 77, amount: "250.0000" }, installment: { id: 900, status: "fulfilled", lock_version: 10 }, savings_plan: { id: 5, status: "active", plan_version: 7 } }) };
+    const skipped = { body: envelope({ installment: { id: 900, sequence: 3, status: "skipped", lock_version: 5 }, result: { money_moved: false } }) };
+    const previewReads = () => api.calls.filter((call) => call.method === "GET" && call.path.endsWith("/900/confirmation-preview")).length;
+    const goalReads = () => api.calls.filter((call) => call.method === "GET" && call.path === "/savings-goals/1").length;
+    // `answer(call, n)`: the n-th write's answer; `previewAnswer(n)`: the n-th preview read's answer.
+    const openReview = async (kind, { answer = () => (kind === "skip" ? skipped : confirmed), previewAnswer = () => ({ body: envelope(confirmPreview()) }), plan = futurePlan(), approve = true } = {}) => {
+      let writes = 0;
+      let previews = 0;
+      const base = planningBackend({ goals: [goal(1)], plans: { 1: plan } });
+      const backendCall = (call) => {
+        if (call.method === "POST") return answer(call, ++writes);
+        if (call.path.endsWith("/confirmation-preview")) return previewAnswer(++previews);
+        return base(call);
+      };
+      api = installFakeApi(backendCall, { allowWrites: [kind === "skip" ? FORM_WRITES.installmentSkip : FORM_WRITES.installmentConfirm] });
+      if (approve) writeGate.setWriteApprovalsForTests([`installment.${kind}`]);
+      storeSession({ token: TOKEN_A, user: USER_A, workspace: { id: 1, timezone: "UTC" } });
+      view = await mountMobile({ entry: "/m/planning/goals/1" });
+      await click(q(`[data-sm-installment='900'] [data-sm-action='review-${kind}']`));
+      await settle();
+    };
+    const outcomeOf = (kind) => q(`[data-sm-${kind}-outcome]`, dialog());
+    const reopenReview = async (kind) => {
+      await click(q("[data-sm-action='keep']", dialog()));
+      await settle();
+      await click(q(`[data-sm-installment='900'] [data-sm-action='review-${kind}']`));
+      await settle();
+    };
+
+    describe("installment confirmation (single account, moves money)", () => {
+      it("closed (the shipped gate): the send button stays disabled, nothing is sent, and the facade refuses before any request", async () => {
+        await openReview("confirm", { approve: false });
+        assert.equal(q("[data-sm-action='send']", dialog()).disabled, true);
+        assert.equal(q("[data-sm-note='write-closed']", dialog()).dataset.smWrite, "installment.confirm");
+        await send();
+        assert.equal(writeGate.isWriteOpen("installment.confirm"), false);
+        assert.equal(writeGate.MOBILE_WRITES["installment.confirm"].moves, true);
+        assert.throws(() => sendPlanWrite({ operation: "installment.confirm", ids: { goalId: "1", installmentId: "900" }, input: { expected_plan_version: 7, expected_lock_version: 9, from_account_id: 1, amount: "250.0000" } }, "mobile-installment-confirm-key"), (error) => error.name === "WriteClosedError" && error.operation === "installment.confirm");
+        assert.deepEqual(posts(), [], "no POST at all");
+        assert.deepEqual(api.violations, []);
+      });
+
+      it("the test switch opens confirm only: no other write becomes available", () => {
+        writeGate.setWriteApprovalsForTests(["installment.confirm"]);
+        for (const operation of Object.keys(writeGate.MOBILE_WRITES)) assert.equal(writeGate.isWriteOpen(operation), operation === "installment.confirm", operation);
+      });
+
+      it("opened by the test switch: one POST with the preview's versions and amount exactly, the chosen account and a key", async () => {
+        await openReview("confirm");
+        assert.equal(q("[data-sm-note='write-closed']", dialog()), null);
+        await click(q("[data-sm-account='3'] input", dialog()));
+        const readsBefore = planReads();
+        await send();
+        assert.equal(posts().length, 1);
+        const [call] = posts();
+        assert.equal(call.path, CONFIRM_PATH);
+        assert.deepEqual(call.body, { expected_plan_version: 7, expected_lock_version: 9, from_account_id: 3, amount: "250.0000" }, "the preview's versions, never the plan's 2 / 4");
+        assert.match(call.headers["Idempotency-Key"], /^mobile-installment-confirm-[A-Za-z0-9._:-]{8,}$/);
+        assert.equal(outcomeOf("confirm").dataset.smConfirmOutcome, "done");
+        assert.match(outcomeOf("confirm").textContent, /Installment 3 is confirmed/);
+        assert.equal(q("[data-sm-action='send']", dialog()).disabled, true, "one decision per review");
+        assert.ok(planReads() > readsBefore, "the plan is read again after the money moved");
+        assert.deepEqual(api.violations, []);
+      });
+
+      it("the plan's own account is preselected; an account the preview says can't cover the amount can't be chosen", async () => {
+        await openReview("confirm");
+        assert.equal(q("[data-sm-account='1'] input", dialog()).checked, true);
+        assert.equal(q("[data-sm-account='2'] input", dialog()).disabled, true);
+        await send();
+        assert.equal(posts()[0].body.from_account_id, 1);
+      });
+
+      it("closing after a confirmation reads the goal and a new preview again", async () => {
+        await openReview("confirm");
+        await send();
+        const goalsBefore = goalReads();
+        const previewsBefore = previewReads();
+        await reopenReview("confirm");
+        assert.ok(goalReads() > goalsBefore, "the goal's progress is read from the server again");
+        assert.ok(previewReads() > previewsBefore, "a new review starts from a new preview");
+      });
+
+      it("a second tap while the first is on its way sends nothing", async () => {
+        let release;
+        await openReview("confirm", { answer: () => new Promise((resolve) => { release = resolve; }) });
+        await click(q("[data-sm-action='send']", dialog()));
+        await click(q("[data-sm-action='send']", dialog()));
+        await settle(5);
+        assert.equal(posts().length, 1);
+        assert.equal(outcomeOf("confirm").dataset.smConfirmOutcome, "sending");
+        release(confirmed);
+        await settle();
+        assert.equal(posts().length, 1);
+        assert.equal(outcomeOf("confirm").dataset.smConfirmOutcome, "done");
+      });
+
+      for (const [name, answer] of [
+        ["a 500 (the money may have moved)", failure(500, "boom")],
+        ["a network failure", new Error("offline")],
+        ["a 409 with no code (a key still processing)", conflict(null)],
+        ["a 409 with a code that is not one of confirm's own", conflict("idempotency_key_reused")],
+      ]) {
+        it(`${name} is an unknown outcome: nothing is resent, and only an identical retry from an unchanged preview reuses the key`, async () => {
+          await openReview("confirm", { answer: (call, n) => (n === 1 ? answer : confirmed) });
+          await send();
+          assert.equal(outcomeOf("confirm").dataset.smConfirmOutcome, "unknown");
+          assert.equal(outcomeOf("confirm").getAttribute("role"), "alert");
+          assert.match(outcomeOf("confirm").textContent, /couldn't confirm whether the money moved/);
+          assert.equal(q("[data-sm-action='send']", dialog()).disabled, true, "no further decision from this review");
+          await settle();
+          assert.equal(posts().length, 1, "never retried by itself");
+          const firstKey = posts()[0].headers["Idempotency-Key"];
+
+          // The preview is read again and is unchanged (the money did not move): the identical request with the same key.
+          await reopenReview("confirm");
+          await send();
+          assert.equal(posts().length, 2);
+          assert.equal(posts()[1].headers["Idempotency-Key"], firstKey, "the same key, never a fresh one");
+          assert.deepEqual(posts()[1].body, posts()[0].body);
+          assert.equal(outcomeOf("confirm").dataset.smConfirmOutcome, "done");
+          assert.deepEqual(api.violations, []);
+        });
+      }
+
+      it("after an unknown outcome, a preview that says the installment is no longer open offers nothing to send", async () => {
+        await openReview("confirm", { answer: () => failure(503, "busy"), previewAnswer: (n) => (n === 1 ? { body: envelope(confirmPreview()) } : conflict("savings_installment_not_open")) });
+        await send();
+        await reopenReview("confirm");
+        assert.ok(q("[data-sm-note='installment-stale']", dialog()), "said so, never guessed");
+        assert.equal(q("[data-sm-action='send']", dialog()).disabled, true);
+        await send();
+        assert.equal(posts().length, 1);
+      });
+
+      for (const code of ["savings_installment_version_conflict", "savings_plan_version_conflict", "savings_installment_not_open", "savings_plan_not_active", "savings_goal_not_active"]) {
+        it(`a coded ${code} moved no money: a new review is needed, and no earlier attempt is called failed`, async () => {
+          await openReview("confirm", { answer: () => conflict(code) });
+          const readsBefore = planReads();
+          await send();
+          assert.equal(outcomeOf("confirm").dataset.smConfirmOutcome, "stale");
+          assert.match(outcomeOf("confirm").textContent, /this request moved no money\. If an earlier attempt went through, the plan now shows it/);
+          assert.equal(q("[data-sm-action='send']", dialog()).disabled, true);
+          await settle();
+          assert.equal(posts().length, 1, "nothing is resent");
+          assert.ok(planReads() > readsBefore, "the plan is read again");
+        });
+      }
+
+      for (const [code, key] of [["savings_goal_not_accepting_contributions", "notAccepting"], ["savings_installment_exceeds_remaining", "exceeds"], ["savings_installment_funding_unsupported", "funding"]]) {
+        it(`a coded ${code} is a certain, final refusal (${key})`, async () => {
+          await openReview("confirm", { answer: () => conflict(code) });
+          await send();
+          assert.equal(outcomeOf("confirm").dataset.smConfirmOutcome, key);
+          assert.match(outcomeOf("confirm").textContent, /No money moved\./);
+          assert.equal(q("[data-sm-action='send']", dialog()).disabled, true);
+        });
+      }
+
+      it("a 422 (the balance) shows the backend's reason, reads the preview again and allows another account with a new key", async () => {
+        await openReview("confirm", { answer: (call, n) => (n === 1 ? { status: 422, body: { status: false, message: "Insufficient balance in the source account.", errors: {} } } : confirmed) });
+        const previewsBefore = previewReads();
+        await send();
+        assert.equal(outcomeOf("confirm").dataset.smConfirmOutcome, "invalid");
+        assert.match(outcomeOf("confirm").textContent, /Insufficient balance in the source account\./);
+        assert.ok(previewReads() > previewsBefore, "the balances are read again");
+        assert.equal(q("[data-sm-action='send']", dialog()).disabled, false);
+        await click(q("[data-sm-account='3'] input", dialog()));
+        await send();
+        assert.equal(posts().length, 2);
+        assert.equal(posts()[1].body.from_account_id, 3);
+        assert.notEqual(posts()[1].headers["Idempotency-Key"], posts()[0].headers["Idempotency-Key"], "a refused request's key is not reused");
+        assert.equal(outcomeOf("confirm").dataset.smConfirmOutcome, "done");
+      });
+
+      it("a preview that isn't confirmable, names a blocker, or has no versions or amount is refused before any request", async () => {
+        await openReview("confirm", { previewAnswer: () => ({ body: envelope(confirmPreview({ confirmable: false, blocker: { code: "savings_goal_not_active", message: "Paused." } })) }) });
+        await send();
+        assert.equal(q("[data-sm-confirm-problem]", dialog()).dataset.smConfirmProblem, "notConfirmable");
+        assert.equal(q("[data-sm-action='send']", dialog()).disabled, true);
+        assert.deepEqual(posts(), []);
+
+        const { buildConfirmWrite, buildConfirmationPreview } = await import("../src/mobile/planning/smart/planModel.js");
+        const ready = buildConfirmationPreview(confirmPreview(), "900");
+        assert.deepEqual(buildConfirmWrite({ goalId: 1, installmentId: "900", preview: ready, accountId: "1" }).write.input, { expected_plan_version: 7, expected_lock_version: 9, from_account_id: 1, amount: "250.0000" });
+        assert.deepEqual(buildConfirmWrite({ goalId: 1, installmentId: "900", preview: { ...ready, planVersion: null }, accountId: "1" }), { problem: "versions" });
+        assert.deepEqual(buildConfirmWrite({ goalId: 1, installmentId: "900", preview: { ...ready, lockVersion: null }, accountId: "1" }), { problem: "versions" });
+        for (const amount of [null, "0.0000", "-250.0000", "abc"]) assert.deepEqual(buildConfirmWrite({ goalId: 1, installmentId: "900", preview: { ...ready, amount }, accountId: "1" }), { problem: "amount" }, String(amount));
+        for (const accountId of ["", "2", "99", "1.5", null]) assert.deepEqual(buildConfirmWrite({ goalId: 1, installmentId: "900", preview: ready, accountId }), { problem: "account" }, String(accountId));
+        assert.deepEqual(buildConfirmWrite({ goalId: 1, installmentId: "900", preview: null, accountId: "1" }), { problem: "notConfirmable" });
+      });
+
+      it("only exact codes decide, and they count only for the write that names them", async () => {
+        const { classifyWriteOutcome } = await import("../src/mobile/forms/useWorkflowSubmit.js");
+        const { CONFIRM_CERTAIN_409, SKIP_CERTAIN_409 } = await import("../src/mobile/planning/smart/planModel.js");
+        const { ApiError } = await import("../src/features/Dashboards/User/api/apiClient.js");
+        const err = (serverCode, message = "x") => new ApiError(message, { status: 409, code: "CONFLICT", serverCode });
+        assert.equal(classifyWriteOutcome(err("savings_installment_exceeds_remaining"), CONFIRM_CERTAIN_409).kind, "rejected");
+        assert.equal(classifyWriteOutcome(err("savings_installment_exceeds_remaining"), SKIP_CERTAIN_409).kind, "unknown", "not a skip's code");
+        assert.equal(classifyWriteOutcome(err(null, "savings_installment_not_open"), CONFIRM_CERTAIN_409).kind, "unknown", "a code named in the message is not a code");
+        assert.equal(classifyWriteOutcome(new ApiError("", { status: 502, code: "SERVER_ERROR" }), CONFIRM_CERTAIN_409).kind, "unknown");
+      });
+    });
+
+    describe("installment skip (no money)", () => {
+      it("closed (the shipped gate): the send button stays disabled, nothing is sent, and the facade refuses before any request", async () => {
+        await openReview("skip", { approve: false });
+        assert.equal(q("[data-sm-action='send']", dialog()).disabled, true);
+        assert.equal(q("[data-sm-note='write-closed']", dialog()).dataset.smWrite, "installment.skip");
+        await send();
+        assert.throws(() => sendPlanWrite({ operation: "installment.skip", ids: { goalId: "1", installmentId: "900" }, input: { expected_plan_version: 2, expected_lock_version: 4 } }, "mobile-installment-skip-key"), (error) => error.name === "WriteClosedError" && error.operation === "installment.skip");
+        assert.deepEqual(posts(), []);
+        assert.deepEqual(api.violations, []);
+      });
+
+      it("opened by the test switch: one POST with the plan's versions, the trimmed reason and a key; Keep it is the default", async () => {
+        await openReview("skip");
+        assert.equal(q("[data-sm-action='keep']", dialog()).textContent, "Keep it");
+        await change(q("[data-sm-input='reason']", dialog()), "  Short month  ");
+        const readsBefore = planReads();
+        await send();
+        assert.equal(posts().length, 1);
+        const [call] = posts();
+        assert.equal(call.path, SKIP_PATH);
+        assert.deepEqual(call.body, { expected_plan_version: 2, expected_lock_version: 4, reason: "Short month" });
+        assert.match(call.headers["Idempotency-Key"], /^mobile-installment-skip-[A-Za-z0-9._:-]{8,}$/);
+        assert.equal(outcomeOf("skip").dataset.smSkipOutcome, "done");
+        assert.match(outcomeOf("skip").textContent, /Installment 3 was skipped\. No money moved\./);
+        assert.equal(q("[data-sm-action='send']", dialog()).disabled, true);
+        assert.ok(planReads() > readsBefore);
+      });
+
+      it("an empty reason is left out; a reason over 500 characters is refused before any request", async () => {
+        await openReview("skip");
+        await change(q("[data-sm-input='reason']", dialog()), "x".repeat(501));
+        await send();
+        assert.equal(q("[data-sm-skip-problem]", dialog()).dataset.smSkipProblem, "reason");
+        assert.deepEqual(posts(), []);
+        await change(q("[data-sm-input='reason']", dialog()), "   ");
+        await send();
+        assert.deepEqual(posts()[0].body, { expected_plan_version: 2, expected_lock_version: 4 });
+      });
+
+      it("a 500 is an unknown outcome: never resent by itself, and an identical retry reuses the key", async () => {
+        await openReview("skip", { answer: (call, n) => (n === 1 ? failure(500, "boom") : skipped) });
+        await send();
+        assert.equal(outcomeOf("skip").dataset.smSkipOutcome, "unknown");
+        assert.equal(q("[data-sm-action='send']", dialog()).disabled, true);
+        await settle();
+        assert.equal(posts().length, 1);
+        await reopenReview("skip");
+        await send();
+        assert.equal(posts()[1].headers["Idempotency-Key"], posts()[0].headers["Idempotency-Key"]);
+        assert.deepEqual(posts()[1].body, posts()[0].body);
+        assert.equal(outcomeOf("skip").dataset.smSkipOutcome, "done");
+      });
+
+      it("a coded version conflict changed nothing and needs a new review; a closed installment or missing version is refused before any request", async () => {
+        await openReview("skip", { answer: () => conflict("savings_installment_version_conflict") });
+        await send();
+        assert.equal(outcomeOf("skip").dataset.smSkipOutcome, "stale");
+        assert.equal(q("[data-sm-action='send']", dialog()).disabled, true);
+
+        const { buildSkipWrite } = await import("../src/mobile/planning/smart/planModel.js");
+        const installment = { id: "900", open: true, lockVersion: 4 };
+        assert.deepEqual(buildSkipWrite({ goalId: 1, installment: { ...installment, open: false }, planVersion: 2, reason: "" }), { problem: "notOpen" });
+        assert.deepEqual(buildSkipWrite({ goalId: 1, installment, planVersion: null, reason: "" }), { problem: "versions" });
+        assert.deepEqual(buildSkipWrite({ goalId: 1, installment: { ...installment, lockVersion: undefined }, planVersion: 2, reason: "" }), { problem: "versions" });
+      });
+    });
+
+    it("the confirm and skip strings have the same keys in English and Arabic, and an unknown confirmation is said in Arabic", async () => {
+      const { SMART_PLAN_MESSAGES } = await import("../src/mobile/planning/smartPlanMessages.js");
+      for (const section of ["confirmOutcome", "confirmProblem", "skipOutcome", "skipProblem"]) assert.deepEqual(Object.keys(SMART_PLAN_MESSAGES.en[section]).sort(), Object.keys(SMART_PLAN_MESSAGES.ar[section]).sort(), section);
+      await view?.unmount();
+      view = null;
+      await resetEnvironment("ar");
+      await openReview("confirm", { answer: () => failure(500, "boom") });
+      await send();
+      assert.match(outcomeOf("confirm").textContent, /تعذّر التأكد مما إذا كان المال قد انتقل/);
+    });
+
     it("an archived goal has no plan section and no plan request", async () => {
       await open("/m/planning/goals/1", { goals: [goal(1, { status: "archived", archived_at: "2026-09-01T00:00:00Z" })], plans: { 1: activePlan(1) } });
 

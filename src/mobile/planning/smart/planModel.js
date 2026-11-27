@@ -340,3 +340,114 @@ export function describePostpone(state) {
       return null;
   }
 }
+
+/* ---------- Skip and single-account confirmation (installment.skip, installment.confirm) ---------- */
+
+export const SKIP_REASON_MAX = 500;
+
+/*
+ * The write of a skip, exactly as the review showed it, or `{ problem }` and nothing to send ("notOpen" | "versions" |
+ * "reason", as for a postponement). The versions are the ones read with the plan; the reason is trimmed and left out
+ * when empty (the backend's skip takes the postpone's shape: docs/savings-goals/api.md).
+ */
+export function buildSkipWrite({ goalId, installment, planVersion, reason }) {
+  if (!installment?.open) return { problem: "notOpen" };
+  if (!Number.isSafeInteger(planVersion) || !Number.isSafeInteger(installment.lockVersion)) return { problem: "versions" };
+  const text = typeof reason === "string" ? reason.trim() : "";
+  if (text.length > SKIP_REASON_MAX) return { problem: "reason" };
+  return {
+    write: {
+      operation: "installment.skip",
+      ids: { goalId: String(goalId), installmentId: String(installment.id) },
+      input: { expected_plan_version: planVersion, expected_lock_version: installment.lockVersion, ...(text ? { reason: text } : {}) },
+    },
+  };
+}
+
+// A positive decimal as the backend wrote it ("250.0000"); never computed, rounded or re-scaled here.
+const POSITIVE_AMOUNT = /^(?:0*[1-9]\d*(?:\.\d+)?|0*\.\d*[1-9]\d*|0+\.\d*[1-9]\d*)$/;
+
+/*
+ * The write of a single-account confirmation, built ONLY from the confirmation preview that is on screen (never from
+ * the plan read before it): the preview's own plan and lock versions, its `suggested_amount` exactly, and the account
+ * the person chose among the preview's accounts that can pay it. `{ problem }` and nothing to send:
+ *   "notConfirmable"  the preview says it can't be confirmed, or names a blocker
+ *   "versions"        the preview names no plan or lock version
+ *   "amount"          the preview has no positive amount to move
+ *   "account"         no account chosen, or one the preview says can't cover the amount
+ * Multi-account funding (`confirm-accounts`) is not built here: Mobile has no send path for it.
+ */
+export function buildConfirmWrite({ goalId, installmentId, preview, accountId }) {
+  if (!preview || preview.confirmable !== true || preview.blocker) return { problem: "notConfirmable" };
+  if (!Number.isSafeInteger(preview.planVersion) || !Number.isSafeInteger(preview.lockVersion)) return { problem: "versions" };
+  if (typeof preview.amount !== "string" || !POSITIVE_AMOUNT.test(preview.amount)) return { problem: "amount" };
+  const account = preview.accounts.find((item) => item.id === accountId);
+  // A record id, sent as the whole number the backend expects (an id, never an amount).
+  const id = typeof accountId === "string" && /^[1-9]\d{0,15}$/.test(accountId) ? parseInt(accountId, 10) : null;
+  if (!account || !account.covers || !Number.isSafeInteger(id)) return { problem: "account" };
+  return {
+    write: {
+      operation: "installment.confirm",
+      ids: { goalId: String(goalId), installmentId: String(installmentId) },
+      input: { expected_plan_version: preview.planVersion, expected_lock_version: preview.lockVersion, from_account_id: id, amount: preview.amount },
+    },
+  };
+}
+
+// The 409s that mean the review is about a state that no longer exists: every installment write's (postpone's list).
+export const INSTALLMENT_STALE_CODES = POSTPONE_STALE_CODES;
+export const SKIP_CERTAIN_409 = Object.freeze(new Set(INSTALLMENT_STALE_CODES));
+
+/*
+ * A confirmation's coded 409s that the backend raises before it moves anything (the full version's error codes,
+ * smartPlan.errors.codes): the stale ones, plus three that no new review of this installment fixes here.
+ */
+export const CONFIRM_FINAL_CODES = Object.freeze({
+  savings_goal_not_accepting_contributions: "notAccepting",
+  savings_installment_exceeds_remaining: "exceeds",
+  savings_installment_funding_unsupported: "funding",
+});
+export const CONFIRM_CERTAIN_409 = Object.freeze(new Set([...INSTALLMENT_STALE_CODES, ...Object.keys(CONFIRM_FINAL_CODES)]));
+
+/** A certain refusal after which the plan (and, for a confirmation, the preview) must be read again. */
+export const isStaleInstallmentWrite = (outcome) => outcome?.code === "NOT_FOUND" || INSTALLMENT_STALE_CODES.includes(outcome?.error?.serverCode);
+/* A confirmation refused on its details (a 422, e.g. the account's balance): the balances shown are out of date too. */
+export const isConfirmRereadNeeded = (outcome) => isStaleInstallmentWrite(outcome) || outcome?.code === "VALIDATION_ERROR";
+
+// The refusals every installment write shares, in the same words as postpone's (describePostpone).
+function describeCommonRejection(state) {
+  if (isStaleInstallmentWrite({ code: state.code, error: state.error })) return { key: "stale", values: {}, blocked: true };
+  if (state.code === "VALIDATION_ERROR") return { key: "invalid", values: {}, blocked: false };
+  if (state.code === "FORBIDDEN") return { key: "forbidden", values: {}, blocked: true };
+  if (state.code === "RATE_LIMITED") return { key: "rateLimited", values: {}, blocked: false };
+  if (state.code === "WRITE_CLOSED") return { key: "closed", values: {}, blocked: true };
+  if (state.code === "STORAGE_UNAVAILABLE") return { key: "storage", values: {}, blocked: false };
+  return { key: "rejected", values: {}, blocked: true };
+}
+
+function describeSettled(state) {
+  if (state.phase === "unknown") return { key: "unknown", values: {}, blocked: true };
+  if (state.phase === "changed") return { key: "changed", values: {}, blocked: true };
+  return undefined;
+}
+
+/** What a skip's outcome means (`{ key, values, blocked }`, like describePostpone). Only codes decide. */
+export function describeSkip(state) {
+  if (state.phase === "confirmed") return { key: "done", values: {}, blocked: true };
+  if (state.phase === "rejected") return describeCommonRejection(state);
+  return describeSettled(state) ?? null;
+}
+
+/*
+ * What a confirmation's outcome means. An unknown outcome may have moved money: it is never resent by itself, and
+ * the words say to check the goal and the account before anything else. Only codes decide; no message text is read.
+ */
+export function describeConfirm(state) {
+  if (state.phase === "confirmed") return { key: "done", values: {}, blocked: true };
+  if (state.phase === "rejected") {
+    const final = state.code === "CONFLICT" ? CONFIRM_FINAL_CODES[state.error?.serverCode] : undefined;
+    if (final) return { key: final, values: {}, blocked: true };
+    return describeCommonRejection(state);
+  }
+  return describeSettled(state) ?? null;
+}
