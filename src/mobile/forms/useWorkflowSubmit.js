@@ -72,6 +72,15 @@ const CERTAIN_409 = new Set(["account_funds_active_savings_plan", ...STALE_OCCUR
  * finished: it is a certain outcome, not an unknown one. A deliberate retry needs a new client_request_id, because the same one
  * would replay the stored failure; the hook releases the key on "rejected", so the next send mints a new one.
  */
+/*
+ * A tier 2 create refused by a unique rule: POST /accounts on `name`, POST /budgets on `category_id` (BudgetUniqueness).
+ * After a lost answer the record may be the person's own earlier attempt. Only the field the backend names decides; no
+ * message text is read. Used for wording and for reading the lists again, never to send anything.
+ */
+const EXISTING_RECORD_FIELD = Object.freeze({ "account.create": "name", "budget.create": "category_id" });
+export const isExistingRecordRefusal = (operation, error) =>
+  Boolean(EXISTING_RECORD_FIELD[operation]) && error?.status === 422 && Array.isArray(error?.errors?.[EXISTING_RECORD_FIELD[operation]]);
+
 const isAiFailure = (error) => [429, 502, 503].includes(error?.status) && typeof error?.payload?.error?.code === "string";
 
 const NO_CODES = Object.freeze(new Set());
@@ -174,9 +183,10 @@ export function useWorkflowSubmit({ send = sendWorkflowWrite, certain409 = NO_CO
   const settle = useCallback(
     (outcome) => {
       if (outcome.kind === "identity") return;
-      // A new account refused for its name: the first copy of a create whose answer was lost may be the one that is there
-      // (there is no replay, only a unique name), so the lists are read again to show it.
-      const nameTaken = outcome.kind === "rejected" && pendingWrite.current?.operation === "account.create" && Array.isArray(outcome.error?.errors?.name);
+      // A new account refused for its name, or a new budget refused as a duplicate (StoreBudgetRequest puts
+      // BudgetUniqueness on category_id): the first copy of a create whose answer was lost may be the one that is there
+      // (no replay, only a unique rule), so the lists are read again to show it. Nothing is resent.
+      const nameTaken = outcome.kind === "rejected" && isExistingRecordRefusal(pendingWrite.current?.operation, outcome.error);
       // The assistant's failed attempt is stored in the conversation (AiChatService::failAssistant), so it is read again like a write that happened.
       const storedFailure = outcome.kind === "rejected" && outcome.code === "AI_FAILED";
       // The occurrence the review showed is out of date: the cached rule still names it, so every read is taken again (nothing is resent).

@@ -1,6 +1,11 @@
 import { Link } from "react-router-dom";
 
+import { MOBILE_ACCOUNTS, MOBILE_BUDGETS } from "../navigation.js";
 import Chevron from "../ui/Chevron.jsx";
+import { isExistingRecordRefusal } from "./useWorkflowSubmit.js";
+
+// Tier 2 creates have no replay: after an unknown outcome, or a refusal by their unique rule, the person checks the list.
+const CHECK_LIST = Object.freeze({ "account.create": { to: MOBILE_ACCOUNTS, key: "checkAccounts" }, "budget.create": { to: MOBILE_BUDGETS, key: "checkBudgets" } });
 
 /*
  * The answer to a sent write, as the server gave it; an unknown one claims
@@ -21,7 +26,9 @@ export default function WriteOutcome({ outcome, operation, outcomeRef, backTo, t
   // Two refusals that say more than "nothing was recorded": an account's name that is already taken (the first copy of a
   // create may be the one that is there: POST /accounts has no replay, only a unique name), and an account that funds an
   // active savings plan (409 account_funds_active_savings_plan: certain, nothing was archived).
-  const nameTaken = kind === "rejected" && operation === "account.create" && Array.isArray(outcome.error?.errors?.name);
+  const nameTaken = kind === "rejected" && operation === "account.create" && isExistingRecordRefusal(operation, outcome.error);
+  const budgetExists = kind === "rejected" && operation === "budget.create" && isExistingRecordRefusal(operation, outcome.error);
+  const checkList = CHECK_LIST[operation] && (kind === "unknown" || kind === "changed" || nameTaken || budgetExists) ? CHECK_LIST[operation] : null;
   const fundsPlan = kind === "rejected" && outcome.error?.serverCode === "account_funds_active_savings_plan";
   // A recurring confirm or skip for an occurrence that is no longer the next open one: certain, nothing was posted or skipped.
   const staleOccurrence = kind === "rejected" && ["recurring_occurrence_not_next", "recurring_occurrence_not_open"].includes(outcome.error?.serverCode);
@@ -29,7 +36,7 @@ export default function WriteOutcome({ outcome, operation, outcomeRef, backTo, t
   const aiFailed = kind === "rejected" && outcome.code === "AI_FAILED";
   const aiLimit = kind === "rejected" && typeof operation === "string" && operation.startsWith("ai.") && (outcome.code === "RATE_LIMITED" || (aiFailed && outcome.error?.status === 429));
   const retryAfter = Number.parseInt(outcome.error?.retryAfter, 10);
-  const bodyKey = kind === "rejected" ? (aiLimit ? "aiRateLimited" : aiFailed ? "aiFailed" : fundsPlan ? "accountFundsPlan" : staleOccurrence ? "recurringStale" : nameTaken ? "accountNameTaken" : outcome.code === "RATE_LIMITED" ? "rateLimited" : outcome.code === "NO_WORKSPACE" ? "noWorkspace" : outcome.code === "WRITE_CLOSED" ? "closed" : "rejectedBody") : `${kind}Body`;
+  const bodyKey = kind === "rejected" ? (aiLimit ? "aiRateLimited" : aiFailed ? "aiFailed" : fundsPlan ? "accountFundsPlan" : staleOccurrence ? "recurringStale" : nameTaken ? "accountNameTaken" : budgetExists ? "budgetExists" : outcome.code === "RATE_LIMITED" ? "rateLimited" : outcome.code === "NO_WORKSPACE" ? "noWorkspace" : outcome.code === "WRITE_CLOSED" ? "closed" : "rejectedBody") : `${kind}Body`;
   const refused = kind === "rejected";
 
   return (
@@ -49,6 +56,12 @@ export default function WriteOutcome({ outcome, operation, outcomeRef, backTo, t
         <ul className="sm-cat-summary-list">
           {fieldMessages.map((message) => <li key={message} dir="auto">{message}</li>)}
         </ul>
+      )}
+      {checkList && (
+        <Link className="sm-link-row" to={checkList.to} data-sm-action="check-list">
+          <span>{t(`forms.outcome.${checkList.key}`)}</span>
+          <Chevron />
+        </Link>
       )}
       {kind !== "rejected" && (
         <Link className="sm-link-row" to={backTo} data-sm-action="after-write">

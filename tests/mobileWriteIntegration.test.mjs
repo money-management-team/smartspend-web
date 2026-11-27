@@ -292,3 +292,133 @@ describe("the product state", () => {
     for (const workflow of Object.values(WORKFLOWS)) assert.equal(gate.isWriteOpen(workflow.operation), false, workflow.operation);
   });
 });
+
+/* ---------- Tier 2 creates (no replay, a unique rule only): lost answers, 408 and duplicate refusals ---------- */
+
+describe("account and budget creates after a lost answer: never resent, never claimed, the lists read again", () => {
+  const choose = async (name, value) => {
+    const radio = q(`[data-sm-field='${name}'] input[type='radio'][value='${value}']`);
+    if (radio) await click(radio);
+    else await change(field(name), value);
+  };
+  const gets = () => api.calls.filter((call) => call.method === "GET").length;
+  // The budget form's own reads are taken again at once; the account form has none mounted, so following "Check your
+  // accounts" must read the list from the server after the write (the cached reads were dropped).
+  async function expectFreshList(kind, before) {
+    if (kind === "budget") { assert.ok(gets() > before, "the reads this create may have changed are taken again"); return; }
+    const writeAt = api.calls.findIndex((call) => call.method !== "GET");
+    await click(q("[data-sm-action='check-list']"));
+    // After a refusal the draft stays editable, so leaving asks first (the unsaved-changes guard): the person confirms.
+    const leave = q("[data-sm-action='discard']");
+    if (leave) await click(leave);
+    for (let i = 0; i < 6 && !api.calls.slice(writeAt + 1).some((call) => call.path === "/accounts"); i += 1) await settle(); // the list screen is lazy-loaded
+    assert.ok(api.calls.slice(writeAt + 1).some((call) => call.method === "GET" && call.path === "/accounts"), "the accounts list is read from the server after the write");
+  }
+
+  async function openCreate(kind, onWrite) {
+    api = installFakeApi(backend(onWrite), { allowWrites: [kind === "account" ? FORM_WRITES.accountCreate : FORM_WRITES.budget] });
+    view = await mountMobile({ entry: `/m/add/${kind}` });
+    if (kind === "account") {
+      await change(field("name"), "Travel");
+      await choose("type", "cash");
+      await choose("currency_code", "ILS");
+    } else {
+      await change(field("name"), "Groceries");
+      await choose("currency_code", "ILS");
+      await change(field("amount_limit"), "800");
+      await change(field("period_start"), "2026-11-01");
+      await change(field("period_end"), "2026-11-30");
+    }
+    await submit(q("form.sm-draft-form"));
+    assert.ok(q("[data-sm-step='review']"), "the form reached its review");
+  }
+
+  beforeEach(async () => {
+    await resetEnvironment();
+    storeSession({ token: TOKEN_A, user: USER_A, workspace: { id: 1 } });
+  });
+
+  afterEach(async () => {
+    await view?.unmount();
+    view = null;
+    gate.setWriteApprovalsForTests(null);
+    assert.deepEqual(api?.violations ?? [], [], "only the opened write");
+    api?.restore();
+    api = null;
+  });
+
+  for (const [kind, operation, list] of [["account", "account.create", "/m/accounts"], ["budget", "budget.create", "/m/planning/budgets"]]) {
+    for (const [name, answer] of [["a lost answer (network failure)", new Error("connection reset")], ["a 408", failure(408, "Request Timeout")], ["a 500", failure(500, "Server error")]]) {
+      it(`${operation}: ${name} is an unknown outcome, sent once, with a way to check the list and the reads taken again`, async () => {
+        gate.setWriteApprovalsForTests([operation]);
+        await openCreate(kind, () => answer);
+        const before = gets();
+        await click(action("send"));
+        await settle();
+        const outcome = q("[data-sm-outcome='unknown']");
+        assert.ok(outcome, "not refused, not confirmed");
+        assert.match(text(outcome), /may or may not have been recorded/);
+        assert.doesNotMatch(text(outcome), /Nothing was recorded|didn't accept/, "never claims nothing happened");
+        assert.equal(q("[data-sm-action='check-list']", outcome).getAttribute("href"), list);
+        assert.equal(writes().length, 1, "never resent by itself");
+        assert.equal(action("send"), null);
+        await expectFreshList(kind, before);
+      });
+    }
+  }
+
+  it("account.create: a taken name after a lost answer says it may be the person's own account, and reads the lists again", async () => {
+    gate.setWriteApprovalsForTests(["account.create"]);
+    await openCreate("account", () => ({ status: 422, body: { status: false, message: "The given data was invalid.", errors: { name: ["The name has already been taken."] } } }));
+    const before = gets();
+    await click(action("send"));
+    await settle();
+    const outcome = q("[data-sm-outcome='rejected']");
+    assert.match(text(outcome), /already exists.*may be the account you added.*Nothing new was recorded by this request/);
+    assert.equal(q("[data-sm-action='check-list']", outcome).getAttribute("href"), "/m/accounts");
+    await expectFreshList("account", before);
+    assert.equal(writes().length, 1);
+  });
+
+  it("budget.create: a duplicate (422 on category_id, BudgetUniqueness) says it may be the person's own budget, and reads the lists again", async () => {
+    gate.setWriteApprovalsForTests(["budget.create"]);
+    await openCreate("budget", () => ({ status: 422, body: { status: false, message: "The provided data is invalid.", errors: { category_id: ["An active budget already exists for this category, currency and period."] } } }));
+    const before = gets();
+    await click(action("send"));
+    await settle();
+    const outcome = q("[data-sm-outcome='rejected']");
+    assert.match(text(outcome), /A budget for this category, currency and period already exists.*may be the budget you added.*Nothing new was recorded by this request/);
+    assert.doesNotMatch(text(outcome), /Check the details and send again/, "not the generic 'send again'");
+    assert.equal(q("[data-sm-action='check-list']", outcome).getAttribute("href"), "/m/planning/budgets");
+    assert.ok(gets() > before, "the lists are read again so an existing budget shows");
+    assert.equal(writes().length, 1);
+  });
+
+  it("budget.create: the backend's race answer (409 with no code, DuplicateBudgetException) is unknown, not a refusal", async () => {
+    gate.setWriteApprovalsForTests(["budget.create"]);
+    await openCreate("budget", () => ({ status: 409, body: { status: false, message: "An active budget already exists for this category, currency and period.", errors: {} } }));
+    await click(action("send"));
+    await settle();
+    assert.ok(q("[data-sm-outcome='unknown']"));
+    assert.equal(writes().length, 1);
+  });
+
+  it("a refusal on another field is still the plain refusal, with no 'it may be yours' wording and no list link", async () => {
+    gate.setWriteApprovalsForTests(["budget.create"]);
+    await openCreate("budget", () => ({ status: 422, body: { status: false, message: "The provided data is invalid.", errors: { amount_limit: ["The amount limit must be greater than zero."] } } }));
+    await click(action("send"));
+    await settle();
+    const outcome = q("[data-sm-outcome='rejected']");
+    assert.match(text(outcome), /Check the details and send again/);
+    assert.equal(q("[data-sm-action='check-list']", outcome), null);
+  });
+
+  it("the rule reads only the backend's field, never the message, and only for these two creates", async () => {
+    const { isExistingRecordRefusal } = await import("../src/mobile/forms/useWorkflowSubmit.js");
+    assert.equal(isExistingRecordRefusal("budget.create", { status: 422, errors: { category_id: ["x"] } }), true);
+    assert.equal(isExistingRecordRefusal("budget.create", { status: 422, errors: {}, message: "An active budget already exists" }), false, "a message alone decides nothing");
+    assert.equal(isExistingRecordRefusal("budget.update", { status: 422, errors: { category_id: ["x"] } }), false);
+    assert.equal(isExistingRecordRefusal("account.create", { status: 409, errors: { name: ["x"] } }), false);
+    assert.equal(isExistingRecordRefusal("transaction.expense", { status: 422, errors: { name: ["x"] } }), false);
+  });
+});
